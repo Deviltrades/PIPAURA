@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Settings, Move, GripVertical, Maximize2 } from "lucide-react";
+import { Settings, Move } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import WidgetManager, { type WidgetType } from "@/components/WidgetManager";
@@ -13,19 +13,6 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
-
-// Default layouts for different widgets
-const getDefaultLayout = (widgetIds: string[]) => {
-  return widgetIds.map((widgetId, index) => ({
-    i: widgetId,
-    x: (index * 3) % 12,
-    y: Math.floor((index * 3) / 12) * 3,
-    w: 3,
-    h: 3,
-    minW: 2,
-    minH: 2
-  }));
-};
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -52,24 +39,57 @@ export default function Dashboard() {
     "recent-trades"
   ];
 
-  // Initialize layouts
-  const [layouts, setLayouts] = useState(() => ({
-    lg: getDefaultLayout(activeWidgets),
-    md: getDefaultLayout(activeWidgets),
-    sm: getDefaultLayout(activeWidgets)
-  }));
+  // Default layout configuration for react-grid-layout
+  const getDefaultLayout = () => {
+    const layouts: { [key: string]: any[] } = {
+      lg: activeWidgets.map((widgetId, index) => ({
+        i: widgetId,
+        x: (index % 4) * 3,
+        y: Math.floor(index / 4) * 4,
+        w: widgetId === "trading-calendar" ? 6 : 3,
+        h: widgetId === "trading-calendar" ? 8 : 4,
+        minW: 2,
+        minH: 3,
+      })),
+      md: activeWidgets.map((widgetId, index) => ({
+        i: widgetId,
+        x: (index % 2) * 6,
+        y: Math.floor(index / 2) * 4,
+        w: widgetId === "trading-calendar" ? 12 : 6,
+        h: widgetId === "trading-calendar" ? 8 : 4,
+        minW: 4,
+        minH: 3,
+      })),
+      sm: activeWidgets.map((widgetId, index) => ({
+        i: widgetId,
+        x: 0,
+        y: index * 4,
+        w: 12,
+        h: widgetId === "trading-calendar" ? 8 : 4,
+        minW: 6,
+        minH: 3,
+      })),
+    };
+    return layouts;
+  };
 
+  const [layouts, setLayouts] = useState(getDefaultLayout());
+
+  // Save widget preferences
   const updateWidgets = useMutation({
     mutationFn: async (widgets: WidgetType[]) => {
-      return apiRequest("/api/dashboard/widgets", {
-        method: "PUT",
-        body: { widgets }
-      });
+      const response = await apiRequest("PUT", "/api/dashboard/widgets", { widgets });
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Dashboard Updated",
+        description: "Your widget preferences have been saved.",
+      });
     },
-    onError: (error: any) => {
+    onError: (error) => {
+      console.error("Widget update error:", error);
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
@@ -93,41 +113,23 @@ export default function Dashboard() {
     if (!activeWidgets.includes(widgetId)) {
       const newWidgets = [...activeWidgets, widgetId];
       updateWidgets.mutate(newWidgets);
-      
-      // Add to layouts
-      const newItem = {
-        i: widgetId,
-        x: (activeWidgets.length * 3) % 12,
-        y: Math.floor((activeWidgets.length * 3) / 12) * 3,
-        w: 3,
-        h: 3,
-        minW: 2,
-        minH: 2
-      };
-      
-      setLayouts(prev => ({
-        lg: [...prev.lg, newItem],
-        md: [...prev.md, newItem],
-        sm: [...prev.sm, newItem]
-      }));
     }
   };
 
   const handleRemoveWidget = (widgetId: WidgetType) => {
     const newWidgets = activeWidgets.filter(id => id !== widgetId);
     updateWidgets.mutate(newWidgets);
-    
-    // Remove from layouts
-    setLayouts(prev => ({
-      lg: prev.lg.filter(item => item.i !== widgetId),
-      md: prev.md.filter(item => item.i !== widgetId),
-      sm: prev.sm.filter(item => item.i !== widgetId)
-    }));
+    // Update layouts to remove the widget
+    const newLayouts = { ...layouts };
+    Object.keys(newLayouts).forEach(breakpoint => {
+      newLayouts[breakpoint] = newLayouts[breakpoint].filter(item => item.i !== widgetId);
+    });
+    setLayouts(newLayouts);
   };
 
-  const handleLayoutChange = (layout: any, allLayouts: any) => {
+  const handleLayoutChange = (layout: any, layouts: any) => {
     console.log('Layout changed:', layout);
-    setLayouts(allLayouts);
+    setLayouts(layouts);
   };
 
   if (analyticsLoading || tradesLoading) {
@@ -158,10 +160,9 @@ export default function Dashboard() {
             variant="outline"
             size="sm"
             onClick={() => setIsDraggable(!isDraggable)}
-            className={isDraggable ? "bg-primary text-primary-foreground" : ""}
           >
             <Move className="h-4 w-4 mr-2" />
-            {isDraggable ? "Lock Layout" : "Move Widgets"}
+            {isDraggable ? "Lock" : "Move"}
           </Button>
           <Button
             variant="outline"
@@ -195,27 +196,27 @@ export default function Dashboard() {
         <div className="relative">
           {isDraggable && (
             <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-200">
-                <GripVertical className="h-4 w-4" />
-                <span>Click and drag widgets to move them around</span>
-                <Maximize2 className="h-4 w-4 ml-4" />
-                <span>Drag the bottom-right corner to resize</span>
-              </div>
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <Move className="h-4 w-4 inline mr-2" />
+                Drag widgets to rearrange them, resize by dragging the corners
+              </p>
             </div>
           )}
-          
           <ResponsiveGridLayout
             className="layout"
             layouts={layouts}
             onLayoutChange={handleLayoutChange}
             breakpoints={{ lg: 1200, md: 768, sm: 0 }}
-            cols={{ lg: 12, md: 10, sm: 6 }}
+            cols={{ lg: 12, md: 12, sm: 12 }}
             rowHeight={80}
             isDraggable={isDraggable}
             isResizable={isDraggable}
+
+            resizeHandles={['se']}
             margin={[16, 16]}
             containerPadding={[0, 0]}
             useCSSTransforms={true}
+            preventCollision={false}
           >
             {activeWidgets.map((widgetId) => {
               const WidgetComponent = widgetComponents[widgetId];
@@ -225,26 +226,34 @@ export default function Dashboard() {
               }
 
               return (
-                <div 
-                  key={widgetId}
-                  className={`h-full relative ${
-                    isDraggable 
-                      ? "border-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 transition-colors cursor-move" 
-                      : ""
-                  }`}
-                >
+                <div key={widgetId} className="relative group">
                   {isDraggable && (
-                    <div className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground px-2 py-1 rounded text-xs flex items-center gap-1 pointer-events-none">
-                      <GripVertical className="h-3 w-3" />
-                      Drag
-                    </div>
+                    <>
+                      {/* Drag Handle */}
+                      <div 
+                        className="drag-handle absolute top-2 left-2 z-10 bg-primary text-primary-foreground p-1 rounded cursor-move opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Drag to move widget"
+                      >
+                        <Move className="h-3 w-3" />
+                      </div>
+                      
+                      {/* Custom Resize Handle Visual */}
+                      <div 
+                        className="absolute bottom-2 right-2 z-5 bg-secondary text-secondary-foreground p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                        title="Resize handle (drag corner to resize)"
+                      >
+                        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M22,22H20V20H22V22M22,18H20V16H22V18M18,22H16V20H18V22M18,18H16V16H18V18M14,22H12V20H14V22M22,14H20V12H22V14Z" />
+                        </svg>
+                      </div>
+                    </>
                   )}
                   
                   <WidgetComponent
                     isCustomizing={isCustomizing}
                     onRemove={() => handleRemoveWidget(widgetId)}
                     analytics={analytics}
-                    trades={trades || []}
+                    trades={trades as any[] || []}
                   />
                 </div>
               );
@@ -253,10 +262,10 @@ export default function Dashboard() {
         </div>
       )}
 
-      {activeWidgets.length > 0 && !isDraggable && (
+      {activeWidgets.length > 0 && (
         <div className="mt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            Click "Move Widgets" to rearrange your dashboard, or use "Customize" to manage widgets
+            Hover over widgets and click the X to remove them, or use "Add Widget" to add more
           </p>
         </div>
       )}
