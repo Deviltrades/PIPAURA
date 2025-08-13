@@ -138,6 +138,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/trades/:id", isAuthenticated, async (req, res) => {
     try {
+      const userId = (req.user as any)?.claims?.sub;
+      
+      // Check if trade exists and user owns it
+      const existingTrade = await storage.getTrade(req.params.id);
+      if (!existingTrade) {
+        return res.status(404).json({ message: "Trade not found" });
+      }
+      
+      if (existingTrade.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Update trade data
+      const updateData = {
+        ...req.body,
+        exitDate: req.body.exitDate ? new Date(req.body.exitDate) : null,
+      };
+
+      const updatedTrade = await storage.updateTrade(req.params.id, updateData);
+      if (!updatedTrade) {
+        return res.status(404).json({ message: "Trade not found" });
+      }
+      res.json(updatedTrade);
+    } catch (error) {
+      console.error("Error updating trade:", error);
+      res.status(500).json({ message: "Failed to update trade" });
+    }
+  });
+
+  app.put("/api/trades/:id", isAuthenticated, async (req, res) => {
+    try {
       const trade = await storage.getTrade(req.params.id);
       if (!trade) {
         return res.status(404).json({ message: "Trade not found" });

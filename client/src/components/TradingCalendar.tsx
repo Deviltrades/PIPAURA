@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus, Edit3 } from "lucide-react";
 import { 
   format, 
   startOfMonth, 
@@ -19,6 +19,7 @@ import {
   isToday
 } from "date-fns";
 import { AddTradeModal } from "./AddTradeModal";
+import { EditTradeModal } from "./EditTradeModal";
 import type { Trade } from "@shared/schema";
 
 interface TradingCalendarProps {
@@ -30,6 +31,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   const [viewMonth, setViewMonth] = useState<Date>(new Date());
   const [isAddTradeModalOpen, setIsAddTradeModalOpen] = useState(false);
   const [addTradeDate, setAddTradeDate] = useState<Date | null>(null);
+  const [isEditTradeModalOpen, setIsEditTradeModalOpen] = useState(false);
+  const [editTrade, setEditTrade] = useState<Trade | null>(null);
 
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
@@ -154,7 +157,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               <div
                 key={day.toISOString()}
                 className={`
-                  h-12 rounded-lg border transition-all duration-200 hover:border-primary/50
+                  h-16 rounded-lg border transition-all duration-200 hover:border-primary/50
                   ${isSelected ? 'border-primary bg-primary/10' : 'border-transparent'}
                   ${isCurrentDay ? 'bg-accent' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
@@ -185,19 +188,31 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                   </button>
                 )}
                 
-                {/* Trade Indicators */}
+                {/* Trade Indicators and P&L */}
                 {dayTrades.length > 0 && (
-                  <div className="absolute bottom-0.5 left-0.5 flex gap-0.5">
-                    <div className={`w-2 h-2 rounded-full ${
-                      dailyPnL > 0 ? "bg-green-500" : 
-                      dailyPnL < 0 ? "bg-red-500" : 
-                      dayTrades.some(t => t.status === "OPEN") ? "bg-blue-500" : "bg-yellow-500"
-                    }`} />
-                    {dayTrades.length > 1 && (
-                      <span className="text-xs bg-gray-600 text-white rounded-full min-w-[12px] h-3 flex items-center justify-center leading-none text-[10px]">
-                        {dayTrades.length}
-                      </span>
+                  <div className="absolute bottom-0.5 left-0.5 right-0.5 flex flex-col items-start gap-0.5">
+                    {/* P&L Amount */}
+                    {dailyPnL !== 0 && (
+                      <div className={`text-xs font-semibold px-1 py-0.5 rounded text-white leading-none ${
+                        dailyPnL > 0 ? "bg-green-600" : "bg-red-600"
+                      }`}>
+                        {dailyPnL > 0 ? '+' : ''}${dailyPnL.toFixed(0)}
+                      </div>
                     )}
+                    
+                    {/* Trade Status Indicator */}
+                    <div className="flex gap-0.5 items-center">
+                      <div className={`w-1.5 h-1.5 rounded-full ${
+                        dailyPnL > 0 ? "bg-green-500" : 
+                        dailyPnL < 0 ? "bg-red-500" : 
+                        dayTrades.some(t => t.status === "OPEN") ? "bg-blue-500" : "bg-yellow-500"
+                      }`} />
+                      {dayTrades.length > 1 && (
+                        <span className="text-xs bg-gray-600 text-white rounded-full min-w-[10px] h-2.5 flex items-center justify-center leading-none text-[9px]">
+                          {dayTrades.length}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -244,6 +259,17 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                         )}
                         ${(typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0)).toFixed(2)}
                       </span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setEditTrade(trade);
+                          setIsEditTradeModalOpen(true);
+                        }}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit3 className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -276,6 +302,18 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               setAddTradeDate(null);
             }}
             selectedDate={addTradeDate}
+          />
+        )}
+
+        {/* Edit Trade Modal */}
+        {editTrade && (
+          <EditTradeModal
+            isOpen={isEditTradeModalOpen}
+            onClose={() => {
+              setIsEditTradeModalOpen(false);
+              setEditTrade(null);
+            }}
+            trade={editTrade}
           />
         )}
       </CardContent>
