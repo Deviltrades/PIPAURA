@@ -355,24 +355,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard layout preferences
-  app.put("/api/dashboard/layout", isAuthenticated, async (req, res) => {
+  app.put("/api/dashboard/layouts", isAuthenticated, async (req, res) => {
     try {
       const userId = (req.user as any)?.claims?.sub;
-      const { layouts } = req.body;
+      const { layoutName, layouts } = req.body;
+
+      if (!layoutName || typeof layoutName !== 'string') {
+        return res.status(400).json({ message: "Layout name is required" });
+      }
 
       if (!layouts || typeof layouts !== 'object') {
         return res.status(400).json({ message: "Layouts must be an object" });
       }
 
-      const updatedUser = await storage.updateUserDashboardLayout(userId, layouts);
+      // Get current user layouts
+      const user = await storage.getUser(userId);
+      const currentLayouts = (user?.dashboardLayouts as any) || {};
+
+      // Add/update the named layout
+      const updatedLayouts = {
+        ...currentLayouts,
+        [layoutName]: layouts
+      };
+
+      const updatedUser = await storage.updateUserDashboardLayouts(userId, updatedLayouts);
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      res.json({ message: "Layout saved successfully", layouts: updatedUser.dashboardLayout });
+      res.json({ 
+        message: "Layout saved successfully", 
+        layoutName,
+        layouts: updatedUser.dashboardLayouts 
+      });
     } catch (error) {
-      console.error("Error updating dashboard layout:", error);
-      res.status(500).json({ message: "Failed to update dashboard layout" });
+      console.error("Error updating dashboard layouts:", error);
+      res.status(500).json({ message: "Failed to update dashboard layouts" });
+    }
+  });
+
+  app.delete("/api/dashboard/layouts/:layoutName", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const { layoutName } = req.params;
+
+      if (!layoutName) {
+        return res.status(400).json({ message: "Layout name is required" });
+      }
+
+      // Get current user layouts
+      const user = await storage.getUser(userId);
+      const currentLayouts = (user?.dashboardLayouts as any) || {};
+
+      // Remove the named layout
+      const updatedLayouts = { ...currentLayouts };
+      delete updatedLayouts[layoutName];
+
+      const updatedUser = await storage.updateUserDashboardLayouts(userId, updatedLayouts);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ 
+        message: "Layout deleted successfully", 
+        layouts: updatedUser.dashboardLayouts 
+      });
+    } catch (error) {
+      console.error("Error deleting dashboard layout:", error);
+      res.status(500).json({ message: "Failed to delete dashboard layout" });
     }
   });
 

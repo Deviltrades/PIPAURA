@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Settings, Move, GripVertical, Maximize2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -57,11 +61,17 @@ export default function Dashboard() {
     "recent-trades"
   ];
 
+  // Layout management state
+  const [currentLayoutName, setCurrentLayoutName] = useState("Default");
+  const [showLayoutDialog, setShowLayoutDialog] = useState(false);
+  const [newLayoutName, setNewLayoutName] = useState("");
+
   // Initialize layouts - use saved layout from user if available
   const [layouts, setLayouts] = useState(() => {
-    const savedLayout = (user as any)?.dashboardLayout;
-    if (savedLayout && savedLayout.lg && savedLayout.lg.length > 0) {
-      return savedLayout;
+    const savedLayouts = (user as any)?.dashboardLayouts || {};
+    const defaultLayout = savedLayouts["Default"];
+    if (defaultLayout && defaultLayout.lg && defaultLayout.lg.length > 0) {
+      return defaultLayout;
     }
     return {
       lg: getDefaultLayout(activeWidgets),
@@ -207,13 +217,13 @@ export default function Dashboard() {
   };
 
   const saveLayoutMutation = useMutation({
-    mutationFn: async (layoutData: any) => {
-      const response = await fetch("/api/dashboard/layout", {
+    mutationFn: async ({ layoutName, layoutData }: { layoutName: string; layoutData: any }) => {
+      const response = await fetch("/api/dashboard/layouts", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ layouts: layoutData }),
+        body: JSON.stringify({ layoutName, layouts: layoutData }),
       });
       
       if (!response.ok) {
@@ -222,11 +232,12 @@ export default function Dashboard() {
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setHasLayoutChanges(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Layout Saved",
-        description: "Your dashboard layout has been saved successfully.",
+        description: `Layout "${data.layoutName}" saved successfully.`,
       });
     },
     onError: (error: any) => {
@@ -249,9 +260,72 @@ export default function Dashboard() {
     },
   });
 
+  const deleteLayoutMutation = useMutation({
+    mutationFn: async (layoutName: string) => {
+      const response = await fetch(`/api/dashboard/layouts/${encodeURIComponent(layoutName)}`, {
+        method: "DELETE",
+      });
+      
+      if (!response.ok) {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Layout Deleted",
+        description: "Layout deleted successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete layout.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSaveLayout = () => {
-    saveLayoutMutation.mutate(layouts);
+    if (newLayoutName.trim()) {
+      saveLayoutMutation.mutate({ 
+        layoutName: newLayoutName.trim(), 
+        layoutData: layouts 
+      });
+      setNewLayoutName("");
+      setShowLayoutDialog(false);
+    } else {
+      saveLayoutMutation.mutate({ 
+        layoutName: currentLayoutName, 
+        layoutData: layouts 
+      });
+    }
   };
+
+  const handleLoadLayout = (layoutName: string) => {
+    const savedLayouts = (user as any)?.dashboardLayouts || {};
+    const layoutData = savedLayouts[layoutName];
+    if (layoutData) {
+      setLayouts(layoutData);
+      setCurrentLayoutName(layoutName);
+      setHasLayoutChanges(false);
+    }
+  };
+
+  const handleDeleteLayout = (layoutName: string) => {
+    if (layoutName !== "Default") {
+      deleteLayoutMutation.mutate(layoutName);
+      if (currentLayoutName === layoutName) {
+        setCurrentLayoutName("Default");
+        handleLoadLayout("Default");
+      }
+    }
+  };
+
+  // Get available layout names
+  const availableLayouts = Object.keys((user as any)?.dashboardLayouts || { "Default": {} });
 
   if (analyticsLoading || tradesLoading) {
     return (
@@ -287,17 +361,44 @@ export default function Dashboard() {
             {isDraggable ? "Lock Layout" : "Move Widgets"}
           </Button>
           
-          {hasLayoutChanges && (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleSaveLayout}
-              disabled={saveLayoutMutation.isPending}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              {saveLayoutMutation.isPending ? "Saving..." : "Save Layout"}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            <Select value={currentLayoutName} onValueChange={handleLoadLayout}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {availableLayouts.map((layoutName) => (
+                  <SelectItem key={layoutName} value={layoutName}>
+                    {layoutName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {hasLayoutChanges && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setShowLayoutDialog(true)}
+                disabled={saveLayoutMutation.isPending}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                Save Layout
+              </Button>
+            )}
+
+            {currentLayoutName !== "Default" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDeleteLayout(currentLayoutName)}
+                disabled={deleteLayoutMutation.isPending}
+                className="text-red-600 border-red-600 hover:bg-red-50"
+              >
+                Delete
+              </Button>
+            )}
+          </div>
           
           <Button
             variant="outline"
@@ -414,6 +515,42 @@ export default function Dashboard() {
           </p>
         </div>
       )}
+
+      {/* Save Layout Dialog */}
+      <Dialog open={showLayoutDialog} onOpenChange={setShowLayoutDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Layout</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="layout-name">Layout Name</Label>
+              <Input
+                id="layout-name"
+                placeholder="Enter layout name..."
+                value={newLayoutName}
+                onChange={(e) => setNewLayoutName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newLayoutName.trim()) {
+                    handleSaveLayout();
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLayoutDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSaveLayout}
+              disabled={!newLayoutName.trim() || saveLayoutMutation.isPending}
+            >
+              {saveLayoutMutation.isPending ? "Saving..." : "Save Layout"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
