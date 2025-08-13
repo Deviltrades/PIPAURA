@@ -90,8 +90,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const tradeData = {
         ...req.body,
         userId,
-        entryDate: req.body.entryDate ? new Date(req.body.entryDate) : new Date(),
-        exitDate: req.body.exitDate ? new Date(req.body.exitDate) : undefined,
+        // Parse date string as local date to avoid timezone conversion
+        entryDate: req.body.entryDate ? new Date(req.body.entryDate + 'T12:00:00') : new Date(),
+        exitDate: req.body.exitDate ? new Date(req.body.exitDate + 'T12:00:00') : undefined,
       };
       
       const validatedData = insertTradeSchema.parse(tradeData);

@@ -89,9 +89,14 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
 
   const addTradeMutation = useMutation({
     mutationFn: async (data: AddTradeFormData) => {
+      // Format date as YYYY-MM-DD to avoid timezone issues
+      const localDateString = selectedDate.getFullYear() + '-' + 
+        String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + 
+        String(selectedDate.getDate()).padStart(2, '0');
+      
       const tradeData = {
         ...data,
-        entryDate: selectedDate.toISOString(), // Send as ISO string
+        entryDate: localDateString, // Send as local date string
         pnl: "0", // Will be calculated when trade is closed
       };
       
