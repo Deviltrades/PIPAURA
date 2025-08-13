@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import WidgetManager, { type WidgetType } from "@/components/WidgetManager";
 import { widgetComponents } from "@/components/DashboardWidgets";
 import { apiRequest } from "@/lib/queryClient";
+import { isUnauthorizedError } from "@/lib/authUtils";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -35,10 +36,11 @@ export default function Dashboard() {
   // Save widget preferences
   const updateWidgets = useMutation({
     mutationFn: async (widgets: WidgetType[]) => {
-      return apiRequest("/api/dashboard/widgets", {
+      const response = await apiRequest("/api/dashboard/widgets", {
         method: "PUT",
         body: JSON.stringify({ widgets }),
       });
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
@@ -47,7 +49,19 @@ export default function Dashboard() {
         description: "Your widget preferences have been saved.",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Widget update error:", error);
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
       toast({
         title: "Error",
         description: "Failed to save widget preferences.",
