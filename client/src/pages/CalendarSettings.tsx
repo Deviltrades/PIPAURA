@@ -41,9 +41,8 @@ export default function CalendarSettings() {
         title: "Settings Updated",
         description: "Calendar appearance settings have been saved.",
       });
-      // Invalidate and refetch user data to get updated calendar settings
+      // Invalidate user data to get updated calendar settings
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
     },
     onError: () => {
       toast({

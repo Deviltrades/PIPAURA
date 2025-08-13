@@ -48,7 +48,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   });
 
   // Group trades by date
-  const tradesByDate = trades.reduce((acc, trade) => {
+  const tradesByDate = trades ? trades.reduce((acc, trade) => {
     if (trade.entryDate) {
       // Handle different date formats
       let entryDate: Date;
@@ -66,7 +66,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
       acc[dateKey].push(trade);
     }
     return acc;
-  }, {} as Record<string, Trade[]>);
+  }, {} as Record<string, Trade[]>) : {};
 
   // Get trades for selected date
   const selectedDateTrades = selectedDate 
@@ -206,7 +206,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                   </span>
                 </div>
                 
-                {/* Add Trade Button - Top Right */}
+                {/* Add Trade Button - Top Right - Always show for current month days */}
                 {isCurrentMonth && (
                   <button
                     onClick={(e) => {
@@ -214,7 +214,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                       setAddTradeDate(day);
                       setIsAddTradeModalOpen(true);
                     }}
-                    className="absolute top-1 right-1 opacity-60 group-hover:opacity-100 transition-opacity duration-200 w-5 h-5 bg-primary hover:bg-primary/80 rounded-sm flex items-center justify-center"
+                    className="absolute top-1 right-1 opacity-60 group-hover:opacity-100 transition-opacity duration-200 w-5 h-5 bg-primary hover:bg-primary/80 rounded-sm flex items-center justify-center z-10"
                     title="Add trade for this date"
                   >
                     <PlusIcon className="h-3 w-3 text-primary-foreground" />
