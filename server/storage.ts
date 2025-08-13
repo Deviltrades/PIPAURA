@@ -15,6 +15,7 @@ export interface IStorage {
   // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  updateUserWidgets(id: string, widgets: string[]): Promise<User | undefined>;
   
   // Trade operations
   createTrade(trade: InsertTrade): Promise<Trade>;
@@ -62,12 +63,26 @@ export class MemStorage implements IStorage {
         lastName: userData.lastName || null,
         profileImageUrl: userData.profileImageUrl || null,
         isAdmin: userData.isAdmin || false,
+        dashboardWidgets: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
       this.users.set(newUser.id, newUser);
       return newUser;
     }
+  }
+
+  async updateUserWidgets(id: string, widgets: string[]): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+
+    const updatedUser: User = {
+      ...existingUser,
+      dashboardWidgets: widgets,
+      updatedAt: new Date(),
+    };
+    this.users.set(id, updatedUser);
+    return updatedUser;
   }
 
   // Trade operations

@@ -281,6 +281,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Dashboard widget preferences
+  app.put("/api/dashboard/widgets", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { widgets } = req.body;
+
+      if (!Array.isArray(widgets)) {
+        return res.status(400).json({ message: "Widgets must be an array" });
+      }
+
+      const updatedUser = await storage.updateUserWidgets(userId, widgets);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ widgets: updatedUser.dashboardWidgets });
+    } catch (error) {
+      console.error("Error updating dashboard widgets:", error);
+      res.status(500).json({ message: "Failed to update dashboard widgets" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
