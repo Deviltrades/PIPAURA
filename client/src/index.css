@@ -167,17 +167,19 @@
     height: 20px;
     bottom: 0;
     right: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6"><path d="M6 6H0l6-6v6z" fill="%23999"/></svg>');
-    background-repeat: no-repeat;
-    background-position: bottom right;
-    padding: 0 3px 3px 0;
-    background-size: 8px 8px;
     cursor: se-resize;
-    opacity: 0.3;
-    transition: opacity 0.2s ease;
+    z-index: 15;
   }
 
-  .react-grid-item:hover > .react-resizable-handle {
+  .react-grid-item > .react-resizable-handle::after {
+    content: '';
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 5px;
+    height: 5px;
+    border-right: 2px solid var(--primary);
+    border-bottom: 2px solid var(--primary);
     opacity: 0.6;
   }
 
@@ -200,6 +202,16 @@
     user-select: none;
     border-radius: 8px;
     border: 2px dashed var(--primary);
+  }
+
+  /* Custom drag handle styles */
+  .drag-handle {
+    cursor: move !important;
+  }
+
+  .drag-handle:hover {
+    opacity: 1 !important;
+    transform: scale(1.1);
   }
 
   .bg-warning {

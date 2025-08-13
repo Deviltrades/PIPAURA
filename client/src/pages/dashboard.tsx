@@ -210,6 +210,7 @@ export default function Dashboard() {
             rowHeight={60}
             isDraggable={isDraggable}
             isResizable={isDraggable}
+            draggableHandle=".drag-handle"
             margin={[16, 16]}
             containerPadding={[0, 0]}
           >
@@ -221,7 +222,29 @@ export default function Dashboard() {
               }
 
               return (
-                <div key={widgetId} className={isDraggable ? "cursor-move" : ""}>
+                <div key={widgetId} className="relative group">
+                  {isDraggable && (
+                    <>
+                      {/* Drag Handle */}
+                      <div 
+                        className="drag-handle absolute top-2 left-2 z-10 bg-primary text-primary-foreground p-1 rounded cursor-move opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Drag to move widget"
+                      >
+                        <Move className="h-3 w-3" />
+                      </div>
+                      
+                      {/* Resize Handle */}
+                      <div 
+                        className="absolute bottom-2 right-2 z-10 bg-primary text-primary-foreground p-1 rounded cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Drag to resize widget"
+                      >
+                        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M22,22H20V20H22V22M22,18H20V16H22V18M18,22H16V20H18V22M18,18H16V16H18V18M14,22H12V20H14V22M22,14H20V12H22V14Z" />
+                        </svg>
+                      </div>
+                    </>
+                  )}
+                  
                   <WidgetComponent
                     isCustomizing={isCustomizing}
                     onRemove={() => handleRemoveWidget(widgetId)}
