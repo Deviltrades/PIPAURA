@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,11 +25,11 @@ export default function CalendarSettings() {
   });
 
   // Update settings when user data loads
-  useState(() => {
+  React.useEffect(() => {
     if (user?.calendarSettings) {
       setSettings(user.calendarSettings as CalendarSettings);
     }
-  });
+  }, [user]);
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (newSettings: CalendarSettings) => {

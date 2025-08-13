@@ -114,6 +114,12 @@ export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
 // Calendar settings type
+export interface CalendarSettings {
+  backgroundColor: string;
+  borderColor: string;
+  dayBackgroundColor: string;
+  dayBorderColor: string;
+}
 export type CalendarSettings = {
   backgroundColor: string;
   borderColor: string;

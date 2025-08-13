@@ -170,8 +170,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
             const isCurrentDay = isToday(day);
 
             
-            // Get calendar settings
-            const calendarSettings = user?.calendarSettings || {
+            // Get calendar settings with proper typing
+            const calendarSettings = (user?.calendarSettings as any) || {
               backgroundColor: "#1a1a1a",
               borderColor: "#374151",
               dayBackgroundColor: "#2d2d2d",
