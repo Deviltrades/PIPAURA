@@ -25,7 +25,8 @@ const getDefaultLayout = (widgetIds: string[]) => {
     minW: 3,
     minH: 3,
     maxW: 12,
-    maxH: 8
+    maxH: 8,
+    static: false
   }));
 };
 
@@ -55,12 +56,18 @@ export default function Dashboard() {
     "recent-trades"
   ];
 
-  // Initialize layouts
-  const [layouts, setLayouts] = useState(() => ({
-    lg: getDefaultLayout(activeWidgets),
-    md: getDefaultLayout(activeWidgets),
-    sm: getDefaultLayout(activeWidgets)
-  }));
+  // Initialize layouts - use saved layout from user if available
+  const [layouts, setLayouts] = useState(() => {
+    const savedLayout = (user as any)?.dashboardLayout;
+    if (savedLayout && savedLayout.lg && savedLayout.lg.length > 0) {
+      return savedLayout;
+    }
+    return {
+      lg: getDefaultLayout(activeWidgets),
+      md: getDefaultLayout(activeWidgets),
+      sm: getDefaultLayout(activeWidgets)
+    };
+  });
 
   const updateWidgets = useMutation({
     mutationFn: async (widgets: WidgetType[]) => {
@@ -141,7 +148,39 @@ export default function Dashboard() {
 
   const handleLayoutChange = (layout: any, allLayouts: any) => {
     console.log('Layout changed:', layout);
-    setLayouts(allLayouts);
+    
+    // Prevent layout from resetting to 1x1 - maintain minimum sizes
+    const sanitizedLayouts = {
+      lg: allLayouts.lg?.map((item: any) => ({
+        ...item,
+        w: Math.max(item.w, 3), // minimum width of 3
+        h: Math.max(item.h, 3), // minimum height of 3
+        minW: 3,
+        minH: 3,
+        maxW: 12,
+        maxH: 8
+      })) || [],
+      md: allLayouts.md?.map((item: any) => ({
+        ...item,
+        w: Math.max(item.w, 3),
+        h: Math.max(item.h, 3),
+        minW: 3,
+        minH: 3,
+        maxW: 10,
+        maxH: 8
+      })) || [],
+      sm: allLayouts.sm?.map((item: any) => ({
+        ...item,
+        w: Math.max(item.w, 3),
+        h: Math.max(item.h, 3),
+        minW: 3,
+        minH: 3,
+        maxW: 6,
+        maxH: 8
+      })) || []
+    };
+    
+    setLayouts(sanitizedLayouts);
     setHasLayoutChanges(true);
   };
 
@@ -295,8 +334,9 @@ export default function Dashboard() {
             containerPadding={[0, 0]}
             useCSSTransforms={true}
             preventCollision={false}
-            compactType="vertical"
+            compactType={null}
             allowOverlap={false}
+            autoSize={true}
           >
             {activeWidgets.map((widgetId) => {
               const WidgetComponent = widgetComponents[widgetId];
