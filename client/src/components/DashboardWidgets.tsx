@@ -218,6 +218,12 @@ export function DailyPnLChartWidget({ onRemove }: WidgetProps) {
 }
 
 export function TradingCalendarWidget({ onRemove }: WidgetProps) {
+  const handleAddTrade = (date: Date) => {
+    // Navigate to trades page with the selected date pre-filled
+    const dateString = date.toISOString().split('T')[0];
+    window.location.href = `/trades?date=${dateString}`;
+  };
+
   return (
     <div className="relative group col-span-full">
       <Button 
@@ -228,7 +234,10 @@ export function TradingCalendarWidget({ onRemove }: WidgetProps) {
       >
         <X className="h-3 w-3" />
       </Button>
-      <TradingCalendar className="w-full" />
+      <TradingCalendar 
+        className="w-full" 
+        onAddTrade={handleAddTrade}
+      />
     </div>
   );
 }

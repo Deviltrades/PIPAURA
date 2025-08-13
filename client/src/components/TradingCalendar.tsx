@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus } from "lucide-react";
 import { 
   format, 
   startOfMonth, 
@@ -22,9 +22,10 @@ import type { Trade } from "@shared/schema";
 
 interface TradingCalendarProps {
   className?: string;
+  onAddTrade?: (date: Date) => void;
 }
 
-export function TradingCalendar({ className }: TradingCalendarProps) {
+export function TradingCalendar({ className, onAddTrade }: TradingCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [viewMonth, setViewMonth] = useState<Date>(new Date());
 
@@ -139,16 +140,16 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
             const isCurrentDay = isToday(day);
             
             return (
-              <button
+              <div
                 key={day.toISOString()}
-                onClick={() => setSelectedDate(day)}
                 className={`
                   h-12 rounded-lg border transition-all duration-200 hover:border-primary/50
                   ${isSelected ? 'border-primary bg-primary/10' : 'border-transparent'}
                   ${isCurrentDay ? 'bg-accent' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
-                  flex flex-col items-center justify-center relative group
+                  flex flex-col items-center justify-center relative group cursor-pointer
                 `}
+                onClick={() => setSelectedDate(day)}
               >
                 <span className={`text-sm ${
                   isSelected ? 'font-semibold text-primary' : 
@@ -157,6 +158,20 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 }`}>
                   {format(day, 'd')}
                 </span>
+                
+                {/* Add Trade Button */}
+                {onAddTrade && isCurrentMonth && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddTrade(day);
+                    }}
+                    className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-4 h-4 bg-primary hover:bg-primary/80 rounded-full flex items-center justify-center"
+                    title="Add trade for this date"
+                  >
+                    <Plus className="h-2.5 w-2.5 text-primary-foreground" />
+                  </button>
+                )}
                 
                 {/* Trade Indicators */}
                 {dayTrades.length > 0 && (
@@ -172,7 +187,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                     )}
                   </div>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
