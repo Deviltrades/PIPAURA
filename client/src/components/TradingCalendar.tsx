@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus, Edit3 } from "lucide-react";
 import { 
   format, 
@@ -35,6 +36,12 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   const [addTradeDate, setAddTradeDate] = useState<Date | null>(null);
   const [isEditTradeModalOpen, setIsEditTradeModalOpen] = useState(false);
   const [editTrade, setEditTrade] = useState<Trade | null>(null);
+  
+  // Filter states
+  const [selectedAccount, setSelectedAccount] = useState<string>("all");
+  const [selectedSymbol, setSelectedSymbol] = useState<string>("all");
+  const [selectedStrategy, setSelectedStrategy] = useState<string>("all");
+  const [selectedDirection, setSelectedDirection] = useState<string>("all");
 
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
@@ -151,6 +158,57 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
           </div>
         </div>
 
+        {/* Filter Controls */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 sm:mb-6">
+          <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+            <SelectTrigger className="h-9 text-xs sm:text-sm">
+              <SelectValue placeholder="All Accounts" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Accounts</SelectItem>
+              <SelectItem value="main">Main Account</SelectItem>
+              <SelectItem value="demo">Demo Account</SelectItem>
+              <SelectItem value="prop">Prop Firm</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedSymbol} onValueChange={setSelectedSymbol}>
+            <SelectTrigger className="h-9 text-xs sm:text-sm">
+              <SelectValue placeholder="All Symbols" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Symbols</SelectItem>
+              <SelectItem value="forex">Forex</SelectItem>
+              <SelectItem value="indices">Indices</SelectItem>
+              <SelectItem value="crypto">Crypto</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedStrategy} onValueChange={setSelectedStrategy}>
+            <SelectTrigger className="h-9 text-xs sm:text-sm">
+              <SelectValue placeholder="All Strategies" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Strategies</SelectItem>
+              <SelectItem value="scalping">Scalping</SelectItem>
+              <SelectItem value="swing">Swing Trading</SelectItem>
+              <SelectItem value="breakout">Breakout</SelectItem>
+              <SelectItem value="reversal">Reversal</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedDirection} onValueChange={setSelectedDirection}>
+            <SelectTrigger className="h-9 text-xs sm:text-sm">
+              <SelectValue placeholder="All Directions" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Directions</SelectItem>
+              <SelectItem value="buy">Buy Only</SelectItem>
+              <SelectItem value="sell">Sell Only</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Days of Week Header */}
         <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
@@ -183,7 +241,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               <div
                 key={day.toISOString()}
                 className={`
-                  h-16 sm:h-20 border-2 transition-all duration-200 hover:border-primary/50
+                  h-16 sm:h-20 border-2 rounded-lg transition-all duration-200 hover:border-primary/50
                   ${isSelected ? 'border-primary bg-primary/10' : ''}
                   ${isCurrentDay ? 'ring-1 sm:ring-2 ring-blue-400' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
