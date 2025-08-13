@@ -14,6 +14,7 @@ import {
   ArrowDown
 } from "lucide-react";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { TradingCalendar } from "./TradingCalendar";
 import type { WidgetType } from "./WidgetManager";
 
 interface WidgetProps {
@@ -218,31 +219,17 @@ export function DailyPnLChartWidget({ onRemove }: WidgetProps) {
 
 export function TradingCalendarWidget({ onRemove }: WidgetProps) {
   return (
-    <Card className="relative group col-span-full">
+    <div className="relative group col-span-full">
       <Button 
         variant="ghost" 
         size="sm" 
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 z-10"
         onClick={onRemove}
       >
         <X className="h-3 w-3" />
       </Button>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-4 w-4" />
-          Trading Calendar
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-64 flex items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-lg">
-          <div className="text-center">
-            <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-            <p className="text-muted-foreground">Calendar view coming soon</p>
-            <p className="text-sm text-muted-foreground">Will show your trading activity by day</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      <TradingCalendar className="w-full" />
+    </div>
   );
 }
 
