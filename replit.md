@@ -43,6 +43,9 @@ The dashboard includes a fully customizable widget system allowing users to:
 - Persist widget preferences to database
 - Interactive hover-to-remove functionality
 - Real-time data updates
+- **Drag and drop functionality**: Users can move widgets by dragging anywhere on the widget
+- **Resize functionality**: Users can resize widgets by dragging the triangular corner handle
+- Clear visual indicators for both drag and resize operations in move mode
 
 ### Authentication and Authorization
 Authentication is handled through Replit's managed authentication service:

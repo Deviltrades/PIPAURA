@@ -259,13 +259,13 @@ export default function Dashboard() {
                 >
                   {isDraggable && (
                     <>
-                      <div className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground px-2 py-1 rounded text-xs flex items-center gap-1 pointer-events-none">
+                      <div className="absolute top-2 left-2 z-10 bg-primary text-primary-foreground px-2 py-1 rounded text-xs flex items-center gap-1 pointer-events-none">
                         <GripVertical className="h-3 w-3" />
-                        Drag
+                        Drag to move
                       </div>
-                      <div className="absolute bottom-6 left-2 z-10 bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs flex items-center gap-1 pointer-events-none">
+                      <div className="absolute bottom-2 right-8 z-10 bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs flex items-center gap-1 pointer-events-none">
                         <Maximize2 className="h-3 w-3" />
-                        Resize: Drag corner handle →
+                        Drag to resize ↗
                       </div>
                     </>
                   )}
