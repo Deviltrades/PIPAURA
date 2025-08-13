@@ -19,6 +19,7 @@ import Notes from "@/pages/notes";
 import Charts from "@/pages/charts";
 import Mentor from "@/pages/mentor";
 import Settings from "@/pages/settings";
+import CalendarSettings from "@/pages/CalendarSettings";
 import Layout from "@/components/Layout";
 import NotFound from "@/pages/not-found";
 
@@ -44,6 +45,7 @@ function Router() {
           <Route path="/mentor" component={Mentor} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />
+          <Route path="/calendar-settings" component={CalendarSettings} />
         </Layout>
       )}
       <Route component={NotFound} />

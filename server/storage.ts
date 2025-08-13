@@ -16,6 +16,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserWidgets(id: string, widgets: string[]): Promise<User | undefined>;
+  updateUserCalendarSettings(id: string, calendarSettings: any): Promise<User | undefined>;
   
   // Trade operations
   createTrade(trade: InsertTrade): Promise<Trade>;
@@ -64,6 +65,12 @@ export class MemStorage implements IStorage {
         profileImageUrl: userData.profileImageUrl || null,
         isAdmin: userData.isAdmin || false,
         dashboardWidgets: [],
+        calendarSettings: {
+          backgroundColor: "#1a1a1a",
+          borderColor: "#374151",
+          dayBackgroundColor: "#2d2d2d",
+          dayBorderColor: "#4b5563"
+        },
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -79,6 +86,19 @@ export class MemStorage implements IStorage {
     const updatedUser: User = {
       ...existingUser,
       dashboardWidgets: widgets,
+      updatedAt: new Date(),
+    };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserCalendarSettings(id: string, calendarSettings: any): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+
+    const updatedUser: User = {
+      ...existingUser,
+      calendarSettings: calendarSettings,
       updatedAt: new Date(),
     };
     this.users.set(id, updatedUser);

@@ -20,7 +20,9 @@ import {
 } from "date-fns";
 import { AddTradeModal } from "./AddTradeModal";
 import { EditTradeModal } from "./EditTradeModal";
-import type { Trade } from "@shared/schema";
+import type { Trade, User } from "@shared/schema";
+import { Settings } from "lucide-react";
+import { Link } from "wouter";
 
 interface TradingCalendarProps {
   className?: string;
@@ -37,6 +39,11 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
     queryKey: ["/api/trades"],
+  });
+
+  // Fetch user data for calendar settings
+  const { data: user } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
   });
 
   // Group trades by date
@@ -114,6 +121,16 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
             {format(viewMonth, "MMMM yyyy")}
           </h2>
           <div className="flex items-center gap-2">
+            <Link href="/calendar-settings">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 hover:bg-muted"
+                title="Calendar Settings"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="sm"
@@ -153,27 +170,42 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
             const isCurrentDay = isToday(day);
 
             
+            // Get calendar settings
+            const calendarSettings = user?.calendarSettings || {
+              backgroundColor: "#1a1a1a",
+              borderColor: "#374151",
+              dayBackgroundColor: "#2d2d2d",
+              dayBorderColor: "#4b5563"
+            };
+
             return (
               <div
                 key={day.toISOString()}
                 className={`
-                  h-16 rounded-lg border transition-all duration-200 hover:border-primary/50
-                  ${isSelected ? 'border-primary bg-primary/10' : 'border-transparent'}
-                  ${isCurrentDay ? 'bg-accent' : ''}
+                  h-20 border-2 transition-all duration-200 hover:border-primary/50
+                  ${isSelected ? 'border-primary bg-primary/10' : ''}
+                  ${isCurrentDay ? 'ring-2 ring-blue-400' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
-                  flex flex-col items-center justify-center relative group cursor-pointer
+                  relative group cursor-pointer flex flex-col
                 `}
+                style={{
+                  backgroundColor: isSelected ? undefined : calendarSettings.dayBackgroundColor,
+                  borderColor: isSelected ? undefined : calendarSettings.dayBorderColor
+                }}
                 onClick={() => setSelectedDate(day)}
               >
-                <span className={`text-sm ${
-                  isSelected ? 'font-semibold text-primary' : 
-                  isCurrentDay ? 'font-semibold' : 
-                  isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
-                }`}>
-                  {format(day, 'd')}
-                </span>
+                {/* Date - Top Left */}
+                <div className="absolute top-1 left-1">
+                  <span className={`text-sm font-medium ${
+                    isSelected ? 'text-primary' : 
+                    isCurrentDay ? 'text-white font-semibold' : 
+                    isCurrentMonth ? 'text-gray-200' : 'text-gray-500'
+                  }`}>
+                    {format(day, 'd')}
+                  </span>
+                </div>
                 
-                {/* Add Trade Button */}
+                {/* Add Trade Button - Top Right */}
                 {isCurrentMonth && (
                   <button
                     onClick={(e) => {
@@ -181,38 +213,32 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                       setAddTradeDate(day);
                       setIsAddTradeModalOpen(true);
                     }}
-                    className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-4 h-4 bg-primary hover:bg-primary/80 rounded-full flex items-center justify-center"
+                    className="absolute top-1 right-1 opacity-60 group-hover:opacity-100 transition-opacity duration-200 w-5 h-5 bg-primary hover:bg-primary/80 rounded-sm flex items-center justify-center"
                     title="Add trade for this date"
                   >
-                    <Plus className="h-2.5 w-2.5 text-primary-foreground" />
+                    <Plus className="h-3 w-3 text-primary-foreground" />
                   </button>
                 )}
                 
-                {/* Trade Indicators and P&L */}
-                {dayTrades.length > 0 && (
-                  <div className="absolute bottom-0.5 left-0.5 right-0.5 flex flex-col items-start gap-0.5">
-                    {/* P&L Amount */}
-                    {dailyPnL !== 0 && (
-                      <div className={`text-xs font-semibold px-1 py-0.5 rounded text-white leading-none ${
-                        dailyPnL > 0 ? "bg-green-600" : "bg-red-600"
-                      }`}>
-                        {dailyPnL > 0 ? '+' : ''}${dailyPnL.toFixed(0)}
-                      </div>
-                    )}
-                    
-                    {/* Trade Status Indicator */}
-                    <div className="flex gap-0.5 items-center">
-                      <div className={`w-1.5 h-1.5 rounded-full ${
-                        dailyPnL > 0 ? "bg-green-500" : 
-                        dailyPnL < 0 ? "bg-red-500" : 
-                        dayTrades.some(t => t.status === "OPEN") ? "bg-blue-500" : "bg-yellow-500"
-                      }`} />
-                      {dayTrades.length > 1 && (
-                        <span className="text-xs bg-gray-600 text-white rounded-full min-w-[10px] h-2.5 flex items-center justify-center leading-none text-[9px]">
-                          {dayTrades.length}
-                        </span>
-                      )}
+                {/* P&L Display - Center/Bottom */}
+                {dayTrades.length > 0 && dailyPnL !== 0 && (
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+                    <div className={`text-sm font-bold px-2 py-1 rounded ${
+                      dailyPnL > 0 ? "text-green-400" : "text-red-400"
+                    }`}>
+                      {dailyPnL > 0 ? '+' : ''}${dailyPnL.toFixed(0)}
                     </div>
+                  </div>
+                )}
+                
+                {/* Trade Count Indicator - Bottom Left */}
+                {dayTrades.length > 0 && (
+                  <div className="absolute bottom-1 left-1">
+                    <div className={`w-2 h-2 rounded-full ${
+                      dailyPnL > 0 ? "bg-green-500" : 
+                      dailyPnL < 0 ? "bg-red-500" : 
+                      dayTrades.some(t => t.status === "OPEN") ? "bg-blue-500" : "bg-yellow-500"
+                    }`} />
                   </div>
                 )}
               </div>

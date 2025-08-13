@@ -167,7 +167,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/trades/:id", isAuthenticated, async (req, res) => {
+  // Calendar settings routes
+  app.put('/api/calendar/settings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const calendarSettings = req.body;
+      await storage.updateUserCalendarSettings(userId, calendarSettings);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating calendar settings:", error);
+      res.status(500).json({ message: "Failed to update calendar settings" });
+    }
+  });
+
+  app.delete("/api/trades/:id", isAuthenticated, async (req, res) => {
     try {
       const trade = await storage.getTrade(req.params.id);
       if (!trade) {
@@ -180,8 +193,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      const updatedTrade = await storage.updateTrade(req.params.id, req.body);
-      res.json(updatedTrade);
+      await storage.deleteTrade(req.params.id);
+      res.json({ success: true });
     } catch (error) {
       console.error("Error updating trade:", error);
       res.status(500).json({ message: "Failed to update trade" });

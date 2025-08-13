@@ -33,6 +33,12 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   isAdmin: boolean("is_admin").default(false),
   dashboardWidgets: text("dashboard_widgets").array().default([]),
+  calendarSettings: jsonb("calendar_settings").default({
+    backgroundColor: "#1a1a1a",
+    borderColor: "#374151",
+    dayBackgroundColor: "#2d2d2d",
+    dayBorderColor: "#4b5563"
+  }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -106,6 +112,14 @@ export const insertSignalSchema = createInsertSchema(signals).omit({
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+
+// Calendar settings type
+export type CalendarSettings = {
+  backgroundColor: string;
+  borderColor: string;
+  dayBackgroundColor: string;
+  dayBorderColor: string;
+};
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
 export type Trade = typeof trades.$inferSelect;
 export type InsertSignal = z.infer<typeof insertSignalSchema>;
