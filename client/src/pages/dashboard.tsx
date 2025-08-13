@@ -38,12 +38,9 @@ export default function Dashboard() {
     mutationFn: async (widgets: WidgetType[]) => {
       console.log("Updating widgets:", widgets);
       try {
-        const response = await apiRequest("/api/dashboard/widgets", {
-          method: "PUT",
-          body: JSON.stringify({ widgets }),
-        });
+        const response = await apiRequest("PUT", "/api/dashboard/widgets", { widgets });
         console.log("Widget update response:", response);
-        return response;
+        return await response.json();
       } catch (error) {
         console.error("Widget update API error:", error);
         throw error;
