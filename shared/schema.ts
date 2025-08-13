@@ -33,7 +33,7 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   isAdmin: boolean("is_admin").default(false),
   dashboardWidgets: text("dashboard_widgets").array().default([]),
-  dashboardLayouts: jsonb("dashboard_layouts").default({}),
+  dashboardLayout: jsonb("dashboard_layout").default({}),
   calendarSettings: jsonb("calendar_settings").default({
     backgroundColor: "#1a1a1a",
     borderColor: "#374151",

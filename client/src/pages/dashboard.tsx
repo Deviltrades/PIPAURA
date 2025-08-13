@@ -68,7 +68,7 @@ export default function Dashboard() {
 
   // Initialize layouts - use saved layout from user if available
   const [layouts, setLayouts] = useState(() => {
-    const savedLayouts = (user as any)?.dashboardLayouts || {};
+    const savedLayouts = (user as any)?.dashboardLayout || {};
     const defaultLayout = savedLayouts["Default"];
     if (defaultLayout && defaultLayout.lg && defaultLayout.lg.length > 0) {
       return defaultLayout;
@@ -137,7 +137,7 @@ export default function Dashboard() {
         maxH: 8
       };
       
-      setLayouts(prev => ({
+      setLayouts((prev: any) => ({
         lg: [...prev.lg, newItem],
         md: [...prev.md, newItem],
         sm: [...prev.sm, newItem]
@@ -150,10 +150,10 @@ export default function Dashboard() {
     updateWidgets.mutate(newWidgets);
     
     // Remove from layouts
-    setLayouts(prev => ({
-      lg: prev.lg.filter(item => item.i !== widgetId),
-      md: prev.md.filter(item => item.i !== widgetId),
-      sm: prev.sm.filter(item => item.i !== widgetId)
+    setLayouts((prev: any) => ({
+      lg: prev.lg.filter((item: any) => item.i !== widgetId),
+      md: prev.md.filter((item: any) => item.i !== widgetId),
+      sm: prev.sm.filter((item: any) => item.i !== widgetId)
     }));
   };
 
@@ -305,7 +305,7 @@ export default function Dashboard() {
   };
 
   const handleLoadLayout = (layoutName: string) => {
-    const savedLayouts = (user as any)?.dashboardLayouts || {};
+    const savedLayouts = (user as any)?.dashboardLayout || {};
     const layoutData = savedLayouts[layoutName];
     if (layoutData) {
       setLayouts(layoutData);
@@ -325,7 +325,7 @@ export default function Dashboard() {
   };
 
   // Get available layout names
-  const availableLayouts = Object.keys((user as any)?.dashboardLayouts || { "Default": {} });
+  const availableLayouts = Object.keys((user as any)?.dashboardLayout || { "Default": {} });
 
   if (analyticsLoading || tradesLoading) {
     return (

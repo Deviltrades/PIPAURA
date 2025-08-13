@@ -102,7 +102,7 @@ export class MemStorage implements IStorage {
 
     const updatedUser: User = {
       ...existingUser,
-      dashboardLayouts: layouts,
+      dashboardLayout: layouts,
       updatedAt: new Date(),
     };
     this.users.set(id, updatedUser);
@@ -142,7 +142,11 @@ export class MemStorage implements IStorage {
   async getTradesByUser(userId: string): Promise<Trade[]> {
     return Array.from(this.trades.values())
       .filter(trade => trade.userId === userId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort((a, b) => {
+        const aTime = a.createdAt?.getTime() || 0;
+        const bTime = b.createdAt?.getTime() || 0;
+        return bTime - aTime;
+      });
   }
 
   async updateTrade(id: string, updates: Partial<InsertTrade>): Promise<Trade | undefined> {
@@ -177,7 +181,11 @@ export class MemStorage implements IStorage {
 
   async getSignals(): Promise<Signal[]> {
     return Array.from(this.signals.values())
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort((a, b) => {
+        const aTime = a.createdAt?.getTime() || 0;
+        const bTime = b.createdAt?.getTime() || 0;
+        return bTime - aTime;
+      });
   }
 
   async getSignal(id: string): Promise<Signal | undefined> {
@@ -240,7 +248,7 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .update(users)
       .set({ 
-        dashboardLayouts: layouts,
+        dashboardLayout: layouts,
         updatedAt: new Date(),
       })
       .where(eq(users.id, id))

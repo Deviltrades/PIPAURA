@@ -21,6 +21,7 @@ interface WidgetProps {
   onRemove: () => void;
   analytics?: any;
   trades?: any[];
+  isCustomizing?: boolean;
 }
 
 export function TotalPnLWidget({ onRemove, analytics }: WidgetProps) {
