@@ -18,12 +18,14 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 const getDefaultLayout = (widgetIds: string[]) => {
   return widgetIds.map((widgetId, index) => ({
     i: widgetId,
-    x: (index * 3) % 12,
-    y: Math.floor((index * 3) / 12) * 3,
-    w: 3,
-    h: 3,
-    minW: 2,
-    minH: 2
+    x: (index * 6) % 12,
+    y: Math.floor((index * 6) / 12) * 4,
+    w: 6,
+    h: 4,
+    minW: 3,
+    minH: 3,
+    maxW: 12,
+    maxH: 8
   }));
 };
 
@@ -61,7 +63,19 @@ export default function Dashboard() {
 
   const updateWidgets = useMutation({
     mutationFn: async (widgets: WidgetType[]) => {
-      return apiRequest("/api/dashboard/widgets", "PUT", { widgets });
+      const response = await fetch("/api/dashboard/widgets", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ widgets }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
@@ -94,12 +108,14 @@ export default function Dashboard() {
       // Add to layouts
       const newItem = {
         i: widgetId,
-        x: (activeWidgets.length * 3) % 12,
-        y: Math.floor((activeWidgets.length * 3) / 12) * 3,
-        w: 3,
-        h: 3,
-        minW: 2,
-        minH: 2
+        x: (activeWidgets.length * 6) % 12,
+        y: Math.floor((activeWidgets.length * 6) / 12) * 4,
+        w: 6,
+        h: 4,
+        minW: 3,
+        minH: 3,
+        maxW: 12,
+        maxH: 8
       };
       
       setLayouts(prev => ({
@@ -234,10 +250,16 @@ export default function Dashboard() {
                   }`}
                 >
                   {isDraggable && (
-                    <div className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground px-2 py-1 rounded text-xs flex items-center gap-1 pointer-events-none">
-                      <GripVertical className="h-3 w-3" />
-                      Drag
-                    </div>
+                    <>
+                      <div className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground px-2 py-1 rounded text-xs flex items-center gap-1 pointer-events-none">
+                        <GripVertical className="h-3 w-3" />
+                        Drag
+                      </div>
+                      <div className="absolute bottom-2 left-2 z-10 bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs flex items-center gap-1 pointer-events-none">
+                        <Maximize2 className="h-3 w-3" />
+                        Resize corner ↘
+                      </div>
+                    </>
                   )}
                   
                   <WidgetComponent

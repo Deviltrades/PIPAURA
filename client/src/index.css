@@ -163,30 +163,40 @@
 
   .react-grid-item > .react-resizable-handle {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     bottom: 0;
     right: 0;
     cursor: se-resize;
-    z-index: 15;
+    z-index: 20;
+    background: transparent;
+    border: none;
   }
 
   .react-grid-item > .react-resizable-handle::after {
-    content: '';
+    content: '↘';
     position: absolute;
-    right: 3px;
-    bottom: 3px;
-    width: 8px;
-    height: 8px;
-    border-right: 3px solid var(--primary);
-    border-bottom: 3px solid var(--primary);
-    opacity: 0.8;
+    right: 2px;
+    bottom: 2px;
+    width: 16px;
+    height: 16px;
+    color: var(--primary);
+    font-size: 16px;
+    font-weight: bold;
+    opacity: 0.6;
     background: var(--background);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   }
   
   .react-grid-item:hover > .react-resizable-handle::after {
     opacity: 1;
-    border-color: var(--destructive);
+    color: var(--destructive);
+    background: var(--card);
+    transform: scale(1.1);
   }
 
   .react-grid-item.react-draggable-dragging {
