@@ -149,39 +149,45 @@ export default function Dashboard() {
   const handleLayoutChange = (layout: any, allLayouts: any) => {
     console.log('Layout changed:', layout);
     
-    // Prevent layout from resetting to 1x1 - maintain minimum sizes
-    const sanitizedLayouts = {
-      lg: allLayouts.lg?.map((item: any) => ({
-        ...item,
-        w: Math.max(item.w, 3), // minimum width of 3
-        h: Math.max(item.h, 3), // minimum height of 3
-        minW: 3,
-        minH: 3,
-        maxW: 12,
-        maxH: 8
-      })) || [],
-      md: allLayouts.md?.map((item: any) => ({
-        ...item,
-        w: Math.max(item.w, 3),
-        h: Math.max(item.h, 3),
-        minW: 3,
-        minH: 3,
-        maxW: 10,
-        maxH: 8
-      })) || [],
-      sm: allLayouts.sm?.map((item: any) => ({
-        ...item,
-        w: Math.max(item.w, 3),
-        h: Math.max(item.h, 3),
-        minW: 3,
-        minH: 3,
-        maxW: 6,
-        maxH: 8
-      })) || []
-    };
-    
-    setLayouts(sanitizedLayouts);
-    setHasLayoutChanges(true);
+    // Only update if this is a real user interaction, not an automatic rearrangement
+    if (layout && layout.length > 0) {
+      // Prevent layout from resetting to 1x1 - maintain minimum sizes
+      const sanitizedLayouts = {
+        lg: allLayouts.lg?.map((item: any) => ({
+          ...item,
+          w: Math.max(item.w, 3), // minimum width of 3
+          h: Math.max(item.h, 3), // minimum height of 3
+          minW: 3,
+          minH: 3,
+          maxW: 12,
+          maxH: 8,
+          static: false // Ensure widgets are not locked
+        })) || [],
+        md: allLayouts.md?.map((item: any) => ({
+          ...item,
+          w: Math.max(item.w, 3),
+          h: Math.max(item.h, 3),
+          minW: 3,
+          minH: 3,
+          maxW: 10,
+          maxH: 8,
+          static: false
+        })) || [],
+        sm: allLayouts.sm?.map((item: any) => ({
+          ...item,
+          w: Math.max(item.w, 3),
+          h: Math.max(item.h, 3),
+          minW: 3,
+          minH: 3,
+          maxW: 6,
+          maxH: 8,
+          static: false
+        })) || []
+      };
+      
+      setLayouts(sanitizedLayouts);
+      setHasLayoutChanges(true);
+    }
   };
 
   const saveLayoutMutation = useMutation({
@@ -333,9 +339,10 @@ export default function Dashboard() {
             margin={[16, 16]}
             containerPadding={[0, 0]}
             useCSSTransforms={true}
-            preventCollision={false}
+            verticalCompact={false}
+            preventCollision={true}
             compactType={null}
-            allowOverlap={false}
+            allowOverlap={true}
             autoSize={true}
           >
             {activeWidgets.map((widgetId) => {
