@@ -35,6 +35,7 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [isDraggable, setIsDraggable] = useState(false);
+  const [hasLayoutChanges, setHasLayoutChanges] = useState(false);
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ["/api/analytics/stats"],
@@ -141,6 +142,54 @@ export default function Dashboard() {
   const handleLayoutChange = (layout: any, allLayouts: any) => {
     console.log('Layout changed:', layout);
     setLayouts(allLayouts);
+    setHasLayoutChanges(true);
+  };
+
+  const saveLayoutMutation = useMutation({
+    mutationFn: async (layoutData: any) => {
+      const response = await fetch("/api/dashboard/layout", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ layouts: layoutData }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      setHasLayoutChanges(false);
+      toast({
+        title: "Layout Saved",
+        description: "Your dashboard layout has been saved successfully.",
+      });
+    },
+    onError: (error: any) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to save layout.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSaveLayout = () => {
+    saveLayoutMutation.mutate(layouts);
   };
 
   if (analyticsLoading || tradesLoading) {
@@ -166,7 +215,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-foreground">Trading Dashboard</h1>
           <p className="text-muted-foreground">Monitor your performance with customizable widgets</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -176,6 +225,19 @@ export default function Dashboard() {
             <Move className="h-4 w-4 mr-2" />
             {isDraggable ? "Lock Layout" : "Move Widgets"}
           </Button>
+          
+          {hasLayoutChanges && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleSaveLayout}
+              disabled={saveLayoutMutation.isPending}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {saveLayoutMutation.isPending ? "Saving..." : "Save Layout"}
+            </Button>
+          )}
+          
           <Button
             variant="outline"
             size="sm"
@@ -263,9 +325,8 @@ export default function Dashboard() {
                         <GripVertical className="h-3 w-3" />
                         Drag to move
                       </div>
-                      <div className="absolute bottom-2 right-8 z-10 bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs flex items-center gap-1 pointer-events-none">
-                        <Maximize2 className="h-3 w-3" />
-                        Drag to resize ↗
+                      <div className="absolute bottom-1 right-6 z-10 bg-secondary text-secondary-foreground px-1 py-0.5 rounded text-xs flex items-center gap-1 pointer-events-none shadow-sm">
+                        ↗ Resize
                       </div>
                     </>
                   )}

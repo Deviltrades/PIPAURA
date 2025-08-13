@@ -354,6 +354,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Dashboard layout preferences
+  app.put("/api/dashboard/layout", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const { layouts } = req.body;
+
+      if (!layouts || typeof layouts !== 'object') {
+        return res.status(400).json({ message: "Layouts must be an object" });
+      }
+
+      const updatedUser = await storage.updateUserDashboardLayout(userId, layouts);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ message: "Layout saved successfully", layouts: updatedUser.dashboardLayout });
+    } catch (error) {
+      console.error("Error updating dashboard layout:", error);
+      res.status(500).json({ message: "Failed to update dashboard layout" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
