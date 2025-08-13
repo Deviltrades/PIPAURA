@@ -9,6 +9,7 @@ import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -37,10 +38,10 @@ const addTradeSchema = z.object({
   instrumentType: z.enum(["FOREX", "INDICES", "CRYPTO"]),
   instrument: z.string().min(1, "Instrument is required"),
   tradeType: z.enum(["BUY", "SELL"]),
-  positionSize: z.number().positive("Position size must be positive"),
-  entryPrice: z.number().positive("Entry price must be positive"),
-  stopLoss: z.number().positive("Stop loss must be positive"),
-  takeProfit: z.number().positive("Take profit must be positive"),
+  positionSize: z.string().min(1, "Position size is required"),
+  entryPrice: z.string().min(1, "Entry price is required"),
+  stopLoss: z.string().min(1, "Stop loss is required"),
+  takeProfit: z.string().min(1, "Take profit is required"),
   status: z.enum(["OPEN", "CLOSED"]),
   notes: z.string().optional(),
 });
@@ -77,10 +78,10 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
       instrumentType: "FOREX",
       instrument: "",
       tradeType: "BUY",
-      positionSize: 1.0,
-      entryPrice: 0,
-      stopLoss: 0,
-      takeProfit: 0,
+      positionSize: "1.0",
+      entryPrice: "",
+      stopLoss: "",
+      takeProfit: "",
       status: "OPEN",
       notes: "",
     },
@@ -90,8 +91,8 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
     mutationFn: async (data: AddTradeFormData) => {
       const tradeData = {
         ...data,
-        entryDate: selectedDate.toISOString(),
-        pnl: 0, // Will be calculated when trade is closed
+        entryDate: new Date(selectedDate), // Send as Date object
+        pnl: "0", // Will be calculated when trade is closed
       };
       
       const response = await apiRequest("POST", "/api/trades", tradeData);
@@ -138,7 +139,12 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] bg-background border">
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <DialogTitle className="text-xl font-semibold">Add New Trade</DialogTitle>
+          <div>
+            <DialogTitle className="text-xl font-semibold">Add New Trade</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Record a new trade for {selectedDate.toLocaleDateString()}
+            </DialogDescription>
+          </div>
           <Button
             variant="ghost"
             size="sm"
@@ -241,12 +247,10 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                     <FormLabel>Position Size</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        step="0.01"
+                        type="text"
                         placeholder="1.0"
                         className="bg-background border-input"
                         {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -263,12 +267,10 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                     <FormLabel>Entry Price</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        step="0.00001"
+                        type="text"
                         placeholder="1.08450"
                         className="bg-background border-input"
                         {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -285,12 +287,10 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                     <FormLabel>Stop Loss</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        step="0.00001"
+                        type="text"
                         placeholder="1.08200"
                         className="bg-background border-input"
                         {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -307,12 +307,10 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                     <FormLabel>Take Profit</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        step="0.00001"
+                        type="text"
                         placeholder="1.08700"
                         className="bg-background border-input"
                         {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
