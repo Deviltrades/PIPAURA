@@ -25,7 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Object storage routes for file uploads
   app.get("/objects/:objectPath(*)", isAuthenticated, async (req, res) => {
-    const userId = req.user?.claims?.sub;
+    const userId = (req.user as any)?.claims?.sub;
     const objectStorageService = new ObjectStorageService();
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(
@@ -60,7 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ error: "fileURL is required" });
     }
 
-    const userId = req.user?.claims?.sub;
+    const userId = (req.user as any)?.claims?.sub;
 
     try {
       const objectStorageService = new ObjectStorageService();
@@ -84,7 +84,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Trade routes
   app.post("/api/trades", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const validatedData = insertTradeSchema.parse({
         ...req.body,
         userId,
@@ -100,7 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/trades", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const trades = await storage.getTradesByUser(userId);
       res.json(trades);
     } catch (error) {
@@ -117,7 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if user owns this trade
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (trade.userId !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -137,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user owns this trade
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (trade.userId !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -158,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user owns this trade
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (trade.userId !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -178,7 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Analytics routes
   app.get("/api/analytics/stats", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const trades = await storage.getTradesByUser(userId);
       
       const closedTrades = trades.filter(trade => trade.status === "CLOSED" && trade.pnl !== null);
@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/analytics/daily-pnl", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const trades = await storage.getTradesByUser(userId);
       
       const dailyPnL: Record<string, number> = {};
@@ -230,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Signal routes
   app.post("/api/signals", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const user = await storage.getUser(userId);
       
       if (!user?.isAdmin) {
@@ -262,7 +262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/signals/:id", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const user = await storage.getUser(userId);
       
       if (!user?.isAdmin) {
@@ -284,7 +284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dashboard widget preferences
   app.put("/api/dashboard/widgets", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { widgets } = req.body;
 
       console.log("Widget update request:", { userId, widgets, bodyType: typeof widgets });
