@@ -1,0 +1,275 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(210, 25%, 7.8%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(210, 25%, 7.8%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(210, 25%, 7.8%);
+  --primary: hsl(214, 84%, 40%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(210, 25%, 7.8%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --muted: hsl(240, 1.9%, 90%);
+  --muted-foreground: hsl(210, 25%, 7.8%);
+  --accent: hsl(211.5, 51.3%, 92.7%);
+  --accent-foreground: hsl(214, 84%, 40%);
+  --destructive: hsl(356, 90.5%, 54.3%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(201, 30.4%, 90.9%);
+  --input: hsl(200, 23%, 97.4%);
+  --ring: hsl(214, 84%, 40%);
+  --chart-1: hsl(214, 84%, 40%);
+  --chart-2: hsl(159.7, 100%, 36.1%);
+  --chart-3: hsl(42, 92.8%, 56.3%);
+  --chart-4: hsl(147.1, 78.5%, 41.9%);
+  --chart-5: hsl(341.5, 75.2%, 50.9%);
+  --sidebar: hsl(0, 0%, 100%);
+  --sidebar-foreground: hsl(210, 25%, 7.8%);
+  --sidebar-primary: hsl(214, 84%, 40%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(211.5, 51.3%, 92.7%);
+  --sidebar-accent-foreground: hsl(214, 84%, 40%);
+  --sidebar-border: hsl(205, 25%, 90.6%);
+  --sidebar-ring: hsl(214, 84%, 40%);
+  --font-sans: 'Inter', 'Open Sans', sans-serif;
+  --font-serif: 'Georgia', serif;
+  --font-mono: 'Menlo', monospace;
+  --radius: 0.5rem;
+  --shadow-2xs: 0px 1px 2px 0px hsl(0, 0%, 0%, 0.05);
+  --shadow-xs: 0px 1px 2px 0px hsl(0, 0%, 0%, 0.05);
+  --shadow-sm: 0px 1px 2px 0px hsl(0, 0%, 0%, 0.05), 0px 1px 3px 0px hsl(0, 0%, 0%, 0.10);
+  --shadow: 0px 1px 3px 0px hsl(0, 0%, 0%, 0.10), 0px 1px 2px 0px hsl(0, 0%, 0%, 0.06);
+  --shadow-md: 0px 4px 6px -1px hsl(0, 0%, 0%, 0.10), 0px 2px 4px -1px hsl(0, 0%, 0%, 0.06);
+  --shadow-lg: 0px 10px 15px -3px hsl(0, 0%, 0%, 0.10), 0px 4px 6px -2px hsl(0, 0%, 0%, 0.05);
+  --shadow-xl: 0px 20px 25px -5px hsl(0, 0%, 0%, 0.10), 0px 10px 10px -5px hsl(0, 0%, 0%, 0.04);
+  --shadow-2xl: 0px 25px 50px -12px hsl(0, 0%, 0%, 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+  
+  /* Trading specific colors */
+  --profit: hsl(159, 84%, 35%);
+  --loss: hsl(0, 84%, 60%);
+  --warning: hsl(43, 96%, 56%);
+  --dark-bg: hsl(210, 18%, 9%);
+  --dark-card: hsl(217, 15%, 12%);
+  --dark-border: hsl(217, 15%, 22%);
+}
+
+.dark {
+  --background: hsl(210, 18%, 9%);
+  --foreground: hsl(200, 6.7%, 91.2%);
+  --card: hsl(217, 15%, 12%);
+  --card-foreground: hsl(0, 0%, 85.1%);
+  --popover: hsl(210, 18%, 9%);
+  --popover-foreground: hsl(200, 6.7%, 91.2%);
+  --primary: hsl(214, 84%, 50%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(195, 15.4%, 94.9%);
+  --secondary-foreground: hsl(210, 25%, 7.8%);
+  --muted: hsl(0, 0%, 9.4%);
+  --muted-foreground: hsl(210, 3.4%, 46.3%);
+  --accent: hsl(217, 70%, 10%);
+  --accent-foreground: hsl(214, 84%, 50%);
+  --destructive: hsl(356, 90.5%, 54.3%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(210, 5.3%, 14.9%);
+  --input: hsl(208, 27.7%, 18.4%);
+  --ring: hsl(214, 84%, 50%);
+  --chart-1: hsl(214, 84%, 50%);
+  --chart-2: hsl(159.7, 100%, 36.1%);
+  --chart-3: hsl(42, 92.8%, 56.3%);
+  --chart-4: hsl(147.1, 78.5%, 41.9%);
+  --chart-5: hsl(341.5, 75.2%, 50.9%);
+  --sidebar: hsl(217, 15%, 12%);
+  --sidebar-foreground: hsl(0, 0%, 85.1%);
+  --sidebar-primary: hsl(214, 84%, 50%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(217, 70%, 10%);
+  --sidebar-accent-foreground: hsl(214, 84%, 50%);
+  --sidebar-border: hsl(206, 15.8%, 26.1%);
+  --sidebar-ring: hsl(214, 84%, 50%);
+  --font-sans: 'Inter', 'Open Sans', sans-serif;
+  --font-serif: 'Georgia', serif;
+  --font-mono: 'Menlo', monospace;
+  --radius: 0.5rem;
+  --shadow-2xs: 0px 1px 2px 0px hsl(0, 0%, 0%, 0.05);
+  --shadow-xs: 0px 1px 2px 0px hsl(0, 0%, 0%, 0.05);
+  --shadow-sm: 0px 1px 2px 0px hsl(0, 0%, 0%, 0.05), 0px 1px 3px 0px hsl(0, 0%, 0%, 0.10);
+  --shadow: 0px 1px 3px 0px hsl(0, 0%, 0%, 0.10), 0px 1px 2px 0px hsl(0, 0%, 0%, 0.06);
+  --shadow-md: 0px 4px 6px -1px hsl(0, 0%, 0%, 0.10), 0px 2px 4px -1px hsl(0, 0%, 0%, 0.06);
+  --shadow-lg: 0px 10px 15px -3px hsl(0, 0%, 0%, 0.10), 0px 4px 6px -2px hsl(0, 0%, 0%, 0.05);
+  --shadow-xl: 0px 20px 25px -5px hsl(0, 0%, 0%, 0.10), 0px 10px 10px -5px hsl(0, 0%, 0%, 0.04);
+  --shadow-2xl: 0px 25px 50px -12px hsl(0, 0%, 0%, 0.25);
+
+  /* Trading specific colors for dark mode */
+  --profit: hsl(159, 84%, 45%);
+  --loss: hsl(0, 84%, 65%);
+  --warning: hsl(43, 96%, 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .text-profit {
+    color: var(--profit);
+  }
+
+  .text-loss {
+    color: var(--loss);
+  }
+
+  .text-warning {
+    color: var(--warning);
+  }
+
+  .bg-profit {
+    background-color: var(--profit);
+  }
+
+  .bg-loss {
+    background-color: var(--loss);
+  }
+
+  .bg-warning {
+    background-color: var(--warning);
+  }
+
+  .border-profit {
+    border-color: var(--profit);
+  }
+
+  .border-loss {
+    border-color: var(--loss);
+  }
+
+  .border-warning {
+    border-color: var(--warning);
+  }
+
+  .border-l-profit {
+    border-left-color: var(--profit);
+  }
+
+  .border-l-loss {
+    border-left-color: var(--loss);
+  }
+
+  .border-l-warning {
+    border-left-color: var(--warning);
+  }
+}
+
+/* Trading platform specific styles */
+@layer components {
+  .trading-card {
+    @apply bg-card border border-border rounded-lg shadow-sm;
+  }
+
+  .trading-stat {
+    @apply bg-card border border-border rounded-lg p-6 shadow-sm;
+  }
+
+  .pnl-positive {
+    @apply text-profit font-semibold;
+  }
+
+  .pnl-negative {
+    @apply text-loss font-semibold;
+  }
+
+  .trade-buy {
+    @apply text-profit bg-green-50 dark:bg-green-900/20;
+  }
+
+  .trade-sell {
+    @apply text-loss bg-red-50 dark:bg-red-900/20;
+  }
+
+  .sidebar-nav {
+    @apply bg-sidebar border-r border-sidebar-border;
+  }
+
+  .sidebar-nav-item {
+    @apply flex items-center px-6 py-3 text-sm font-medium transition-colors;
+  }
+
+  .sidebar-nav-item.active {
+    @apply bg-sidebar-accent text-sidebar-accent-foreground;
+  }
+
+  .sidebar-nav-item:not(.active) {
+    @apply text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground;
+  }
+}
+
+/* Uppy dashboard customization */
+.uppy-Dashboard {
+  @apply border-border;
+}
+
+.uppy-Dashboard-inner {
+  @apply bg-background;
+}
+
+.uppy-Dashboard-AddFiles-title {
+  @apply text-foreground;
+}
+
+.uppy-Dashboard-AddFiles-info {
+  @apply text-muted-foreground;
+}
+
+/* Professional trading colors for various states */
+.signal-active {
+  @apply border-l-4 border-l-blue-500 bg-blue-50 dark:bg-blue-950;
+}
+
+.signal-closed-win {
+  @apply border-l-4 border-l-green-500 bg-green-50 dark:bg-green-950;
+}
+
+.signal-closed-loss {
+  @apply border-l-4 border-l-red-500 bg-red-50 dark:bg-red-950;
+}
+
+.signal-cancelled {
+  @apply border-l-4 border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950;
+}
+
+/* Calendar specific styles */
+.calendar-day {
+  @apply h-20 border border-gray-200 dark:border-gray-700 p-1 text-xs transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800;
+}
+
+.calendar-day.profit {
+  @apply bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800;
+}
+
+.calendar-day.loss {
+  @apply bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800;
+}
+
+.calendar-day.selected {
+  @apply ring-2 ring-blue-500;
+}
+
+.calendar-day.today {
+  @apply font-semibold text-blue-600 dark:text-blue-400;
+}
