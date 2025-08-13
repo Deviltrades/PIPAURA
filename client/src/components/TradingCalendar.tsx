@@ -181,10 +181,11 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                   <div className="absolute bottom-1 flex gap-0.5">
                     <div className={`w-1.5 h-1.5 rounded-full ${
                       dailyPnL > 0 ? "bg-green-500" : 
-                      dailyPnL < 0 ? "bg-red-500" : "bg-yellow-500"
+                      dailyPnL < 0 ? "bg-red-500" : 
+                      dayTrades.some(t => t.status === "OPEN") ? "bg-blue-500" : "bg-yellow-500"
                     }`} />
                     {dayTrades.length > 1 && (
-                      <span className="text-xs bg-blue-500 text-white rounded-full w-3 h-3 flex items-center justify-center leading-none">
+                      <span className="text-xs bg-muted-foreground text-white rounded-full w-3 h-3 flex items-center justify-center leading-none">
                         {dayTrades.length}
                       </span>
                     )}
