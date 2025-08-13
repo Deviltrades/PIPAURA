@@ -164,12 +164,14 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
   };
 
   const onSubmit = (data: AddTradeFormData) => {
+    console.log("Form data:", data);
+    console.log("Form errors:", form.formState.errors);
     addTradeMutation.mutate(data);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] bg-background border">
+      <DialogContent className="sm:max-w-[600px] max-h-[85vh] bg-background border overflow-y-auto">
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
             <DialogTitle className="text-xl font-semibold">Add New Trade</DialogTitle>
