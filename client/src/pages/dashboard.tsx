@@ -61,10 +61,7 @@ export default function Dashboard() {
 
   const updateWidgets = useMutation({
     mutationFn: async (widgets: WidgetType[]) => {
-      return apiRequest("/api/dashboard/widgets", {
-        method: "PUT",
-        body: { widgets }
-      });
+      return apiRequest("/api/dashboard/widgets", "PUT", { widgets });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
@@ -213,9 +210,12 @@ export default function Dashboard() {
             rowHeight={80}
             isDraggable={isDraggable}
             isResizable={isDraggable}
+            resizeHandles={['se']}
             margin={[16, 16]}
             containerPadding={[0, 0]}
             useCSSTransforms={true}
+            preventCollision={false}
+            compactType="vertical"
           >
             {activeWidgets.map((widgetId) => {
               const WidgetComponent = widgetComponents[widgetId];
@@ -244,7 +244,7 @@ export default function Dashboard() {
                     isCustomizing={isCustomizing}
                     onRemove={() => handleRemoveWidget(widgetId)}
                     analytics={analytics}
-                    trades={trades || []}
+                    trades={trades as any[] || []}
                   />
                 </div>
               );

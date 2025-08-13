@@ -176,11 +176,17 @@
     position: absolute;
     right: 3px;
     bottom: 3px;
-    width: 5px;
-    height: 5px;
-    border-right: 2px solid var(--primary);
-    border-bottom: 2px solid var(--primary);
-    opacity: 0.6;
+    width: 8px;
+    height: 8px;
+    border-right: 3px solid var(--primary);
+    border-bottom: 3px solid var(--primary);
+    opacity: 0.8;
+    background: var(--background);
+  }
+  
+  .react-grid-item:hover > .react-resizable-handle::after {
+    opacity: 1;
+    border-color: var(--destructive);
   }
 
   .react-grid-item.react-draggable-dragging {
