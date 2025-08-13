@@ -21,7 +21,7 @@ import {
 import { AddTradeModal } from "./AddTradeModal";
 import { EditTradeModal } from "./EditTradeModal";
 import type { Trade, User } from "@shared/schema";
-import { Settings } from "lucide-react";
+import { Settings, Plus as PlusIcon } from "lucide-react";
 import { Link } from "wouter";
 
 interface TradingCalendarProps {
@@ -44,6 +44,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   // Fetch user data for calendar settings
   const { data: user } = useQuery<User>({
     queryKey: ["/api/auth/user"],
+    staleTime: 0, // Always refetch to get latest calendar settings
   });
 
   // Group trades by date
@@ -216,7 +217,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                     className="absolute top-1 right-1 opacity-60 group-hover:opacity-100 transition-opacity duration-200 w-5 h-5 bg-primary hover:bg-primary/80 rounded-sm flex items-center justify-center"
                     title="Add trade for this date"
                   >
-                    <Plus className="h-3 w-3 text-primary-foreground" />
+                    <PlusIcon className="h-3 w-3 text-primary-foreground" />
                   </button>
                 )}
                 
