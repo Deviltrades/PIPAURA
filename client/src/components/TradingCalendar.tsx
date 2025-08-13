@@ -1,11 +1,23 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from "lucide-react";
-import { format, startOfMonth, endOfMonth, isSameDay, parseISO } from "date-fns";
+import { 
+  format, 
+  startOfMonth, 
+  endOfMonth, 
+  startOfWeek, 
+  endOfWeek, 
+  eachDayOfInterval, 
+  isSameMonth, 
+  isSameDay, 
+  parseISO,
+  addMonths,
+  subMonths,
+  isToday
+} from "date-fns";
 import type { Trade } from "@shared/schema";
 
 interface TradingCalendarProps {
@@ -13,7 +25,7 @@ interface TradingCalendarProps {
 }
 
 export function TradingCalendar({ className }: TradingCalendarProps) {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [viewMonth, setViewMonth] = useState<Date>(new Date());
 
   // Fetch all trades
@@ -49,48 +61,21 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     }, 0);
   };
 
-  // Custom day renderer to show trade indicators
-  const renderDay = (day: Date) => {
-    const dateKey = format(day, "yyyy-MM-dd");
-    const dayTrades = tradesByDate[dateKey] || [];
-    const dailyPnL = getDailyPnL(day);
-    
-    if (dayTrades.length === 0) {
-      return (
-        <div className="w-full h-full flex items-center justify-center">
-          {format(day, "d")}
-        </div>
-      );
-    }
-
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center relative">
-        <span className="text-sm">{format(day, "d")}</span>
-        <div className="flex gap-1 mt-1">
-          {dayTrades.length > 0 && (
-            <div className={`w-2 h-2 rounded-full ${
-              dailyPnL > 0 ? "bg-green-500" : 
-              dailyPnL < 0 ? "bg-red-500" : "bg-gray-400"
-            }`} />
-          )}
-          {dayTrades.length > 1 && (
-            <span className="text-xs bg-blue-500 text-white rounded-full w-4 h-4 flex items-center justify-center">
-              {dayTrades.length}
-            </span>
-          )}
-        </div>
-      </div>
-    );
+  // Generate calendar days
+  const generateCalendarDays = () => {
+    const start = startOfWeek(startOfMonth(viewMonth));
+    const end = endOfWeek(endOfMonth(viewMonth));
+    return eachDayOfInterval({ start, end });
   };
 
+  const calendarDays = generateCalendarDays();
+
   const navigateMonth = (direction: "prev" | "next") => {
-    const newMonth = new Date(viewMonth);
     if (direction === "prev") {
-      newMonth.setMonth(newMonth.getMonth() - 1);
+      setViewMonth(subMonths(viewMonth, 1));
     } else {
-      newMonth.setMonth(newMonth.getMonth() + 1);
+      setViewMonth(addMonths(viewMonth, 1));
     }
-    setViewMonth(newMonth);
   };
 
   if (isLoading) {
@@ -98,8 +83,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
       <Card className={className}>
         <CardContent className="p-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
+            <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded w-1/3"></div>
+            <div className="h-80 bg-gray-200 dark:bg-gray-800 rounded"></div>
           </div>
         </CardContent>
       </Card>
@@ -107,85 +92,110 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   }
 
   return (
-    <Card className={className}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Trading Calendar</CardTitle>
+    <Card className={`${className} bg-background border`}>
+      <CardContent className="p-6">
+        {/* Header with Month Navigation */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-foreground">
+            {format(viewMonth, "MMMM yyyy")}
+          </h2>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => navigateMonth("prev")}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 hover:bg-muted"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm font-medium min-w-[120px] text-center">
-              {format(viewMonth, "MMMM yyyy")}
-            </span>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => navigateMonth("next")}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 hover:bg-muted"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="p-4 space-y-4">
-        <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-muted-foreground mb-2">
-          <div>Sun</div>
-          <div>Mon</div>
-          <div>Tue</div>
-          <div>Wed</div>
-          <div>Thu</div>
-          <div>Fri</div>
-          <div>Sat</div>
-        </div>
-        
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={(date) => date && setSelectedDate(date)}
-          month={viewMonth}
-          onMonthChange={setViewMonth}
-          className="w-full"
-          components={{
-            Day: ({ date }) => (
-              <button
-                className={`
-                  w-8 h-8 text-sm rounded-md hover:bg-accent hover:text-accent-foreground
-                  ${isSameDay(date, selectedDate) ? "bg-primary text-primary-foreground" : ""}
-                  ${isSameDay(date, new Date()) ? "bg-accent text-accent-foreground font-semibold" : ""}
-                `}
-                onClick={() => setSelectedDate(date)}
-              >
-                {renderDay(date)}
-              </button>
-            ),
-          }}
-        />
 
+        {/* Days of Week Header */}
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+            <div key={day} className="h-10 flex items-center justify-center">
+              <span className="text-sm font-medium text-muted-foreground">{day}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Calendar Grid */}
+        <div className="grid grid-cols-7 gap-1">
+          {calendarDays.map((day) => {
+            const dateKey = format(day, "yyyy-MM-dd");
+            const dayTrades = tradesByDate[dateKey] || [];
+            const dailyPnL = getDailyPnL(day);
+            const isCurrentMonth = isSameMonth(day, viewMonth);
+            const isSelected = selectedDate && isSameDay(day, selectedDate);
+            const isCurrentDay = isToday(day);
+            
+            return (
+              <button
+                key={day.toISOString()}
+                onClick={() => setSelectedDate(day)}
+                className={`
+                  h-12 rounded-lg border transition-all duration-200 hover:border-primary/50
+                  ${isSelected ? 'border-primary bg-primary/10' : 'border-transparent'}
+                  ${isCurrentDay ? 'bg-accent' : ''}
+                  ${!isCurrentMonth ? 'opacity-40' : ''}
+                  flex flex-col items-center justify-center relative group
+                `}
+              >
+                <span className={`text-sm ${
+                  isSelected ? 'font-semibold text-primary' : 
+                  isCurrentDay ? 'font-semibold' : 
+                  isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
+                }`}>
+                  {format(day, 'd')}
+                </span>
+                
+                {/* Trade Indicators */}
+                {dayTrades.length > 0 && (
+                  <div className="absolute bottom-1 flex gap-0.5">
+                    <div className={`w-1.5 h-1.5 rounded-full ${
+                      dailyPnL > 0 ? "bg-green-500" : 
+                      dailyPnL < 0 ? "bg-red-500" : "bg-yellow-500"
+                    }`} />
+                    {dayTrades.length > 1 && (
+                      <span className="text-xs bg-blue-500 text-white rounded-full w-3 h-3 flex items-center justify-center leading-none">
+                        {dayTrades.length}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Selected Date Details */}
         {selectedDate && (
-          <div className="border-t pt-4">
-            <h4 className="font-medium mb-3">
-              {format(selectedDate, "MMMM d, yyyy")}
+          <div className="mt-6 pt-6 border-t">
+            <h4 className="font-semibold text-lg mb-4">
+              {format(selectedDate, "EEEE, MMMM d, yyyy")}
             </h4>
             
             {selectedDateTrades.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {selectedDateTrades.map((trade) => (
                   <div
                     key={trade.id}
-                    className="flex items-center justify-between p-2 bg-muted rounded-lg"
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border"
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <Badge variant="outline" className="text-xs">
-                        {trade.instrument}
+                        {trade.instrumentType}
                       </Badge>
-                      <span className="text-sm font-medium">
+                      <span className="font-medium">
                         {trade.instrument}
                       </span>
                       <Badge 
@@ -196,13 +206,13 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm font-medium flex items-center gap-1 ${
+                      <span className={`font-semibold flex items-center gap-1 ${
                         (typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0)) >= 0 ? "text-green-600" : "text-red-600"
                       }`}>
                         {(typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0)) >= 0 ? (
-                          <TrendingUp className="h-3 w-3" />
+                          <TrendingUp className="h-4 w-4" />
                         ) : (
-                          <TrendingDown className="h-3 w-3" />
+                          <TrendingDown className="h-4 w-4" />
                         )}
                         ${(typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0)).toFixed(2)}
                       </span>
@@ -210,39 +220,24 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                   </div>
                 ))}
                 
-                <div className="mt-3 pt-2 border-t">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Daily P&L:</span>
-                    <span className={`font-semibold ${
-                      getDailyPnL(selectedDate) >= 0 ? "text-green-600" : "text-red-600"
-                    }`}>
-                      ${getDailyPnL(selectedDate).toFixed(2)}
-                    </span>
-                  </div>
+                <div className="mt-4 pt-3 border-t flex justify-between items-center">
+                  <span className="font-medium">Daily P&L:</span>
+                  <span className={`text-lg font-bold ${
+                    getDailyPnL(selectedDate) >= 0 ? "text-green-600" : "text-red-600"
+                  }`}>
+                    ${getDailyPnL(selectedDate).toFixed(2)}
+                  </span>
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                No trades recorded for this date.
-              </p>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">
+                  No trades recorded for this date.
+                </p>
+              </div>
             )}
           </div>
         )}
-        
-        <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t">
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <span>Profit</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-            <span>Loss</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-            <span>Breakeven</span>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );
