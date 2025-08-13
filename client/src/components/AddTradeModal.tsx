@@ -31,6 +31,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -44,6 +46,17 @@ const addTradeSchema = z.object({
   takeProfit: z.string().min(1, "Take profit is required"),
   status: z.enum(["OPEN", "CLOSED"]),
   notes: z.string().optional(),
+  hasPnL: z.boolean().optional(),
+  pnlType: z.enum(["profit", "loss"]).optional(),
+  pnlAmount: z.string().optional(),
+}).refine((data) => {
+  if (data.hasPnL && (!data.pnlAmount || !data.pnlType)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "P&L type and amount are required when profit/loss is enabled",
+  path: ["pnlAmount"]
 });
 
 type AddTradeFormData = z.infer<typeof addTradeSchema>;
@@ -84,6 +97,9 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
       takeProfit: "",
       status: "OPEN",
       notes: "",
+      hasPnL: false,
+      pnlType: "profit",
+      pnlAmount: "",
     },
   });
 
@@ -94,10 +110,21 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
         String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + 
         String(selectedDate.getDate()).padStart(2, '0');
       
+      // Calculate P&L based on user input
+      let calculatedPnL = "0";
+      if (data.hasPnL && data.pnlAmount) {
+        const amount = parseFloat(data.pnlAmount);
+        calculatedPnL = data.pnlType === "loss" ? (-amount).toString() : amount.toString();
+      }
+
       const tradeData = {
         ...data,
         entryDate: localDateString, // Send as local date string
-        pnl: "0", // Will be calculated when trade is closed
+        pnl: calculatedPnL,
+        // Remove the extra fields that aren't in the backend schema
+        hasPnL: undefined,
+        pnlType: undefined,
+        pnlAmount: undefined,
       };
       
       const response = await apiRequest("POST", "/api/trades", tradeData);
@@ -345,6 +372,76 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* Profit/Loss Section */}
+            <div className="border rounded-lg p-4 space-y-4 bg-muted/20">
+              <FormField
+                control={form.control}
+                name="hasPnL"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center space-x-2">
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="text-sm font-medium">
+                        Set Profit/Loss Amount
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {form.watch("hasPnL") && (
+                <div className="grid grid-cols-2 gap-4">
+                  {/* P&L Type */}
+                  <FormField
+                    control={form.control}
+                    name="pnlType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Type</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-background border-input">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="profit">Profit</SelectItem>
+                            <SelectItem value="loss">Loss</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* P&L Amount */}
+                  <FormField
+                    control={form.control}
+                    name="pnlAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Amount ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="600"
+                            className="bg-background border-input"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Trade Notes */}
