@@ -91,7 +91,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
     mutationFn: async (data: AddTradeFormData) => {
       const tradeData = {
         ...data,
-        entryDate: new Date(selectedDate), // Send as Date object
+        entryDate: selectedDate.toISOString(), // Send as ISO string
         pnl: "0", // Will be calculated when trade is closed
       };
       

@@ -85,10 +85,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/trades", isAuthenticated, async (req, res) => {
     try {
       const userId = (req.user as any)?.claims?.sub;
-      const validatedData = insertTradeSchema.parse({
+      
+      // Transform the data to ensure proper types
+      const tradeData = {
         ...req.body,
         userId,
-      });
+        entryDate: req.body.entryDate ? new Date(req.body.entryDate) : new Date(),
+        exitDate: req.body.exitDate ? new Date(req.body.exitDate) : undefined,
+      };
+      
+      const validatedData = insertTradeSchema.parse(tradeData);
 
       const trade = await storage.createTrade(validatedData);
       res.status(201).json(trade);
