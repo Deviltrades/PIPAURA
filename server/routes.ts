@@ -287,15 +287,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.claims?.sub;
       const { widgets } = req.body;
 
+      console.log("Widget update request:", { userId, widgets, bodyType: typeof widgets });
+
       if (!Array.isArray(widgets)) {
+        console.log("Widget validation failed - not an array:", widgets);
         return res.status(400).json({ message: "Widgets must be an array" });
       }
 
+      console.log("Calling storage.updateUserWidgets...");
       const updatedUser = await storage.updateUserWidgets(userId, widgets);
+      console.log("Storage result:", updatedUser ? "success" : "user not found");
+      
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
 
+      console.log("Sending response with widgets:", updatedUser.dashboardWidgets);
       res.json({ widgets: updatedUser.dashboardWidgets });
     } catch (error) {
       console.error("Error updating dashboard widgets:", error);

@@ -36,11 +36,18 @@ export default function Dashboard() {
   // Save widget preferences
   const updateWidgets = useMutation({
     mutationFn: async (widgets: WidgetType[]) => {
-      const response = await apiRequest("/api/dashboard/widgets", {
-        method: "PUT",
-        body: JSON.stringify({ widgets }),
-      });
-      return response;
+      console.log("Updating widgets:", widgets);
+      try {
+        const response = await apiRequest("/api/dashboard/widgets", {
+          method: "PUT",
+          body: JSON.stringify({ widgets }),
+        });
+        console.log("Widget update response:", response);
+        return response;
+      } catch (error) {
+        console.error("Widget update API error:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
