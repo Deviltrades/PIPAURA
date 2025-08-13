@@ -115,10 +115,10 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
   return (
     <Card className={`${className} bg-background border`}>
-      <CardContent className="p-6">
+      <CardContent className="p-3 sm:p-6">
         {/* Header with Month Navigation */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-foreground">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground">
             {format(viewMonth, "MMMM yyyy")}
           </h2>
           <div className="flex items-center gap-2">
@@ -152,16 +152,16 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
         </div>
 
         {/* Days of Week Header */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <div key={day} className="h-10 flex items-center justify-center">
-              <span className="text-sm font-medium text-muted-foreground">{day}</span>
+            <div key={day} className="h-8 sm:h-10 flex items-center justify-center">
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground">{day}</span>
             </div>
           ))}
         </div>
 
         {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
           {calendarDays.map((day) => {
             const dateKey = format(day, "yyyy-MM-dd");
             const dayTrades = tradesByDate[dateKey] || [];
@@ -183,9 +183,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               <div
                 key={day.toISOString()}
                 className={`
-                  h-20 border-2 transition-all duration-200 hover:border-primary/50
+                  h-16 sm:h-20 border-2 transition-all duration-200 hover:border-primary/50
                   ${isSelected ? 'border-primary bg-primary/10' : ''}
-                  ${isCurrentDay ? 'ring-2 ring-blue-400' : ''}
+                  ${isCurrentDay ? 'ring-1 sm:ring-2 ring-blue-400' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
                   relative group cursor-pointer flex flex-col
                 `}
@@ -196,8 +196,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 onClick={() => setSelectedDate(day)}
               >
                 {/* Date - Top Left */}
-                <div className="absolute top-1 left-1">
-                  <span className={`text-sm font-medium ${
+                <div className="absolute top-0.5 sm:top-1 left-0.5 sm:left-1">
+                  <span className={`text-xs sm:text-sm font-medium ${
                     isSelected ? 'text-primary' : 
                     isCurrentDay ? 'text-white font-semibold' : 
                     isCurrentMonth ? 'text-gray-200' : 'text-gray-500'
@@ -214,17 +214,17 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                       setAddTradeDate(day);
                       setIsAddTradeModalOpen(true);
                     }}
-                    className="absolute top-1 right-1 opacity-60 group-hover:opacity-100 transition-opacity duration-200 w-5 h-5 bg-primary hover:bg-primary/80 rounded-sm flex items-center justify-center z-10"
+                    className="absolute top-0.5 sm:top-1 right-0.5 sm:right-1 opacity-60 group-hover:opacity-100 transition-opacity duration-200 w-4 h-4 sm:w-5 sm:h-5 bg-primary hover:bg-primary/80 rounded-sm flex items-center justify-center z-10"
                     title="Add trade for this date"
                   >
-                    <PlusIcon className="h-3 w-3 text-primary-foreground" />
+                    <PlusIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary-foreground" />
                   </button>
                 )}
                 
                 {/* P&L Display - Center/Bottom */}
                 {dayTrades.length > 0 && dailyPnL !== 0 && (
-                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                    <div className={`text-sm font-bold px-2 py-1 rounded ${
+                  <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                    <div className={`text-xs sm:text-sm font-bold px-1 sm:px-2 py-0.5 sm:py-1 rounded ${
                       dailyPnL > 0 ? "text-green-400" : "text-red-400"
                     }`}>
                       {dailyPnL > 0 ? '+' : ''}${dailyPnL.toFixed(0)}
@@ -234,8 +234,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 
                 {/* Trade Count Indicator - Bottom Left */}
                 {dayTrades.length > 0 && (
-                  <div className="absolute bottom-1 left-1">
-                    <div className={`w-2 h-2 rounded-full ${
+                  <div className="absolute bottom-0.5 sm:bottom-1 left-0.5 sm:left-1">
+                    <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
                       dailyPnL > 0 ? "bg-green-500" : 
                       dailyPnL < 0 ? "bg-red-500" : 
                       dayTrades.some(t => t.status === "OPEN") ? "bg-blue-500" : "bg-yellow-500"
@@ -249,8 +249,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
         {/* Selected Date Details */}
         {selectedDate && (
-          <div className="mt-6 pt-6 border-t">
-            <h4 className="font-semibold text-lg mb-4">
+          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
+            <h4 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4">
               {format(selectedDate, "EEEE, MMMM d, yyyy")}
             </h4>
             
