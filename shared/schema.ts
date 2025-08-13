@@ -68,6 +68,7 @@ export const signals = pgTable("signals", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   instrument: varchar("instrument").notNull(),
+  instrumentType: instrumentTypeEnum("instrument_type").notNull(),
   tradeType: tradeTypeEnum("trade_type").notNull(),
   entryPrice: decimal("entry_price", { precision: 10, scale: 5 }).notNull(),
   stopLoss: decimal("stop_loss", { precision: 10, scale: 5 }),

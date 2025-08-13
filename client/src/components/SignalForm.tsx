@@ -1,254 +1,122 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { apiRequest } from "@/lib/queryClient";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
-
-const signalFormSchema = z.object({
-  instrument: z.string().min(1, "Instrument is required"),
-  tradeType: z.enum(["BUY", "SELL"]),
-  entryPrice: z.string().min(1, "Entry price is required"),
-  stopLoss: z.string().optional(),
-  takeProfit: z.string().optional(),
-  riskReward: z.string().optional(),
-  description: z.string().min(1, "Description is required"),
-  exitPrice: z.string().optional(),
-  status: z.string().optional(),
-  result: z.string().optional(),
-  resultPips: z.string().optional(),
-});
-
-type SignalFormData = z.infer<typeof signalFormSchema>;
+import { insertSignalSchema } from "@shared/schema";
+import type { InsertSignal } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import { z } from "zod";
 
 interface SignalFormProps {
-  signal?: any;
-  onSuccess: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-const forexPairs = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "NZD/USD", "EUR/GBP", "EUR/JPY"];
-const indices = ["S&P 500", "NASDAQ", "FTSE 100", "DAX", "Nikkei 225", "CAC 40"];
-const cryptos = ["BTC/USD", "ETH/USD", "ADA/USD", "XRP/USD", "SOL/USD", "DOT/USD"];
-
-export default function SignalForm({ signal, onSuccess }: SignalFormProps) {
+export default function SignalForm({ open, onOpenChange }: SignalFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const form = useForm<SignalFormData>({
-    resolver: zodResolver(signalFormSchema),
+  const form = useForm<InsertSignal>({
+    resolver: zodResolver(insertSignalSchema),
     defaultValues: {
-      instrument: signal?.instrument || "",
-      tradeType: signal?.tradeType || "BUY",
-      entryPrice: signal?.entryPrice?.toString() || "",
-      stopLoss: signal?.stopLoss?.toString() || "",
-      takeProfit: signal?.takeProfit?.toString() || "",
-      riskReward: signal?.riskReward || "",
-      description: signal?.description || "",
-      exitPrice: signal?.exitPrice?.toString() || "",
-      status: signal?.status || "ACTIVE",
-      result: signal?.result || "",
-      resultPips: signal?.resultPips?.toString() || "",
+      instrument: "",
+      instrumentType: "FOREX",
+      tradeType: "BUY",
+      entryPrice: "0",
+      stopLoss: "",
+      takeProfit: "",
+      riskReward: "",
+      description: "",
+      status: "ACTIVE",
     },
   });
 
-  const createSignalMutation = useMutation({
-    mutationFn: async (data: SignalFormData) => {
-      const payload = {
-        ...data,
-        entryPrice: parseFloat(data.entryPrice),
-        stopLoss: data.stopLoss ? parseFloat(data.stopLoss) : null,
-        takeProfit: data.takeProfit ? parseFloat(data.takeProfit) : null,
-        exitPrice: data.exitPrice ? parseFloat(data.exitPrice) : null,
-        resultPips: data.resultPips ? parseFloat(data.resultPips) : null,
-      };
-
-      if (signal?.id) {
-        return await apiRequest("PUT", `/api/signals/${signal.id}`, payload);
-      } else {
-        return await apiRequest("POST", "/api/signals", payload);
-      }
+  const createSignal = useMutation({
+    mutationFn: async (data: InsertSignal) => {
+      return apiRequest("/api/signals", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/signals"] });
       toast({
-        title: "Success",
-        description: signal?.id ? "Signal updated successfully" : "Signal posted successfully",
+        title: "Signal Created",
+        description: "Your trading signal has been published successfully.",
       });
-      onSuccess();
-      if (!signal?.id) {
-        form.reset();
-      }
+      form.reset();
+      onOpenChange(false);
     },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: signal?.id ? "Failed to update signal" : "Failed to post signal",
+        description: error.message || "Failed to create signal",
         variant: "destructive",
       });
     },
   });
 
-  const allInstruments = [...forexPairs, ...indices, ...cryptos];
-  const isEditing = !!signal?.id;
+  const onSubmit = (data: InsertSignal) => {
+    createSignal.mutate(data);
+  };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit((data) => createSignalMutation.mutate(data))} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="instrument"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Instrument</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select instrument" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <optgroup label="Forex">
-                      {forexPairs.map((pair) => (
-                        <SelectItem key={pair} value={pair}>
-                          {pair}
-                        </SelectItem>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Indices">
-                      {indices.map((index) => (
-                        <SelectItem key={index} value={index}>
-                          {index}
-                        </SelectItem>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Crypto">
-                      {cryptos.map((crypto) => (
-                        <SelectItem key={crypto} value={crypto}>
-                          {crypto}
-                        </SelectItem>
-                      ))}
-                    </optgroup>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>Create Trading Signal</DialogTitle>
+          <DialogDescription>
+            Share a new trading signal with the community. All fields marked with * are required.
+          </DialogDescription>
+        </DialogHeader>
 
-          <FormField
-            control={form.control}
-            name="tradeType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Trade Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="BUY">BUY</SelectItem>
-                    <SelectItem value="SELL">SELL</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="entryPrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Entry Price</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.00001" placeholder="1.08450" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="stopLoss"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Stop Loss</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.00001" placeholder="1.08200" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="takeProfit"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Take Profit</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.00001" placeholder="1.08700" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="riskReward"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Risk/Reward</FormLabel>
-                <FormControl>
-                  <Input placeholder="1:2" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {isEditing && (
-            <>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="status"
+                name="instrumentType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel>Asset Class *</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
+                          <SelectValue placeholder="Select asset type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="ACTIVE">ACTIVE</SelectItem>
-                        <SelectItem value="CLOSED">CLOSED</SelectItem>
-                        <SelectItem value="CANCELLED">CANCELLED</SelectItem>
+                        <SelectItem value="FOREX">Forex</SelectItem>
+                        <SelectItem value="INDICES">Indices</SelectItem>
+                        <SelectItem value="CRYPTO">Crypto</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -256,91 +124,139 @@ export default function SignalForm({ signal, onSuccess }: SignalFormProps) {
                 )}
               />
 
-              {form.watch("status") === "CLOSED" && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="exitPrice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Exit Price</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.00001" placeholder="1.08670" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              <FormField
+                control={form.control}
+                name="tradeType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Signal Type *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select signal type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="BUY">Buy</SelectItem>
+                        <SelectItem value="SELL">Sell</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-                  <FormField
-                    control={form.control}
-                    name="resultPips"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Result (Pips)</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.1" placeholder="45.0" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="result"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Result Description</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Target reached successfully" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
+            <FormField
+              control={form.control}
+              name="instrument"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Instrument *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., EURUSD, SPX500, BTCUSD" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Enter the trading instrument (e.g., EURUSD for forex, SPX500 for indices, BTCUSD for crypto)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
-            </>
-          )}
-        </div>
+            />
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description & Analysis</FormLabel>
-              <FormControl>
-                <Textarea
-                  rows={4}
-                  placeholder="Provide detailed analysis and reasoning for this signal..."
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="entryPrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Entry Price *</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.00001" placeholder="1.0850" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onSuccess}
-            disabled={createSignalMutation.isPending}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={createSignalMutation.isPending}>
-            {createSignalMutation.isPending
-              ? "Saving..."
-              : isEditing
-              ? "Update Signal"
-              : "Post Signal"}
-          </Button>
-        </div>
-      </form>
-    </Form>
+              <FormField
+                control={form.control}
+                name="stopLoss"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Stop Loss</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.00001" placeholder="1.0800" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="takeProfit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Take Profit</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.00001" placeholder="1.0950" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="riskReward"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Risk/Reward Ratio</FormLabel>
+                  <FormControl>
+                    <Input placeholder="1:2" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Optional: Risk to reward ratio (e.g., 1:2)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Analysis & Notes *</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Provide technical analysis, market context, and reasoning for this signal..."
+                      className="min-h-[100px]"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Share your market analysis and reasoning behind this signal
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createSignal.isPending}>
+                {createSignal.isPending ? "Creating..." : "Publish Signal"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }
