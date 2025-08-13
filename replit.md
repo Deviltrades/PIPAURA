@@ -31,10 +31,18 @@ The server-side follows a RESTful API design pattern using Express.js:
 ### Data Storage Solutions
 The application uses a PostgreSQL database with the following schema design:
 
-- **Users Table**: Stores user profiles with Replit Auth integration (email, names, profile images, admin flags)
+- **Users Table**: Stores user profiles with Replit Auth integration (email, names, profile images, admin flags, dashboard widget preferences)
 - **Trades Table**: Comprehensive trade logging with instrument types (FOREX/INDICES/CRYPTO), position details, P&L tracking
 - **Signals Table**: Signal sharing system with entry/exit prices, risk management parameters
 - **Sessions Table**: Secure session storage for authentication persistence
+
+### Dashboard Features
+The dashboard includes a fully customizable widget system allowing users to:
+- Add/remove widgets from 8 different types (P&L summary, win rate, active trades, charts, etc.)
+- Categorize widgets by performance, analytics, and trades
+- Persist widget preferences to database
+- Interactive hover-to-remove functionality
+- Real-time data updates
 
 ### Authentication and Authorization
 Authentication is handled through Replit's managed authentication service:
