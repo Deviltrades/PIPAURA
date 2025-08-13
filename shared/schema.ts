@@ -120,12 +120,7 @@ export interface CalendarSettings {
   dayBackgroundColor: string;
   dayBorderColor: string;
 }
-export type CalendarSettings = {
-  backgroundColor: string;
-  borderColor: string;
-  dayBackgroundColor: string;
-  dayBorderColor: string;
-};
+
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
 export type Trade = typeof trades.$inferSelect;
 export type InsertSignal = z.infer<typeof insertSignalSchema>;

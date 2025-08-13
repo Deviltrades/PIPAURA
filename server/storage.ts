@@ -10,6 +10,8 @@ import {
   type InsertSignal,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -185,4 +187,124 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  // User operations
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  async updateUserWidgets(id: string, widgets: string[]): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        dashboardWidgets: widgets,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async updateUserCalendarSettings(id: string, calendarSettings: any): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        calendarSettings: calendarSettings,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  // Trade operations
+  async createTrade(tradeData: InsertTrade): Promise<Trade> {
+    const [trade] = await db.insert(trades).values(tradeData).returning();
+    return trade;
+  }
+
+  async getTrade(id: string): Promise<Trade | undefined> {
+    const [trade] = await db.select().from(trades).where(eq(trades.id, id));
+    return trade;
+  }
+
+  async getTradesByUser(userId: string): Promise<Trade[]> {
+    const userTrades = await db
+      .select()
+      .from(trades)
+      .where(eq(trades.userId, userId))
+      .orderBy(trades.createdAt);
+    return userTrades.reverse(); // Show newest first
+  }
+
+  async updateTrade(id: string, updates: Partial<InsertTrade>): Promise<Trade | undefined> {
+    const [trade] = await db
+      .update(trades)
+      .set({ 
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(trades.id, id))
+      .returning();
+    return trade;
+  }
+
+  async deleteTrade(id: string): Promise<boolean> {
+    const result = await db.delete(trades).where(eq(trades.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Signal operations
+  async createSignal(signalData: InsertSignal): Promise<Signal> {
+    const [signal] = await db.insert(signals).values(signalData).returning();
+    return signal;
+  }
+
+  async getSignals(): Promise<Signal[]> {
+    const allSignals = await db
+      .select()
+      .from(signals)
+      .orderBy(signals.createdAt);
+    return allSignals.reverse(); // Show newest first
+  }
+
+  async getSignal(id: string): Promise<Signal | undefined> {
+    const [signal] = await db.select().from(signals).where(eq(signals.id, id));
+    return signal;
+  }
+
+  async updateSignal(id: string, updates: Partial<InsertSignal>): Promise<Signal | undefined> {
+    const [signal] = await db
+      .update(signals)
+      .set({ 
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(signals.id, id))
+      .returning();
+    return signal;
+  }
+
+  async deleteSignal(id: string): Promise<boolean> {
+    const result = await db.delete(signals).where(eq(signals.id, id));
+    return result.rowCount > 0;
+  }
+}
+
+export const storage = new DatabaseStorage();
