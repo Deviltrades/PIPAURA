@@ -37,6 +37,7 @@ export default function Dashboard() {
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [isDraggable, setIsDraggable] = useState(false);
   const [hasLayoutChanges, setHasLayoutChanges] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ["/api/analytics/stats"],
@@ -146,8 +147,13 @@ export default function Dashboard() {
     }));
   };
 
+  // Track if user is currently dragging to prevent automatic layout changes
+
   const handleLayoutChange = (layout: any, allLayouts: any) => {
     console.log('Layout changed:', layout);
+    
+    // Don't process automatic layout changes while dragging
+    if (isDragging) return;
     
     // Only update if this is a real user interaction, not an automatic rearrangement
     if (layout && layout.length > 0) {
@@ -188,6 +194,16 @@ export default function Dashboard() {
       setLayouts(sanitizedLayouts);
       setHasLayoutChanges(true);
     }
+  };
+
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
+  const handleDragStop = (layout: any, oldItem: any, newItem: any) => {
+    setIsDragging(false);
+    // Process the final layout change after drag is complete
+    handleLayoutChange(layout, layouts);
   };
 
   const saveLayoutMutation = useMutation({
@@ -328,8 +344,9 @@ export default function Dashboard() {
             className="layout"
             layouts={layouts}
             onLayoutChange={handleLayoutChange}
+            onDragStart={handleDragStart}
+            onDragStop={handleDragStop}
             onResizeStop={handleLayoutChange}
-            onDragStop={handleLayoutChange}
             breakpoints={{ lg: 1200, md: 768, sm: 0 }}
             cols={{ lg: 12, md: 10, sm: 6 }}
             rowHeight={60}
@@ -339,8 +356,7 @@ export default function Dashboard() {
             margin={[16, 16]}
             containerPadding={[0, 0]}
             useCSSTransforms={true}
-            verticalCompact={false}
-            preventCollision={true}
+            preventCollision={false}
             compactType={null}
             allowOverlap={true}
             autoSize={true}
