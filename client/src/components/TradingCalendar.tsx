@@ -18,16 +18,18 @@ import {
   subMonths,
   isToday
 } from "date-fns";
+import { AddTradeModal } from "./AddTradeModal";
 import type { Trade } from "@shared/schema";
 
 interface TradingCalendarProps {
   className?: string;
-  onAddTrade?: (date: Date) => void;
 }
 
-export function TradingCalendar({ className, onAddTrade }: TradingCalendarProps) {
+export function TradingCalendar({ className }: TradingCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [viewMonth, setViewMonth] = useState<Date>(new Date());
+  const [isAddTradeModalOpen, setIsAddTradeModalOpen] = useState(false);
+  const [addTradeDate, setAddTradeDate] = useState<Date | null>(null);
 
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
@@ -160,11 +162,12 @@ export function TradingCalendar({ className, onAddTrade }: TradingCalendarProps)
                 </span>
                 
                 {/* Add Trade Button */}
-                {onAddTrade && isCurrentMonth && (
+                {isCurrentMonth && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onAddTrade(day);
+                      setAddTradeDate(day);
+                      setIsAddTradeModalOpen(true);
                     }}
                     className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-4 h-4 bg-primary hover:bg-primary/80 rounded-full flex items-center justify-center"
                     title="Add trade for this date"
@@ -252,6 +255,18 @@ export function TradingCalendar({ className, onAddTrade }: TradingCalendarProps)
               </div>
             )}
           </div>
+        )}
+
+        {/* Add Trade Modal */}
+        {addTradeDate && (
+          <AddTradeModal
+            isOpen={isAddTradeModalOpen}
+            onClose={() => {
+              setIsAddTradeModalOpen(false);
+              setAddTradeDate(null);
+            }}
+            selectedDate={addTradeDate}
+          />
         )}
       </CardContent>
     </Card>
