@@ -221,9 +221,11 @@ export default function Dashboard() {
             className="layout"
             layouts={layouts}
             onLayoutChange={handleLayoutChange}
+            onResizeStop={handleLayoutChange}
+            onDragStop={handleLayoutChange}
             breakpoints={{ lg: 1200, md: 768, sm: 0 }}
             cols={{ lg: 12, md: 10, sm: 6 }}
-            rowHeight={80}
+            rowHeight={60}
             isDraggable={isDraggable}
             isResizable={isDraggable}
             resizeHandles={['se']}
@@ -232,6 +234,7 @@ export default function Dashboard() {
             useCSSTransforms={true}
             preventCollision={false}
             compactType="vertical"
+            allowOverlap={false}
           >
             {activeWidgets.map((widgetId) => {
               const WidgetComponent = widgetComponents[widgetId];
@@ -243,11 +246,16 @@ export default function Dashboard() {
               return (
                 <div 
                   key={widgetId}
-                  className={`h-full relative ${
+                  className={`h-full w-full relative ${
                     isDraggable 
-                      ? "border-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 transition-colors cursor-move" 
+                      ? "border-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 transition-colors" 
                       : ""
                   }`}
+                  style={{ 
+                    pointerEvents: isDraggable ? 'auto' : 'auto',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
                 >
                   {isDraggable && (
                     <>
@@ -255,9 +263,9 @@ export default function Dashboard() {
                         <GripVertical className="h-3 w-3" />
                         Drag
                       </div>
-                      <div className="absolute bottom-2 left-2 z-10 bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs flex items-center gap-1 pointer-events-none">
+                      <div className="absolute bottom-6 left-2 z-10 bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs flex items-center gap-1 pointer-events-none">
                         <Maximize2 className="h-3 w-3" />
-                        Resize corner ↘
+                        Resize: Drag corner handle →
                       </div>
                     </>
                   )}

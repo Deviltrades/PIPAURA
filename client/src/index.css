@@ -161,42 +161,40 @@
     transition-property: transform, width, height;
   }
 
+  /* React Grid Layout Resize Handle - Force Override */
   .react-grid-item > .react-resizable-handle {
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    bottom: 0;
-    right: 0;
-    cursor: se-resize;
-    z-index: 20;
-    background: transparent;
-    border: none;
+    position: absolute !important;
+    width: 20px !important;
+    height: 20px !important;
+    bottom: 0 !important;
+    right: 0 !important;
+    cursor: se-resize !important;
+    z-index: 999 !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    opacity: 1 !important;
+    display: block !important;
   }
 
   .react-grid-item > .react-resizable-handle::after {
-    content: '↘';
-    position: absolute;
-    right: 2px;
-    bottom: 2px;
-    width: 16px;
-    height: 16px;
-    color: var(--primary);
-    font-size: 16px;
-    font-weight: bold;
-    opacity: 0.6;
-    background: var(--background);
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    content: "" !important;
+    position: absolute !important;
+    right: 3px !important;
+    bottom: 3px !important;
+    width: 0 !important;
+    height: 0 !important;
+    border: 8px solid transparent !important;
+    border-right: 8px solid var(--primary) !important;
+    border-bottom: 8px solid var(--primary) !important;
+    opacity: 0.8 !important;
   }
   
   .react-grid-item:hover > .react-resizable-handle::after {
-    opacity: 1;
-    color: var(--destructive);
-    background: var(--card);
-    transform: scale(1.1);
+    opacity: 1 !important;
+    border-right-color: var(--destructive) !important;
+    border-bottom-color: var(--destructive) !important;
   }
 
   .react-grid-item.react-draggable-dragging {
