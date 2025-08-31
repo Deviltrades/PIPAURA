@@ -1,8 +1,8 @@
-# ForexTrader Pro
+# TJ - Traders Brotherhood
 
 ## Overview
 
-ForexTrader Pro is a comprehensive trading journal application designed for forex, indices, and cryptocurrency traders. The application provides advanced analytics, trade logging, signal sharing, and performance tracking capabilities. Built as a full-stack web application with a modern React frontend and Express.js backend, it integrates with Replit's authentication system and includes professional-grade file upload capabilities through Google Cloud Storage.
+TJ - Traders Brotherhood is a comprehensive trading journal application designed for forex, indices, and cryptocurrency traders. The application provides advanced analytics, trade logging, signal sharing, and performance tracking capabilities. Built as a full-stack web application with a modern React frontend and Express.js backend, it integrates with Replit's authentication system and includes professional-grade file upload capabilities through Google Cloud Storage.
 
 ## User Preferences
 

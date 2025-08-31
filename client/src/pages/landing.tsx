@@ -9,10 +9,10 @@ export default function Landing() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-foreground mb-6">
-            ForexTrader Pro
+            TJ - Traders Brotherhood
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Professional trading journal with advanced analytics, signal sharing, and comprehensive performance tracking
+            Unite with fellow traders through our comprehensive trading journal featuring advanced analytics, signal sharing, and community-driven performance tracking
           </p>
           <Button size="lg" asChild className="text-lg px-8 py-3">
             <a href="/api/login">
@@ -56,9 +56,9 @@ export default function Landing() {
           <Card className="border-border hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <Signal className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-3">Signal Channel</h3>
+              <h3 className="text-xl font-semibold mb-3">Brotherhood Signals</h3>
               <p className="text-muted-foreground">
-                Receive real-time trading signals with entry, exit, and risk management parameters
+                Share and receive trading signals from the brotherhood community with detailed entry, exit, and risk parameters
               </p>
             </CardContent>
           </Card>
@@ -87,14 +87,14 @@ export default function Landing() {
         {/* CTA Section */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            Ready to Transform Your Trading?
+            Ready to Join the Brotherhood?
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Join thousands of traders who are improving their performance with ForexTrader Pro
+            Connect with fellow traders and elevate your trading journey with TJ - Traders Brotherhood
           </p>
           <Button size="lg" asChild className="text-lg px-8 py-3">
             <a href="/api/login">
-              Start Trading Smarter
+              Join the Brotherhood
             </a>
           </Button>
         </div>
