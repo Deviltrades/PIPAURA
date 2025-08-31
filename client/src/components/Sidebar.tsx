@@ -24,7 +24,6 @@ import {
   Settings as SettingsIcon,
   LogOut
 } from "lucide-react";
-import logoImage from "@assets/btrustedprops_1756677973298.jpg";
 
 const navigation = [
   { name: "Signals", href: "/signals", icon: Radio },
@@ -56,7 +55,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     <>
       <div className="flex items-center justify-center h-16 bg-gradient-to-r from-purple-600 to-blue-600">
         <img 
-          src={logoImage}
+          src="/logo.jpg"
           alt="TJ - Traders Brotherhood Logo" 
           className="h-12 w-12 object-contain filter brightness-0 invert"
         />
@@ -120,7 +119,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <div className="fixed inset-y-0 left-0 w-64 bg-gradient-to-br from-purple-950 via-blue-950 to-purple-900 shadow-lg flex flex-col">
               <div className="flex items-center justify-between h-16 bg-gradient-to-r from-purple-600 to-blue-600 px-4">
                 <img 
-                  src={logoImage}
+                  src="/logo.jpg"
                   alt="TJ - Traders Brotherhood Logo" 
                   className="h-10 w-10 object-contain filter brightness-0 invert"
                 />
