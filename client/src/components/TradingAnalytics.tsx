@@ -60,11 +60,11 @@ export default function TradingAnalytics() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-blue-950 to-purple-900 p-4 text-white">
-      <div className="max-w-md mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-blue-950 to-purple-900 p-4 lg:p-8 text-white">
+      <div className="max-w-md lg:max-w-6xl mx-auto space-y-6">
         
         {/* Top Stats Grid */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-6">
           {/* Profit */}
           <div className="bg-purple-900/40 rounded-xl p-4 border border-purple-800/30">
             <div className="flex items-center gap-2 mb-2">
@@ -120,10 +120,13 @@ export default function TradingAnalytics() {
           </div>
         </div>
 
-        {/* Accumulative & Daily PnL Chart */}
-        <section>
-          <h2 className="text-lg font-medium mb-4 text-white">Accumulative & Daily PnL</h2>
-          <div className="bg-purple-900/30 rounded-xl p-4 border border-purple-800/20 h-48">
+        {/* Content Grid for Desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          
+          {/* Accumulative & Daily PnL Chart */}
+          <section className="lg:col-span-2">
+            <h2 className="text-lg font-medium mb-4 text-white">Accumulative & Daily PnL</h2>
+            <div className="bg-purple-900/30 rounded-xl p-4 lg:p-6 border border-purple-800/20 h-48 lg:h-64">
             <div className="relative h-full">
               {/* Y-axis labels */}
               <div className="absolute left-0 top-0 text-gray-400 text-xs">$4K</div>
@@ -160,9 +163,9 @@ export default function TradingAnalytics() {
           </div>
         </section>
 
-        {/* Last Five Trades */}
-        <section>
-          <h2 className="text-lg font-medium mb-4 text-white">Last five trades</h2>
+          {/* Last Five Trades */}
+          <section>
+            <h2 className="text-lg font-medium mb-4 text-white">Last five trades</h2>
           <div className="space-y-3">
             {lastFiveTrades.map((trade, index) => (
               <div key={trade.id} className="bg-purple-900/30 rounded-xl p-4 border border-purple-800/20">
@@ -191,8 +194,9 @@ export default function TradingAnalytics() {
                 </div>
               </div>
             ))}
-          </div>
-        </section>
+            </div>
+          </section>
+        </div>
 
         {/* Long vs Short Performance */}
         <section>
