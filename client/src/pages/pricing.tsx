@@ -110,8 +110,8 @@ export default function Pricing() {
             return (
               <Card 
                 key={plan.name} 
-                className={`relative border-border hover:shadow-lg transition-all duration-300 ${
-                  plan.popular ? 'border-primary shadow-lg scale-105' : ''
+                className={`relative border-border hover:shadow-lg transition-all duration-300 h-full flex flex-col ${
+                  plan.popular ? 'border-primary shadow-lg' : ''
                 }`}
               >
                 {plan.popular && (
@@ -136,8 +136,8 @@ export default function Pricing() {
                   <p className="text-muted-foreground mt-2">{plan.description}</p>
                 </CardHeader>
                 
-                <CardContent>
-                  <ul className="space-y-3 mb-6">
+                <CardContent className="flex-1 flex flex-col">
+                  <ul className="space-y-3 mb-6 flex-1">
                     {plan.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-start">
                         <Check className="h-4 w-4 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
@@ -148,8 +148,7 @@ export default function Pricing() {
                   
                   <Button 
                     size="lg" 
-                    className={`w-full ${plan.popular ? '' : 'variant-outline'}`}
-                    variant={plan.popular ? 'default' : 'outline'}
+                    className="w-full"
                     asChild
                   >
                     <a href="/api/login">
