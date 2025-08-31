@@ -219,6 +219,7 @@ export class MemStorage implements IStorage {
       status: signalData.status || null,
       closedAt: signalData.closedAt || null,
       riskReward: signalData.riskReward || null,
+      resultPips: signalData.resultPips || null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
