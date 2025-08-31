@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { ObjectUploader } from "./ObjectUploader";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +28,17 @@ const tradeFormSchema = z.object({
   pnl: z.string().optional(),
   status: z.enum(["OPEN", "CLOSED", "CANCELLED"]).default("OPEN"),
   notes: z.string().optional(),
+  hasPnL: z.boolean().optional(),
+  pnlType: z.enum(["profit", "loss"]).optional(),
+  pnlAmount: z.string().optional(),
+}).refine((data) => {
+  if (data.hasPnL && (!data.pnlAmount || !data.pnlType)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "P&L type and amount are required when profit/loss is enabled",
+  path: ["pnlAmount"]
 });
 
 type TradeFormData = z.infer<typeof tradeFormSchema>;
@@ -60,11 +72,23 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
       pnl: trade?.pnl || "",
       status: trade?.status || "OPEN",
       notes: trade?.notes || "",
+      hasPnL: false,
+      pnlType: undefined,
+      pnlAmount: "",
     },
   });
 
   const createTradeMutation = useMutation({
     mutationFn: async (data: TradeFormData) => {
+      // Calculate P&L based on toggle
+      let calculatedPnl = null;
+      if (data.hasPnL && data.pnlAmount && data.pnlType) {
+        const pnlValue = parseFloat(data.pnlAmount);
+        calculatedPnl = data.pnlType === "loss" ? -pnlValue : pnlValue;
+      } else if (data.pnl) {
+        calculatedPnl = parseFloat(data.pnl);
+      }
+
       const payload = {
         ...data,
         attachments,
@@ -73,7 +97,7 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
         stopLoss: data.stopLoss ? parseFloat(data.stopLoss) : null,
         takeProfit: data.takeProfit ? parseFloat(data.takeProfit) : null,
         exitPrice: data.exitPrice ? parseFloat(data.exitPrice) : null,
-        pnl: data.pnl ? parseFloat(data.pnl) : null,
+        pnl: calculatedPnl,
       };
 
       if (trade?.id) {
@@ -124,7 +148,7 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
   };
 
   const handleUploadComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-    if (result.successful.length > 0) {
+    if (result.successful && result.successful.length > 0) {
       const uploadURL = result.successful[0].uploadURL;
       
       try {
@@ -338,19 +362,91 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="pnl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>P&L ($)</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" placeholder="330.00" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  {/* Profit/Loss Toggle Section */}
+                  <div className="border rounded-lg p-4 space-y-4 bg-muted/20">
+                    <FormField
+                      control={form.control}
+                      name="hasPnL"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center space-x-2">
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                data-testid="toggle-pnl"
+                              />
+                            </FormControl>
+                            <FormLabel className="text-sm font-medium">
+                              Set Profit/Loss Amount
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    {form.watch("hasPnL") ? (
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* P&L Type */}
+                        <FormField
+                          control={form.control}
+                          name="pnlType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Type</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="bg-background border-input" data-testid="select-pnl-type">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="profit">Profit</SelectItem>
+                                  <SelectItem value="loss">Loss</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* P&L Amount */}
+                        <FormField
+                          control={form.control}
+                          name="pnlAmount"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Amount ($)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="text"
+                                  placeholder="600"
+                                  className="bg-background border-input"
+                                  data-testid="input-pnl-amount"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    ) : (
+                      <FormField
+                        control={form.control}
+                        name="pnl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>P&L ($)</FormLabel>
+                            <FormControl>
+                              <Input type="number" step="0.01" placeholder="330.00" data-testid="input-pnl-manual" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     )}
-                  />
+                  </div>
                 </>
               )}
             </div>
