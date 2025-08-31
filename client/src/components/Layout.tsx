@@ -1,8 +1,9 @@
 import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { Menu, Moon, Sun } from "lucide-react";
+import { Menu, Moon, Sun, Settings } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
+import { Link } from "wouter";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -28,12 +29,23 @@ export default function Layout({ children }: LayoutProps) {
         </Button>
       </div>
 
-      {/* Dark mode toggle */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Top right controls */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          asChild
+          data-testid="button-settings"
+        >
+          <Link href="/settings">
+            <Settings className="h-4 w-4" />
+          </Link>
+        </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          data-testid="button-theme-toggle"
         >
           {theme === "dark" ? (
             <Sun className="h-4 w-4" />
