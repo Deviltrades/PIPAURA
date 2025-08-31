@@ -7,26 +7,10 @@ import logoImage from "@assets/btrustedprops_1756670174065.jpg";
 export default function Pricing() {
   const plans = [
     {
-      name: "Starter",
-      price: "$9",
+      name: "Monthly",
+      price: "£15",
       period: "month",
-      description: "Perfect for individual traders getting started",
-      icon: TrendingUp,
-      features: [
-        "Trade journal with up to 100 trades/month",
-        "Basic analytics and performance tracking",
-        "Calendar view of trading activity",
-        "Mobile and desktop access",
-        "Email support"
-      ],
-      popular: false,
-      cta: "Start Free Trial"
-    },
-    {
-      name: "Professional",
-      price: "$19",
-      period: "month",
-      description: "For serious traders who want advanced features",
+      description: "Full access with the flexibility to cancel anytime",
       icon: Users,
       features: [
         "Unlimited trade logging",
@@ -35,29 +19,34 @@ export default function Pricing() {
         "Custom dashboard widgets",
         "File attachments and screenshots",
         "Risk management tools",
-        "Priority email support"
+        "Calendar view of trading activity",
+        "Mobile and desktop access",
+        "Priority email support",
+        "Cancel anytime"
       ],
       popular: true,
-      cta: "Join the Brotherhood"
+      cta: "Start Monthly Plan"
     },
     {
-      name: "Elite",
-      price: "$39",
-      period: "month",
-      description: "For professional traders and trading groups",
+      name: "Lifetime",
+      price: "£275",
+      period: "one-time",
+      description: "Pay once and access TJ - Traders Brotherhood forever",
       icon: Crown,
       features: [
-        "Everything in Professional",
-        "Team collaboration features",
-        "Advanced signal analytics",
-        "Custom reporting and exports",
+        "Everything in Monthly plan",
+        "Lifetime access - no recurring fees",
+        "All future feature updates included",
+        "Priority feature requests",
+        "Exclusive lifetime member benefits",
+        "Advanced export capabilities",
         "API access for integrations",
-        "White-label options",
-        "Dedicated account manager",
-        "Phone and chat support"
+        "Dedicated support channel",
+        "Early access to new features",
+        "One-time payment - save over £600"
       ],
       popular: false,
-      cta: "Go Elite"
+      cta: "Get Lifetime Access"
     }
   ];
 
@@ -94,10 +83,10 @@ export default function Pricing() {
           </p>
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Check className="h-4 w-4 text-green-500" />
-            <span>14-day free trial on all plans</span>
+            <span>14-day free trial</span>
             <span className="mx-2">•</span>
             <Check className="h-4 w-4 text-green-500" />
-            <span>Cancel anytime</span>
+            <span>No setup fees</span>
             <span className="mx-2">•</span>
             <Check className="h-4 w-4 text-green-500" />
             <span>Money-back guarantee</span>
@@ -105,7 +94,7 @@ export default function Pricing() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-4xl mx-auto">
           {plans.map((plan, index) => {
             const IconComponent = plan.icon;
             return (
@@ -130,7 +119,9 @@ export default function Pricing() {
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
                   <div className="mt-4">
                     <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground">/{plan.period}</span>
+                    <span className="text-muted-foreground">
+                      {plan.period === "one-time" ? " one-time" : `/${plan.period}`}
+                    </span>
                   </div>
                   <p className="text-muted-foreground mt-2">{plan.description}</p>
                 </CardHeader>
