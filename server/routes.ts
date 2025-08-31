@@ -357,7 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dashboard layout preferences
   app.put("/api/dashboard/layouts", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
+      const userId = (req.user as any)?.id;
       const { layoutName, layouts } = req.body;
 
       if (!layoutName || typeof layoutName !== 'string') {
@@ -370,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get current user layouts
       const user = await storage.getUser(userId);
-      const currentLayouts = (user?.dashboardLayouts as any) || {};
+      const currentLayouts = (user?.dashboardLayout as any) || {};
 
       // Add/update the named layout
       const updatedLayouts = {
@@ -386,7 +386,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         message: "Layout saved successfully", 
         layoutName,
-        layouts: updatedUser.dashboardLayouts 
+        layouts: updatedUser.dashboardLayout 
       });
     } catch (error) {
       console.error("Error updating dashboard layouts:", error);
@@ -396,7 +396,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/dashboard/layouts/:layoutName", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
+      const userId = (req.user as any)?.id;
       const { layoutName } = req.params;
 
       if (!layoutName) {
@@ -405,7 +405,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get current user layouts
       const user = await storage.getUser(userId);
-      const currentLayouts = (user?.dashboardLayouts as any) || {};
+      const currentLayouts = (user?.dashboardLayout as any) || {};
 
       // Remove the named layout
       const updatedLayouts = { ...currentLayouts };
@@ -418,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ 
         message: "Layout deleted successfully", 
-        layouts: updatedUser.dashboardLayouts 
+        layouts: updatedUser.dashboardLayout 
       });
     } catch (error) {
       console.error("Error deleting dashboard layout:", error);
