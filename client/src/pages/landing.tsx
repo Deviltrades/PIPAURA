@@ -10,7 +10,7 @@ export default function Landing() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-end">
           <Button variant="outline" asChild>
-            <a href="/api/login">
+            <a href="/auth">
               Login
             </a>
           </Button>
@@ -40,7 +40,7 @@ export default function Landing() {
               </a>
             </Button>
             <Button size="lg" variant="outline" asChild className="text-lg px-8 py-3">
-              <a href="/api/login">
+              <a href="/auth">
                 Login
               </a>
             </Button>

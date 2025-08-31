@@ -40,9 +40,9 @@ function Router() {
     <Switch>
       {!user ? (
         <>
-          <Route path="/" component={Landing} />
-          <Route path="/auth" component={AuthPage} />
           <Route path="/pricing" component={Pricing} />
+          <Route path="/auth" component={AuthPage} />
+          <Route path="/" component={() => <AuthPage />} />
         </>
       ) : (
         <Layout>
