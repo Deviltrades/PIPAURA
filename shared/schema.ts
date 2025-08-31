@@ -12,6 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { z } from "zod";
 
 // Session storage table for Replit Auth
 export const sessions = pgTable(
@@ -103,6 +104,13 @@ export const insertTradeSchema = createInsertSchema(trades).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  positionSize: z.union([z.string(), z.number()]).transform(val => String(val)),
+  entryPrice: z.union([z.string(), z.number()]).transform(val => String(val)),
+  exitPrice: z.union([z.string(), z.number()]).optional().transform(val => val ? String(val) : undefined),
+  stopLoss: z.union([z.string(), z.number()]).optional().transform(val => val ? String(val) : undefined),
+  takeProfit: z.union([z.string(), z.number()]).optional().transform(val => val ? String(val) : undefined),
+  pnl: z.union([z.string(), z.number()]).optional().transform(val => val ? String(val) : undefined),
 });
 
 export const insertSignalSchema = createInsertSchema(signals).omit({
