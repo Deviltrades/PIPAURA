@@ -6,7 +6,18 @@ import logoImage from "@assets/btrustedprops_1756670174065.jpg";
 export default function Landing() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
-      <div className="container mx-auto px-4 py-16">
+      {/* Header with Login Button */}
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex justify-end">
+          <Button variant="outline" asChild>
+            <a href="/api/login">
+              Login
+            </a>
+          </Button>
+        </div>
+      </div>
+      
+      <div className="container mx-auto px-4 py-12">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center mb-6">
@@ -22,11 +33,18 @@ export default function Landing() {
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Unite with fellow traders through our comprehensive trading journal featuring advanced analytics, signal sharing, and community-driven performance tracking
           </p>
-          <Button size="lg" asChild className="text-lg px-8 py-3">
-            <a href="/api/login">
-              Get Started
-            </a>
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button size="lg" asChild className="text-lg px-8 py-3">
+              <a href="/api/login">
+                Get Started
+              </a>
+            </Button>
+            <Button size="lg" variant="outline" asChild className="text-lg px-8 py-3">
+              <a href="/api/login">
+                Login
+              </a>
+            </Button>
+          </div>
         </div>
 
         {/* Features Grid */}
