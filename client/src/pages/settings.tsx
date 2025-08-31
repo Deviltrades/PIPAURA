@@ -18,21 +18,23 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
           <p className="text-muted-foreground">Manage your account and trading preferences</p>
         </div>
-        <Button 
-          variant="destructive" 
-          onClick={handleLogout}
-          disabled={logoutMutation.isPending}
-          data-testid="button-logout"
-          className="flex items-center gap-2"
-        >
-          <LogOut className="h-4 w-4" />
-          {logoutMutation.isPending ? "Logging out..." : "Logout"}
-        </Button>
+        <div className="flex justify-start sm:justify-end">
+          <Button 
+            variant="destructive" 
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
+            data-testid="button-logout"
+            className="flex items-center gap-2 mr-24 sm:mr-0"
+          >
+            <LogOut className="h-4 w-4" />
+            {logoutMutation.isPending ? "Logging out..." : "Logout"}
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-4">
