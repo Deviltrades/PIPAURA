@@ -93,13 +93,10 @@ export default function Pricing() {
           </p>
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Check className="h-4 w-4 text-green-500" />
-            <span>14-day free trial</span>
-            <span className="mx-2">•</span>
-            <Check className="h-4 w-4 text-green-500" />
             <span>No setup fees</span>
             <span className="mx-2">•</span>
             <Check className="h-4 w-4 text-green-500" />
-            <span>Money-back guarantee</span>
+            <span>Instant access</span>
           </div>
         </div>
 
@@ -168,9 +165,9 @@ export default function Pricing() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div className="text-left">
-              <h3 className="font-semibold text-foreground mb-2">What's included in the free trial?</h3>
+              <h3 className="font-semibold text-foreground mb-2">How quickly can I get started?</h3>
               <p className="text-muted-foreground text-sm">
-                You get full access to all features of your chosen plan for 14 days. No credit card required.
+                You get instant access to all features immediately after signup. Start logging trades right away.
               </p>
             </div>
             <div className="text-left">
@@ -186,9 +183,9 @@ export default function Pricing() {
               </p>
             </div>
             <div className="text-left">
-              <h3 className="font-semibold text-foreground mb-2">Do you offer refunds?</h3>
+              <h3 className="font-semibold text-foreground mb-2">What payment methods do you accept?</h3>
               <p className="text-muted-foreground text-sm">
-                Yes, we offer a 30-day money-back guarantee if you're not satisfied with our service.
+                We accept all major credit cards and PayPal for secure and convenient payment processing.
               </p>
             </div>
           </div>
@@ -200,12 +197,12 @@ export default function Pricing() {
             Ready to Join the Brotherhood?
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Start your free trial today and experience the power of community-driven trading analytics.
+            Get instant access today and experience the power of community-driven trading analytics.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button size="lg" asChild className="text-lg px-8 py-3">
               <a href="/api/login">
-                Start Free Trial
+                Get Started Now
               </a>
             </Button>
             <Button size="lg" variant="outline" asChild className="text-lg px-8 py-3">
