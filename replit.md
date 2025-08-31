@@ -7,6 +7,7 @@ TJ - Traders Brotherhood is a comprehensive trading journal application designed
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Authentication preference: Simple email/password login system (replaced Replit Auth on 2025-01-31).
 
 ## System Architecture
 
@@ -48,12 +49,13 @@ The dashboard includes a fully customizable widget system allowing users to:
 - Clear visual indicators for both drag and resize operations in move mode
 
 ### Authentication and Authorization
-Authentication is handled through Replit's managed authentication service:
+Authentication is handled through a custom email/password system:
 
-- **Provider**: OpenID Connect integration with Replit's authentication system
-- **Session Security**: HTTP-only cookies with HTTPS enforcement and configurable expiration
-- **Access Control**: Role-based permissions with admin flag support
-- **Security**: CSRF protection and secure session management
+- **Provider**: Custom authentication with email/password credentials and bcrypt password hashing
+- **Session Security**: HTTP-only cookies with HTTPS enforcement and PostgreSQL-backed session storage
+- **Access Control**: Role-based permissions with admin flag support  
+- **Security**: Password hashing with scrypt, CSRF protection and secure session management
+- **Auth Pages**: Custom sign-up and sign-in forms with form validation
 
 ### External Dependencies
 

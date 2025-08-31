@@ -15,7 +15,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar />
 
       {/* Mobile menu button */}
       <div className="lg:hidden fixed top-4 left-4 z-50">

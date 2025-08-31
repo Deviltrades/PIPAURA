@@ -56,7 +56,20 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const newUser: User = {
       id,
-      ...userData,
+      email: userData.email!,
+      password: userData.password!,
+      firstName: userData.firstName || null,
+      lastName: userData.lastName || null,
+      profileImageUrl: userData.profileImageUrl || null,
+      isAdmin: userData.isAdmin || false,
+      dashboardWidgets: userData.dashboardWidgets || [],
+      dashboardLayout: userData.dashboardLayout || {},
+      calendarSettings: userData.calendarSettings || {
+        backgroundColor: "#1a1a1a",
+        borderColor: "#374151",
+        dayBackgroundColor: "#2d2d2d",
+        dayBorderColor: "#4b5563"
+      },
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -80,14 +93,15 @@ export class MemStorage implements IStorage {
     } else {
       const newUser: User = {
         id: userData.id || randomUUID(),
-        email: userData.email || null,
+        email: userData.email!,
+        password: userData.password!,
         firstName: userData.firstName || null,
         lastName: userData.lastName || null,
         profileImageUrl: userData.profileImageUrl || null,
         isAdmin: userData.isAdmin || false,
-        dashboardWidgets: [],
-        dashboardLayout: {},
-        calendarSettings: {
+        dashboardWidgets: userData.dashboardWidgets || [],
+        dashboardLayout: userData.dashboardLayout || {},
+        calendarSettings: userData.calendarSettings || {
           backgroundColor: "#1a1a1a",
           borderColor: "#374151",
           dayBackgroundColor: "#2d2d2d",
@@ -146,6 +160,15 @@ export class MemStorage implements IStorage {
     const trade: Trade = {
       id,
       ...tradeData,
+      exitPrice: tradeData.exitPrice || null,
+      stopLoss: tradeData.stopLoss || null,
+      takeProfit: tradeData.takeProfit || null,
+      pnl: tradeData.pnl || null,
+      notes: tradeData.notes || null,
+      attachments: tradeData.attachments || null,
+      exitDate: tradeData.exitDate || null,
+      entryDate: tradeData.entryDate || new Date(),
+      status: tradeData.status || "OPEN",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -190,6 +213,12 @@ export class MemStorage implements IStorage {
     const signal: Signal = {
       id,
       ...signalData,
+      stopLoss: signalData.stopLoss || null,
+      takeProfit: signalData.takeProfit || null,
+      result: signalData.result || null,
+      status: signalData.status || null,
+      closedAt: signalData.closedAt || null,
+      riskReward: signalData.riskReward || null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -232,6 +261,19 @@ export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: Omit<UpsertUser, 'id'>): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .returning();
     return user;
   }
 
