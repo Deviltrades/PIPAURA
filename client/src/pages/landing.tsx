@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, BarChart3, Calendar, Signal, Shield, Zap } from "lucide-react";
+import logoImage from "@assets/btrustedprops_1756670174065.jpg";
 
 export default function Landing() {
   return (
@@ -8,9 +9,16 @@ export default function Landing() {
       <div className="container mx-auto px-4 py-16">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-foreground mb-6">
-            TJ - Traders Brotherhood
-          </h1>
+          <div className="flex items-center justify-center mb-6">
+            <img 
+              src={logoImage} 
+              alt="TJ - Traders Brotherhood Logo" 
+              className="w-20 h-20 mr-4 rounded-lg shadow-lg"
+            />
+            <h1 className="text-5xl font-bold text-foreground">
+              TJ - Traders Brotherhood
+            </h1>
+          </div>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Unite with fellow traders through our comprehensive trading journal featuring advanced analytics, signal sharing, and community-driven performance tracking
           </p>
