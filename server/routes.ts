@@ -60,7 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ error: "fileURL is required" });
     }
 
-    const userId = (req.user as any)?.claims?.sub;
+    const userId = (req.user as any)?.id;
 
     try {
       const objectStorageService = new ObjectStorageService();
@@ -84,7 +84,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Trade routes
   app.post("/api/trades", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
+      // For custom auth, user ID is directly on req.user.id
+      const userId = (req.user as any)?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
       
       // Transform the data to ensure proper types
       const tradeData = {
@@ -95,19 +100,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         exitDate: req.body.exitDate ? new Date(req.body.exitDate + 'T12:00:00') : undefined,
       };
       
+      console.log("Trade data before validation:", tradeData);
       const validatedData = insertTradeSchema.parse(tradeData);
 
       const trade = await storage.createTrade(validatedData);
       res.status(201).json(trade);
     } catch (error) {
       console.error("Error creating trade:", error);
+      if (error instanceof Error) {
+        console.error("Error details:", error.message);
+      }
       res.status(400).json({ message: "Invalid trade data" });
     }
   });
 
   app.get("/api/trades", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
+      const userId = (req.user as any)?.id;
       const trades = await storage.getTradesByUser(userId);
       res.json(trades);
     } catch (error) {
@@ -124,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if user owns this trade
-      const userId = (req.user as any)?.claims?.sub;
+      const userId = (req.user as any)?.id;
       if (trade.userId !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -138,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/trades/:id", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
+      const userId = (req.user as any)?.id;
       
       // Check if trade exists and user owns it
       const existingTrade = await storage.getTrade(req.params.id);
@@ -188,7 +197,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user owns this trade
-      const userId = (req.user as any)?.claims?.sub;
+      const userId = (req.user as any)?.id;
       if (trade.userId !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -209,7 +218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user owns this trade
-      const userId = (req.user as any)?.claims?.sub;
+      const userId = (req.user as any)?.id;
       if (trade.userId !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -229,7 +238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Analytics routes
   app.get("/api/analytics/stats", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
+      const userId = (req.user as any)?.id;
       const trades = await storage.getTradesByUser(userId);
       
       const closedTrades = trades.filter(trade => trade.status === "CLOSED" && trade.pnl !== null);
@@ -256,7 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/analytics/daily-pnl", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
+      const userId = (req.user as any)?.id;
       const trades = await storage.getTradesByUser(userId);
       
       const dailyPnL: Record<string, number> = {};
@@ -281,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Signal routes
   app.post("/api/signals", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
+      const userId = (req.user as any)?.id;
       const user = await storage.getUser(userId);
       
       if (!user?.isAdmin) {
@@ -313,7 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/signals/:id", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
+      const userId = (req.user as any)?.id;
       const user = await storage.getUser(userId);
       
       if (!user?.isAdmin) {
@@ -335,7 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dashboard widget preferences
   app.put("/api/dashboard/widgets", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
+      const userId = (req.user as any)?.id;
       const { widgets } = req.body;
 
       if (!Array.isArray(widgets)) {

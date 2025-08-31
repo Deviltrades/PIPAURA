@@ -107,10 +107,10 @@ export const insertTradeSchema = createInsertSchema(trades).omit({
 }).extend({
   positionSize: z.union([z.string(), z.number()]).transform(val => String(val)),
   entryPrice: z.union([z.string(), z.number()]).transform(val => String(val)),
-  exitPrice: z.union([z.string(), z.number()]).optional().transform(val => val ? String(val) : undefined),
-  stopLoss: z.union([z.string(), z.number()]).optional().transform(val => val ? String(val) : undefined),
-  takeProfit: z.union([z.string(), z.number()]).optional().transform(val => val ? String(val) : undefined),
-  pnl: z.union([z.string(), z.number()]).optional().transform(val => val ? String(val) : undefined),
+  exitPrice: z.union([z.string(), z.number(), z.null()]).optional().transform(val => val && val !== null ? String(val) : undefined),
+  stopLoss: z.union([z.string(), z.number(), z.null()]).optional().transform(val => val && val !== null ? String(val) : undefined),
+  takeProfit: z.union([z.string(), z.number(), z.null()]).optional().transform(val => val && val !== null ? String(val) : undefined),
+  pnl: z.union([z.string(), z.number(), z.null()]).optional().transform(val => val && val !== null ? String(val) : undefined),
 });
 
 export const insertSignalSchema = createInsertSchema(signals).omit({
