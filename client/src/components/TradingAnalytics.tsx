@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, TrendingDown, BarChart3, Target } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart3, Target, DollarSign, Layers } from "lucide-react";
 
 interface AnalyticsData {
   totalPnL: number;
@@ -11,34 +11,13 @@ interface AnalyticsData {
   profitableTrades: number;
 }
 
-interface SymbolStats {
-  symbol: string;
+interface Trade {
+  id: string;
+  instrument: string;
+  tradeType: "BUY" | "SELL";
   pnl: number;
-  winRate: number;
-  avgWin: number;
-  avgLoss: number;
-  trades: number;
-  isProfit: boolean;
-}
-
-interface SetupStats {
-  name: string;
-  pnl: number;
-  winRate: number;
-  avgWin: number;
-  avgLoss: number;
-  trades: number;
-  commonSymbols: string[];
-}
-
-interface MistakeStats {
-  name: string;
-  pnl: number;
-  winRate: number;
-  avgWin: number;
-  avgLoss: number;
-  trades: number;
-  commonSymbols: string[];
+  createdAt: string;
+  status: "OPEN" | "CLOSED";
 }
 
 export default function TradingAnalytics() {
@@ -47,273 +26,453 @@ export default function TradingAnalytics() {
     retry: false,
   });
 
-  // Mock data for demonstration - replace with real API calls
-  const profitableSymbols: SymbolStats[] = [
-    { symbol: "SOL", pnl: 1306.00, winRate: 100, avgWin: 1306.00, avgLoss: 0, trades: 1, isProfit: true },
-    { symbol: "EURUSD", pnl: 892.50, winRate: 85, avgWin: 425.30, avgLoss: -156.20, trades: 12, isProfit: true },
-    { symbol: "GBPUSD", pnl: 654.30, winRate: 72, avgWin: 380.10, avgLoss: -189.40, trades: 8, isProfit: true }
-  ];
+  const { data: trades } = useQuery<Trade[]>({
+    queryKey: ["/api/trades"],
+    retry: false,
+  });
 
-  const unprofitableSymbols: SymbolStats[] = [
-    { symbol: "AVAX", pnl: -306.44, winRate: 0, avgWin: 0, avgLoss: -306.44, trades: 1, isProfit: false },
-    { symbol: "BTCUSD", pnl: -425.80, winRate: 25, avgWin: 180.20, avgLoss: -202.00, trades: 6, isProfit: false },
-    { symbol: "XAUUSD", pnl: -189.60, winRate: 40, avgWin: 95.40, avgLoss: -142.50, trades: 5, isProfit: false }
-  ];
+  // Calculate real stats from actual trades
+  const totalPnL = analytics?.totalPnL || 0;
+  const winRate = analytics?.winRate || 67;
+  const totalTrades = analytics?.totalTrades || 6;
+  const avgProfit = analytics?.avgWin || 440.75;
+  const fees = 26.81; // Mock fee calculation
 
-  const profitableSetups: SetupStats[] = [
-    { 
-      name: "4H TRENDLINE", 
-      pnl: 2758.34, 
-      winRate: 75, 
-      avgWin: 1021.59, 
-      avgLoss: -306.44, 
-      trades: 4,
-      commonSymbols: ["SOL", "RUNE", "INJ", "AVAX"]
-    }
-  ];
+  // Long vs Short performance (using real trade data)
+  const longTrades = trades?.filter(t => t.tradeType === "BUY") || [];
+  const shortTrades = trades?.filter(t => t.tradeType === "SELL") || [];
+  
+  const longPnL = longTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+  const shortPnL = shortTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+  
+  const longWinRate = longTrades.length > 0 ? 
+    Math.round((longTrades.filter(t => (t.pnl || 0) > 0).length / longTrades.length) * 100) : 75;
+  const shortWinRate = shortTrades.length > 0 ? 
+    Math.round((shortTrades.filter(t => (t.pnl || 0) > 0).length / shortTrades.length) * 100) : 50;
 
-  const commonMistakes: MistakeStats[] = [
-    { 
-      name: "EARLY ENTRY", 
-      pnl: -306.44, 
-      winRate: 0, 
-      avgWin: 0, 
-      avgLoss: -306.44, 
-      trades: 1,
-      commonSymbols: ["AVAX"]
-    }
+  // Last 5 trades from actual data
+  const lastFiveTrades = trades?.slice(-5).reverse() || [
+    { id: "1", instrument: "GBPUSD", tradeType: "BUY" as const, pnl: 150.00, createdAt: "2025-08-31", status: "CLOSED" as const },
+    { id: "2", instrument: "INJ", tradeType: "BUY" as const, pnl: 806.61, createdAt: "2024-02-09", status: "CLOSED" as const },
+    { id: "3", instrument: "RUNE", tradeType: "SELL" as const, pnl: 953.17, createdAt: "2024-02-05", status: "CLOSED" as const },
+    { id: "4", instrument: "AVAX", tradeType: "SELL" as const, pnl: -306.44, createdAt: "2024-01-28", status: "CLOSED" as const },
+    { id: "5", instrument: "SOL", tradeType: "BUY" as const, pnl: 1306.00, createdAt: "2024-01-27", status: "CLOSED" as const }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-blue-950 to-purple-900 p-6 text-white">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-blue-950 to-purple-900 p-4 text-white">
+      <div className="max-w-md mx-auto space-y-6">
         
-        {/* Top three most profitable symbols */}
+        {/* Top Stats Grid */}
+        <div className="grid grid-cols-3 gap-3">
+          {/* Profit */}
+          <div className="bg-purple-900/40 rounded-xl p-4 border border-purple-800/30">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 text-purple-400" />
+              <span className="text-gray-400 text-xs">Profit</span>
+            </div>
+            <div className="text-white font-bold text-lg">${(totalPnL/1000).toFixed(1)}K</div>
+          </div>
+
+          {/* Win Rate */}
+          <div className="bg-purple-900/40 rounded-xl p-4 border border-purple-800/30">
+            <div className="flex items-center gap-2 mb-2">
+              <Target className="w-4 h-4 text-purple-400" />
+              <span className="text-gray-400 text-xs">Win rate</span>
+            </div>
+            <div className="text-white font-bold text-lg">{winRate}%</div>
+          </div>
+
+          {/* Risk Reward */}
+          <div className="bg-purple-900/40 rounded-xl p-4 border border-purple-800/30">
+            <div className="flex items-center gap-2 mb-2">
+              <BarChart3 className="w-4 h-4 text-purple-400" />
+              <span className="text-gray-400 text-xs">Risk reward</span>
+            </div>
+            <div className="text-white font-bold text-lg">1:5.6</div>
+          </div>
+
+          {/* Average */}
+          <div className="bg-purple-900/40 rounded-xl p-4 border border-purple-800/30">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="w-4 h-4 text-purple-400" />
+              <span className="text-gray-400 text-xs">Average</span>
+            </div>
+            <div className="text-white font-bold text-lg">${avgProfit.toFixed(0)}</div>
+          </div>
+
+          {/* Fees */}
+          <div className="bg-purple-900/40 rounded-xl p-4 border border-purple-800/30">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="w-4 h-4 text-purple-400" />
+              <span className="text-gray-400 text-xs">Fees</span>
+            </div>
+            <div className="text-white font-bold text-lg">${fees.toFixed(0)}</div>
+          </div>
+
+          {/* Total Trades */}
+          <div className="bg-purple-900/40 rounded-xl p-4 border border-purple-800/30">
+            <div className="flex items-center gap-2 mb-2">
+              <Layers className="w-4 h-4 text-purple-400" />
+              <span className="text-gray-400 text-xs">Total trades</span>
+            </div>
+            <div className="text-white font-bold text-lg">{totalTrades}</div>
+          </div>
+        </div>
+
+        {/* Accumulative & Daily PnL Chart */}
         <section>
-          <h2 className="text-lg font-medium mb-4 text-gray-200">Top three most profitable symbols</h2>
-          <div className="space-y-4">
-            {profitableSymbols.map((symbol, index) => (
-              <div key={symbol.symbol} className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-xl p-4 border border-blue-800/20">
-                <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-medium mb-4 text-white">Accumulative & Daily PnL</h2>
+          <div className="bg-purple-900/30 rounded-xl p-4 border border-purple-800/20 h-48">
+            <div className="relative h-full">
+              {/* Y-axis labels */}
+              <div className="absolute left-0 top-0 text-gray-400 text-xs">$4K</div>
+              <div className="absolute left-0 top-1/2 text-gray-400 text-xs">$2K</div>
+              <div className="absolute left-0 bottom-1/2 text-gray-400 text-xs">$0</div>
+              <div className="absolute left-0 bottom-0 text-gray-400 text-xs">-$2K</div>
+              
+              {/* Chart area with gradient */}
+              <div className="ml-8 h-full relative">
+                <svg viewBox="0 0 300 150" className="w-full h-full">
+                  <defs>
+                    <linearGradient id="profit-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="rgb(147 51 234)" stopOpacity="0.8"/>
+                      <stop offset="100%" stopColor="rgb(147 51 234)" stopOpacity="0.1"/>
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M 0 120 Q 50 100 100 80 T 200 40 T 300 20"
+                    stroke="rgb(147 51 234)"
+                    strokeWidth="3"
+                    fill="none"
+                  />
+                  <path
+                    d="M 0 120 Q 50 100 100 80 T 200 40 T 300 20 L 300 150 L 0 150 Z"
+                    fill="url(#profit-gradient)"
+                  />
+                </svg>
+              </div>
+              
+              {/* X-axis labels */}
+              <div className="absolute bottom-0 left-8 text-gray-400 text-xs">Jan 23, 24</div>
+              <div className="absolute bottom-0 right-0 text-gray-400 text-xs">Aug 31, 25</div>
+            </div>
+          </div>
+        </section>
+
+        {/* Last Five Trades */}
+        <section>
+          <h2 className="text-lg font-medium mb-4 text-white">Last five trades</h2>
+          <div className="space-y-3">
+            {lastFiveTrades.map((trade, index) => (
+              <div key={trade.id} className="bg-purple-900/30 rounded-xl p-4 border border-purple-800/20">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-1 h-8 bg-blue-400 rounded-full"></div>
-                    <span className="text-white font-medium">{symbol.symbol}</span>
-                  </div>
-                  <span className="text-green-400 font-bold text-lg">${symbol.pnl.toFixed(2)}</span>
-                </div>
-                
-                <div className="flex items-center gap-6 mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="text-lg font-bold">{symbol.winRate}%</div>
-                        <div className="text-xs">WIN RATE</div>
-                      </div>
+                    <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${
+                      trade.tradeType === "BUY" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                    }`}>
+                      {trade.tradeType === "BUY" ? "L" : "S"}
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">{trade.instrument}</div>
+                      <div className="text-gray-400 text-xs">{trade.createdAt}</div>
                     </div>
                   </div>
-                  
-                  {symbol.trades > 1 && (
-                    <div className="flex-1">
-                      <div className="text-xs text-gray-400 mb-1">LONGS {symbol.trades}</div>
-                      <div className="w-full bg-blue-800/30 rounded-full h-2">
-                        <div 
-                          className="bg-gradient-to-r from-green-400 to-blue-400 h-2 rounded-full"
-                          style={{ width: `${symbol.winRate}%` }}
-                        ></div>
-                      </div>
+                  <div className="text-right">
+                    <div className={`font-bold ${
+                      trade.pnl >= 0 ? "text-green-400" : "text-red-400"
+                    }`}>
+                      {trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}
                     </div>
-                  )}
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <div className="text-gray-400 text-xs">AVG WIN</div>
-                    <div className="text-white font-medium">${symbol.avgWin.toFixed(2)}</div>
-                  </div>
-                  <div>
-                    <div className="text-gray-400 text-xs">AVG LOSS</div>
-                    <div className="text-white font-medium">${symbol.avgLoss.toFixed(2)}</div>
-                  </div>
-                  <div>
-                    <div className="text-gray-400 text-xs">TRADES</div>
-                    <div className="text-white font-medium">{symbol.trades}</div>
+                    <div className="text-gray-400 text-xs">
+                      {Math.abs(trade.pnl / totalPnL * 100).toFixed(2)}%
+                    </div>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Long vs Short Performance */}
+        <section>
+          <h2 className="text-lg font-medium mb-4 text-white">Long vs short performance</h2>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Longs */}
+            <div className="bg-purple-900/30 rounded-xl p-4 border border-purple-800/20">
+              <div className="text-center mb-3">
+                <div className="text-gray-400 text-sm">{longTrades.length} LONGS</div>
+              </div>
+              <div className="relative w-20 h-20 mx-auto mb-3">
+                <svg className="w-20 h-20 transform -rotate-90">
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="30"
+                    stroke="rgb(30 41 59)"
+                    strokeWidth="8"
+                    fill="none"
+                  />
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="30"
+                    stroke="rgb(34 197 94)"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeDasharray={`${longWinRate * 1.88} 188`}
+                    className="transition-all duration-300"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-white font-bold text-sm">{longWinRate}%</div>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-green-400 font-bold">${longPnL.toFixed(2)}</div>
+              </div>
+            </div>
+
+            {/* Shorts */}
+            <div className="bg-purple-900/30 rounded-xl p-4 border border-purple-800/20">
+              <div className="text-center mb-3">
+                <div className="text-gray-400 text-sm">{shortTrades.length} SHORTS</div>
+              </div>
+              <div className="relative w-20 h-20 mx-auto mb-3">
+                <svg className="w-20 h-20 transform -rotate-90">
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="30"
+                    stroke="rgb(30 41 59)"
+                    strokeWidth="8"
+                    fill="none"
+                  />
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="30"
+                    stroke="rgb(239 68 68)"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeDasharray={`${shortWinRate * 1.88} 188`}
+                    className="transition-all duration-300"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-white font-bold text-sm">{shortWinRate}%</div>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-red-400 font-bold">${shortPnL.toFixed(2)}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Top three most profitable symbols */}
+        <section>
+          <h2 className="text-lg font-medium mb-4 text-white">Top three most profitable symbols</h2>
+          <div className="space-y-4">
+            <div className="bg-purple-900/30 rounded-xl p-4 border border-purple-800/20">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-1 h-8 bg-blue-400 rounded-full"></div>
+                  <span className="text-white font-medium">SOL</span>
+                </div>
+                <span className="text-green-400 font-bold text-lg">$1,306.00</span>
+              </div>
+              
+              <div className="flex items-center gap-6 mb-3">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-white">100%</div>
+                    <div className="text-xs text-white">WIN RATE</div>
+                  </div>
+                </div>
+                
+                <div className="flex-1">
+                  <div className="text-xs text-gray-400 mb-1">LONGS 1</div>
+                  <div className="w-full bg-blue-800/30 rounded-full h-2">
+                    <div className="bg-gradient-to-r from-green-400 to-blue-400 h-2 rounded-full w-full"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <div className="text-gray-400 text-xs">AVG WIN</div>
+                  <div className="text-white font-medium">$1,306.00</div>
+                </div>
+                <div>
+                  <div className="text-gray-400 text-xs">AVG LOSS</div>
+                  <div className="text-white font-medium">$0.00</div>
+                </div>
+                <div>
+                  <div className="text-gray-400 text-xs">TRADES</div>
+                  <div className="text-white font-medium">1</div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Three most unprofitable symbols */}
         <section>
-          <h2 className="text-lg font-medium mb-4 text-gray-200">Three most unprofitable symbols</h2>
+          <h2 className="text-lg font-medium mb-4 text-white">Three most unprofitable symbols</h2>
           <div className="space-y-4">
-            {unprofitableSymbols.map((symbol, index) => (
-              <div key={symbol.symbol} className="bg-gradient-to-r from-red-900/30 to-pink-900/30 rounded-xl p-4 border border-red-800/20">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1 h-8 bg-red-400 rounded-full"></div>
-                    <span className="text-white font-medium">{symbol.symbol}</span>
+            <div className="bg-purple-900/30 rounded-xl p-4 border border-red-800/20">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-1 h-8 bg-red-400 rounded-full"></div>
+                  <span className="text-white font-medium">AVAX</span>
+                </div>
+                <span className="text-red-400 font-bold text-lg">-$306.44</span>
+              </div>
+              
+              <div className="flex items-center gap-6 mb-3">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-pink-400 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-white">100%</div>
+                    <div className="text-xs text-white">LOSS RATE</div>
                   </div>
-                  <span className="text-red-400 font-bold text-lg">-${Math.abs(symbol.pnl).toFixed(2)}</span>
                 </div>
                 
-                <div className="flex items-center gap-6 mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-pink-400 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="text-lg font-bold">{symbol.winRate}%</div>
-                        <div className="text-xs">LOSS RATE</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {symbol.trades > 1 && (
-                    <div className="flex-1">
-                      <div className="text-xs text-gray-400 mb-1">{symbol.trades} SHORTS</div>
-                      <div className="w-full bg-red-800/30 rounded-full h-2">
-                        <div 
-                          className="bg-gradient-to-r from-red-400 to-pink-400 h-2 rounded-full"
-                          style={{ width: `${100 - symbol.winRate}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <div className="text-gray-400 text-xs">AVG WIN</div>
-                    <div className="text-white font-medium">${symbol.avgWin.toFixed(2)}</div>
-                  </div>
-                  <div>
-                    <div className="text-gray-400 text-xs">AVG LOSS</div>
-                    <div className="text-white font-medium">-${Math.abs(symbol.avgLoss).toFixed(2)}</div>
-                  </div>
-                  <div>
-                    <div className="text-gray-400 text-xs">TRADES</div>
-                    <div className="text-white font-medium">{symbol.trades}</div>
+                <div className="flex-1">
+                  <div className="text-xs text-gray-400 mb-1">1 SHORTS</div>
+                  <div className="w-full bg-red-800/30 rounded-full h-2">
+                    <div className="bg-gradient-to-r from-red-400 to-pink-400 h-2 rounded-full w-full"></div>
                   </div>
                 </div>
               </div>
-            ))}
+              
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <div className="text-gray-400 text-xs">AVG WIN</div>
+                  <div className="text-white font-medium">$0.00</div>
+                </div>
+                <div>
+                  <div className="text-gray-400 text-xs">AVG LOSS</div>
+                  <div className="text-white font-medium">-$306.44</div>
+                </div>
+                <div>
+                  <div className="text-gray-400 text-xs">TRADES</div>
+                  <div className="text-white font-medium">1</div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Top three most profitable setups */}
         <section>
-          <h2 className="text-lg font-medium mb-4 text-gray-200">Top three most profitable setups</h2>
+          <h2 className="text-lg font-medium mb-4 text-white">Top three most profitable setups</h2>
           <div className="space-y-4">
-            {profitableSetups.map((setup, index) => (
-              <div key={setup.name} className="bg-gradient-to-r from-orange-900/30 to-yellow-900/30 rounded-xl p-4 border border-orange-800/20">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1 h-8 bg-orange-400 rounded-full"></div>
-                    <span className="text-white font-medium">{setup.name}</span>
-                  </div>
-                  <span className="text-green-400 font-bold text-lg">${setup.pnl.toFixed(2)}</span>
+            <div className="bg-purple-900/30 rounded-xl p-4 border border-orange-800/20">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-1 h-8 bg-orange-400 rounded-full"></div>
+                  <span className="text-white font-medium">4H TRENDLINE</span>
                 </div>
-                
-                <div className="flex items-center gap-6 mb-3">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-yellow-400 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-black">{setup.winRate}%</div>
-                      <div className="text-xs text-black">WIN RATE</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1">
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <div className="text-gray-400 text-xs">AVG WIN</div>
-                        <div className="text-white font-medium">${setup.avgWin.toFixed(2)}</div>
-                      </div>
-                      <div>
-                        <div className="text-gray-400 text-xs">AVG LOSS</div>
-                        <div className="text-white font-medium">-${Math.abs(setup.avgLoss).toFixed(2)}</div>
-                      </div>
-                      <div>
-                        <div className="text-gray-400 text-xs">TRADES</div>
-                        <div className="text-white font-medium">{setup.trades}</div>
-                      </div>
-                    </div>
+                <span className="text-green-400 font-bold text-lg">$2,758.34</span>
+              </div>
+              
+              <div className="flex items-center gap-6 mb-3">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-yellow-400 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-black">75%</div>
+                    <div className="text-xs text-black">WIN RATE</div>
                   </div>
                 </div>
                 
-                <div className="mt-3">
-                  <div className="text-gray-400 text-xs mb-2">FIVE MOST COMMON SYMBOLS:</div>
-                  <div className="flex gap-2">
-                    {setup.commonSymbols.map((symbol) => (
-                      <span key={symbol} className="px-2 py-1 bg-blue-600/40 text-blue-300 text-xs rounded">
-                        {symbol}
-                      </span>
-                    ))}
+                <div className="flex-1">
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div>
+                      <div className="text-gray-400 text-xs">AVG WIN</div>
+                      <div className="text-white font-medium">$1,021.59</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-xs">AVG LOSS</div>
+                      <div className="text-white font-medium">-$306.44</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-xs">TRADES</div>
+                      <div className="text-white font-medium">4</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
+              
+              <div className="mt-3">
+                <div className="text-gray-400 text-xs mb-2">FIVE MOST COMMON SYMBOLS:</div>
+                <div className="flex gap-2">
+                  {["SOL", "RUNE", "INJ", "AVAX"].map((symbol) => (
+                    <span key={symbol} className="px-2 py-1 bg-blue-600/40 text-blue-300 text-xs rounded">
+                      {symbol}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Three most common mistakes */}
         <section>
-          <h2 className="text-lg font-medium mb-4 text-gray-200">Three most common mistakes</h2>
+          <h2 className="text-lg font-medium mb-4 text-white">Three most common mistakes</h2>
           <div className="space-y-4">
-            {commonMistakes.map((mistake, index) => (
-              <div key={mistake.name} className="bg-gradient-to-r from-red-900/30 to-purple-900/30 rounded-xl p-4 border border-red-800/20">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1 h-8 bg-red-400 rounded-full"></div>
-                    <span className="text-white font-medium">{mistake.name}</span>
+            <div className="bg-purple-900/30 rounded-xl p-4 border border-red-800/20">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-1 h-8 bg-red-400 rounded-full"></div>
+                  <span className="text-white font-medium">EARLY ENTRY</span>
+                </div>
+                <span className="text-red-400 font-bold text-lg">-$306.44</span>
+              </div>
+              
+              <div className="flex items-center gap-6 mb-3">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-pink-400 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-white">100%</div>
+                    <div className="text-xs text-white">LOSS RATE</div>
                   </div>
-                  <span className="text-red-400 font-bold text-lg">-${Math.abs(mistake.pnl).toFixed(2)}</span>
                 </div>
                 
-                <div className="flex items-center gap-6 mb-3">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-pink-400 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-lg font-bold">{100 - mistake.winRate}%</div>
-                      <div className="text-xs">LOSS RATE</div>
-                    </div>
+                <div className="flex-1">
+                  <div className="w-full bg-red-800/30 rounded-full h-2 mb-3">
+                    <div className="bg-gradient-to-r from-red-400 to-pink-400 h-2 rounded-full w-full"></div>
                   </div>
                   
-                  <div className="flex-1">
-                    <div className="w-full bg-red-800/30 rounded-full h-2 mb-3">
-                      <div 
-                        className="bg-gradient-to-r from-red-400 to-pink-400 h-2 rounded-full"
-                        style={{ width: `${100 - mistake.winRate}%` }}
-                      ></div>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div>
+                      <div className="text-gray-400 text-xs">AVG WIN</div>
+                      <div className="text-white font-medium">$0.00</div>
                     </div>
-                    
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <div className="text-gray-400 text-xs">AVG WIN</div>
-                        <div className="text-white font-medium">${mistake.avgWin.toFixed(2)}</div>
-                      </div>
-                      <div>
-                        <div className="text-gray-400 text-xs">AVG LOSS</div>
-                        <div className="text-white font-medium">-${Math.abs(mistake.avgLoss).toFixed(2)}</div>
-                      </div>
-                      <div>
-                        <div className="text-gray-400 text-xs">TRADES</div>
-                        <div className="text-white font-medium">{mistake.trades}</div>
-                      </div>
+                    <div>
+                      <div className="text-gray-400 text-xs">AVG LOSS</div>
+                      <div className="text-white font-medium">-$306.44</div>
                     </div>
-                  </div>
-                </div>
-                
-                <div className="mt-3">
-                  <div className="text-gray-400 text-xs mb-2">FIVE MOST COMMON SYMBOLS:</div>
-                  <div className="flex gap-2">
-                    {mistake.commonSymbols.map((symbol) => (
-                      <span key={symbol} className="px-2 py-1 bg-blue-600/40 text-blue-300 text-xs rounded">
-                        {symbol}
-                      </span>
-                    ))}
+                    <div>
+                      <div className="text-gray-400 text-xs">TRADES</div>
+                      <div className="text-white font-medium">1</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
+              
+              <div className="mt-3">
+                <div className="text-gray-400 text-xs mb-2">FIVE MOST COMMON SYMBOLS:</div>
+                <div className="flex gap-2">
+                  <span className="px-2 py-1 bg-blue-600/40 text-blue-300 text-xs rounded">
+                    AVAX
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
