@@ -48,6 +48,7 @@ The dashboard includes a fully customizable widget system allowing users to:
 - **Drag and drop functionality**: Users can move widgets by dragging anywhere on the widget
 - **Resize functionality**: Users can resize widgets by dragging the triangular corner handle
 - Clear visual indicators for both drag and resize operations in move mode
+- **Template System**: Save and switch between up to 5 custom dashboard layouts with persistent storage (2025-01-31)
 
 ### Authentication and Authorization
 Authentication is handled through a custom email/password system:
