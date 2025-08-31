@@ -54,11 +54,17 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const sidebarContent = (
     <>
       <div className="flex items-center justify-center h-16 bg-gradient-to-r from-purple-600 to-blue-600">
-        <img 
-          src="/logo.jpg"
-          alt="TJ - Traders Brotherhood Logo" 
-          className="h-12 w-12 object-contain filter brightness-0 invert"
-        />
+        <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
+          <img 
+            src="/logo.jpg"
+            alt="TJ - Traders Brotherhood Logo" 
+            className="h-10 w-10 object-contain"
+            onError={(e) => {
+              console.log('Logo failed to load');
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </div>
       </div>
       
       <nav className="mt-8 flex-1">
@@ -118,11 +124,17 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
             <div className="fixed inset-y-0 left-0 w-64 bg-gradient-to-br from-purple-950 via-blue-950 to-purple-900 shadow-lg flex flex-col">
               <div className="flex items-center justify-between h-16 bg-gradient-to-r from-purple-600 to-blue-600 px-4">
-                <img 
-                  src="/logo.jpg"
-                  alt="TJ - Traders Brotherhood Logo" 
-                  className="h-10 w-10 object-contain filter brightness-0 invert"
-                />
+                <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+                  <img 
+                    src="/logo.jpg"
+                    alt="TJ - Traders Brotherhood Logo" 
+                    className="h-8 w-8 object-contain"
+                    onError={(e) => {
+                      console.log('Logo failed to load');
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
