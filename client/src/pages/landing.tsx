@@ -35,7 +35,7 @@ export default function Landing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button size="lg" asChild className="text-lg px-8 py-3">
-              <a href="/api/login">
+              <a href="/pricing">
                 Get Started
               </a>
             </Button>
@@ -119,7 +119,7 @@ export default function Landing() {
             Connect with fellow traders and elevate your trading journey with TJ - Traders Brotherhood
           </p>
           <Button size="lg" asChild className="text-lg px-8 py-3">
-            <a href="/api/login">
+            <a href="/pricing">
               Join the Brotherhood
             </a>
           </Button>

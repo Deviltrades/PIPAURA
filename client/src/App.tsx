@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Landing from "@/pages/landing";
+import Pricing from "@/pages/pricing";
 import Dashboard from "@/pages/dashboard";
 import Trades from "@/pages/trades";
 import Calendar from "@/pages/calendar";
@@ -29,7 +30,10 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/pricing" component={Pricing} />
+        </>
       ) : (
         <Layout>
           <Route path="/" component={Dashboard} />
