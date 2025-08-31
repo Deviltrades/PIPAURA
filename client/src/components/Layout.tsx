@@ -14,7 +14,7 @@ export default function Layout({ children }: LayoutProps) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-blue-950 to-purple-900 text-white">
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
@@ -24,6 +24,7 @@ export default function Layout({ children }: LayoutProps) {
           variant="outline"
           size="sm"
           onClick={() => setSidebarOpen(true)}
+          className="bg-purple-900/40 border-purple-600/30 text-white hover:bg-purple-800/50"
           data-testid="button-mobile-menu"
         >
           <Menu className="h-4 w-4" />
@@ -36,6 +37,7 @@ export default function Layout({ children }: LayoutProps) {
           variant="outline"
           size="sm"
           asChild
+          className="bg-purple-900/40 border-purple-600/30 text-white hover:bg-purple-800/50"
           data-testid="button-settings"
         >
           <Link href="/settings">
@@ -46,6 +48,7 @@ export default function Layout({ children }: LayoutProps) {
           variant="outline"
           size="sm"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="bg-purple-900/40 border-purple-600/30 text-white hover:bg-purple-800/50"
           data-testid="button-theme-toggle"
         >
           {theme === "dark" ? (

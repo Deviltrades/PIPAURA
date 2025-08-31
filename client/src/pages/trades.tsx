@@ -71,13 +71,16 @@ export default function Trades() {
   }
 
   return (
-    <div className="p-4 lg:p-8">
+    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-purple-950 via-blue-950 to-purple-900">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Trade Journal</h1>
-          <p className="text-muted-foreground">Manage and track all your trading positions</p>
+          <h1 className="text-3xl font-bold text-white">Trade Journal</h1>
+          <p className="text-gray-300">Manage and track all your trading positions</p>
         </div>
-        <Button onClick={() => setIsFormOpen(true)}>
+        <Button 
+          onClick={() => setIsFormOpen(true)}
+          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add Trade
         </Button>
@@ -86,40 +89,45 @@ export default function Trades() {
       <div className="space-y-4">
         {trades.length > 0 ? (
           trades.map((trade: any) => (
-            <Card key={trade.id}>
+            <Card key={trade.id} className="bg-gradient-to-br from-purple-900/40 to-blue-900/40 border-purple-500/30">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <Badge variant={trade.tradeType === 'BUY' ? 'default' : 'secondary'}>
+                      <Badge variant={trade.tradeType === 'BUY' ? 'default' : 'secondary'} className={
+                        trade.tradeType === 'BUY' 
+                          ? 'bg-green-600 text-white hover:bg-green-700' 
+                          : 'bg-red-600 text-white hover:bg-red-700'
+                      }>
                         {trade.tradeType}
                       </Badge>
-                      <h3 className="text-lg font-semibold">{trade.instrument}</h3>
+                      <h3 className="text-lg font-semibold text-white">{trade.instrument}</h3>
                       <Badge variant={trade.status === 'OPEN' ? 'default' : 
-                                   trade.status === 'CLOSED' ? 'secondary' : 'destructive'}>
+                                   trade.status === 'CLOSED' ? 'secondary' : 'destructive'} 
+                             className="bg-purple-600 text-white">
                         {trade.status}
                       </Badge>
                     </div>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
-                        <p className="text-muted-foreground">Position Size</p>
-                        <p className="font-medium">{trade.positionSize}</p>
+                        <p className="text-gray-400">Position Size</p>
+                        <p className="font-medium text-white">{trade.positionSize}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Entry Price</p>
-                        <p className="font-medium">{trade.entryPrice}</p>
+                        <p className="text-gray-400">Entry Price</p>
+                        <p className="font-medium text-white">{trade.entryPrice}</p>
                       </div>
                       {trade.exitPrice && (
                         <div>
-                          <p className="text-muted-foreground">Exit Price</p>
-                          <p className="font-medium">{trade.exitPrice}</p>
+                          <p className="text-gray-400">Exit Price</p>
+                          <p className="font-medium text-white">{trade.exitPrice}</p>
                         </div>
                       )}
                       {trade.pnl !== null && (
                         <div>
-                          <p className="text-muted-foreground">P&L</p>
-                          <p className={`font-medium ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          <p className="text-gray-400">P&L</p>
+                          <p className={`font-medium ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {formatCurrency(trade.pnl)}
                           </p>
                         </div>
@@ -128,12 +136,12 @@ export default function Trades() {
 
                     {trade.notes && (
                       <div className="mt-4">
-                        <p className="text-muted-foreground text-sm mb-1">Notes</p>
-                        <p className="text-sm">{trade.notes}</p>
+                        <p className="text-gray-400 text-sm mb-1">Notes</p>
+                        <p className="text-sm text-gray-300">{trade.notes}</p>
                       </div>
                     )}
 
-                    <p className="text-xs text-muted-foreground mt-4">
+                    <p className="text-xs text-gray-500 mt-4">
                       {new Date(trade.createdAt).toLocaleString()}
                     </p>
                   </div>
@@ -143,6 +151,7 @@ export default function Trades() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(trade)}
+                      className="border-purple-500/30 text-purple-300 hover:bg-purple-800/50"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -151,6 +160,7 @@ export default function Trades() {
                       size="sm"
                       onClick={() => handleDelete(trade.id)}
                       disabled={deleteMutation.isPending}
+                      className="border-red-500/30 text-red-300 hover:bg-red-800/50"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
