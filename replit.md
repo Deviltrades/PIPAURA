@@ -8,6 +8,7 @@ TJ - Traders Brotherhood is a comprehensive trading journal application designed
 
 Preferred communication style: Simple, everyday language.
 Authentication preference: Simple email/password login system (replaced Replit Auth on 2025-01-31).
+Settings access: Settings icon next to theme toggle with dedicated logout tab.
 
 ## System Architecture
 
@@ -56,6 +57,8 @@ Authentication is handled through a custom email/password system:
 - **Access Control**: Role-based permissions with admin flag support  
 - **Security**: Password hashing with scrypt, CSRF protection and secure session management
 - **Auth Pages**: Custom sign-up and sign-in forms with form validation
+- **Logout Flow**: Settings icon → Logout tab → Redirect to login page after successful logout
+- **Trade Validation**: Fixed schema validation to handle number/string conversion for decimal fields (2025-01-31)
 
 ### External Dependencies
 
