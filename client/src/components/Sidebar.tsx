@@ -54,7 +54,11 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const sidebarContent = (
     <>
       <div className="flex items-center justify-center h-16 bg-gradient-to-r from-purple-600 to-blue-600">
-        <h1 className="text-xl font-bold text-white">TJ - Traders Brotherhood</h1>
+        <img 
+          src="/attached_assets/btrustedprops_1756670174065.jpg" 
+          alt="TJ - Traders Brotherhood Logo" 
+          className="h-10 w-10 object-contain"
+        />
       </div>
       
       <nav className="mt-8 flex-1">
@@ -114,7 +118,11 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
             <div className="fixed inset-y-0 left-0 w-64 bg-gradient-to-br from-purple-950 via-blue-950 to-purple-900 shadow-lg flex flex-col">
               <div className="flex items-center justify-between h-16 bg-gradient-to-r from-purple-600 to-blue-600 px-4">
-                <h1 className="text-lg font-bold text-white">TJ - Traders Brotherhood</h1>
+                <img 
+                  src="/attached_assets/btrustedprops_1756670174065.jpg" 
+                  alt="TJ - Traders Brotherhood Logo" 
+                  className="h-8 w-8 object-contain"
+                />
                 <Button
                   variant="ghost"
                   size="sm"
