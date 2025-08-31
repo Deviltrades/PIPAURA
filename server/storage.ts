@@ -14,8 +14,10 @@ import { db } from "./db";
 import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations (mandatory for Replit Auth)
+  // User operations
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: Omit<UpsertUser, 'id'>): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserWidgets(id: string, widgets: string[]): Promise<User | undefined>;
   updateUserDashboardLayouts(id: string, layouts: any): Promise<User | undefined>;
@@ -46,6 +48,22 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
+  }
+
+  async createUser(userData: Omit<UpsertUser, 'id'>): Promise<User> {
+    const id = randomUUID();
+    const newUser: User = {
+      id,
+      ...userData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.set(id, newUser);
+    return newUser;
+  }
+
   async upsertUser(userData: UpsertUser): Promise<User> {
     const existingUser = Array.from(this.users.values()).find(
       (user) => user.id === userData.id
@@ -68,7 +86,7 @@ export class MemStorage implements IStorage {
         profileImageUrl: userData.profileImageUrl || null,
         isAdmin: userData.isAdmin || false,
         dashboardWidgets: [],
-        dashboardLayouts: {},
+        dashboardLayout: {},
         calendarSettings: {
           backgroundColor: "#1a1a1a",
           borderColor: "#374151",

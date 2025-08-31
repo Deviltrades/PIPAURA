@@ -148,7 +148,7 @@ export default function Pricing() {
                     className="w-full"
                     asChild
                   >
-                    <a href="/api/login">
+                    <a href="/auth">
                       {plan.cta}
                     </a>
                   </Button>
@@ -201,7 +201,7 @@ export default function Pricing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button size="lg" asChild className="text-lg px-8 py-3">
-              <a href="/api/login">
+              <a href="/auth">
                 Get Started Now
               </a>
             </Button>

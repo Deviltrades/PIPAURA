@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "./ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/use-auth";
 import { useState } from "react";
 import { 
   LayoutDashboard, 
@@ -21,7 +22,8 @@ import {
   StickyNote,
   LineChart,
   Brain,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  LogOut
 } from "lucide-react";
 
 const navigation = [
@@ -42,6 +44,7 @@ const navigation = [
 export function Sidebar() {
   const [location] = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { logoutMutation } = useAuth();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -154,7 +157,7 @@ export function Sidebar() {
                 </div>
               </nav>
 
-              <div className="p-4">
+              <div className="p-4 space-y-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -172,6 +175,16 @@ export function Sidebar() {
                       Dark Mode
                     </>
                   )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => logoutMutation.mutate()}
+                  disabled={logoutMutation.isPending}
+                  className="w-full"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  {logoutMutation.isPending ? "Logging out..." : "Logout"}
                 </Button>
               </div>
             </div>
