@@ -21,6 +21,7 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserWidgets(id: string, widgets: string[]): Promise<User | undefined>;
   updateUserDashboardLayouts(id: string, layouts: any): Promise<User | undefined>;
+  updateUserDashboardTemplates(id: string, templates: any): Promise<User | undefined>;
   updateUserCalendarSettings(id: string, calendarSettings: any): Promise<User | undefined>;
   
   // Trade operations
@@ -64,6 +65,7 @@ export class MemStorage implements IStorage {
       isAdmin: userData.isAdmin || false,
       dashboardWidgets: userData.dashboardWidgets || [],
       dashboardLayout: userData.dashboardLayout || {},
+      dashboardTemplates: userData.dashboardTemplates || {},
       calendarSettings: userData.calendarSettings || {
         backgroundColor: "#1a1a1a",
         borderColor: "#374151",
@@ -135,6 +137,19 @@ export class MemStorage implements IStorage {
     const updatedUser: User = {
       ...existingUser,
       dashboardLayout: layouts,
+      updatedAt: new Date(),
+    };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserDashboardTemplates(id: string, templates: any): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+
+    const updatedUser: User = {
+      ...existingUser,
+      dashboardTemplates: templates,
       updatedAt: new Date(),
     };
     this.users.set(id, updatedUser);
@@ -310,6 +325,18 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         dashboardLayout: layouts,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async updateUserDashboardTemplates(id: string, templates: any): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        dashboardTemplates: templates,
         updatedAt: new Date(),
       })
       .where(eq(users.id, id))

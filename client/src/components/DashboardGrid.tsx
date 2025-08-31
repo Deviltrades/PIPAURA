@@ -1,7 +1,13 @@
-import { useState } from "react";
-import { Responsive, WidthProvider, Layout } from "react-grid-layout";
-import { TrendingUp, TrendingDown, BarChart3, Target, DollarSign, Layers, Move, RotateCcw } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Responsive, WidthProvider, Layout, Layouts } from "react-grid-layout";
+import { TrendingUp, TrendingDown, BarChart3, Target, DollarSign, Layers, Move, RotateCcw, Save, Grid3X3, Trash2 } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import DraggableWidget from "./DraggableWidget";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -14,8 +20,13 @@ interface DashboardGridProps {
 }
 
 export default function DashboardGrid({ analytics, trades }: DashboardGridProps) {
+  const { toast } = useToast();
   const [editMode, setEditMode] = useState(false);
-  const [layouts, setLayouts] = useState({
+  const [currentTemplate, setCurrentTemplate] = useState("default");
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  
+  const defaultLayouts = {
     lg: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
       { i: "winrate", x: 2, y: 0, w: 2, h: 2 },
@@ -49,7 +60,72 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
       { i: "trades", x: 0, y: 12, w: 4, h: 6 },
       { i: "longshort", x: 0, y: 18, w: 4, h: 4 },
     ]
+  };
+
+  const [layouts, setLayouts] = useState(defaultLayouts);
+
+  // Fetch user's dashboard templates
+  const { data: userTemplates } = useQuery({
+    queryKey: ["/api/user/dashboard-templates"],
+    retry: false,
   });
+
+  // Save template mutation
+  const saveTemplateMutation = useMutation({
+    mutationFn: async ({ name, layouts }: { name: string, layouts: Layouts }) => {
+      await apiRequest("POST", "/api/user/dashboard-templates", { name, layouts });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard-templates"] });
+      toast({
+        title: "Template Saved",
+        description: "Your dashboard template has been saved successfully.",
+      });
+      setSaveDialogOpen(false);
+      setTemplateName("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Save Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete template mutation
+  const deleteTemplateMutation = useMutation({
+    mutationFn: async (name: string) => {
+      await apiRequest("DELETE", `/api/user/dashboard-templates/${encodeURIComponent(name)}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard-templates"] });
+      setCurrentTemplate("default");
+      toast({
+        title: "Template Deleted",
+        description: "Your dashboard template has been deleted successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Load template when switching
+  useEffect(() => {
+    if (userTemplates && currentTemplate !== "default") {
+      const template = userTemplates[currentTemplate];
+      if (template) {
+        setLayouts(template);
+      }
+    } else if (currentTemplate === "default") {
+      setLayouts(defaultLayouts);
+    }
+  }, [currentTemplate, userTemplates]);
 
   // Calculate real stats from actual trades
   const totalPnL = analytics?.totalPnL || 0;
@@ -80,41 +156,30 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   ];
 
   const resetLayout = () => {
-    setLayouts({
-      lg: [
-        { i: "profit", x: 0, y: 0, w: 2, h: 2 },
-        { i: "winrate", x: 2, y: 0, w: 2, h: 2 },
-        { i: "riskreward", x: 4, y: 0, w: 2, h: 2 },
-        { i: "average", x: 6, y: 0, w: 2, h: 2 },
-        { i: "fees", x: 8, y: 0, w: 2, h: 2 },
-        { i: "totaltrades", x: 10, y: 0, w: 2, h: 2 },
-        { i: "chart", x: 0, y: 2, w: 8, h: 6 },
-        { i: "trades", x: 8, y: 2, w: 4, h: 6 },
-        { i: "longshort", x: 0, y: 8, w: 6, h: 4 },
-      ],
-      md: [
-        { i: "profit", x: 0, y: 0, w: 2, h: 2 },
-        { i: "winrate", x: 2, y: 0, w: 2, h: 2 },
-        { i: "riskreward", x: 4, y: 0, w: 2, h: 2 },
-        { i: "average", x: 0, y: 2, w: 2, h: 2 },
-        { i: "fees", x: 2, y: 2, w: 2, h: 2 },
-        { i: "totaltrades", x: 4, y: 2, w: 2, h: 2 },
-        { i: "chart", x: 0, y: 4, w: 6, h: 6 },
-        { i: "trades", x: 0, y: 10, w: 6, h: 6 },
-        { i: "longshort", x: 0, y: 16, w: 6, h: 4 },
-      ],
-      sm: [
-        { i: "profit", x: 0, y: 0, w: 2, h: 2 },
-        { i: "winrate", x: 2, y: 0, w: 2, h: 2 },
-        { i: "riskreward", x: 0, y: 2, w: 2, h: 2 },
-        { i: "average", x: 2, y: 2, w: 2, h: 2 },
-        { i: "fees", x: 0, y: 4, w: 2, h: 2 },
-        { i: "totaltrades", x: 2, y: 4, w: 2, h: 2 },
-        { i: "chart", x: 0, y: 6, w: 4, h: 6 },
-        { i: "trades", x: 0, y: 12, w: 4, h: 6 },
-        { i: "longshort", x: 0, y: 18, w: 4, h: 4 },
-      ]
-    });
+    setLayouts(defaultLayouts);
+    setCurrentTemplate("default");
+  };
+
+  const handleSaveTemplate = () => {
+    if (!templateName.trim()) {
+      toast({
+        title: "Template name required",
+        description: "Please enter a name for your template.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (Object.keys(userTemplates || {}).length >= 5 && !userTemplates?.[templateName]) {
+      toast({
+        title: "Template limit reached",
+        description: "You can only save up to 5 templates. Please delete one first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    saveTemplateMutation.mutate({ name: templateName, layouts });
   };
 
   return (
@@ -123,7 +188,85 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
         {/* Header Controls */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-white">Trading Dashboard</h1>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            {/* Template Selector */}
+            <Select value={currentTemplate} onValueChange={setCurrentTemplate}>
+              <SelectTrigger className="w-48 bg-purple-900/40 border-purple-700 text-white">
+                <Grid3X3 className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Select template" />
+              </SelectTrigger>
+              <SelectContent className="bg-purple-950 border-purple-700">
+                <SelectItem value="default">Default Layout</SelectItem>
+                {userTemplates && Object.keys(userTemplates).map((templateName) => (
+                  <SelectItem key={templateName} value={templateName}>
+                    <div className="flex items-center justify-between w-full">
+                      <span>{templateName}</span>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          deleteTemplateMutation.mutate(templateName);
+                        }}
+                        className="ml-2 p-1 hover:bg-red-600/20 rounded"
+                      >
+                        <Trash2 className="w-3 h-3 text-red-400" />
+                      </button>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Save Template Button */}
+            <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-purple-900/40 border-purple-700 text-white hover:bg-purple-800/50"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Template
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-purple-950 border-purple-700 text-white">
+                <DialogHeader>
+                  <DialogTitle>Save Dashboard Template</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="template-name" className="text-sm font-medium">
+                      Template Name
+                    </label>
+                    <Input
+                      id="template-name"
+                      value={templateName}
+                      onChange={(e) => setTemplateName(e.target.value)}
+                      placeholder="Enter template name..."
+                      className="bg-purple-900/40 border-purple-700 text-white"
+                      maxLength={50}
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setSaveDialogOpen(false)}
+                      className="border-purple-700 text-white hover:bg-purple-800/50"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSaveTemplate}
+                      disabled={saveTemplateMutation.isPending}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      {saveTemplateMutation.isPending ? "Saving..." : "Save"}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <Button
               onClick={resetLayout}
               variant="outline"
@@ -159,7 +302,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
         <ResponsiveGridLayout
           className="layout"
           layouts={layouts}
-          onLayoutChange={(layout, layouts) => setLayouts(layouts)}
+          onLayoutChange={(layout, newLayouts) => setLayouts(newLayouts)}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
           cols={{ lg: 12, md: 6, sm: 4, xs: 2, xxs: 2 }}
           rowHeight={60}

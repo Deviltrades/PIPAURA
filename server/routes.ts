@@ -435,6 +435,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Dashboard template routes
+  app.get("/api/user/dashboard-templates", isAuthenticated, async (req, res) => {
+    const userId = (req.user as any)?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    try {
+      const user = await storage.getUser(userId);
+      res.json(user?.dashboardTemplates || {});
+    } catch (error) {
+      console.error("Error fetching dashboard templates:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/user/dashboard-templates", isAuthenticated, async (req, res) => {
+    const userId = (req.user as any)?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const { name, layouts } = req.body;
+    if (!name || !layouts) {
+      return res.status(400).json({ error: "Template name and layouts are required" });
+    }
+
+    try {
+      const user = await storage.getUser(userId);
+      const currentTemplates = user?.dashboardTemplates || {};
+      
+      // Check template limit (max 5)
+      if (Object.keys(currentTemplates).length >= 5 && !currentTemplates[name]) {
+        return res.status(400).json({ error: "Maximum of 5 templates allowed" });
+      }
+
+      const updatedTemplates = {
+        ...currentTemplates,
+        [name]: layouts
+      };
+
+      await storage.updateUserDashboardTemplates(userId, updatedTemplates);
+      res.json({ message: "Template saved successfully" });
+    } catch (error) {
+      console.error("Error saving dashboard template:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/user/dashboard-templates/:name", isAuthenticated, async (req, res) => {
+    const userId = (req.user as any)?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const { name } = req.params;
+    if (!name) {
+      return res.status(400).json({ error: "Template name is required" });
+    }
+
+    try {
+      const user = await storage.getUser(userId);
+      const currentTemplates = user?.dashboardTemplates || {};
+      
+      if (!currentTemplates[name]) {
+        return res.status(404).json({ error: "Template not found" });
+      }
+
+      const updatedTemplates = { ...currentTemplates };
+      delete updatedTemplates[name];
+
+      await storage.updateUserDashboardTemplates(userId, updatedTemplates);
+      res.json({ message: "Template deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting dashboard template:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

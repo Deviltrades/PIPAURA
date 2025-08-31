@@ -12,7 +12,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { z } from "zod";
 
 // Session storage table for Replit Auth
 export const sessions = pgTable(
@@ -36,6 +35,7 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").default(false),
   dashboardWidgets: text("dashboard_widgets").array().default([]),
   dashboardLayout: jsonb("dashboard_layout").default({}),
+  dashboardTemplates: jsonb("dashboard_templates").default({}),
   calendarSettings: jsonb("calendar_settings").default({
     backgroundColor: "#1a1a1a",
     borderColor: "#374151",
