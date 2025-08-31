@@ -18,23 +18,9 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground">Manage your account and trading preferences</p>
-        </div>
-        <div className="flex justify-start sm:justify-end">
-          <Button 
-            variant="destructive" 
-            onClick={handleLogout}
-            disabled={logoutMutation.isPending}
-            data-testid="button-logout"
-            className="flex items-center gap-2 mr-24 sm:mr-0"
-          >
-            <LogOut className="h-4 w-4" />
-            {logoutMutation.isPending ? "Logging out..." : "Logout"}
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground">Manage your account and trading preferences</p>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-4">
@@ -43,6 +29,7 @@ export default function Settings() {
           <TabsTrigger value="trading">Trading</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="logout">Logout</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="space-y-4">
@@ -310,6 +297,48 @@ export default function Settings() {
               </div>
 
               <Button>Save Security Settings</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="logout" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Logout</CardTitle>
+              <CardDescription>End your current session</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="text-center space-y-4">
+                <div className="space-y-2">
+                  <p className="text-lg">Are you sure you want to logout?</p>
+                  <p className="text-sm text-muted-foreground">
+                    You will be redirected to the login page and will need to sign in again to access your account.
+                  </p>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+                  <Button 
+                    variant="destructive" 
+                    size="lg"
+                    onClick={handleLogout}
+                    disabled={logoutMutation.isPending}
+                    data-testid="button-logout-tab"
+                    className="flex items-center gap-2 min-w-[150px]"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {logoutMutation.isPending ? "Logging out..." : "Logout"}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    onClick={() => window.history.back()}
+                    className="min-w-[150px]"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
