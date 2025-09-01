@@ -61,7 +61,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
       let entryDate: Date;
       if (typeof trade.entryDate === 'string') {
         // Try parsing ISO string first, then fallback to Date constructor
-        entryDate = trade.entryDate.includes('T') ? parseISO(trade.entryDate) : new Date(trade.entryDate);
+        entryDate = trade.entryDate.indexOf('T') !== -1 ? parseISO(trade.entryDate) : new Date(trade.entryDate);
       } else {
         entryDate = new Date(trade.entryDate);
       }
@@ -240,15 +240,15 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
             // Determine background color based on P&L
             const getPnLBackgroundColor = () => {
               if (isSelected) return undefined; // Use default selected color
-              if (dailyPnL > 0) return 'rgba(34, 197, 94, 0.2)'; // Green background for profits
-              if (dailyPnL < 0) return 'rgba(239, 68, 68, 0.2)'; // Red background for losses
+              if (dailyPnL > 0) return '#166534'; // Solid dark green background for profits
+              if (dailyPnL < 0) return '#991b1b'; // Solid dark red background for losses
               return calendarSettings.dayBackgroundColor; // Default background
             };
 
             const getPnLBorderColor = () => {
               if (isSelected) return undefined; // Use default selected border
-              if (dailyPnL > 0) return 'rgba(34, 197, 94, 0.4)'; // Green border for profits
-              if (dailyPnL < 0) return 'rgba(239, 68, 68, 0.4)'; // Red border for losses
+              if (dailyPnL > 0) return '#22c55e'; // Bright green border for profits
+              if (dailyPnL < 0) return '#ef4444'; // Bright red border for losses
               return calendarSettings.dayBorderColor; // Default border
             };
 
@@ -300,7 +300,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 {dayTrades.length > 0 && dailyPnL !== 0 && (
                   <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
                     <div className={`text-xs sm:text-sm font-bold px-1 sm:px-2 py-0.5 sm:py-1 rounded shadow-sm ${
-                      dailyPnL > 0 ? "text-green-300 bg-green-900/30" : "text-red-300 bg-red-900/30"
+                      dailyPnL > 0 ? "text-white bg-black/40" : "text-white bg-black/40"
                     }`}>
                       {dailyPnL > 0 ? '+' : ''}${dailyPnL.toFixed(0)}
                     </div>
