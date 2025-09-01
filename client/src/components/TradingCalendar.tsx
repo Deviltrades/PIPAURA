@@ -237,6 +237,21 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               dayBorderColor: "#4b5563"
             };
 
+            // Determine background color based on P&L
+            const getPnLBackgroundColor = () => {
+              if (isSelected) return undefined; // Use default selected color
+              if (dailyPnL > 0) return 'rgba(34, 197, 94, 0.2)'; // Green background for profits
+              if (dailyPnL < 0) return 'rgba(239, 68, 68, 0.2)'; // Red background for losses
+              return calendarSettings.dayBackgroundColor; // Default background
+            };
+
+            const getPnLBorderColor = () => {
+              if (isSelected) return undefined; // Use default selected border
+              if (dailyPnL > 0) return 'rgba(34, 197, 94, 0.4)'; // Green border for profits
+              if (dailyPnL < 0) return 'rgba(239, 68, 68, 0.4)'; // Red border for losses
+              return calendarSettings.dayBorderColor; // Default border
+            };
+
             return (
               <div
                 key={day.toISOString()}
@@ -245,11 +260,13 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                   ${isSelected ? 'border-primary bg-primary/10' : ''}
                   ${isCurrentDay ? 'ring-1 sm:ring-2 ring-blue-400' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
+                  ${dailyPnL > 0 && !isSelected ? 'hover:bg-green-500/20' : ''}
+                  ${dailyPnL < 0 && !isSelected ? 'hover:bg-red-500/20' : ''}
                   relative group cursor-pointer flex flex-col
                 `}
                 style={{
-                  backgroundColor: isSelected ? undefined : calendarSettings.dayBackgroundColor,
-                  borderColor: isSelected ? undefined : calendarSettings.dayBorderColor
+                  backgroundColor: getPnLBackgroundColor(),
+                  borderColor: getPnLBorderColor()
                 }}
                 onClick={() => setSelectedDate(day)}
               >
@@ -282,8 +299,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 {/* P&L Display - Center/Bottom */}
                 {dayTrades.length > 0 && dailyPnL !== 0 && (
                   <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                    <div className={`text-xs sm:text-sm font-bold px-1 sm:px-2 py-0.5 sm:py-1 rounded ${
-                      dailyPnL > 0 ? "text-green-400" : "text-red-400"
+                    <div className={`text-xs sm:text-sm font-bold px-1 sm:px-2 py-0.5 sm:py-1 rounded shadow-sm ${
+                      dailyPnL > 0 ? "text-green-300 bg-green-900/30" : "text-red-300 bg-red-900/30"
                     }`}>
                       {dailyPnL > 0 ? '+' : ''}${dailyPnL.toFixed(0)}
                     </div>
