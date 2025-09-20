@@ -256,20 +256,23 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 return {
                   backgroundColor: '#1a1a1a',
                   borderColor: '#374151',
-                  textColor: 'text-white'
+                  textColor: 'text-white',
+                  boxShadow: 'none'
                 };
               }
               if (dailyPnL > 0) {
                 return {
-                  backgroundColor: '#10b981',
-                  borderColor: '#059669',
-                  textColor: 'text-white'
+                  backgroundColor: '#22c55e', // Brighter green (equivalent to hover state)
+                  borderColor: '#16a34a',
+                  textColor: 'text-white',
+                  boxShadow: '0 0 10px #22c55e' // Green glow effect
                 };
               }
               return {
-                backgroundColor: '#ef4444',
-                borderColor: '#dc2626',
-                textColor: 'text-white'
+                backgroundColor: '#f87171', // Brighter red (equivalent to hover state)
+                borderColor: '#ef4444',
+                textColor: 'text-white',
+                boxShadow: 'none'
               };
             };
 
@@ -279,7 +282,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               <div
                 key={day.toISOString()}
                 className={`
-                  h-20 sm:h-24 border-2 rounded-xl transition-all duration-200 hover:opacity-90
+                  h-20 sm:h-24 border-2 rounded-xl transition-all duration-200
                   ${isSelected ? 'ring-2 ring-blue-400' : ''}
                   ${isCurrentDay ? 'ring-1 ring-blue-300' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
@@ -287,7 +290,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 `}
                 style={{
                   backgroundColor: dayStyles.backgroundColor,
-                  borderColor: dayStyles.borderColor
+                  borderColor: dayStyles.borderColor,
+                  boxShadow: dayStyles.boxShadow
                 }}
                 onClick={() => setSelectedDate(day)}
               >
