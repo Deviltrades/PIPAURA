@@ -362,7 +362,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                         alt="TJ Logo" 
                         className="w-8 h-8 object-contain opacity-80 mb-1"
                       />
-                      <div className="text-xs text-white font-medium">
+                      <div className="text-xs text-white/60 font-normal">
                         Zero Trades
                       </div>
                     </div>
