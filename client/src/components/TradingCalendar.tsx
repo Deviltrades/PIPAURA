@@ -296,7 +296,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               <div
                 key={day.toISOString()}
                 className={`
-                  h-20 sm:h-24 border-2 rounded-xl transition-all duration-200
+                  min-h-[72px] sm:min-h-[84px] border-2 rounded-xl transition-all duration-200
                   ${isSelected ? 'ring-2 ring-blue-400' : ''}
                   ${isCurrentDay ? 'ring-1 ring-blue-300' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
@@ -304,6 +304,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                   relative group cursor-pointer overflow-hidden
                 `}
                 style={{
+                  aspectRatio: '7 / 5',
                   backgroundColor: dayStyles.backgroundColor,
                   borderColor: dayStyles.borderColor,
                   boxShadow: dayStyles.boxShadow
