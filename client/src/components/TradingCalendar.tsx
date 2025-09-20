@@ -43,6 +43,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   const [selectedSymbol, setSelectedSymbol] = useState<string>("all");
   const [selectedStrategy, setSelectedStrategy] = useState<string>("all");
   const [selectedDirection, setSelectedDirection] = useState<string>("all");
+  
+  // Display mode state
+  const [displayMode, setDisplayMode] = useState<"percentage" | "dollar">("percentage");
 
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
@@ -125,11 +128,22 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   return (
     <Card className={`${className} bg-background border`}>
       <CardContent className="p-3 sm:p-6">
-        {/* Header with Month Navigation */}
+        {/* Header with Month Navigation and Display Mode Toggle */}
         <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-            {format(viewMonth, "MMMM yyyy")}
-          </h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+              {format(viewMonth, "MMMM yyyy")}
+            </h2>
+            <Select value={displayMode} onValueChange={(value: "percentage" | "dollar") => setDisplayMode(value)}>
+              <SelectTrigger className="w-28 h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="percentage">%</SelectItem>
+                <SelectItem value="dollar">$</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex items-center gap-2">
             <Link href="/calendar-settings">
               <Button
@@ -346,13 +360,16 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 {/* Trading Day Content */}
                 {dayTrades.length > 0 ? (
                   <div className="absolute inset-x-2 top-8 bottom-2 flex flex-col justify-center">
-                    {/* Percentage Return */}
+                    {/* Display Value - Percentage or Dollar */}
                     <div className="text-center">
                       <div className="text-base font-bold text-black">
-                        {dailyPnL > 0 ? '+' : ''}{dailyReturn?.toFixed(2)}%
+                        {displayMode === "percentage" 
+                          ? `${dailyPnL > 0 ? '+' : ''}${dailyReturn?.toFixed(2)}%`
+                          : `${dailyPnL > 0 ? '+' : ''}$${dailyPnL.toFixed(2)}`
+                        }
                       </div>
                       <div className="text-xs text-black/80 font-medium">
-                        USD
+                        {displayMode === "percentage" ? "%" : "USD"}
                       </div>
                     </div>
                     {/* Trade Count */}
