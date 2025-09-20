@@ -262,16 +262,16 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               }
               if (dailyPnL > 0) {
                 return {
-                  backgroundColor: '#4ade80', // Bright light green like in your reference
-                  borderColor: '#22c55e',
-                  textColor: 'text-white',
-                  boxShadow: '0 0 10px #4ade80' // Green glow effect
+                  backgroundColor: '#00ff7f', // Very bright neon green
+                  borderColor: '#00ff7f',
+                  textColor: 'text-black',
+                  boxShadow: '0 0 15px #00ff7f' // Green glow effect
                 };
               }
               return {
-                backgroundColor: '#f87171', // Bright coral/salmon red like in your reference
-                borderColor: '#ef4444',
-                textColor: 'text-white',
+                backgroundColor: '#ff6b6b', // Very bright coral/salmon red
+                borderColor: '#ff6b6b',
+                textColor: 'text-black',
                 boxShadow: 'none'
               };
             };
