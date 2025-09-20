@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus, Edit3, Check, X } from "lucide-react";
+import logoImage from "@assets/btrustedprops_1758388648347.jpg";
 import { 
   format, 
   startOfMonth, 
@@ -253,9 +254,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
             const getDayStyles = () => {
               if (dayTrades.length === 0) {
                 return {
-                  backgroundColor: '#f8f9fa',
-                  borderColor: '#e9ecef',
-                  textColor: 'text-gray-800'
+                  backgroundColor: '#1a1a1a',
+                  borderColor: '#374151',
+                  textColor: 'text-white'
                 };
               }
               if (dailyPnL > 0) {
@@ -315,9 +316,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 
                 {/* Date - Top Left */}
                 <div className="absolute top-1 left-1.5">
-                  <span className={`text-sm font-semibold ${
-                    dayTrades.length === 0 ? 'text-gray-800' : 'text-white'
-                  }`}>
+                  <span className={`text-sm font-semibold text-white`}>
                     {format(day, 'd')}
                   </span>
                 </div>
@@ -355,13 +354,14 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                     </div>
                   </div>
                 ) : (
-                  /* Empty Day Content */
+                  /* Empty Day Content - Logo */
                   isCurrentMonth && (
-                    <div className="absolute inset-2 flex flex-col items-center justify-center">
-                      <div className="text-sm text-gray-600 font-medium mb-1">
-                        TJ (TBH)
-                      </div>
-                      <div className="w-6 h-1 bg-gray-300 rounded-full"></div>
+                    <div className="absolute inset-2 flex items-center justify-center">
+                      <img 
+                        src={logoImage} 
+                        alt="TJ Logo" 
+                        className="w-8 h-8 object-contain opacity-80"
+                      />
                     </div>
                   )
                 )}
