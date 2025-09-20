@@ -297,10 +297,22 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                     width: 0,
                     height: 0,
                     borderStyle: 'solid',
-                    borderWidth: '0 20px 20px 0',
+                    borderWidth: '0 28px 28px 0',
                     borderColor: 'transparent #1e3a8a transparent transparent'
                   }}
                 />
+                
+                {/* Success/Failure Icon - Inside Triangle */}
+                {dayTrades.length > 0 && (
+                  <div className="absolute top-1 right-1">
+                    {dailyPnL > 0 ? (
+                      <Check className="h-4 w-4 text-white" />
+                    ) : (
+                      <X className="h-4 w-4 text-white" />
+                    )}
+                  </div>
+                )}
+                
                 {/* Date - Top Left */}
                 <div className="absolute top-1 left-1.5">
                   <span className={`text-sm font-semibold ${
@@ -309,21 +321,6 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                     {format(day, 'd')}
                   </span>
                 </div>
-                
-                {/* Success/Failure Icon - Top Right */}
-                {dayTrades.length > 0 && (
-                  <div className="absolute top-1 right-1.5">
-                    {dailyPnL > 0 ? (
-                      <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center">
-                        <Check className="h-2.5 w-2.5 text-white" />
-                      </div>
-                    ) : (
-                      <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center">
-                        <X className="h-2.5 w-2.5 text-white" />
-                      </div>
-                    )}
-                  </div>
-                )}
                 
                 {/* Add Trade Button - Only show on hover for empty days */}
                 {dayTrades.length === 0 && isCurrentMonth && (
