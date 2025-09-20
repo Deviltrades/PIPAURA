@@ -356,12 +356,15 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 ) : (
                   /* Empty Day Content - Logo */
                   isCurrentMonth && (
-                    <div className="absolute inset-2 flex items-center justify-center">
+                    <div className="absolute inset-2 flex flex-col items-center justify-center">
                       <img 
                         src={logoImage} 
                         alt="TJ Logo" 
-                        className="w-8 h-8 object-contain opacity-80"
+                        className="w-8 h-8 object-contain opacity-80 mb-1"
                       />
+                      <div className="text-xs text-white font-medium">
+                        Zero Trades
+                      </div>
                     </div>
                   )
                 )}
