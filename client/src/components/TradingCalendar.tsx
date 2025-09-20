@@ -297,7 +297,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                     width: 0,
                     height: 0,
                     borderStyle: 'solid',
-                    borderWidth: '0 28px 28px 0',
+                    borderWidth: '0 34px 34px 0',
                     borderColor: 'transparent #1e3a8a transparent transparent'
                   }}
                 />
