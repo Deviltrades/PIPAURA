@@ -282,7 +282,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                   ${isSelected ? 'ring-2 ring-blue-400' : ''}
                   ${isCurrentDay ? 'ring-1 ring-blue-300' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
-                  relative group cursor-pointer
+                  relative group cursor-pointer overflow-hidden
                 `}
                 style={{
                   backgroundColor: dayStyles.backgroundColor,
@@ -290,6 +290,17 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 }}
                 onClick={() => setSelectedDate(day)}
               >
+                {/* Dark Blue Triangle - Top Right */}
+                <div 
+                  className="absolute top-0 right-0"
+                  style={{
+                    width: 0,
+                    height: 0,
+                    borderStyle: 'solid',
+                    borderWidth: '0 20px 20px 0',
+                    borderColor: 'transparent #1e3a8a transparent transparent'
+                  }}
+                />
                 {/* Date - Top Left */}
                 <div className="absolute top-1 left-1.5">
                   <span className={`text-sm font-semibold ${
