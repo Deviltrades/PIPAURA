@@ -61,7 +61,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
       let entryDate: Date;
       if (typeof trade.entryDate === 'string') {
         // Try parsing ISO string first, then fallback to Date constructor
-        entryDate = trade.entryDate.indexOf('T') !== -1 ? parseISO(trade.entryDate) : new Date(trade.entryDate);
+        const dateString = trade.entryDate as string;
+        entryDate = dateString.indexOf('T') !== -1 ? parseISO(dateString) : new Date(dateString);
       } else {
         entryDate = new Date(trade.entryDate);
       }
@@ -303,6 +304,15 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                       dailyPnL > 0 ? "text-white bg-black/40" : "text-white bg-black/40"
                     }`}>
                       {dailyPnL > 0 ? '+' : ''}${dailyPnL.toFixed(0)}
+                    </div>
+                  </div>
+                )}
+
+                {/* TJ (TBH) Display for days without trades */}
+                {dayTrades.length === 0 && isCurrentMonth && (
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <div className="text-xs sm:text-sm text-muted-foreground/60 font-medium">
+                      TJ (TBH)
                     </div>
                   </div>
                 )}
