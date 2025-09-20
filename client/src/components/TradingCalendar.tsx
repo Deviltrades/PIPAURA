@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus, Edit3 } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus, Edit3, Check, X } from "lucide-react";
 import { 
   format, 
   startOfMonth, 
@@ -238,94 +238,124 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               dayBorderColor: "#4b5563"
             };
 
-            // Determine background color based on P&L
-            const getPnLBackgroundColor = () => {
-              if (isSelected) return undefined; // Use default selected color
-              if (dailyPnL > 0) return '#166534'; // Solid dark green background for profits
-              if (dailyPnL < 0) return '#991b1b'; // Solid dark red background for losses
-              return calendarSettings.dayBackgroundColor; // Default background
+            // Calculate daily percentage return
+            const calculateDailyReturn = () => {
+              if (dayTrades.length === 0) return null;
+              // Simple percentage calculation - could be enhanced with actual account balance
+              const totalPnL = dailyPnL;
+              const percentage = Math.abs(totalPnL / 1000 * 100); // Assuming base of $1000 for percentage
+              return percentage;
             };
 
-            const getPnLBorderColor = () => {
-              if (isSelected) return undefined; // Use default selected border
-              if (dailyPnL > 0) return '#22c55e'; // Bright green border for profits
-              if (dailyPnL < 0) return '#ef4444'; // Bright red border for losses
-              return calendarSettings.dayBorderColor; // Default border
+            const dailyReturn = calculateDailyReturn();
+
+            // Get styling based on P&L
+            const getDayStyles = () => {
+              if (dayTrades.length === 0) {
+                return {
+                  backgroundColor: '#f8f9fa',
+                  borderColor: '#e9ecef',
+                  textColor: 'text-gray-800'
+                };
+              }
+              if (dailyPnL > 0) {
+                return {
+                  backgroundColor: '#10b981',
+                  borderColor: '#059669',
+                  textColor: 'text-white'
+                };
+              }
+              return {
+                backgroundColor: '#ef4444',
+                borderColor: '#dc2626',
+                textColor: 'text-white'
+              };
             };
+
+            const dayStyles = getDayStyles();
 
             return (
               <div
                 key={day.toISOString()}
                 className={`
-                  h-16 sm:h-20 border-2 rounded-lg transition-all duration-200 hover:border-primary/50
-                  ${isSelected ? 'border-primary bg-primary/10' : ''}
-                  ${isCurrentDay ? 'ring-1 sm:ring-2 ring-blue-400' : ''}
+                  h-20 sm:h-24 border-2 rounded-xl transition-all duration-200 hover:opacity-90
+                  ${isSelected ? 'ring-2 ring-blue-400' : ''}
+                  ${isCurrentDay ? 'ring-1 ring-blue-300' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
-                  ${dailyPnL > 0 && !isSelected ? 'hover:bg-green-500/20' : ''}
-                  ${dailyPnL < 0 && !isSelected ? 'hover:bg-red-500/20' : ''}
-                  relative group cursor-pointer flex flex-col
+                  relative group cursor-pointer
                 `}
                 style={{
-                  backgroundColor: getPnLBackgroundColor(),
-                  borderColor: getPnLBorderColor()
+                  backgroundColor: dayStyles.backgroundColor,
+                  borderColor: dayStyles.borderColor
                 }}
                 onClick={() => setSelectedDate(day)}
               >
                 {/* Date - Top Left */}
-                <div className="absolute top-0.5 sm:top-1 left-0.5 sm:left-1">
-                  <span className={`text-xs sm:text-sm font-medium ${
-                    isSelected ? 'text-primary' : 
-                    isCurrentDay ? 'text-white font-semibold' : 
-                    isCurrentMonth ? 'text-gray-200' : 'text-gray-500'
+                <div className="absolute top-1 left-1.5">
+                  <span className={`text-sm font-semibold ${
+                    dayTrades.length === 0 ? 'text-gray-800' : 'text-white'
                   }`}>
                     {format(day, 'd')}
                   </span>
                 </div>
                 
-                {/* Add Trade Button - Top Right - Always show for current month days */}
-                {isCurrentMonth && (
+                {/* Success/Failure Icon - Top Right */}
+                {dayTrades.length > 0 && (
+                  <div className="absolute top-1 right-1.5">
+                    {dailyPnL > 0 ? (
+                      <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center">
+                        <Check className="h-2.5 w-2.5 text-white" />
+                      </div>
+                    ) : (
+                      <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center">
+                        <X className="h-2.5 w-2.5 text-white" />
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Add Trade Button - Only show on hover for empty days */}
+                {dayTrades.length === 0 && isCurrentMonth && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setAddTradeDate(day);
                       setIsAddTradeModalOpen(true);
                     }}
-                    className="absolute top-0.5 sm:top-1 right-0.5 sm:right-1 opacity-60 group-hover:opacity-100 transition-opacity duration-200 w-4 h-4 sm:w-5 sm:h-5 bg-primary hover:bg-primary/80 rounded-sm flex items-center justify-center z-10"
+                    className="absolute top-1 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-4 h-4 bg-gray-600 hover:bg-gray-700 rounded-full flex items-center justify-center z-10"
                     title="Add trade for this date"
                   >
-                    <PlusIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary-foreground" />
+                    <PlusIcon className="h-2.5 w-2.5 text-white" />
                   </button>
                 )}
                 
-                {/* P&L Display - Center/Bottom */}
-                {dayTrades.length > 0 && dailyPnL !== 0 && (
-                  <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                    <div className={`text-xs sm:text-sm font-bold px-1 sm:px-2 py-0.5 sm:py-1 rounded shadow-sm ${
-                      dailyPnL > 0 ? "text-white bg-black/40" : "text-white bg-black/40"
-                    }`}>
-                      {dailyPnL > 0 ? '+' : ''}${dailyPnL.toFixed(0)}
+                {/* Trading Day Content */}
+                {dayTrades.length > 0 ? (
+                  <div className="absolute inset-x-2 top-8 bottom-2 flex flex-col justify-center">
+                    {/* Percentage Return */}
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-white">
+                        {dailyPnL > 0 ? '+' : ''}{dailyReturn?.toFixed(2)}%
+                      </div>
+                      <div className="text-xs text-white/80 font-medium">
+                        USD
+                      </div>
+                    </div>
+                    {/* Trade Count */}
+                    <div className="text-xs text-white/90 text-center mt-1">
+                      Trades: {dayTrades.length}
                     </div>
                   </div>
-                )}
-
-                {/* TJ (TBH) Display for days without trades */}
-                {dayTrades.length === 0 && isCurrentMonth && (
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <div className="text-xs sm:text-sm text-muted-foreground/60 font-medium">
-                      TJ (TBH)
+                ) : (
+                  /* Empty Day Content */
+                  isCurrentMonth && (
+                    <div className="absolute inset-2 flex flex-col items-center justify-center">
+                      <div className="text-sm text-gray-600 font-medium mb-1">
+                        TJ (TBH)
+                      </div>
+                      <div className="w-6 h-1 bg-gray-300 rounded-full"></div>
                     </div>
-                  </div>
-                )}
-                
-                {/* Trade Count Indicator - Bottom Left */}
-                {dayTrades.length > 0 && (
-                  <div className="absolute bottom-0.5 sm:bottom-1 left-0.5 sm:left-1">
-                    <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
-                      dailyPnL > 0 ? "bg-green-500" : 
-                      dailyPnL < 0 ? "bg-red-500" : 
-                      dayTrades.some(t => t.status === "OPEN") ? "bg-blue-500" : "bg-yellow-500"
-                    }`} />
-                  </div>
+                  )
                 )}
               </div>
             );
