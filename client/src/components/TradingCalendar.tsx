@@ -367,7 +367,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                       </div>
                       {/* Zero Trades Text */}
                       <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                        <div className="text-xs text-white/60 font-normal">
+                        <div className="text-[10px] text-white/60 font-bold text-center">
                           Zero Trades
                         </div>
                       </div>
