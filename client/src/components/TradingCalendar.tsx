@@ -321,7 +321,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 
                 {/* Date - Top Left */}
                 <div className="absolute top-1 left-1.5">
-                  <span className={`text-sm font-semibold text-white`}>
+                  <span className={`text-sm font-semibold ${
+                    dayTrades.length > 0 ? 'text-black' : 'text-white'
+                  }`}>
                     {format(day, 'd')}
                   </span>
                 </div>
@@ -346,15 +348,15 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                   <div className="absolute inset-x-2 top-8 bottom-2 flex flex-col justify-center">
                     {/* Percentage Return */}
                     <div className="text-center">
-                      <div className="text-lg font-bold text-white">
+                      <div className="text-lg font-bold text-black">
                         {dailyPnL > 0 ? '+' : ''}{dailyReturn?.toFixed(2)}%
                       </div>
-                      <div className="text-xs text-white/80 font-medium">
+                      <div className="text-xs text-black/80 font-medium">
                         USD
                       </div>
                     </div>
                     {/* Trade Count */}
-                    <div className="text-xs text-white/90 text-center mt-1">
+                    <div className="text-xs text-black/90 text-center mt-1">
                       Trades: {dayTrades.length}
                     </div>
                   </div>
