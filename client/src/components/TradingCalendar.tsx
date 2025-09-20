@@ -264,14 +264,14 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 return {
                   backgroundColor: '#00cc66', // Toned down bright green (20% less bright)
                   borderColor: '#00cc66',
-                  textColor: 'text-white',
+                  textColor: 'text-black',
                   boxShadow: '0 0 12px #00cc66' // Slightly reduced glow
                 };
               }
               return {
                 backgroundColor: '#e55555', // Toned down bright red (20% less bright)
                 borderColor: '#e55555',
-                textColor: 'text-white',
+                textColor: 'text-black',
                 boxShadow: 'none'
               };
             };
