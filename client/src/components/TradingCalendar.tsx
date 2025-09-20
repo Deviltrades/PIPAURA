@@ -348,7 +348,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                   <div className="absolute inset-x-2 top-8 bottom-2 flex flex-col justify-center">
                     {/* Percentage Return */}
                     <div className="text-center">
-                      <div className="text-lg font-bold text-black">
+                      <div className="text-base font-bold text-black">
                         {dailyPnL > 0 ? '+' : ''}{dailyReturn?.toFixed(2)}%
                       </div>
                       <div className="text-xs text-black/80 font-medium">
