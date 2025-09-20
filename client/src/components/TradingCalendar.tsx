@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus, Edit3, Check, X } from "lucide-react";
 import logoImage from "@assets/btrustedprops_1758388648347.jpg";
 import { 
@@ -18,7 +20,8 @@ import {
   parseISO,
   addMonths,
   subMonths,
-  isToday
+  isToday,
+  addDays
 } from "date-fns";
 import { AddTradeModal } from "./AddTradeModal";
 import { EditTradeModal } from "./EditTradeModal";
@@ -46,6 +49,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   
   // Display mode state
   const [displayMode, setDisplayMode] = useState<"percentage" | "dollar">("percentage");
+  
+  // Weekend toggle state
+  const [showWeekends, setShowWeekends] = useState(false);
 
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
@@ -95,11 +101,50 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     }, 0);
   };
 
-  // Generate calendar days
+  // Layout configuration based on weekend toggle
+  const getLayoutConfig = () => {
+    if (showWeekends) {
+      return {
+        cols: 7,
+        dayLabels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+        cellClass: 'h-20 sm:h-24',
+        cellStyle: {}
+      };
+    } else {
+      return {
+        cols: 5,
+        dayLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+        cellClass: 'min-h-[72px] sm:min-h-[84px]',
+        cellStyle: { aspectRatio: '7 / 5' }
+      };
+    }
+  };
+
+  const layout = getLayoutConfig();
+
+  // Generate calendar days based on weekend toggle
   const generateCalendarDays = () => {
-    const start = startOfWeek(startOfMonth(viewMonth));
-    const end = endOfWeek(endOfMonth(viewMonth));
-    return eachDayOfInterval({ start, end });
+    const start = startOfWeek(startOfMonth(viewMonth), { weekStartsOn: 1 }); // Monday start
+    const end = endOfWeek(endOfMonth(viewMonth), { weekStartsOn: 1 });
+    
+    if (showWeekends) {
+      return eachDayOfInterval({ start, end });
+    } else {
+      // Generate weekdays only (Monday to Friday)
+      const allDays = eachDayOfInterval({ start, end });
+      const weekdays = [];
+      
+      for (let i = 0; i < allDays.length; i += 7) {
+        // Take Monday to Friday from each week
+        for (let j = 0; j < 5; j++) {
+          if (allDays[i + j]) {
+            weekdays.push(allDays[i + j]);
+          }
+        }
+      }
+      
+      return weekdays;
+    }
   };
 
   const calendarDays = generateCalendarDays();
@@ -143,6 +188,17 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 <SelectItem value="dollar">$</SelectItem>
               </SelectContent>
             </Select>
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="weekends-toggle" 
+                checked={showWeekends} 
+                onCheckedChange={setShowWeekends}
+                data-testid="switch-weekends"
+              />
+              <Label htmlFor="weekends-toggle" className="text-sm font-medium">
+                Weekends
+              </Label>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Link href="/calendar-settings">
@@ -226,16 +282,16 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
         </div>
 
         {/* Days of Week Header */}
-        <div className="grid grid-cols-7 gap-0 sm:gap-0.5 mb-2">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <div key={day} className="h-8 sm:h-10 flex items-center justify-center">
+        <div className={`grid grid-cols-${layout.cols} gap-0 sm:gap-0.5 mb-2`} data-testid="grid-calendar">
+          {layout.dayLabels.map((day) => (
+            <div key={day} className="h-8 sm:h-10 flex items-center justify-center" data-testid={`header-day-${day.toLowerCase()}`}>
               <span className="text-xs sm:text-sm font-medium text-muted-foreground">{day}</span>
             </div>
           ))}
         </div>
 
         {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-0 sm:gap-0.5">
+        <div className={`grid grid-cols-${layout.cols} gap-0 sm:gap-0.5`}>
           {calendarDays.map((day) => {
             const dateKey = format(day, "yyyy-MM-dd");
             const dayTrades = tradesByDate[dateKey] || [];
@@ -296,7 +352,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               <div
                 key={day.toISOString()}
                 className={`
-                  min-h-[72px] sm:min-h-[84px] border-2 rounded-xl transition-all duration-200
+                  ${layout.cellClass} border-2 rounded-xl transition-all duration-200
                   ${isSelected ? 'ring-2 ring-blue-400' : ''}
                   ${isCurrentDay ? 'ring-1 ring-blue-300' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
@@ -304,11 +360,12 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                   relative group cursor-pointer overflow-hidden
                 `}
                 style={{
-                  aspectRatio: '7 / 5',
+                  ...layout.cellStyle,
                   backgroundColor: dayStyles.backgroundColor,
                   borderColor: dayStyles.borderColor,
                   boxShadow: dayStyles.boxShadow
                 }}
+                data-testid={`cell-day-${format(day, 'yyyy-MM-dd')}`}
                 onClick={() => setSelectedDate(day)}
               >
                 {/* Dark Blue Triangle - Top Right */}
