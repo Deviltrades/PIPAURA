@@ -286,6 +286,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                   ${isSelected ? 'ring-2 ring-blue-400' : ''}
                   ${isCurrentDay ? 'ring-1 ring-blue-300' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
+                  ${dayTrades.length > 0 ? 'brightness-125 saturate-150' : ''}
                   relative group cursor-pointer overflow-hidden
                 `}
                 style={{
