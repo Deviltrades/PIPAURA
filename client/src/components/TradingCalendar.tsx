@@ -195,6 +195,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   
   // Weekly totals toggle state
   const [showWeeklyTotals, setShowWeeklyTotals] = useState(false);
+  
+  // Monthly summary toggle state
+  const [showMonthlySummary, setShowMonthlySummary] = useState(false);
 
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
@@ -303,6 +306,81 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   };
 
   // Calculate weekly totals for the month
+  // Get monthly statistics for the current month
+  const getMonthlySummary = () => {
+    const monthStart = startOfMonth(viewMonth);
+    const monthEnd = endOfMonth(viewMonth);
+    
+    // Get trades for the current month
+    const monthTrades = filteredTrades.filter(trade => {
+      if (!trade.entryDate) return false;
+      
+      let entryDate: Date;
+      if (typeof trade.entryDate === 'string') {
+        const dateString = trade.entryDate as string;
+        entryDate = dateString.indexOf('T') !== -1 ? parseISO(dateString) : new Date(dateString);
+      } else {
+        entryDate = new Date(trade.entryDate);
+      }
+      
+      return entryDate >= monthStart && entryDate <= monthEnd;
+    });
+    
+    // Calculate total P&L
+    const totalPnL = monthTrades.reduce((sum, trade) => {
+      const pnl = typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0);
+      return sum + pnl;
+    }, 0);
+    
+    // Calculate total days traded (unique dates)
+    const uniqueDates = new Set();
+    monthTrades.forEach(trade => {
+      if (trade.entryDate) {
+        let entryDate: Date;
+        if (typeof trade.entryDate === 'string') {
+          const dateString = trade.entryDate as string;
+          entryDate = dateString.indexOf('T') !== -1 ? parseISO(dateString) : new Date(dateString);
+        } else {
+          entryDate = new Date(trade.entryDate);
+        }
+        uniqueDates.add(format(entryDate, "yyyy-MM-dd"));
+      }
+    });
+    
+    // Calculate risk/reward ratio
+    const winningTrades = monthTrades.filter(trade => {
+      const pnl = typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0);
+      return pnl > 0;
+    });
+    
+    const losingTrades = monthTrades.filter(trade => {
+      const pnl = typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0);
+      return pnl < 0;
+    });
+    
+    const avgWin = winningTrades.length > 0 
+      ? winningTrades.reduce((sum, trade) => {
+          const pnl = typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0);
+          return sum + pnl;
+        }, 0) / winningTrades.length 
+      : 0;
+      
+    const avgLoss = losingTrades.length > 0 
+      ? Math.abs(losingTrades.reduce((sum, trade) => {
+          const pnl = typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0);
+          return sum + pnl;
+        }, 0)) / losingTrades.length 
+      : 0;
+    
+    const riskRewardRatio = avgLoss > 0 ? (avgWin / avgLoss) : 0;
+    
+    return {
+      totalPnL,
+      daysTraded: uniqueDates.size,
+      riskRewardRatio
+    };
+  };
+
   const getWeeklyTotals = () => {
     const start = startOfWeek(startOfMonth(viewMonth));
     const end = endOfWeek(endOfMonth(viewMonth));
@@ -433,6 +511,17 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 Weekly Totals
               </Label>
             </div>
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="monthly-summary-toggle" 
+                checked={showMonthlySummary} 
+                onCheckedChange={setShowMonthlySummary}
+                data-testid="switch-monthly-summary"
+              />
+              <Label htmlFor="monthly-summary-toggle" className="text-sm font-medium">
+                Monthly Stats
+              </Label>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Link href="/calendar-settings">
@@ -514,6 +603,47 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Monthly Summary Bar */}
+        {showMonthlySummary && (
+          <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-4 py-3 flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-white text-sm font-medium">Monthly stats:</span>
+            </div>
+            
+            {(() => {
+              const monthlyStats = getMonthlySummary();
+              return (
+                <div className="flex items-center gap-4 text-white">
+                  {/* Total Net P&L */}
+                  <div className={`px-3 py-2 rounded-md text-sm font-semibold ${
+                    monthlyStats.totalPnL >= 0 ? 'bg-green-600' : 'bg-red-600'
+                  }`}>
+                    {monthlyStats.totalPnL >= 0 ? '+' : ''}${monthlyStats.totalPnL.toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
+                  </div>
+                  
+                  {/* Total Days Traded */}
+                  <div className="text-sm">
+                    <span className="font-semibold">{monthlyStats.daysTraded}</span> days
+                  </div>
+                  
+                  {/* Risk/Reward Ratio */}
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
+                      <span className="text-xs">R</span>
+                    </div>
+                    <span className="text-sm">
+                      {monthlyStats.riskRewardRatio > 0 ? monthlyStats.riskRewardRatio.toFixed(2) : '0.00'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
         {/* Calendar Container */}
         <div className={`flex ${showWeeklyTotals ? 'gap-4' : ''}`}>
