@@ -704,7 +704,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
           {/* Weekly Totals Section */}
           {showWeeklyTotals && (
-            <div className="w-32 flex-shrink-0">
+            <div className="w-20 flex-shrink-0">
               {/* Header */}
               <div className="h-8 sm:h-10 flex items-center justify-center mb-2">
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground">Total</span>
