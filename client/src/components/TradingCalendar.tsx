@@ -613,8 +613,10 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                                   alt={`Trade attachment ${index + 1}`}
                                   className="w-full h-24 object-cover rounded border bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
                                   onClick={() => {
+                                    console.log("Image clicked:", imageUrl);
                                     setSelectedImage(imageUrl);
                                     setIsImageViewerOpen(true);
+                                    console.log("State set - selectedImage:", imageUrl, "isImageViewerOpen:", true);
                                   }}
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded"></div>
@@ -669,6 +671,11 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
             trade={editTrade}
           />
         )}
+
+        {/* Debug info - will remove after testing */}
+        <div className="fixed bottom-4 left-4 bg-blue-600 text-white p-2 rounded text-xs z-[100]">
+          Modal State - Open: {String(isImageViewerOpen)} | Image: {selectedImage ? 'set' : 'null'}
+        </div>
 
         {/* Image Viewer Modal */}
         {isImageViewerOpen && selectedImage && (
