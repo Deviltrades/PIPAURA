@@ -101,50 +101,19 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     }, 0);
   };
 
-  // Layout configuration based on weekend toggle
-  const getLayoutConfig = () => {
-    if (showWeekends) {
-      return {
-        cols: 7,
-        dayLabels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-        cellClass: 'h-20 sm:h-24',
-        cellStyle: {}
-      };
-    } else {
-      return {
-        cols: 5,
-        dayLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-        cellClass: 'min-h-[72px] sm:min-h-[84px]',
-        cellStyle: { aspectRatio: '7 / 5' }
-      };
-    }
+  // Layout configuration - always 7 columns
+  const layout = {
+    cols: 7,
+    dayLabels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    cellClass: 'h-20 sm:h-24',
+    cellStyle: {}
   };
 
-  const layout = getLayoutConfig();
-
-  // Generate calendar days based on weekend toggle
+  // Generate calendar days - always full weeks
   const generateCalendarDays = () => {
-    const start = startOfWeek(startOfMonth(viewMonth), { weekStartsOn: 1 }); // Monday start
-    const end = endOfWeek(endOfMonth(viewMonth), { weekStartsOn: 1 });
-    
-    if (showWeekends) {
-      return eachDayOfInterval({ start, end });
-    } else {
-      // Generate weekdays only (Monday to Friday)
-      const allDays = eachDayOfInterval({ start, end });
-      const weekdays = [];
-      
-      for (let i = 0; i < allDays.length; i += 7) {
-        // Take Monday to Friday from each week
-        for (let j = 0; j < 5; j++) {
-          if (allDays[i + j]) {
-            weekdays.push(allDays[i + j]);
-          }
-        }
-      }
-      
-      return weekdays;
-    }
+    const start = startOfWeek(startOfMonth(viewMonth));
+    const end = endOfWeek(endOfMonth(viewMonth));
+    return eachDayOfInterval({ start, end });
   };
 
   const calendarDays = generateCalendarDays();
@@ -294,7 +263,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
         <div className={`grid grid-cols-${layout.cols} gap-0 sm:gap-0.5`}>
           {calendarDays.map((day) => {
             const dateKey = format(day, "yyyy-MM-dd");
-            const dayTrades = tradesByDate[dateKey] || [];
+            const isWeekend = day.getDay() === 0 || day.getDay() === 6; // Sunday or Saturday
+            const shouldShowTrades = showWeekends || !isWeekend;
+            const dayTrades = shouldShowTrades ? (tradesByDate[dateKey] || []) : [];
             const dailyPnL = getDailyPnL(day);
             const isCurrentMonth = isSameMonth(day, viewMonth);
             const isSelected = selectedDate && isSameDay(day, selectedDate);
@@ -322,6 +293,16 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
             // Get styling based on P&L
             const getDayStyles = () => {
+              // Weekend days when toggle is off - make them more muted
+              if (isWeekend && !showWeekends) {
+                return {
+                  backgroundColor: '#0f0f0f',
+                  borderColor: '#2a2a2a',
+                  textColor: 'text-gray-500',
+                  boxShadow: 'none'
+                };
+              }
+              
               if (dayTrades.length === 0) {
                 return {
                   backgroundColor: '#1a1a1a',
@@ -394,14 +375,15 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 {/* Date - Top Left */}
                 <div className="absolute top-1 left-1.5">
                   <span className={`text-sm font-semibold ${
+                    isWeekend && !showWeekends ? 'text-gray-500' :
                     dayTrades.length > 0 ? 'text-black' : 'text-white'
                   }`}>
                     {format(day, 'd')}
                   </span>
                 </div>
                 
-                {/* Add Trade Button - Only show on hover for empty days */}
-                {dayTrades.length === 0 && isCurrentMonth && (
+                {/* Add Trade Button - Only show on hover for empty days (not for disabled weekends) */}
+                {dayTrades.length === 0 && isCurrentMonth && shouldShowTrades && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -415,8 +397,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                   </button>
                 )}
                 
-                {/* Trading Day Content */}
-                {dayTrades.length > 0 ? (
+                {/* Trading Day Content - Only show for enabled days */}
+                {shouldShowTrades && dayTrades.length > 0 ? (
                   <div className="absolute inset-x-2 top-8 bottom-2 flex flex-col justify-center">
                     {/* Display Value - Percentage or Dollar */}
                     <div className="text-center">
@@ -435,7 +417,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                       Trades: {dayTrades.length}
                     </div>
                   </div>
-                ) : (
+                ) : shouldShowTrades ? (
                   /* Empty Day Content - Background Logo */
                   isCurrentMonth && (
                     <>
@@ -455,7 +437,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                       </div>
                     </>
                   )
-                )}
+                ) : null}
               </div>
             );
           })}
