@@ -41,6 +41,10 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   const [isEditTradeModalOpen, setIsEditTradeModalOpen] = useState(false);
   const [editTrade, setEditTrade] = useState<Trade | null>(null);
   
+  // Image viewer state
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  
   // Filter states
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [selectedSymbol, setSelectedSymbol] = useState<string>("all");
@@ -608,7 +612,10 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                                   src={imageUrl}
                                   alt={`Trade attachment ${index + 1}`}
                                   className="w-full h-24 object-cover rounded border bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
-                                  onClick={() => window.open(imageUrl, '_blank')}
+                                  onClick={() => {
+                                    setSelectedImage(imageUrl);
+                                    setIsImageViewerOpen(true);
+                                  }}
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded"></div>
                               </div>
@@ -662,6 +669,31 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
             trade={editTrade}
           />
         )}
+
+        {/* Image Viewer Modal */}
+        <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black/95 border-none">
+            <div className="relative">
+              {selectedImage && (
+                <>
+                  <img
+                    src={selectedImage}
+                    alt="Expanded trade attachment"
+                    className="w-full h-auto max-h-[85vh] object-contain"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white border-white/20"
+                    onClick={() => setIsImageViewerOpen(false)}
+                  >
+                    ✕
+                  </Button>
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
