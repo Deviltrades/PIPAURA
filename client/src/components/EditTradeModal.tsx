@@ -136,6 +136,10 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
 
       const tradeData = {
         ...data,
+        // Convert empty strings to null for numeric fields
+        exitPrice: data.exitPrice && data.exitPrice.trim() !== "" ? data.exitPrice : null,
+        stopLoss: data.stopLoss && data.stopLoss.trim() !== "" ? data.stopLoss : null,
+        takeProfit: data.takeProfit && data.takeProfit.trim() !== "" ? data.takeProfit : null,
         pnl: calculatedPnL,
         status: "CLOSED", // Always set to CLOSED since we're tracking completed trades only
         attachments: uploadedImages, // Include uploaded images
