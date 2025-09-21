@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus, Edit3, Check, X } from "lucide-react";
 import logoImage from "@assets/btrustedprops_1758388648347.jpg";
 import { 
@@ -28,6 +30,8 @@ import { EditTradeModal } from "./EditTradeModal";
 import type { Trade, User } from "@shared/schema";
 import { Settings, Plus as PlusIcon } from "lucide-react";
 import { Link } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface TradingCalendarProps {
   className?: string;
@@ -44,6 +48,68 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   // Image viewer state
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  
+  // Inline edit state
+  const [editingTrade, setEditingTrade] = useState<string | null>(null);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
+  
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Mutation for updating trade fields
+  const updateTradeMutation = useMutation({
+    mutationFn: async ({ tradeId, updates }: { tradeId: string; updates: Partial<Trade> }) => {
+      const response = await apiRequest("PUT", `/api/trades/${tradeId}`, updates);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/trades"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics/stats"] });
+      toast({
+        title: "Trade updated",
+        description: "Your changes have been saved successfully.",
+      });
+      setEditingTrade(null);
+      setEditingField(null);
+      setEditValue('');
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update trade. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error updating trade:", error);
+    },
+  });
+
+  // Helper functions for inline editing
+  const startEdit = (tradeId: string, field: string, currentValue: string) => {
+    setEditingTrade(tradeId);
+    setEditingField(field);
+    setEditValue(currentValue || '');
+  };
+
+  const cancelEdit = () => {
+    setEditingTrade(null);
+    setEditingField(null);
+    setEditValue('');
+  };
+
+  const saveEdit = () => {
+    if (!editingTrade || !editingField) return;
+    
+    const updates: Record<string, any> = {
+      [editingField]: editValue
+    };
+    
+    updateTradeMutation.mutate({ tradeId: editingTrade, updates });
+  };
+
+  const isEditing = (tradeId: string, field: string) => {
+    return editingTrade === tradeId && editingField === field;
+  };
   
   // Filter states
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
@@ -567,44 +633,203 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                     
                     {/* Trade Details */}
                     <div className="p-4 space-y-4">
-                      {/* Complete Trade Info Grid */}
+                      {/* Complete Trade Info Grid - Editable */}
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+                        {/* Position Size */}
                         <div className="space-y-1">
                           <span className="text-muted-foreground text-xs">Position Size:</span>
-                          <div className="font-medium">{trade.positionSize}</div>
+                          {isEditing(trade.id, 'positionSize') ? (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                className="h-7 text-sm"
+                                type="number"
+                                step="0.01"
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') saveEdit();
+                                  if (e.key === 'Escape') cancelEdit();
+                                }}
+                                autoFocus
+                              />
+                              <Button size="sm" variant="ghost" onClick={saveEdit} className="h-7 w-7 p-0">
+                                <Check className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-7 w-7 p-0">
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div 
+                              className="font-medium cursor-pointer hover:bg-muted/50 px-1 py-0.5 rounded"
+                              onClick={() => startEdit(trade.id, 'positionSize', trade.positionSize)}
+                            >
+                              {trade.positionSize}
+                            </div>
+                          )}
                         </div>
+
+                        {/* Entry Price */}
                         <div className="space-y-1">
                           <span className="text-muted-foreground text-xs">Entry Price:</span>
-                          <div className="font-medium">${trade.entryPrice}</div>
+                          {isEditing(trade.id, 'entryPrice') ? (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                className="h-7 text-sm"
+                                type="number"
+                                step="0.00001"
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') saveEdit();
+                                  if (e.key === 'Escape') cancelEdit();
+                                }}
+                                autoFocus
+                              />
+                              <Button size="sm" variant="ghost" onClick={saveEdit} className="h-7 w-7 p-0">
+                                <Check className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-7 w-7 p-0">
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div 
+                              className="font-medium cursor-pointer hover:bg-muted/50 px-1 py-0.5 rounded"
+                              onClick={() => startEdit(trade.id, 'entryPrice', trade.entryPrice)}
+                            >
+                              ${trade.entryPrice}
+                            </div>
+                          )}
                         </div>
+
+                        {/* Stop Loss */}
                         <div className="space-y-1">
                           <span className="text-muted-foreground text-xs">Stop Loss:</span>
-                          <div className="font-medium">{trade.stopLoss ? `$${trade.stopLoss}` : 'Not set'}</div>
+                          {isEditing(trade.id, 'stopLoss') ? (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                className="h-7 text-sm"
+                                type="number"
+                                step="0.00001"
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') saveEdit();
+                                  if (e.key === 'Escape') cancelEdit();
+                                }}
+                                autoFocus
+                              />
+                              <Button size="sm" variant="ghost" onClick={saveEdit} className="h-7 w-7 p-0">
+                                <Check className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-7 w-7 p-0">
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div 
+                              className="font-medium cursor-pointer hover:bg-muted/50 px-1 py-0.5 rounded"
+                              onClick={() => startEdit(trade.id, 'stopLoss', trade.stopLoss || '')}
+                            >
+                              {trade.stopLoss ? `$${trade.stopLoss}` : 'Click to set'}
+                            </div>
+                          )}
                         </div>
+
+                        {/* Take Profit */}
                         <div className="space-y-1">
                           <span className="text-muted-foreground text-xs">Take Profit:</span>
-                          <div className="font-medium">{trade.takeProfit ? `$${trade.takeProfit}` : 'Not set'}</div>
+                          {isEditing(trade.id, 'takeProfit') ? (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                className="h-7 text-sm"
+                                type="number"
+                                step="0.00001"
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') saveEdit();
+                                  if (e.key === 'Escape') cancelEdit();
+                                }}
+                                autoFocus
+                              />
+                              <Button size="sm" variant="ghost" onClick={saveEdit} className="h-7 w-7 p-0">
+                                <Check className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-7 w-7 p-0">
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div 
+                              className="font-medium cursor-pointer hover:bg-muted/50 px-1 py-0.5 rounded"
+                              onClick={() => startEdit(trade.id, 'takeProfit', trade.takeProfit || '')}
+                            >
+                              {trade.takeProfit ? `$${trade.takeProfit}` : 'Click to set'}
+                            </div>
+                          )}
                         </div>
+
+                        {/* Exit Price */}
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground text-xs">Exit Price:</span>
+                          {isEditing(trade.id, 'exitPrice') ? (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                className="h-7 text-sm"
+                                type="number"
+                                step="0.00001"
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') saveEdit();
+                                  if (e.key === 'Escape') cancelEdit();
+                                }}
+                                autoFocus
+                              />
+                              <Button size="sm" variant="ghost" onClick={saveEdit} className="h-7 w-7 p-0">
+                                <Check className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-7 w-7 p-0">
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div 
+                              className="font-medium cursor-pointer hover:bg-muted/50 px-1 py-0.5 rounded"
+                              onClick={() => startEdit(trade.id, 'exitPrice', trade.exitPrice || '')}
+                            >
+                              {trade.exitPrice ? `$${trade.exitPrice}` : 'Click to set'}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Entry Date */}
                         <div className="space-y-1">
                           <span className="text-muted-foreground text-xs">Entry Date:</span>
                           <div className="font-medium">
-                            {trade.entryDate ? format(parseISO(trade.entryDate), 'MMM dd, yyyy') : 'Not set'}
+                            {trade.entryDate ? format(
+                              typeof trade.entryDate === 'string' ? parseISO(trade.entryDate) : trade.entryDate, 
+                              'MMM dd, yyyy'
+                            ) : 'Not set'}
                           </div>
                         </div>
-                        {trade.exitPrice && (
-                          <div className="space-y-1">
-                            <span className="text-muted-foreground text-xs">Exit Price:</span>
-                            <div className="font-medium">${trade.exitPrice}</div>
-                          </div>
-                        )}
-                        {trade.exitDate && (
+
+                        {/* Exit Date */}
+                        {(trade.exitDate || isEditing(trade.id, 'exitDate')) && (
                           <div className="space-y-1">
                             <span className="text-muted-foreground text-xs">Exit Date:</span>
                             <div className="font-medium">
-                              {format(parseISO(trade.exitDate), 'MMM dd, yyyy')}
+                              {trade.exitDate ? format(
+                                typeof trade.exitDate === 'string' ? parseISO(trade.exitDate) : trade.exitDate, 
+                                'MMM dd, yyyy'
+                              ) : 'Not set'}
                             </div>
                           </div>
                         )}
+
+                        {/* Status */}
                         <div className="space-y-1">
                           <span className="text-muted-foreground text-xs">Status:</span>
                           <div className="font-medium">
