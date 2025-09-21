@@ -31,14 +31,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const objectFile = await objectStorageService.getObjectEntityFile(
         req.path,
       );
-      const canAccess = await objectStorageService.canAccessObjectEntity({
-        objectFile,
-        userId: userId,
-        requestedPermission: ObjectPermission.READ,
-      });
-      if (!canAccess) {
-        return res.sendStatus(401);
+      
+      // Skip ACL check in development mode when auth is disabled
+      const isDevelopment = process.env.NODE_ENV === "development" && !req.user;
+      
+      if (!isDevelopment) {
+        const canAccess = await objectStorageService.canAccessObjectEntity({
+          objectFile,
+          userId: userId,
+          requestedPermission: ObjectPermission.READ,
+        });
+        if (!canAccess) {
+          return res.sendStatus(401);
+        }
       }
+      
       objectStorageService.downloadObject(objectFile, res);
     } catch (error) {
       console.error("Error checking object access:", error);

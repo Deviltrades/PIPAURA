@@ -605,9 +605,6 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                           <h5 className="font-medium text-sm text-muted-foreground mb-2">
                             Attached Images ({trade.attachments.length}):
                           </h5>
-                          <div className="text-xs text-muted-foreground mb-2">
-                            Debug - Attachments: {JSON.stringify(trade.attachments)}
-                          </div>
                           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                             {trade.attachments.map((imageUrl, index) => (
                               <div key={index} className="relative group">
@@ -616,15 +613,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                                   alt={`Trade attachment ${index + 1}`}
                                   className="w-full h-24 object-cover rounded border bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
                                   onClick={() => {
-                                    console.log("Image clicked:", imageUrl);
-                                    console.log("Setting selectedImage to:", imageUrl);
                                     setSelectedImage(imageUrl);
                                     setIsImageViewerOpen(true);
-                                    console.log("Image viewer should be opening...");
-                                  }}
-                                  onError={(e) => {
-                                    console.log("Image failed to load:", imageUrl);
-                                    console.error("Image load error:", e);
                                   }}
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded"></div>
@@ -680,19 +670,11 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
           />
         )}
 
-        {/* Image Viewer Modal Debug */}
-        <div className="fixed top-4 left-4 bg-red-500 text-white p-2 rounded text-xs z-[100]">
-          Debug - isImageViewerOpen: {String(isImageViewerOpen)}, selectedImage: {selectedImage || 'null'}
-        </div>
-
         {/* Image Viewer Modal */}
         {isImageViewerOpen && selectedImage && (
           <div
             className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-            onClick={() => {
-              console.log("Modal overlay clicked, closing");
-              setIsImageViewerOpen(false);
-            }}
+            onClick={() => setIsImageViewerOpen(false)}
           >
             <div
               className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center"
@@ -707,10 +689,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 variant="ghost"
                 size="sm"
                 className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white border-white/20 z-10"
-                onClick={() => {
-                  console.log("Close button clicked");
-                  setIsImageViewerOpen(false);
-                }}
+                onClick={() => setIsImageViewerOpen(false)}
               >
                 <X className="h-4 w-4" />
               </Button>
