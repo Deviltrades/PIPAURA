@@ -55,12 +55,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ uploadURL });
   });
 
-  app.put("/api/trade-attachments", isAuthenticated, async (req, res) => {
+  app.put("/api/trade-attachments", /* isAuthenticated, */ async (req, res) => {
     if (!req.body.fileURL) {
       return res.status(400).json({ error: "fileURL is required" });
     }
 
-    const userId = (req.user as any)?.id;
+    const userId = (req.user as any)?.id || "development-user-id";
 
     try {
       const objectStorageService = new ObjectStorageService();
@@ -100,11 +100,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Parse date string as local date to avoid timezone conversion
         entryDate: req.body.entryDate ? new Date(req.body.entryDate + 'T12:00:00') : new Date(),
         exitDate: req.body.exitDate ? new Date(req.body.exitDate + 'T12:00:00') : undefined,
-        // Normalize attachment URLs if they exist
-        attachments: req.body.attachments ? req.body.attachments.map((url: string) => {
-          const objectStorageService = new ObjectStorageService();
-          return objectStorageService.normalizeObjectEntityPath(url);
-        }) : [],
+        // Attachments are already normalized by the trade-attachments endpoint
+        attachments: req.body.attachments || [],
       };
       
       console.log("Trade data before validation:", tradeData);

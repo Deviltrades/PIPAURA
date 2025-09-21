@@ -200,9 +200,12 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
         });
 
         if (putResponse.ok) {
-          // Step 3: Use the upload URL directly - the server will normalize it for access
-          // The upload URL from Google Cloud Storage will be normalized by the server
-          uploadedUrls.push(uploadURL);
+          // Step 3: Call the server to set ACL and get normalized path
+          const aclResponse = await apiRequest("PUT", "/api/trade-attachments", {
+            fileURL: uploadURL
+          });
+          const { objectPath } = await aclResponse.json();
+          uploadedUrls.push(objectPath);
         } else {
           throw new Error('Upload failed');
         }
