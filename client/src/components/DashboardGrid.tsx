@@ -183,7 +183,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-blue-950 to-purple-900 p-4 lg:p-8 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 p-4 lg:p-8 text-white">
       <div className="max-w-7xl mx-auto">
         {/* Header Controls */}
         <div className="flex justify-between items-center mb-6">
