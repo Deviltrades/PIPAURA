@@ -267,7 +267,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
         </div>
 
         {/* Days of Week Header */}
-        <div className={`grid grid-cols-${layout.cols} gap-0 sm:gap-0.5 mb-2`} data-testid="grid-calendar">
+        <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} gap-0 sm:gap-0.5 mb-2`} data-testid="grid-calendar">
           {layout.dayLabels.map((day) => (
             <div key={day} className="h-8 sm:h-10 flex items-center justify-center" data-testid={`header-day-${day.toLowerCase()}`}>
               <span className="text-xs sm:text-sm font-medium text-muted-foreground">{day}</span>
@@ -276,7 +276,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
         </div>
 
         {/* Calendar Grid */}
-        <div className={`grid grid-cols-${layout.cols} gap-0 sm:gap-0.5`}>
+        <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} gap-0 sm:gap-0.5`}>
           {calendarDays.map((day) => {
             const dateKey = format(day, "yyyy-MM-dd");
             const dayTrades = tradesByDate[dateKey] || [];
