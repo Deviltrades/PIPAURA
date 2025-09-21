@@ -209,6 +209,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     totalTrades: false,
     winRate: false
   });
+  
+  // Consistency tracker toggle state
+  const [showConsistencyTracker, setShowConsistencyTracker] = useState(false);
 
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
@@ -397,6 +400,89 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     };
   };
 
+  // Get consistency score for the current month
+  const getConsistencyScore = () => {
+    const monthStart = startOfMonth(viewMonth);
+    const monthEnd = endOfMonth(viewMonth);
+    
+    // Get trades for the current month
+    const monthTrades = filteredTrades.filter(trade => {
+      if (!trade.entryDate) return false;
+      
+      let entryDate: Date;
+      if (typeof trade.entryDate === 'string') {
+        const dateString = trade.entryDate as string;
+        entryDate = dateString.indexOf('T') !== -1 ? parseISO(dateString) : new Date(dateString);
+      } else {
+        entryDate = new Date(trade.entryDate);
+      }
+      
+      return entryDate >= monthStart && entryDate <= monthEnd;
+    });
+    
+    if (monthTrades.length === 0) return { score: 0, rating: "No Data" };
+    
+    // Calculate trading frequency consistency (0-40 points)
+    const totalDaysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd }).length;
+    const tradingDays = new Set();
+    monthTrades.forEach(trade => {
+      if (trade.entryDate) {
+        let entryDate: Date;
+        if (typeof trade.entryDate === 'string') {
+          const dateString = trade.entryDate as string;
+          entryDate = dateString.indexOf('T') !== -1 ? parseISO(dateString) : new Date(dateString);
+        } else {
+          entryDate = new Date(trade.entryDate);
+        }
+        tradingDays.add(format(entryDate, "yyyy-MM-dd"));
+      }
+    });
+    
+    const tradingFrequency = (tradingDays.size / totalDaysInMonth) * 40;
+    
+    // Calculate trade size consistency (0-30 points)
+    const tradeSizes = monthTrades.map(trade => {
+      const pnl = Math.abs(typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0));
+      return pnl;
+    }).filter(size => size > 0);
+    
+    let sizeConsistency = 0;
+    if (tradeSizes.length > 1) {
+      const avgSize = tradeSizes.reduce((sum, size) => sum + size, 0) / tradeSizes.length;
+      const variance = tradeSizes.reduce((sum, size) => sum + Math.pow(size - avgSize, 2), 0) / tradeSizes.length;
+      const standardDeviation = Math.sqrt(variance);
+      const coefficientOfVariation = avgSize > 0 ? standardDeviation / avgSize : 1;
+      sizeConsistency = Math.max(0, 30 * (1 - coefficientOfVariation));
+    } else if (tradeSizes.length === 1) {
+      sizeConsistency = 30; // Perfect consistency with one trade
+    }
+    
+    // Calculate win rate consistency (0-30 points)
+    const winningTrades = monthTrades.filter(trade => {
+      const pnl = typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0);
+      return pnl > 0;
+    });
+    
+    const winRate = winningTrades.length / monthTrades.length;
+    let winRateConsistency = 0;
+    
+    // Award points based on win rate - higher is better
+    if (winRate >= 0.7) winRateConsistency = 30;
+    else if (winRate >= 0.5) winRateConsistency = 25;
+    else if (winRate >= 0.4) winRateConsistency = 20;
+    else if (winRate >= 0.3) winRateConsistency = 15;
+    else winRateConsistency = 10;
+    
+    const totalScore = Math.min(100, Math.round(tradingFrequency + sizeConsistency + winRateConsistency));
+    
+    let rating = "Poor";
+    if (totalScore >= 80) rating = "Excellent";
+    else if (totalScore >= 60) rating = "Good";
+    else if (totalScore >= 40) rating = "Fair";
+    
+    return { score: totalScore, rating };
+  };
+
   const getWeeklyTotals = () => {
     const start = startOfWeek(startOfMonth(viewMonth));
     const end = endOfWeek(endOfMonth(viewMonth));
@@ -536,6 +622,17 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               />
               <Label htmlFor="monthly-summary-toggle" className="text-sm font-medium">
                 Monthly Stats
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="consistency-tracker-toggle" 
+                checked={showConsistencyTracker} 
+                onCheckedChange={setShowConsistencyTracker}
+                data-testid="switch-consistency-tracker"
+              />
+              <Label htmlFor="consistency-tracker-toggle" className="text-sm font-medium">
+                Consistency
               </Label>
             </div>
           </div>
@@ -771,6 +868,74 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 </div>
               </PopoverContent>
             </Popover>
+          </div>
+        )}
+
+        {/* Consistency Tracker Bar */}
+        {showConsistencyTracker && (
+          <div className="mb-4 sm:mb-6 bg-white dark:bg-gray-800 rounded-lg border p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">Consistency Score</h4>
+              {(() => {
+                const { score, rating } = getConsistencyScore();
+                return (
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">{score}%</div>
+                    <div className={`text-sm font-medium ${
+                      score >= 80 ? 'text-green-600' : 
+                      score >= 60 ? 'text-yellow-600' : 
+                      score >= 40 ? 'text-orange-600' : 'text-red-600'
+                    }`}>
+                      {rating}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="w-full">
+              {(() => {
+                const { score } = getConsistencyScore();
+                return (
+                  <div className="flex items-center gap-2">
+                    {/* Color Legend */}
+                    <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-300 mb-2">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <span>0 - 30%</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                        <span>30 - 60%</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span>60 - 100%</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              
+              {/* Thin Progress Bar */}
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                {(() => {
+                  const { score } = getConsistencyScore();
+                  let barColor = 'bg-red-500';
+                  if (score >= 60) barColor = 'bg-green-500';
+                  else if (score >= 30) barColor = 'bg-orange-500';
+                  
+                  return (
+                    <div
+                      className={`h-full ${barColor} rounded-full transition-all duration-500 ease-out`}
+                      style={{ width: `${score}%` }}
+                      data-testid="consistency-progress-bar"
+                    />
+                  );
+                })()}
+              </div>
+            </div>
           </div>
         )}
 
