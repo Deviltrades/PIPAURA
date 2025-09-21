@@ -611,18 +611,14 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                                 <div
                                   className="w-full h-24 bg-gray-100 rounded border cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center"
                                   onClick={() => {
-                                    console.log("CLICK HANDLER TRIGGERED:", imageUrl);
                                     setSelectedImage(imageUrl);
                                     setIsImageViewerOpen(true);
-                                    console.log("State should be set now");
                                   }}
                                 >
                                   <img
                                     src={imageUrl}
                                     alt={`Trade attachment ${index + 1}`}
                                     className="max-w-full max-h-full object-cover rounded"
-                                    onLoad={() => console.log("Image loaded successfully:", imageUrl)}
-                                    onError={() => console.log("Image failed to load:", imageUrl)}
                                   />
                                 </div>
                               </div>
@@ -676,11 +672,6 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
             trade={editTrade}
           />
         )}
-
-        {/* Debug info - will remove after testing */}
-        <div className="fixed bottom-4 left-4 bg-blue-600 text-white p-2 rounded text-xs z-[100]">
-          Modal State - Open: {String(isImageViewerOpen)} | Image: {selectedImage ? 'set' : 'null'}
-        </div>
 
         {/* Image Viewer Modal */}
         {isImageViewerOpen && selectedImage && (
