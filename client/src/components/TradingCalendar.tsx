@@ -212,6 +212,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   
   // Consistency tracker toggle state
   const [showConsistencyTracker, setShowConsistencyTracker] = useState(false);
+  
+  // Clear view toggle state - hides filters and toggles for clean calendar view
+  const [clearView, setClearView] = useState(false);
 
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
@@ -579,62 +582,77 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
         {/* Header with Month Navigation and Display Mode Toggle */}
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <div className="flex items-center gap-4">
+            {/* Clear View Toggle */}
+            <Button
+              variant={clearView ? "default" : "outline"}
+              size="sm"
+              onClick={() => setClearView(!clearView)}
+              className="text-xs"
+              data-testid="button-clear-view"
+            >
+              Clear View
+            </Button>
+            
             <h2 className="text-lg sm:text-xl font-semibold text-foreground">
               {format(viewMonth, "MMMM yyyy")}
             </h2>
-            <Select value={displayMode} onValueChange={(value: "percentage" | "dollar") => setDisplayMode(value)}>
-              <SelectTrigger className="w-28 h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="percentage">%</SelectItem>
-                <SelectItem value="dollar">$</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="flex items-center space-x-2">
-              <Switch 
-                id="weekends-toggle" 
-                checked={showWeekends} 
-                onCheckedChange={setShowWeekends}
-                data-testid="switch-weekends"
-              />
-              <Label htmlFor="weekends-toggle" className="text-sm font-medium">
-                Weekends
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch 
-                id="weekly-totals-toggle" 
-                checked={showWeeklyTotals} 
-                onCheckedChange={setShowWeeklyTotals}
-                data-testid="switch-weekly-totals"
-              />
-              <Label htmlFor="weekly-totals-toggle" className="text-sm font-medium">
-                Weekly Totals
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch 
-                id="monthly-summary-toggle" 
-                checked={showMonthlySummary} 
-                onCheckedChange={setShowMonthlySummary}
-                data-testid="switch-monthly-summary"
-              />
-              <Label htmlFor="monthly-summary-toggle" className="text-sm font-medium">
-                Monthly Stats
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch 
-                id="consistency-tracker-toggle" 
-                checked={showConsistencyTracker} 
-                onCheckedChange={setShowConsistencyTracker}
-                data-testid="switch-consistency-tracker"
-              />
-              <Label htmlFor="consistency-tracker-toggle" className="text-sm font-medium">
-                Consistency
-              </Label>
-            </div>
+            {!clearView && (
+              <>
+                <Select value={displayMode} onValueChange={(value: "percentage" | "dollar") => setDisplayMode(value)}>
+                  <SelectTrigger className="w-28 h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="percentage">%</SelectItem>
+                    <SelectItem value="dollar">$</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="weekends-toggle" 
+                    checked={showWeekends} 
+                    onCheckedChange={setShowWeekends}
+                    data-testid="switch-weekends"
+                  />
+                  <Label htmlFor="weekends-toggle" className="text-sm font-medium">
+                    Weekends
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="weekly-totals-toggle" 
+                    checked={showWeeklyTotals} 
+                    onCheckedChange={setShowWeeklyTotals}
+                    data-testid="switch-weekly-totals"
+                  />
+                  <Label htmlFor="weekly-totals-toggle" className="text-sm font-medium">
+                    Weekly Totals
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="monthly-summary-toggle" 
+                    checked={showMonthlySummary} 
+                    onCheckedChange={setShowMonthlySummary}
+                    data-testid="switch-monthly-summary"
+                  />
+                  <Label htmlFor="monthly-summary-toggle" className="text-sm font-medium">
+                    Monthly Stats
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="consistency-tracker-toggle" 
+                    checked={showConsistencyTracker} 
+                    onCheckedChange={setShowConsistencyTracker}
+                    data-testid="switch-consistency-tracker"
+                  />
+                  <Label htmlFor="consistency-tracker-toggle" className="text-sm font-medium">
+                    Consistency
+                  </Label>
+                </div>
+              </>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Link href="/calendar-settings">
@@ -667,55 +685,57 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
         </div>
 
         {/* Filter Controls */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 sm:mb-6">
-          <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-            <SelectTrigger className="h-9 text-xs sm:text-sm">
-              <SelectValue placeholder="All Accounts" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Accounts</SelectItem>
-              <SelectItem value="main">Main Account</SelectItem>
-              <SelectItem value="demo">Demo Account</SelectItem>
-              <SelectItem value="prop">Prop Firm</SelectItem>
-            </SelectContent>
-          </Select>
+        {!clearView && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 sm:mb-6">
+            <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+              <SelectTrigger className="h-9 text-xs sm:text-sm">
+                <SelectValue placeholder="All Accounts" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Accounts</SelectItem>
+                <SelectItem value="main">Main Account</SelectItem>
+                <SelectItem value="demo">Demo Account</SelectItem>
+                <SelectItem value="prop">Prop Firm</SelectItem>
+              </SelectContent>
+            </Select>
 
-          <Select value={selectedSymbol} onValueChange={setSelectedSymbol}>
-            <SelectTrigger className="h-9 text-xs sm:text-sm">
-              <SelectValue placeholder="All Symbols" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Symbols</SelectItem>
-              <SelectItem value="forex">Forex</SelectItem>
-              <SelectItem value="indices">Indices</SelectItem>
-              <SelectItem value="crypto">Crypto</SelectItem>
-            </SelectContent>
-          </Select>
+            <Select value={selectedSymbol} onValueChange={setSelectedSymbol}>
+              <SelectTrigger className="h-9 text-xs sm:text-sm">
+                <SelectValue placeholder="All Symbols" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Symbols</SelectItem>
+                <SelectItem value="forex">Forex</SelectItem>
+                <SelectItem value="indices">Indices</SelectItem>
+                <SelectItem value="crypto">Crypto</SelectItem>
+              </SelectContent>
+            </Select>
 
-          <Select value={selectedStrategy} onValueChange={setSelectedStrategy}>
-            <SelectTrigger className="h-9 text-xs sm:text-sm">
-              <SelectValue placeholder="All Strategies" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Strategies</SelectItem>
-              <SelectItem value="scalping">Scalping</SelectItem>
-              <SelectItem value="swing">Swing Trading</SelectItem>
-              <SelectItem value="breakout">Breakout</SelectItem>
-              <SelectItem value="reversal">Reversal</SelectItem>
-            </SelectContent>
-          </Select>
+            <Select value={selectedStrategy} onValueChange={setSelectedStrategy}>
+              <SelectTrigger className="h-9 text-xs sm:text-sm">
+                <SelectValue placeholder="All Strategies" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Strategies</SelectItem>
+                <SelectItem value="scalping">Scalping</SelectItem>
+                <SelectItem value="swing">Swing Trading</SelectItem>
+                <SelectItem value="breakout">Breakout</SelectItem>
+                <SelectItem value="reversal">Reversal</SelectItem>
+              </SelectContent>
+            </Select>
 
-          <Select value={selectedDirection} onValueChange={setSelectedDirection}>
-            <SelectTrigger className="h-9 text-xs sm:text-sm">
-              <SelectValue placeholder="All Directions" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Directions</SelectItem>
-              <SelectItem value="buy">Buy Only</SelectItem>
-              <SelectItem value="sell">Sell Only</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            <Select value={selectedDirection} onValueChange={setSelectedDirection}>
+              <SelectTrigger className="h-9 text-xs sm:text-sm">
+                <SelectValue placeholder="All Directions" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Directions</SelectItem>
+                <SelectItem value="buy">Buy Only</SelectItem>
+                <SelectItem value="sell">Sell Only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Monthly Summary Bar */}
         {showMonthlySummary && (
