@@ -873,18 +873,18 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
         {/* Consistency Tracker Bar */}
         {showConsistencyTracker && (
-          <div className="mb-4 sm:mb-6 bg-white dark:bg-gray-800 rounded-lg border p-4">
+          <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-4 py-3">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-medium text-gray-900 dark:text-white">Consistency Score</h4>
+              <h4 className="text-sm font-medium text-white">Consistency Score</h4>
               {(() => {
                 const { score, rating } = getConsistencyScore();
                 return (
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white">{score}%</div>
+                    <div className="text-2xl font-bold text-white">{score}%</div>
                     <div className={`text-sm font-medium ${
-                      score >= 80 ? 'text-green-600' : 
-                      score >= 60 ? 'text-yellow-600' : 
-                      score >= 40 ? 'text-orange-600' : 'text-red-600'
+                      score >= 80 ? 'text-green-400' : 
+                      score >= 60 ? 'text-yellow-400' : 
+                      score >= 40 ? 'text-orange-400' : 'text-red-400'
                     }`}>
                       {rating}
                     </div>
@@ -900,7 +900,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 return (
                   <div className="flex items-center gap-2">
                     {/* Color Legend */}
-                    <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-300 mb-2">
+                    <div className="flex items-center gap-4 text-xs text-gray-300 mb-2">
                       <div className="flex items-center gap-1">
                         <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                         <span>0 - 30%</span>
@@ -919,7 +919,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               })()}
               
               {/* Thin Progress Bar */}
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
                 {(() => {
                   const { score } = getConsistencyScore();
                   let barColor = 'bg-red-500';
