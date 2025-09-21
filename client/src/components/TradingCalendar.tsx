@@ -872,72 +872,30 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
         )}
 
         {/* Consistency Tracker Bar */}
-        {showConsistencyTracker && (
-          <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-4 py-3">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-medium text-white">Consistency Score</h4>
-              {(() => {
-                const { score, rating } = getConsistencyScore();
-                return (
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-white">{score}%</div>
-                    <div className={`text-sm font-medium ${
-                      score >= 80 ? 'text-green-400' : 
-                      score >= 60 ? 'text-yellow-400' : 
-                      score >= 40 ? 'text-orange-400' : 'text-red-400'
-                    }`}>
-                      {rating}
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-            
-            {/* Progress Bar */}
-            <div className="w-full">
-              {(() => {
-                const { score } = getConsistencyScore();
-                return (
-                  <div className="flex items-center gap-2">
-                    {/* Color Legend */}
-                    <div className="flex items-center gap-4 text-xs text-gray-300 mb-2">
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <span>0 - 30%</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                        <span>30 - 60%</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                        <span>60 - 100%</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-              
-              {/* Thin Progress Bar */}
-              <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
-                {(() => {
-                  const { score } = getConsistencyScore();
-                  let barColor = 'bg-red-500';
-                  if (score >= 60) barColor = 'bg-green-500';
-                  else if (score >= 30) barColor = 'bg-orange-500';
-                  
-                  return (
-                    <div
-                      className={`h-full ${barColor} rounded-full transition-all duration-500 ease-out`}
-                      style={{ width: `${score}%` }}
-                      data-testid="consistency-progress-bar"
-                    />
-                  );
-                })()}
+        {showConsistencyTracker && (() => {
+          const { score, rating } = getConsistencyScore();
+          const barColor = score < 30 ? '#ef4444' : score < 60 ? '#f97316' : '#22c55e';
+          const ratingColor = score < 30 ? 'text-red-400' : score < 60 ? 'text-orange-400' : 'text-green-400';
+          
+          return (
+            <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-white text-sm font-medium">Consistency:</span>
+                <div className="relative w-40 sm:w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className="absolute left-0 top-0 h-full rounded-full transition-all duration-500 ease-out" 
+                    style={{ width: `${score}%`, backgroundColor: barColor }}
+                    data-testid="consistency-progress-bar"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-white text-sm font-semibold">{score}%</span>
+                <span className={`text-xs font-medium ${ratingColor}`}>{rating}</span>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Calendar Container */}
         <div className={`flex ${showWeeklyTotals ? 'gap-4' : ''}`}>
