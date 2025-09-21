@@ -100,6 +100,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Parse date string as local date to avoid timezone conversion
         entryDate: req.body.entryDate ? new Date(req.body.entryDate + 'T12:00:00') : new Date(),
         exitDate: req.body.exitDate ? new Date(req.body.exitDate + 'T12:00:00') : undefined,
+        // Normalize attachment URLs if they exist
+        attachments: req.body.attachments ? req.body.attachments.map((url: string) => {
+          const objectStorageService = new ObjectStorageService();
+          return objectStorageService.normalizeObjectEntityPath(url);
+        }) : [],
       };
       
       console.log("Trade data before validation:", tradeData);

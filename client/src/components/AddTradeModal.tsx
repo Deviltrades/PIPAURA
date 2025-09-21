@@ -200,11 +200,9 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
         });
 
         if (putResponse.ok) {
-          // Step 3: Extract object path from upload URL to create public URL
-          const urlParts = uploadURL.split('?')[0]; // Remove query parameters
-          const objectPath = urlParts.split('.replit.app/')[1]; // Extract path after domain
-          const publicUrl = `/objects/${objectPath}`;
-          uploadedUrls.push(publicUrl);
+          // Step 3: Use the upload URL directly - the server will normalize it for access
+          // The upload URL from Google Cloud Storage will be normalized by the server
+          uploadedUrls.push(uploadURL);
         } else {
           throw new Error('Upload failed');
         }
