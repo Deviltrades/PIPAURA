@@ -32,8 +32,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.path,
       );
       
-      // Skip ACL check in development mode when auth is disabled
-      const isDevelopment = process.env.NODE_ENV === "development" && !req.user;
+      // Skip ACL check in development mode 
+      const isDevelopment = process.env.NODE_ENV === "development";
       
       if (!isDevelopment) {
         const canAccess = await objectStorageService.canAccessObjectEntity({
