@@ -114,38 +114,61 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   // Image upload handler
   const handleImageUpload = async (tradeId: string, files: File[]) => {
     try {
-      const formData = new FormData();
-      files.forEach((file, index) => {
-        formData.append(`files`, file);
-      });
+      const uploadedUrls: string[] = [];
 
-      const response = await fetch('/api/object-storage/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) {
+          toast({
+            title: "Invalid file type",
+            description: "Please upload only image files (JPG, PNG, GIF, etc.)",
+            variant: "destructive",
+          });
+          continue;
+        }
 
-      if (!response.ok) {
-        throw new Error('Failed to upload images');
+        // Step 1: Get upload URL from server
+        const uploadResponse = await apiRequest("POST", "/api/objects/upload");
+        const { uploadURL } = await uploadResponse.json();
+
+        // Step 2: Upload file to the signed URL
+        const putResponse = await fetch(uploadURL, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': file.type,
+          },
+        });
+
+        if (putResponse.ok) {
+          // Step 3: Call the server to set ACL and get normalized path
+          const aclResponse = await apiRequest("PUT", "/api/trade-attachments", {
+            fileURL: uploadURL
+          });
+          const { objectPath } = await aclResponse.json();
+          uploadedUrls.push(objectPath);
+        } else {
+          throw new Error('Upload failed');
+        }
       }
 
-      const { urls } = await response.json();
-      
-      // Get current trade data
-      const currentTrade = tradesData?.find(t => t.id === tradeId);
-      if (!currentTrade) return;
+      if (uploadedUrls.length > 0) {
+        // Get current trade data
+        const currentTrade = tradesData?.find(t => t.id === tradeId);
+        if (!currentTrade) return;
 
-      // Update trade with new attachments
-      const updatedAttachments = [...(currentTrade.attachments || []), ...urls];
-      
-      updateTradeMutation.mutate({
-        tradeId,
-        updates: { attachments: updatedAttachments }
-      });
+        // Update trade with new attachments
+        const updatedAttachments = [...(currentTrade.attachments || []), ...uploadedUrls];
+        
+        updateTradeMutation.mutate({
+          tradeId,
+          updates: { attachments: updatedAttachments }
+        });
 
-      toast({
-        title: "Images uploaded",
-        description: `Successfully added ${files.length} image(s) to the trade.`,
-      });
+        toast({
+          title: "Images uploaded",
+          description: `Successfully added ${uploadedUrls.length} image(s) to the trade.`,
+        });
+      }
 
     } catch (error) {
       console.error('Error uploading images:', error);
