@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { format } from "date-fns";
-import { X } from "lucide-react";
+import { X, Upload, Image as ImageIcon, Trash2 } from "lucide-react";
 
 import {
   Dialog,
@@ -45,6 +45,7 @@ const addTradeSchema = z.object({
   stopLoss: z.string().min(1, "Stop loss is required"),
   takeProfit: z.string().min(1, "Take profit is required"),
   notes: z.string().optional(),
+  attachments: z.array(z.string()).optional(),
   hasPnL: z.boolean().optional(),
   pnlType: z.enum(["profit", "loss"]).optional(),
   pnlAmount: z.string().optional(),
@@ -83,6 +84,8 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedInstrumentType, setSelectedInstrumentType] = useState<string>("FOREX");
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<AddTradeFormData>({
     resolver: zodResolver(addTradeSchema),
@@ -95,6 +98,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
       stopLoss: "",
       takeProfit: "",
       notes: "",
+      attachments: [],
       hasPnL: false,
       pnlType: "profit",
       pnlAmount: "",
@@ -120,6 +124,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
         entryDate: localDateString, // Send as local date string
         pnl: calculatedPnL,
         status: "CLOSED", // Always set to CLOSED since we're tracking completed trades only
+        attachments: uploadedImages, // Include uploaded images
         // Remove the extra fields that aren't in the backend schema
         hasPnL: undefined,
         pnlType: undefined,
@@ -137,6 +142,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
       queryClient.invalidateQueries({ queryKey: ["/api/trades"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics/stats"] });
       form.reset();
+      setUploadedImages([]); // Clear uploaded images
       onClose();
     },
     onError: (error) => {
@@ -160,6 +166,70 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
       default:
         return [];
     }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    setIsUploading(true);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) {
+          toast({
+            title: "Invalid file type",
+            description: "Please upload only image files (JPG, PNG, GIF, etc.)",
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        // Step 1: Get upload URL from server
+        const uploadResponse = await apiRequest("POST", "/api/objects/upload");
+        const { uploadURL } = await uploadResponse.json();
+
+        // Step 2: Upload file to the signed URL
+        const putResponse = await fetch(uploadURL, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': file.type,
+          },
+        });
+
+        if (putResponse.ok) {
+          // Step 3: Extract object path from upload URL to create public URL
+          const urlParts = uploadURL.split('?')[0]; // Remove query parameters
+          const objectPath = urlParts.split('.replit.app/')[1]; // Extract path after domain
+          const publicUrl = `/objects/${objectPath}`;
+          uploadedUrls.push(publicUrl);
+        } else {
+          throw new Error('Upload failed');
+        }
+      }
+
+      setUploadedImages(prev => [...prev, ...uploadedUrls]);
+      toast({
+        title: "Images uploaded",
+        description: `Successfully uploaded ${uploadedUrls.length} image(s)`,
+      });
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload images. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      // Reset input
+      event.target.value = '';
+    }
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    setUploadedImages(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
   const onSubmit = (data: AddTradeFormData) => {
@@ -414,23 +484,95 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
             </div>
 
             {/* Trade Notes */}
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Trade Notes</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Add your trade analysis, reasoning, and strategy..."
-                      className="bg-background border-input min-h-[80px]"
-                      {...field}
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Trade Notes</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Add your trade analysis, reasoning, and strategy..."
+                        className="bg-background border-input min-h-[80px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Image Upload Section */}
+              <div className="border rounded-lg p-4 bg-muted/20">
+                <div className="flex items-center justify-between mb-3">
+                  <Label className="text-sm font-medium">Attach Images</Label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="image-upload"
+                      disabled={isUploading}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                      disabled={isUploading}
+                      className="h-8"
+                    >
+                      {isUploading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-1" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 mr-1" />
+                          Upload Images
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Uploaded Images Display */}
+                {uploadedImages.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {uploadedImages.map((imageUrl, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={imageUrl}
+                          alt={`Trade attachment ${index + 1}`}
+                          className="w-full h-20 object-cover rounded border bg-gray-100"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeImage(index)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {uploadedImages.length === 0 && (
+                  <div className="text-center py-4 text-muted-foreground">
+                    <ImageIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Upload screenshots, charts, or analysis images</p>
+                    <p className="text-xs">Supports JPG, PNG, GIF formats</p>
+                  </div>
+                )}
+              </div>
+            </div>
 
             <div className="flex justify-between items-center pt-4">
               <p className="text-sm text-muted-foreground">
