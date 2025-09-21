@@ -608,18 +608,23 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                             {trade.attachments.map((imageUrl, index) => (
                               <div key={index} className="relative group">
-                                <img
-                                  src={imageUrl}
-                                  alt={`Trade attachment ${index + 1}`}
-                                  className="w-full h-24 object-cover rounded border bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
+                                <div
+                                  className="w-full h-24 bg-gray-100 rounded border cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center"
                                   onClick={() => {
-                                    console.log("Image clicked:", imageUrl);
+                                    console.log("CLICK HANDLER TRIGGERED:", imageUrl);
                                     setSelectedImage(imageUrl);
                                     setIsImageViewerOpen(true);
-                                    console.log("State set - selectedImage:", imageUrl, "isImageViewerOpen:", true);
+                                    console.log("State should be set now");
                                   }}
-                                />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded"></div>
+                                >
+                                  <img
+                                    src={imageUrl}
+                                    alt={`Trade attachment ${index + 1}`}
+                                    className="max-w-full max-h-full object-cover rounded"
+                                    onLoad={() => console.log("Image loaded successfully:", imageUrl)}
+                                    onError={() => console.log("Image failed to load:", imageUrl)}
+                                  />
+                                </div>
                               </div>
                             ))}
                           </div>
