@@ -121,6 +121,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     return true;
   }) : [];
 
+
   // Group filtered trades by date
   const tradesByDate = filteredTrades ? filteredTrades.reduce((acc, trade) => {
     if (trade.entryDate) {
