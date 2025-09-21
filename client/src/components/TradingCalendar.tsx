@@ -353,17 +353,19 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 data-testid={`cell-day-${format(day, 'yyyy-MM-dd')}`}
                 onClick={() => setSelectedDate(day)}
               >
-                {/* Dark Blue Triangle - Top Right */}
-                <div 
-                  className="absolute top-0 right-0"
-                  style={{
-                    width: 0,
-                    height: 0,
-                    borderStyle: 'solid',
-                    borderWidth: '0 34px 34px 0',
-                    borderColor: 'transparent #1e3a8a transparent transparent'
-                  }}
-                />
+                {/* Dark Blue Triangle - Top Right - Only show on trading days */}
+                {dayTrades.length > 0 && (
+                  <div 
+                    className="absolute top-0 right-0"
+                    style={{
+                      width: 0,
+                      height: 0,
+                      borderStyle: 'solid',
+                      borderWidth: '0 34px 34px 0',
+                      borderColor: 'transparent #1e3a8a transparent transparent'
+                    }}
+                  />
+                )}
                 
                 {/* Success/Failure Icon - Inside Triangle */}
                 {dayTrades.length > 0 && (
