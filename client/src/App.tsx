@@ -38,6 +38,26 @@ function Router() {
 
   return (
     <Switch>
+      {/* TEMPORARILY DISABLED AUTHENTICATION - ALWAYS SHOW MAIN APP */}
+      <Layout>
+        <Route path="/" component={Dashboard} />
+        <Route path="/signals" component={Signals} />
+        <Route path="/trades" component={Trades} />
+        <Route path="/positions" component={Positions} />
+        <Route path="/calendar" component={Calendar} />
+        <Route path="/accounts" component={Accounts} />
+        <Route path="/widgets" component={Widgets} />
+        <Route path="/strategy" component={Strategy} />
+        <Route path="/notes" component={Notes} />
+        <Route path="/charts" component={Charts} />
+        <Route path="/mentor" component={Mentor} />
+        <Route path="/analytics" component={Analytics} />
+        <Route path="/settings" component={Settings} />
+        <Route path="/calendar-settings" component={CalendarSettings} />
+      </Layout>
+      
+      {/* Keep auth routes available for future re-implementation */}
+      {/* 
       {!user ? (
         <>
           <Route path="/pricing" component={Pricing} />
@@ -62,6 +82,7 @@ function Router() {
           <Route path="/calendar-settings" component={CalendarSettings} />
         </Layout>
       )}
+      */}
       <Route component={NotFound} />
     </Switch>
   );
