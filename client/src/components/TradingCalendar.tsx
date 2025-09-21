@@ -4,11 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus, Edit3, Check, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus, Edit3, Check, X, Settings } from "lucide-react";
 import logoImage from "@assets/btrustedprops_1758388648347.jpg";
 import { 
   format, 
@@ -28,7 +30,7 @@ import {
 import { AddTradeModal } from "./AddTradeModal";
 import { EditTradeModal } from "./EditTradeModal";
 import type { Trade, User } from "@shared/schema";
-import { Settings, Plus as PlusIcon } from "lucide-react";
+import { Plus as PlusIcon } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -198,6 +200,15 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   
   // Monthly summary toggle state
   const [showMonthlySummary, setShowMonthlySummary] = useState(false);
+  
+  // Monthly stats visibility settings
+  const [monthlyStatsConfig, setMonthlyStatsConfig] = useState({
+    riskReward: true,
+    totalPnL: true,
+    daysTraded: true,
+    totalTrades: false,
+    winRate: false
+  });
 
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
@@ -374,10 +385,15 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     
     const riskRewardRatio = avgLoss > 0 ? (avgWin / avgLoss) : 0;
     
+    // Calculate win rate
+    const winRate = monthTrades.length > 0 ? (winningTrades.length / monthTrades.length) * 100 : 0;
+    
     return {
       totalPnL,
       daysTraded: uniqueDates.size,
-      riskRewardRatio
+      riskRewardRatio,
+      totalTrades: monthTrades.length,
+      winRate
     };
   };
 
@@ -606,42 +622,155 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
         {/* Monthly Summary Bar */}
         {showMonthlySummary && (
-          <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-4 py-3 flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-white text-sm font-medium">Monthly stats:</span>
+          <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-white text-sm font-medium">Monthly stats:</span>
+              </div>
+              
+              {(() => {
+                const monthlyStats = getMonthlySummary();
+                return (
+                  <div className="flex items-center gap-4 text-white">
+                    {/* Total Net P&L */}
+                    {monthlyStatsConfig.totalPnL && (
+                      <div className={`px-3 py-2 rounded-md text-sm font-semibold ${
+                        monthlyStats.totalPnL >= 0 ? 'bg-green-600' : 'bg-red-600'
+                      }`}>
+                        {monthlyStats.totalPnL >= 0 ? '+' : ''}${monthlyStats.totalPnL.toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}
+                      </div>
+                    )}
+                    
+                    {/* Total Days Traded */}
+                    {monthlyStatsConfig.daysTraded && (
+                      <div className="text-sm">
+                        <span className="font-semibold">{monthlyStats.daysTraded}</span> days
+                      </div>
+                    )}
+                    
+                    {/* Risk/Reward Ratio */}
+                    {monthlyStatsConfig.riskReward && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
+                          <span className="text-xs">R</span>
+                        </div>
+                        <span className="text-sm">
+                          {monthlyStats.riskRewardRatio > 0 ? monthlyStats.riskRewardRatio.toFixed(2) : '0.00'}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Total Trades */}
+                    {monthlyStatsConfig.totalTrades && (
+                      <div className="text-sm">
+                        <span className="font-semibold">{monthlyStats.totalTrades}</span> trades
+                      </div>
+                    )}
+
+                    {/* Win Rate */}
+                    {monthlyStatsConfig.winRate && (
+                      <div className="text-sm">
+                        <span className="font-semibold">{monthlyStats.winRate.toFixed(1)}%</span> win rate
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
-            
-            {(() => {
-              const monthlyStats = getMonthlySummary();
-              return (
-                <div className="flex items-center gap-4 text-white">
-                  {/* Total Net P&L */}
-                  <div className={`px-3 py-2 rounded-md text-sm font-semibold ${
-                    monthlyStats.totalPnL >= 0 ? 'bg-green-600' : 'bg-red-600'
-                  }`}>
-                    {monthlyStats.totalPnL >= 0 ? '+' : ''}${monthlyStats.totalPnL.toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    })}
-                  </div>
+
+            {/* Settings Cog */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-white hover:bg-slate-700"
+                  data-testid="button-monthly-stats-settings"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 bg-slate-900 border-slate-700">
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium text-white mb-3">Select which stats to display</h4>
                   
-                  {/* Total Days Traded */}
-                  <div className="text-sm">
-                    <span className="font-semibold">{monthlyStats.daysTraded}</span> days
-                  </div>
-                  
-                  {/* Risk/Reward Ratio */}
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-                      <span className="text-xs">R</span>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="pnl-stat"
+                        checked={monthlyStatsConfig.totalPnL}
+                        onCheckedChange={(checked) => 
+                          setMonthlyStatsConfig(prev => ({ ...prev, totalPnL: checked as boolean }))
+                        }
+                        data-testid="checkbox-total-pnl"
+                      />
+                      <Label htmlFor="pnl-stat" className="text-sm text-white">
+                        Daily P/L
+                      </Label>
                     </div>
-                    <span className="text-sm">
-                      {monthlyStats.riskRewardRatio > 0 ? monthlyStats.riskRewardRatio.toFixed(2) : '0.00'}
-                    </span>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="days-stat"
+                        checked={monthlyStatsConfig.daysTraded}
+                        onCheckedChange={(checked) => 
+                          setMonthlyStatsConfig(prev => ({ ...prev, daysTraded: checked as boolean }))
+                        }
+                        data-testid="checkbox-days-traded"
+                      />
+                      <Label htmlFor="days-stat" className="text-sm text-white">
+                        Days Traded
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="risk-reward-stat"
+                        checked={monthlyStatsConfig.riskReward}
+                        onCheckedChange={(checked) => 
+                          setMonthlyStatsConfig(prev => ({ ...prev, riskReward: checked as boolean }))
+                        }
+                        data-testid="checkbox-risk-reward"
+                      />
+                      <Label htmlFor="risk-reward-stat" className="text-sm text-white">
+                        R Multiple
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="total-trades-stat"
+                        checked={monthlyStatsConfig.totalTrades}
+                        onCheckedChange={(checked) => 
+                          setMonthlyStatsConfig(prev => ({ ...prev, totalTrades: checked as boolean }))
+                        }
+                        data-testid="checkbox-total-trades"
+                      />
+                      <Label htmlFor="total-trades-stat" className="text-sm text-white">
+                        Number of trades
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="win-rate-stat"
+                        checked={monthlyStatsConfig.winRate}
+                        onCheckedChange={(checked) => 
+                          setMonthlyStatsConfig(prev => ({ ...prev, winRate: checked as boolean }))
+                        }
+                        data-testid="checkbox-win-rate"
+                      />
+                      <Label htmlFor="win-rate-stat" className="text-sm text-white">
+                        Day Winrate
+                      </Label>
+                    </div>
                   </div>
                 </div>
-              );
-            })()}
+              </PopoverContent>
+            </Popover>
           </div>
         )}
 
