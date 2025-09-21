@@ -35,7 +35,6 @@ import type { Trade } from "@shared/schema";
 
 const editTradeSchema = z.object({
   exitPrice: z.string().min(1, "Exit price is required"),
-  status: z.enum(["OPEN", "CLOSED"]),
 });
 
 type EditTradeFormData = z.infer<typeof editTradeSchema>;
@@ -54,30 +53,28 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
     resolver: zodResolver(editTradeSchema),
     defaultValues: {
       exitPrice: trade.exitPrice || "",
-      status: trade.status || "OPEN",
     },
   });
 
   const editTradeMutation = useMutation({
     mutationFn: async (data: EditTradeFormData) => {
-      // Calculate P&L when closing trade
+      // Calculate P&L for completed trade
       const entryPrice = parseFloat(trade.entryPrice);
       const exitPrice = parseFloat(data.exitPrice);
       const positionSize = parseFloat(trade.positionSize);
       
       let pnl = 0;
-      if (data.status === "CLOSED") {
-        if (trade.tradeType === "BUY") {
-          pnl = (exitPrice - entryPrice) * positionSize;
-        } else {
-          pnl = (entryPrice - exitPrice) * positionSize;
-        }
+      if (trade.tradeType === "BUY") {
+        pnl = (exitPrice - entryPrice) * positionSize;
+      } else {
+        pnl = (entryPrice - exitPrice) * positionSize;
       }
 
       const tradeData = {
         ...data,
+        status: "CLOSED", // Always set to CLOSED since we're tracking completed trades only
         pnl: pnl.toString(),
-        exitDate: data.status === "CLOSED" ? new Date().toISOString() : null,
+        exitDate: new Date().toISOString(),
       };
       
       const response = await apiRequest("PUT", `/api/trades/${trade.id}`, tradeData);
@@ -171,27 +168,6 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
               />
 
               {/* Status */}
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-background border-input">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="OPEN">OPEN</SelectItem>
-                        <SelectItem value="CLOSED">CLOSED</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
             <div className="flex justify-end gap-3">

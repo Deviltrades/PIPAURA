@@ -44,7 +44,6 @@ const addTradeSchema = z.object({
   entryPrice: z.string().min(1, "Entry price is required"),
   stopLoss: z.string().min(1, "Stop loss is required"),
   takeProfit: z.string().min(1, "Take profit is required"),
-  status: z.enum(["OPEN", "CLOSED"]),
   notes: z.string().optional(),
   hasPnL: z.boolean().optional(),
   pnlType: z.enum(["profit", "loss"]).optional(),
@@ -95,7 +94,6 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
       entryPrice: "",
       stopLoss: "",
       takeProfit: "",
-      status: "OPEN",
       notes: "",
       hasPnL: false,
       pnlType: "profit",
@@ -121,6 +119,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
         ...data,
         entryDate: localDateString, // Send as local date string
         pnl: calculatedPnL,
+        status: "CLOSED", // Always set to CLOSED since we're tracking completed trades only
         // Remove the extra fields that aren't in the backend schema
         hasPnL: undefined,
         pnlType: undefined,
@@ -352,28 +351,6 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                 )}
               />
 
-              {/* Status */}
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-background border-input">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="OPEN">OPEN</SelectItem>
-                        <SelectItem value="CLOSED">CLOSED</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
             {/* Profit/Loss Section */}
