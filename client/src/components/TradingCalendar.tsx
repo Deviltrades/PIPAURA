@@ -605,6 +605,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                           <h5 className="font-medium text-sm text-muted-foreground mb-2">
                             Attached Images ({trade.attachments.length}):
                           </h5>
+                          <div className="text-xs text-muted-foreground mb-2">
+                            Debug - Attachments: {JSON.stringify(trade.attachments)}
+                          </div>
                           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                             {trade.attachments.map((imageUrl, index) => (
                               <div key={index} className="relative group">
@@ -613,8 +616,15 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                                   alt={`Trade attachment ${index + 1}`}
                                   className="w-full h-24 object-cover rounded border bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
                                   onClick={() => {
+                                    console.log("Image clicked:", imageUrl);
+                                    console.log("Setting selectedImage to:", imageUrl);
                                     setSelectedImage(imageUrl);
                                     setIsImageViewerOpen(true);
+                                    console.log("Image viewer should be opening...");
+                                  }}
+                                  onError={(e) => {
+                                    console.log("Image failed to load:", imageUrl);
+                                    console.error("Image load error:", e);
                                   }}
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded"></div>
