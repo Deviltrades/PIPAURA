@@ -110,6 +110,52 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   const isEditing = (tradeId: string, field: string) => {
     return editingTrade === tradeId && editingField === field;
   };
+
+  // Image upload handler
+  const handleImageUpload = async (tradeId: string, files: File[]) => {
+    try {
+      const formData = new FormData();
+      files.forEach((file, index) => {
+        formData.append(`files`, file);
+      });
+
+      const response = await fetch('/api/object-storage/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload images');
+      }
+
+      const { urls } = await response.json();
+      
+      // Get current trade data
+      const currentTrade = tradesData?.find(t => t.id === tradeId);
+      if (!currentTrade) return;
+
+      // Update trade with new attachments
+      const updatedAttachments = [...(currentTrade.attachments || []), ...urls];
+      
+      updateTradeMutation.mutate({
+        tradeId,
+        updates: { attachments: updatedAttachments }
+      });
+
+      toast({
+        title: "Images uploaded",
+        description: `Successfully added ${files.length} image(s) to the trade.`,
+      });
+
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload images. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
   
   // Filter states
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
@@ -840,22 +886,89 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                         </div>
                       </div>
 
-                      {/* Trade Notes */}
-                      {trade.notes && (
-                        <div>
-                          <h5 className="font-medium text-sm text-muted-foreground mb-2">Trade Notes:</h5>
-                          <div className="bg-background/50 rounded p-3 text-sm border-l-2 border-primary/20">
-                            <p className="whitespace-pre-wrap">{trade.notes}</p>
+                      {/* Trade Notes - Editable */}
+                      <div>
+                        <h5 className="font-medium text-sm text-muted-foreground mb-2 flex items-center gap-2">
+                          Trade Notes:
+                          {!isEditing(trade.id, 'notes') && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => startEdit(trade.id, 'notes', trade.notes || '')}
+                              className="h-6 w-6 p-0"
+                            >
+                              <Edit3 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </h5>
+                        {isEditing(trade.id, 'notes') ? (
+                          <div className="space-y-2">
+                            <Textarea
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              placeholder="Add your trade notes here..."
+                              className="min-h-20 text-sm resize-none"
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter' && e.ctrlKey) saveEdit();
+                                if (e.key === 'Escape') cancelEdit();
+                              }}
+                              autoFocus
+                            />
+                            <div className="flex items-center gap-2">
+                              <Button size="sm" onClick={saveEdit} disabled={updateTradeMutation.isPending}>
+                                <Check className="h-3 w-3 mr-1" />
+                                Save
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={cancelEdit}>
+                                <X className="h-3 w-3 mr-1" />
+                                Cancel
+                              </Button>
+                              <span className="text-xs text-muted-foreground">Ctrl+Enter to save</span>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        ) : (
+                          <div 
+                            className="bg-background/50 rounded p-3 text-sm border-l-2 border-primary/20 cursor-pointer hover:bg-muted/50 border-2 border-dashed border-muted-foreground/20 hover:border-muted-foreground/40"
+                            onClick={() => startEdit(trade.id, 'notes', trade.notes || '')}
+                          >
+                            {trade.notes ? (
+                              <p className="whitespace-pre-wrap">{trade.notes}</p>
+                            ) : (
+                              <p className="text-muted-foreground">Click to add notes...</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
 
-                      {/* Attached Images */}
-                      {trade.attachments && trade.attachments.length > 0 && (
-                        <div>
-                          <h5 className="font-medium text-sm text-muted-foreground mb-2">
-                            Attached Images ({trade.attachments.length}):
-                          </h5>
+                      {/* Attached Images - With Upload */}
+                      <div>
+                        <h5 className="font-medium text-sm text-muted-foreground mb-2 flex items-center gap-2">
+                          Attached Images {trade.attachments && trade.attachments.length > 0 && `(${trade.attachments.length})`}:
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              // Trigger file input
+                              const fileInput = document.createElement('input');
+                              fileInput.type = 'file';
+                              fileInput.accept = 'image/*';
+                              fileInput.multiple = true;
+                              fileInput.onchange = (e) => {
+                                const target = e.target as HTMLInputElement;
+                                const files = target.files;
+                                if (files && files.length > 0) {
+                                  handleImageUpload(trade.id, Array.from(files));
+                                }
+                              };
+                              fileInput.click();
+                            }}
+                            className="h-6 w-6 p-0"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </h5>
+                        
+                        {trade.attachments && trade.attachments.length > 0 ? (
                           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                             {trade.attachments.map((imageUrl, index) => (
                               <div key={index} className="relative group">
@@ -875,8 +988,30 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                               </div>
                             ))}
                           </div>
-                        </div>
-                      )}
+                        ) : (
+                          <div 
+                            className="border-2 border-dashed border-muted-foreground/20 rounded-lg p-6 text-center cursor-pointer hover:border-muted-foreground/40 hover:bg-muted/20"
+                            onClick={() => {
+                              // Trigger file input
+                              const fileInput = document.createElement('input');
+                              fileInput.type = 'file';
+                              fileInput.accept = 'image/*';
+                              fileInput.multiple = true;
+                              fileInput.onchange = (e) => {
+                                const target = e.target as HTMLInputElement;
+                                const files = target.files;
+                                if (files && files.length > 0) {
+                                  handleImageUpload(trade.id, Array.from(files));
+                                }
+                              };
+                              fileInput.click();
+                            }}
+                          >
+                            <Plus className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">Click to add images...</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
