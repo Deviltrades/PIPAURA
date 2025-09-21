@@ -878,20 +878,39 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
           const ratingColor = score < 30 ? 'text-red-400' : score < 60 ? 'text-orange-400' : 'text-green-400';
           
           return (
-            <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-white text-sm font-medium">Consistency:</span>
-                <div className="relative w-40 sm:w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="absolute left-0 top-0 h-full rounded-full transition-all duration-500 ease-out" 
-                    style={{ width: `${score}%`, backgroundColor: barColor }}
-                    data-testid="consistency-progress-bar"
-                  />
+            <div className="mb-4 sm:mb-6">
+              {/* Main Bar */}
+              <div className="bg-slate-800 rounded-lg px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-white text-sm font-medium">Consistency:</span>
+                  <div className="relative w-40 sm:w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="absolute left-0 top-0 h-full rounded-full transition-all duration-500 ease-out" 
+                      style={{ width: `${score}%`, backgroundColor: barColor }}
+                      data-testid="consistency-progress-bar"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-white text-sm font-semibold">{score}%</span>
+                  <span className={`text-xs font-medium ${ratingColor}`}>{rating}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-white text-sm font-semibold">{score}%</span>
-                <span className={`text-xs font-medium ${ratingColor}`}>{rating}</span>
+              
+              {/* Scale Legend */}
+              <div className="flex items-center justify-center gap-4 mt-2 text-xs text-gray-500">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span>0 - 30%</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <span>30 - 60%</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>60 - 100%</span>
+                </div>
               </div>
             </div>
           );
