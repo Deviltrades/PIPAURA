@@ -16,12 +16,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, TrendingUp, Activity, Percent, Calculator, BarChart3, Calendar, DollarSign } from "lucide-react";
+import { Plus, TrendingUp, Percent, Calculator, BarChart3, Calendar, DollarSign } from "lucide-react";
 
 export type WidgetType = 
   | "total-pnl"
   | "win-rate" 
-  | "active-trades"
   | "avg-win-loss"
   | "daily-pnl-chart"
   | "recent-trades"
@@ -50,13 +49,6 @@ export const availableWidgets: WidgetConfig[] = [
     description: "Percentage of winning trades",
     icon: <Percent className="h-4 w-4" />,
     category: "performance"
-  },
-  {
-    id: "active-trades",
-    title: "Active Trades",
-    description: "Number of currently open positions",
-    icon: <Activity className="h-4 w-4" />,
-    category: "trades"
   },
   {
     id: "avg-win-loss",

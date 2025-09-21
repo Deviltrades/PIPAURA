@@ -90,10 +90,6 @@ export default function Widgets() {
               <span className="text-muted-foreground">P&L Today</span>
               <span className="font-semibold text-green-600">+{formatCurrency(125)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Open Positions</span>
-              <span className="font-semibold">3</span>
-            </div>
           </CardContent>
         </Card>
 

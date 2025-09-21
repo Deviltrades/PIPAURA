@@ -29,7 +29,6 @@ const navigation = [
   { name: "Signals", href: "/signals", icon: Radio },
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Trades", href: "/trades", icon: BookOpen },
-  { name: "Open Positions", href: "/positions", icon: TrendingUp },
   { name: "Calendar", href: "/calendar", icon: Calendar },
   { name: "Accounts", href: "/accounts", icon: Wallet },
   { name: "Widgets", href: "/widgets", icon: Grid3X3 },

@@ -35,7 +35,6 @@ export default function Dashboard() {
   const activeWidgets: WidgetType[] = (user as any)?.dashboardWidgets || [
     "total-pnl",
     "win-rate", 
-    "active-trades",
     "recent-trades"
   ];
 

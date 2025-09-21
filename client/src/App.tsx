@@ -13,7 +13,6 @@ import Trades from "@/pages/trades";
 import Calendar from "@/pages/calendar";
 import Analytics from "@/pages/analytics";
 import Signals from "@/pages/signals";
-import Positions from "@/pages/positions";
 import Accounts from "@/pages/accounts";
 import Widgets from "@/pages/widgets";
 import Strategy from "@/pages/strategy";
@@ -43,7 +42,7 @@ function Router() {
         <Route path="/" component={Dashboard} />
         <Route path="/signals" component={Signals} />
         <Route path="/trades" component={Trades} />
-        <Route path="/positions" component={Positions} />
+
         <Route path="/calendar" component={Calendar} />
         <Route path="/accounts" component={Accounts} />
         <Route path="/widgets" component={Widgets} />
@@ -69,7 +68,7 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/signals" component={Signals} />
           <Route path="/trades" component={Trades} />
-          <Route path="/positions" component={Positions} />
+  
           <Route path="/calendar" component={Calendar} />
           <Route path="/accounts" component={Accounts} />
           <Route path="/widgets" component={Widgets} />
