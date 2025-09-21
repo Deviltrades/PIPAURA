@@ -64,8 +64,65 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     staleTime: 0, // Always refetch to get latest calendar settings
   });
 
-  // Group trades by date
-  const tradesByDate = trades ? trades.reduce((acc, trade) => {
+  // Apply filters to trades
+  const filteredTrades = trades ? trades.filter(trade => {
+    // Account filter
+    if (selectedAccount !== "all") {
+      // For now, we'll use a simple mapping since we don't have account field in trades
+      // This can be enhanced when account field is added to the trade schema
+      const accountMap: Record<string, boolean> = {
+        "main": true,
+        "demo": false,
+        "prop": trade.instrument?.includes("USD") || false
+      };
+      if (selectedAccount === "main" && !accountMap.main) return false;
+      if (selectedAccount === "demo" && !accountMap.demo) return false;
+      if (selectedAccount === "prop" && !accountMap.prop) return false;
+    }
+
+    // Symbol filter
+    if (selectedSymbol !== "all") {
+      if (selectedSymbol === "forex" && trade.instrumentType !== "FOREX") return false;
+      if (selectedSymbol === "indices" && trade.instrumentType !== "INDICES") return false;
+      if (selectedSymbol === "crypto" && trade.instrumentType !== "CRYPTO") return false;
+    }
+
+    // Strategy filter - for now using simple heuristics based on trade data
+    if (selectedStrategy !== "all") {
+      // This is a placeholder implementation - can be enhanced with actual strategy field
+      const pnl = typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0);
+      const entryPrice = typeof trade.entryPrice === 'string' ? parseFloat(trade.entryPrice) : trade.entryPrice;
+      const stopLoss = typeof trade.stopLoss === 'string' ? parseFloat(trade.stopLoss) : trade.stopLoss;
+      
+      if (selectedStrategy === "scalping") {
+        // Small profit targets, quick trades
+        if (Math.abs(pnl) > 500) return false;
+      }
+      if (selectedStrategy === "swing") {
+        // Larger position, bigger P&L
+        if (Math.abs(pnl) < 200) return false;
+      }
+      if (selectedStrategy === "breakout") {
+        // Assume breakout if entry is far from stop loss
+        if (stopLoss && Math.abs(entryPrice - stopLoss) < 50) return false;
+      }
+      if (selectedStrategy === "reversal") {
+        // Opposite logic of breakout
+        if (stopLoss && Math.abs(entryPrice - stopLoss) > 100) return false;
+      }
+    }
+
+    // Direction filter
+    if (selectedDirection !== "all") {
+      if (selectedDirection === "buy" && trade.tradeType !== "BUY") return false;
+      if (selectedDirection === "sell" && trade.tradeType !== "SELL") return false;
+    }
+
+    return true;
+  }) : [];
+
+  // Group filtered trades by date
+  const tradesByDate = filteredTrades ? filteredTrades.reduce((acc, trade) => {
     if (trade.entryDate) {
       // Handle different date formats
       let entryDate: Date;
@@ -86,7 +143,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     return acc;
   }, {} as Record<string, Trade[]>) : {};
 
-  // Get trades for selected date
+  // Get filtered trades for selected date
   const selectedDateTrades = selectedDate 
     ? tradesByDate[format(selectedDate, "yyyy-MM-dd")] || []
     : [];
