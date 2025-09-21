@@ -566,26 +566,52 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                     </div>
                     
                     {/* Trade Details */}
-                    <div className="p-4 space-y-3">
-                      {/* Trade Info Grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Position Size:</span>
+                    <div className="p-4 space-y-4">
+                      {/* Complete Trade Info Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground text-xs">Position Size:</span>
                           <div className="font-medium">{trade.positionSize}</div>
                         </div>
-                        <div>
-                          <span className="text-muted-foreground">Entry Price:</span>
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground text-xs">Entry Price:</span>
                           <div className="font-medium">${trade.entryPrice}</div>
                         </div>
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground text-xs">Stop Loss:</span>
+                          <div className="font-medium">{trade.stopLoss ? `$${trade.stopLoss}` : 'Not set'}</div>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground text-xs">Take Profit:</span>
+                          <div className="font-medium">{trade.takeProfit ? `$${trade.takeProfit}` : 'Not set'}</div>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground text-xs">Entry Date:</span>
+                          <div className="font-medium">
+                            {trade.entryDate ? format(parseISO(trade.entryDate), 'MMM dd, yyyy') : 'Not set'}
+                          </div>
+                        </div>
                         {trade.exitPrice && (
-                          <div>
-                            <span className="text-muted-foreground">Exit Price:</span>
+                          <div className="space-y-1">
+                            <span className="text-muted-foreground text-xs">Exit Price:</span>
                             <div className="font-medium">${trade.exitPrice}</div>
                           </div>
                         )}
-                        <div>
-                          <span className="text-muted-foreground">Status:</span>
-                          <div className="font-medium">{trade.status}</div>
+                        {trade.exitDate && (
+                          <div className="space-y-1">
+                            <span className="text-muted-foreground text-xs">Exit Date:</span>
+                            <div className="font-medium">
+                              {format(parseISO(trade.exitDate), 'MMM dd, yyyy')}
+                            </div>
+                          </div>
+                        )}
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground text-xs">Status:</span>
+                          <div className="font-medium">
+                            <Badge variant={trade.status === "CLOSED" ? "default" : "secondary"} className="text-xs">
+                              {trade.status}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
 
