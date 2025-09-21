@@ -40,8 +40,8 @@
   bottom: 3px;
   width: 5px;
   height: 5px;
-  border-right: 2px solid rgba(147, 51, 234, 0.8);
-  border-bottom: 2px solid rgba(147, 51, 234, 0.8);
+  border-right: 2px solid var(--primary);
+  border-bottom: 2px solid var(--primary);
 }
 
 .react-grid-item:hover > .react-resizable-handle {
@@ -49,7 +49,7 @@
 }
 
 .react-grid-placeholder {
-  background: rgba(147, 51, 234, 0.2) !important;
+  background: var(--primary) !important;
   opacity: 0.2;
   transition-duration: 100ms;
   z-index: 2;
@@ -58,7 +58,7 @@
   -ms-user-select: none;
   -o-user-select: none;
   user-select: none;
-  border: 2px dashed rgba(147, 51, 234, 0.5) !important;
+  border: 2px dashed var(--primary) !important;
   border-radius: 12px !important;
 }
 
