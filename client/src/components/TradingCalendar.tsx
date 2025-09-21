@@ -514,48 +514,108 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
             </h4>
             
             {selectedDateTrades.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {selectedDateTrades.map((trade) => (
                   <div
                     key={trade.id}
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border"
+                    className="bg-muted/50 rounded-lg border overflow-hidden"
                   >
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline" className="text-xs">
-                        {trade.instrumentType}
-                      </Badge>
-                      <span className="font-medium">
-                        {trade.instrument}
-                      </span>
-                      <Badge 
-                        variant={trade.tradeType === "BUY" ? "default" : "secondary"}
-                        className="text-xs"
-                      >
-                        {trade.tradeType}
-                      </Badge>
+                    {/* Trade Header */}
+                    <div className="flex items-center justify-between p-3 border-b bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline" className="text-xs">
+                          {trade.instrumentType}
+                        </Badge>
+                        <span className="font-medium">
+                          {trade.instrument}
+                        </span>
+                        <Badge 
+                          variant={trade.tradeType === "BUY" ? "default" : "secondary"}
+                          className="text-xs"
+                        >
+                          {trade.tradeType}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`font-semibold flex items-center gap-1 ${
+                          (typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0)) >= 0 ? "text-green-600" : "text-red-600"
+                        }`}>
+                          {(typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0)) >= 0 ? (
+                            <TrendingUp className="h-4 w-4" />
+                          ) : (
+                            <TrendingDown className="h-4 w-4" />
+                          )}
+                          ${(typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0)).toFixed(2)}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setEditTrade(trade);
+                            setIsEditTradeModalOpen(true);
+                          }}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit3 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`font-semibold flex items-center gap-1 ${
-                        (typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0)) >= 0 ? "text-green-600" : "text-red-600"
-                      }`}>
-                        {(typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0)) >= 0 ? (
-                          <TrendingUp className="h-4 w-4" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4" />
+                    
+                    {/* Trade Details */}
+                    <div className="p-4 space-y-3">
+                      {/* Trade Info Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Position Size:</span>
+                          <div className="font-medium">{trade.positionSize}</div>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Entry Price:</span>
+                          <div className="font-medium">${trade.entryPrice}</div>
+                        </div>
+                        {trade.exitPrice && (
+                          <div>
+                            <span className="text-muted-foreground">Exit Price:</span>
+                            <div className="font-medium">${trade.exitPrice}</div>
+                          </div>
                         )}
-                        ${(typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0)).toFixed(2)}
-                      </span>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          setEditTrade(trade);
-                          setIsEditTradeModalOpen(true);
-                        }}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Edit3 className="h-3 w-3" />
-                      </Button>
+                        <div>
+                          <span className="text-muted-foreground">Status:</span>
+                          <div className="font-medium">{trade.status}</div>
+                        </div>
+                      </div>
+
+                      {/* Trade Notes */}
+                      {trade.notes && (
+                        <div>
+                          <h5 className="font-medium text-sm text-muted-foreground mb-2">Trade Notes:</h5>
+                          <div className="bg-background/50 rounded p-3 text-sm border-l-2 border-primary/20">
+                            <p className="whitespace-pre-wrap">{trade.notes}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Attached Images */}
+                      {trade.attachments && trade.attachments.length > 0 && (
+                        <div>
+                          <h5 className="font-medium text-sm text-muted-foreground mb-2">
+                            Attached Images ({trade.attachments.length}):
+                          </h5>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {trade.attachments.map((imageUrl, index) => (
+                              <div key={index} className="relative group">
+                                <img
+                                  src={imageUrl}
+                                  alt={`Trade attachment ${index + 1}`}
+                                  className="w-full h-24 object-cover rounded border bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
+                                  onClick={() => window.open(imageUrl, '_blank')}
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded"></div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
