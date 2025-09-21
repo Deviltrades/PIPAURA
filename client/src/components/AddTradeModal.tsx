@@ -171,21 +171,11 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] bg-background border overflow-y-auto">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <div>
-            <DialogTitle className="text-xl font-semibold">Add New Trade</DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground">
-              Record a new trade for {selectedDate.toLocaleDateString()}
-            </DialogDescription>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="h-6 w-6 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+        <DialogHeader className="pb-4">
+          <DialogTitle className="text-xl font-semibold">Add New Trade</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Record a new trade for {selectedDate.toLocaleDateString()}
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
