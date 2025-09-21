@@ -153,7 +153,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
       if (uploadedUrls.length > 0) {
         // Get current trade data
-        const currentTrade = tradesData?.find(t => t.id === tradeId);
+        const allTrades = Object.values(tradesByDate).flat();
+        const currentTrade = allTrades.find((t: Trade) => t.id === tradeId);
         if (!currentTrade) return;
 
         // Update trade with new attachments
