@@ -192,6 +192,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   
   // Weekend toggle state
   const [showWeekends, setShowWeekends] = useState(false);
+  
+  // Weekly totals toggle state
+  const [showWeeklyTotals, setShowWeeklyTotals] = useState(false);
 
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
@@ -299,6 +302,43 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     }, 0);
   };
 
+  // Calculate weekly totals for the month
+  const getWeeklyTotals = () => {
+    const start = startOfWeek(startOfMonth(viewMonth));
+    const end = endOfWeek(endOfMonth(viewMonth));
+    const allDays = eachDayOfInterval({ start, end });
+    
+    const weeks: { pnl: number; tradeCount: number; weekNumber: number }[] = [];
+    let currentWeek = { pnl: 0, tradeCount: 0, weekNumber: 1 };
+    
+    allDays.forEach((day, index) => {
+      const dateKey = format(day, "yyyy-MM-dd");
+      const dayTrades = tradesByDate[dateKey] || [];
+      
+      // Add to current week totals
+      dayTrades.forEach(trade => {
+        const pnl = typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0);
+        currentWeek.pnl += pnl;
+        currentWeek.tradeCount += 1;
+      });
+      
+      // Check if we've reached the end of a week (Saturday) or end of days
+      const isLastDay = index === allDays.length - 1;
+      const isSaturday = day.getDay() === 6;
+      
+      if (isSaturday || isLastDay) {
+        weeks.push({ ...currentWeek });
+        currentWeek = { 
+          pnl: 0, 
+          tradeCount: 0, 
+          weekNumber: currentWeek.weekNumber + 1 
+        };
+      }
+    });
+    
+    return weeks;
+  };
+
   // Layout configuration based on weekend toggle
   const layout = showWeekends ? {
     cols: 7,
@@ -380,6 +420,17 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               />
               <Label htmlFor="weekends-toggle" className="text-sm font-medium">
                 Weekends
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="weekly-totals-toggle" 
+                checked={showWeeklyTotals} 
+                onCheckedChange={setShowWeeklyTotals}
+                data-testid="switch-weekly-totals"
+              />
+              <Label htmlFor="weekly-totals-toggle" className="text-sm font-medium">
+                Weekly Totals
               </Label>
             </div>
           </div>
@@ -464,17 +515,21 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
           </Select>
         </div>
 
-        {/* Days of Week Header */}
-        <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} gap-0 sm:gap-0.5 mb-2`} data-testid="grid-calendar">
-          {layout.dayLabels.map((day) => (
-            <div key={day} className="h-8 sm:h-10 flex items-center justify-center" data-testid={`header-day-${day.toLowerCase()}`}>
-              <span className="text-xs sm:text-sm font-medium text-muted-foreground">{day}</span>
+        {/* Calendar Container */}
+        <div className={`flex ${showWeeklyTotals ? 'gap-4' : ''}`}>
+          {/* Main Calendar */}
+          <div className="flex-1">
+            {/* Days of Week Header */}
+            <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} gap-0 sm:gap-0.5 mb-2`} data-testid="grid-calendar">
+              {layout.dayLabels.map((day) => (
+                <div key={day} className="h-8 sm:h-10 flex items-center justify-center" data-testid={`header-day-${day.toLowerCase()}`}>
+                  <span className="text-xs sm:text-sm font-medium text-muted-foreground">{day}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Calendar Grid */}
-        <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} gap-0 sm:gap-0.5`}>
+            {/* Calendar Grid */}
+            <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} gap-0 sm:gap-0.5`}>
           {calendarDays.map((day) => {
             const dateKey = format(day, "yyyy-MM-dd");
             const dayTrades = tradesByDate[dateKey] || [];
@@ -644,6 +699,42 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               </div>
             );
           })}
+            </div>
+          </div>
+
+          {/* Weekly Totals Section */}
+          {showWeeklyTotals && (
+            <div className="w-32 flex-shrink-0">
+              {/* Header */}
+              <div className="h-8 sm:h-10 flex items-center justify-center mb-2">
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground">Total</span>
+              </div>
+              
+              {/* Weekly Summary Boxes */}
+              <div className="space-y-1">
+                {getWeeklyTotals().map((week, index) => (
+                  <div 
+                    key={index}
+                    className="bg-gray-600 rounded-lg p-3 text-white"
+                    style={{ height: showWeekends ? '94px' : '94px' }}
+                  >
+                    <div className="text-xs font-medium mb-1">Week {week.weekNumber}</div>
+                    <div className={`text-sm font-bold ${
+                      week.pnl >= 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {week.pnl >= 0 ? '+' : ''}${Math.abs(week.pnl) >= 1000 
+                        ? `${(week.pnl / 1000).toFixed(1)}k` 
+                        : week.pnl.toFixed(0)
+                      }
+                    </div>
+                    <div className="text-xs text-gray-300 mt-1">
+                      {week.tradeCount} trades
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Selected Date Details */}
