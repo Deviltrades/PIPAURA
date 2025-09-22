@@ -1,19 +1,22 @@
-import { createContext, ReactNode, useContext } from "react";
-import {
-  useQuery,
-  useMutation,
-  UseMutationResult,
-} from "@tanstack/react-query";
-import { User } from "@shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import type { User as SupabaseUser } from '@supabase/supabase-js';
+
+interface AuthUser {
+  id: string;
+  email: string;
+  created_at: string;
+}
 
 type AuthContextType = {
-  user: User | null;
+  user: AuthUser | null;
   isLoading: boolean;
-  error: Error | null;
-  logoutMutation: UseMutationResult<void, Error, void>;
+  signUp: UseMutationResult<void, Error, { email: string; password: string }>;
+  signIn: UseMutationResult<void, Error, { email: string; password: string }>;
+  signOut: UseMutationResult<void, Error, void>;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -21,32 +24,105 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  
-  const {
-    data: user,
-    error,
-    isLoading,
-  } = useQuery<User | undefined, Error>({
-    queryKey: ["/api/auth/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
-  });
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      await apiRequest("POST", "/api/logout");
+  // Initialize auth state
+  useEffect(() => {
+    // Get initial session
+    const getInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ? {
+        id: session.user.id,
+        email: session.user.email!,
+        created_at: session.user.created_at!
+      } : null);
+      setIsLoading(false);
+    };
+
+    getInitialSession();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            created_at: session.user.created_at!
+          });
+        } else {
+          setUser(null);
+        }
+        setIsLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signUp = useMutation({
+    mutationFn: async ({ email, password }: { email: string; password: string }) => {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.setQueryData(["/api/auth/user"], null);
       toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
+        title: "Account created",
+        description: "Please check your email to verify your account.",
       });
-      // Redirect to auth page after successful logout
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Sign up failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const signIn = useMutation({
+    mutationFn: async ({ email, password }: { email: string; password: string }) => {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Signed in",
+        description: "Welcome back!",
+      });
+      setLocation("/dashboard");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Sign in failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const signOut = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out.",
+      });
       setLocation("/auth");
     },
     onError: (error: Error) => {
       toast({
-        title: "Logout failed",
+        title: "Sign out failed",
         description: error.message,
         variant: "destructive",
       });
@@ -56,10 +132,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user: user ?? null,
+        user,
         isLoading,
-        error,
-        logoutMutation,
+        signUp,
+        signIn,
+        signOut,
       }}
     >
       {children}
