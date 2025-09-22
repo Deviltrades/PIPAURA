@@ -45,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         if (session?.user) {
           setUser({
             id: session.user.id,
@@ -53,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
           // Navigate to dashboard when user signs in
           if (event === 'SIGNED_IN') {
+            console.log('Navigating to dashboard after SIGNED_IN');
             setLocation('/dashboard');
           }
         } else {
