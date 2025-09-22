@@ -42,6 +42,17 @@ export const users = pgTable("users", {
     dayBackgroundColor: "#2d2d2d",
     dayBorderColor: "#4b5563"
   }),
+  sidebarSettings: jsonb("sidebar_settings").default({
+    primaryColor: "blue",
+    gradientFrom: "from-blue-950",
+    gradientVia: "via-blue-900", 
+    gradientTo: "to-slate-950",
+    headerFrom: "from-blue-600",
+    headerTo: "to-blue-500",
+    activeGradient: "from-blue-600/20 to-blue-500/20",
+    activeBorder: "border-blue-500/30",
+    hoverColor: "hover:bg-blue-900/30"
+  }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -129,6 +140,19 @@ export interface CalendarSettings {
   borderColor: string;
   dayBackgroundColor: string;
   dayBorderColor: string;
+}
+
+// Sidebar settings type
+export interface SidebarSettings {
+  primaryColor: string;
+  gradientFrom: string;
+  gradientVia: string;
+  gradientTo: string;
+  headerFrom: string;
+  headerTo: string;
+  activeGradient: string;
+  activeBorder: string;
+  hoverColor: string;
 }
 
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
