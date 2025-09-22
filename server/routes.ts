@@ -475,7 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const user = await storage.getUser(userId);
-      const currentTemplates = user?.dashboardTemplates || {};
+      const currentTemplates = user?.dashboardTemplates || {} as Record<string, any>;
       
       // Check template limit (max 5)
       if (Object.keys(currentTemplates).length >= 5 && !currentTemplates[name]) {
@@ -508,7 +508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const user = await storage.getUser(userId);
-      const currentTemplates = user?.dashboardTemplates || {};
+      const currentTemplates = user?.dashboardTemplates || {} as Record<string, any>;
       
       if (!currentTemplates[name]) {
         return res.status(404).json({ error: "Template not found" });

@@ -115,11 +115,23 @@ export class MemStorage implements IStorage {
         isAdmin: userData.isAdmin || false,
         dashboardWidgets: userData.dashboardWidgets || [],
         dashboardLayout: userData.dashboardLayout || {},
+        dashboardTemplates: userData.dashboardTemplates || {},
         calendarSettings: userData.calendarSettings || {
           backgroundColor: "#1a1a1a",
           borderColor: "#374151",
           dayBackgroundColor: "#2d2d2d",
           dayBorderColor: "#4b5563"
+        },
+        sidebarSettings: userData.sidebarSettings || {
+          primaryColor: "blue",
+          gradientFrom: "from-blue-950",
+          gradientVia: "via-blue-900",
+          gradientTo: "to-slate-950",
+          headerFrom: "from-blue-600",
+          headerTo: "to-blue-500",
+          activeGradient: "from-blue-600/20 to-blue-500/20",
+          activeBorder: "border-blue-500/30",
+          hoverColor: "hover:bg-blue-900/30"
         },
         createdAt: new Date(),
         updatedAt: new Date(),
