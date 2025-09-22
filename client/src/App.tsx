@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import MainPage from "@/pages/main";
 import Landing from "@/pages/landing";
 import Pricing from "@/pages/pricing";
 import AuthPage from "@/pages/auth";
@@ -37,38 +38,19 @@ function Router() {
 
   return (
     <Switch>
-      {/* TEMPORARILY DISABLED AUTHENTICATION - ALWAYS SHOW MAIN APP */}
-      <Layout>
-        <Route path="/" component={Dashboard} />
-        <Route path="/signals" component={Signals} />
-        <Route path="/trades" component={Trades} />
-
-        <Route path="/calendar" component={Calendar} />
-        <Route path="/accounts" component={Accounts} />
-        <Route path="/widgets" component={Widgets} />
-        <Route path="/strategy" component={Strategy} />
-        <Route path="/notes" component={Notes} />
-        <Route path="/charts" component={Charts} />
-        <Route path="/mentor" component={Mentor} />
-        <Route path="/analytics" component={Analytics} />
-        <Route path="/settings" component={Settings} />
-        <Route path="/calendar-settings" component={CalendarSettings} />
-      </Layout>
-      
-      {/* Keep auth routes available for future re-implementation */}
-      {/* 
       {!user ? (
         <>
+          <Route path="/" component={MainPage} />
+          <Route path="/landing" component={Landing} />
           <Route path="/pricing" component={Pricing} />
           <Route path="/auth" component={AuthPage} />
-          <Route path="/" component={() => <AuthPage />} />
         </>
       ) : (
         <Layout>
           <Route path="/" component={Dashboard} />
+          <Route path="/dashboard" component={Dashboard} />
           <Route path="/signals" component={Signals} />
           <Route path="/trades" component={Trades} />
-  
           <Route path="/calendar" component={Calendar} />
           <Route path="/accounts" component={Accounts} />
           <Route path="/widgets" component={Widgets} />
@@ -81,7 +63,6 @@ function Router() {
           <Route path="/calendar-settings" component={CalendarSettings} />
         </Layout>
       )}
-      */}
       <Route component={NotFound} />
     </Switch>
   );
