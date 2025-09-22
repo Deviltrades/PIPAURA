@@ -12,14 +12,14 @@ export interface JournalEntry {
 
 export interface CreateJournalEntry {
   notes: string;
-  trade_data: any;
+  trade_data?: any;
   image_url?: string;
 }
 
 // Zod schemas for validation
 export const createJournalEntrySchema = z.object({
   notes: z.string().min(1, "Notes are required"),
-  trade_data: z.any(),
+  trade_data: z.any().optional(),
   image_url: z.string().url().optional(),
 });
 

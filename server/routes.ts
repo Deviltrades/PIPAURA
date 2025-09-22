@@ -20,34 +20,37 @@ const upload = multer({
   }
 });
 
+// Extend Express Request to include authenticated user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: string;
+        email: string;
+        user_metadata?: {
+          first_name?: string;
+          last_name?: string;
+        };
+      };
+      userId?: string;
+    }
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const user = req.user;
-      res.json({
-        id: user.id,
-        email: user.email,
-        first_name: user.user_metadata?.first_name,
-        last_name: user.user_metadata?.last_name
-      });
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // User info endpoint is handled in auth.ts as /api/user
 
   // Journal Entry routes
   app.post("/api/journal-entries", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.id;
-      
-      if (!userId) {
+      if (!req.user) {
         return res.status(401).json({ message: "User not authenticated" });
       }
+      
+      const userId = req.user.id;
       
       const validatedData = createJournalEntrySchema.parse(req.body);
       const entry = await storage.createJournalEntry(userId, validatedData);
@@ -60,6 +63,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/journal-entries", isAuthenticated, async (req, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       const userId = req.user.id;
       const entries = await storage.getJournalEntries(userId);
       res.json(entries);
@@ -71,6 +78,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/journal-entries/:id", isAuthenticated, async (req, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       const userId = req.user.id;
       const entry = await storage.getJournalEntry(userId, req.params.id);
       
@@ -87,6 +98,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/journal-entries/:id", isAuthenticated, async (req, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       const userId = req.user.id;
       
       // Check if entry exists and user owns it
@@ -106,6 +121,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/journal-entries/:id", isAuthenticated, async (req, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       const userId = req.user.id;
       
       // Check if entry exists and user owns it
@@ -125,6 +144,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Image upload routes for Supabase storage
   app.post("/api/upload-image", isAuthenticated, upload.single('image'), async (req, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       const userId = req.user.id;
       
       if (!req.file) {
@@ -149,6 +172,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/signed-upload-url", isAuthenticated, async (req, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       const userId = req.user.id;
       const fileName = req.query.fileName as string;
       
@@ -176,6 +203,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Analytics routes for journal entries
   app.get("/api/analytics", isAuthenticated, async (req, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       const userId = req.user.id;
       const entries = await storage.getJournalEntries(userId);
       
