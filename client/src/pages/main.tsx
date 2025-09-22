@@ -121,12 +121,12 @@ export default function MainPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
-      {/* Login Section at Top */}
+      {/* Logo and Title Centered at Top */}
       <div className="border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col lg:flex-row items-center gap-8">
-            {/* Logo and Title */}
-            <div className="flex items-center gap-4 lg:w-1/2">
+          {/* Logo and Title Centered */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-4 mb-4">
               <img 
                 src={logoImage} 
                 alt="TJ - Traders Brotherhood Logo" 
@@ -141,9 +141,11 @@ export default function MainPage() {
                 </p>
               </div>
             </div>
+          </div>
 
-            {/* Login Form */}
-            <div className="w-full lg:w-1/2 max-w-md">
+          {/* Login Form Centered */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-md">
               <Card>
                 <CardHeader className="pb-4">
                   <CardTitle className="text-xl text-center">Access Your Journal</CardTitle>
