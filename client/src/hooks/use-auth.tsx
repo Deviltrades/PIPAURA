@@ -51,8 +51,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: session.user.email!,
             created_at: session.user.created_at!
           });
+          // Navigate to dashboard when user signs in
+          if (event === 'SIGNED_IN') {
+            setLocation('/dashboard');
+          }
         } else {
           setUser(null);
+          // Navigate to auth page when user signs out
+          if (event === 'SIGNED_OUT') {
+            setLocation('/auth');
+          }
         }
         setIsLoading(false);
       }
