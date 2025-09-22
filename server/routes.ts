@@ -56,18 +56,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/objects/upload", /* isAuthenticated, */ async (req, res) => {
+  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
     const objectStorageService = new ObjectStorageService();
     const uploadURL = await objectStorageService.getObjectEntityUploadURL();
     res.json({ uploadURL });
   });
 
-  app.put("/api/trade-attachments", /* isAuthenticated, */ async (req, res) => {
+  app.put("/api/trade-attachments", isAuthenticated, async (req, res) => {
     if (!req.body.fileURL) {
       return res.status(400).json({ error: "fileURL is required" });
     }
 
-    const userId = (req.user as any)?.id || "development-user-id";
+    const userId = (req.user as any)?.id;
 
     try {
       const objectStorageService = new ObjectStorageService();
@@ -89,16 +89,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Trade routes
-  app.post("/api/trades", /* isAuthenticated, */ async (req, res) => {
+  app.post("/api/trades", isAuthenticated, async (req, res) => {
     try {
-      // For custom auth, user ID is directly on req.user.id
-      // DEVELOPMENT: Use dummy user ID when auth is disabled
-      const userId = (req.user as any)?.id || "development-user-id";
+      const userId = (req.user as any)?.id;
       
-      // Skip authentication check for development
-      /* if (!userId) {
+      if (!userId) {
         return res.status(401).json({ message: "User not authenticated" });
-      } */
+      }
       
       // Transform the data to ensure proper types
       const tradeData = {
@@ -125,9 +122,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/trades", /* isAuthenticated, */ async (req, res) => {
+  app.get("/api/trades", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any)?.id || "development-user-id";
+      const userId = (req.user as any)?.id;
       const trades = await storage.getTradesByUser(userId);
       res.json(trades);
     } catch (error) {
@@ -475,7 +472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const user = await storage.getUser(userId);
-      const currentTemplates = user?.dashboardTemplates || {} as Record<string, any>;
+      const currentTemplates = (user?.dashboardTemplates || {}) as Record<string, any>;
       
       // Check template limit (max 5)
       if (Object.keys(currentTemplates).length >= 5 && !currentTemplates[name]) {
@@ -508,7 +505,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const user = await storage.getUser(userId);
-      const currentTemplates = user?.dashboardTemplates || {} as Record<string, any>;
+      const currentTemplates = (user?.dashboardTemplates || {}) as Record<string, any>;
       
       if (!currentTemplates[name]) {
         return res.status(404).json({ error: "Template not found" });
@@ -526,63 +523,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User profile routes
-  app.get("/api/user/profile", /* isAuthenticated, */ async (req, res) => {
-    const userId = (req.user as any)?.id || "development-user-id";
+  app.get("/api/user/profile", isAuthenticated, async (req, res) => {
+    const userId = (req.user as any)?.id;
     if (!userId) {
       return res.status(401).json({ error: "User not authenticated" });
     }
 
     try {
-      let user = await storage.getUser(userId);
-      
-      // Handle development user - find existing user by email or create if needed
-      if (!user && userId === "development-user-id") {
-        // First, try to find an existing user with the development email
-        const existingUser = await storage.getUserByEmail("dev@example.com");
-        if (existingUser) {
-          // Use the existing user
-          user = existingUser;
-        } else {
-          // Create new development user if none exists
-          try {
-            user = await storage.createUser({
-              email: "dev@example.com",
-              password: "dev-password",
-              firstName: "Development",
-              lastName: "User",
-              profileImageUrl: null,
-              isAdmin: false,
-              dashboardWidgets: [],
-              dashboardLayout: {},
-              dashboardTemplates: {},
-              calendarSettings: {
-                backgroundColor: "#1a1a1a",
-                borderColor: "#374151",
-                dayBackgroundColor: "#2d2d2d",
-                dayBorderColor: "#4b5563"
-              },
-              sidebarSettings: {
-                primaryColor: "blue",
-                gradientFrom: "from-blue-950",
-                gradientVia: "via-blue-900",
-                gradientTo: "to-slate-950",
-                headerFrom: "from-blue-600",
-                headerTo: "to-blue-500",
-                activeGradient: "from-blue-600/20 to-blue-500/20",
-                activeBorder: "border-blue-500/30",
-                hoverColor: "hover:bg-blue-900/30"
-              }
-            });
-          } catch (createError: any) {
-            // If creation fails due to email conflict, try to get existing user again
-            if (createError.code === '23505') { // Unique constraint violation
-              user = await storage.getUserByEmail("dev@example.com");
-            } else {
-              throw createError;
-            }
-          }
-        }
-      }
+      const user = await storage.getUser(userId);
       
       res.json(user);
     } catch (error) {
@@ -591,8 +539,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/user/sidebar-settings", /* isAuthenticated, */ async (req, res) => {
-    const userId = (req.user as any)?.id || "0d5fde68-0e2c-4b60-b548-d58f18da0543";
+  app.put("/api/user/sidebar-settings", isAuthenticated, async (req, res) => {
+    const userId = (req.user as any)?.id;
     
     if (!userId) {
       return res.status(401).json({ error: "User not authenticated" });

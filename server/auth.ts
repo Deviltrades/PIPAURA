@@ -111,11 +111,23 @@ export function setupAuth(app: Express) {
         isAdmin: false,
         dashboardWidgets: [],
         dashboardLayout: {},
+        dashboardTemplates: {},
         calendarSettings: {
           backgroundColor: "#1a1a1a",
           borderColor: "#374151",
           dayBackgroundColor: "#2d2d2d",
           dayBorderColor: "#4b5563"
+        },
+        sidebarSettings: {
+          primaryColor: "blue",
+          gradientFrom: "from-blue-950",
+          gradientVia: "via-blue-900",
+          gradientTo: "to-slate-950",
+          headerFrom: "from-blue-600",
+          headerTo: "to-blue-500",
+          activeGradient: "from-blue-600/20 to-blue-500/20",
+          activeBorder: "border-blue-500/30",
+          hoverColor: "hover:bg-blue-900/30"
         }
       });
 
