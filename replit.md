@@ -2,12 +2,12 @@
 
 ## Overview
 
-TJ - Traders Brotherhood is a comprehensive trading journal application designed for forex, indices, and cryptocurrency traders. The application provides advanced analytics, trade logging, signal sharing, and performance tracking capabilities. Built as a full-stack web application with a modern React frontend and Express.js backend, it integrates with Replit's authentication system and includes professional-grade file upload capabilities through Google Cloud Storage.
+TJ - Traders Brotherhood is a comprehensive trading journal application designed for forex, indices, and cryptocurrency traders. The application provides advanced analytics, trade logging, signal sharing, and performance tracking capabilities. Built as a full-stack web application with a modern React frontend and Express.js backend, it now uses complete Supabase integration for authentication, database, and file storage.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
-Authentication preference: Simple email/password login system (replaced Replit Auth on 2025-01-31).
+Authentication preference: Supabase Auth with email/password authentication (migrated from custom auth on 2025-09-22).
 Settings access: Settings icon next to theme toggle with dedicated logout tab.
 
 ## System Architecture
@@ -22,21 +22,20 @@ The client-side application is built with React 18 and TypeScript, utilizing a c
 - **Form Handling**: React Hook Form with Zod schema validation ensures type-safe form management
 
 ### Backend Architecture
-The server-side follows a RESTful API design pattern using Express.js:
+The server-side follows a RESTful API design pattern using Express.js with complete Supabase integration:
 
 - **Framework**: Express.js with TypeScript for type-safe server development
-- **Database ORM**: Drizzle ORM provides type-safe database operations with PostgreSQL
-- **Authentication**: Integrates with Replit's OpenID Connect authentication system
-- **Session Management**: PostgreSQL-backed session storage with configurable TTL
+- **Database**: Supabase PostgreSQL with direct client integration
+- **Authentication**: Supabase Auth with JWT token validation and email verification
+- **Session Management**: Supabase Auth handles session management automatically
 - **Error Handling**: Centralized error middleware with proper HTTP status codes
 
 ### Data Storage Solutions
-The application uses a PostgreSQL database with the following schema design:
+The application uses Supabase PostgreSQL with the following planned schema:
 
-- **Users Table**: Stores user profiles with Replit Auth integration (email, names, profile images, admin flags, dashboard widget preferences)
-- **Trades Table**: Comprehensive trade logging with instrument types (FOREX/INDICES/CRYPTO), position details, P&L tracking
-- **Signals Table**: Signal sharing system with entry/exit prices, risk management parameters
-- **Sessions Table**: Secure session storage for authentication persistence
+- **User Profiles**: Extended user data stored in Supabase (complementing Supabase Auth users)
+- **Journal Entries**: Main trading journal entries with instrument types, position details, P&L tracking
+- **File Storage**: Supabase Storage for trade attachments and supporting documents
 
 ### Dashboard Features
 The dashboard includes a fully customizable widget system allowing users to:
@@ -51,22 +50,22 @@ The dashboard includes a fully customizable widget system allowing users to:
 - **Template System**: Save and switch between up to 5 custom dashboard layouts with persistent storage (2025-01-31)
 
 ### Authentication and Authorization
-Authentication is handled through a custom email/password system:
+Authentication is now handled through Supabase Auth (migrated 2025-09-22):
 
-- **Provider**: Custom authentication with email/password credentials and bcrypt password hashing
-- **Session Security**: HTTP-only cookies with HTTPS enforcement and PostgreSQL-backed session storage
-- **Access Control**: Role-based permissions with admin flag support  
-- **Security**: Password hashing with scrypt, CSRF protection and secure session management
-- **Auth Pages**: Custom sign-up and sign-in forms with form validation
+- **Provider**: Supabase Auth with email/password authentication and email verification
+- **Session Security**: JWT tokens with automatic session management through Supabase
+- **Access Control**: Supabase Auth users with role-based permissions support
+- **Security**: Supabase handles password hashing, rate limiting, and security best practices
+- **Auth Pages**: Custom sign-up and sign-in forms using Supabase Auth hooks
 - **Logout Flow**: Settings icon → Logout tab → Redirect to login page after successful logout
-- **Trade Validation**: Fixed schema validation to handle number/string conversion for decimal fields (2025-01-31)
+- **Email Verification**: Production-ready email verification flow with domain restrictions
 
 ### External Dependencies
 
 #### Cloud Services
-- **Replit Authentication**: Managed OpenID Connect authentication service
-- **Google Cloud Storage**: Object storage for file uploads and attachments with ACL-based access control
-- **PostgreSQL Database**: Managed database service (likely Neon based on connection configuration)
+- **Supabase**: Complete backend-as-a-service for authentication, database, and file storage
+- **PostgreSQL Database**: Supabase-managed PostgreSQL with real-time capabilities
+- **File Storage**: Supabase Storage for secure file uploads and management
 
 #### File Upload System
 - **Uppy**: Advanced file upload library with dashboard UI, progress tracking, and drag-and-drop support
