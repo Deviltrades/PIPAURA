@@ -26,14 +26,21 @@ export async function apiRequest(
     headers["Authorization"] = `Bearer ${token}`;
   }
   
-  if (data) {
+  let body: string | FormData | undefined;
+  
+  // Handle FormData (for file uploads)
+  if (data instanceof FormData) {
+    body = data;
+    // Don't set Content-Type for FormData - browser will set it with boundary
+  } else if (data) {
     headers["Content-Type"] = "application/json";
+    body = JSON.stringify(data);
   }
 
   const res = await fetch(url, {
     method,
     headers,
-    body: data ? JSON.stringify(data) : undefined,
+    body,
   });
 
   await throwIfResNotOk(res);
