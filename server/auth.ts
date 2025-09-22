@@ -16,6 +16,22 @@ declare global {
 
 const scryptAsync = promisify(scrypt);
 
+export function sanitizeUser(user: SelectUser) {
+  return {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileImageUrl: user.profileImageUrl,
+    isAdmin: user.isAdmin,
+    sidebarSettings: user.sidebarSettings,
+    dashboardWidgets: user.dashboardWidgets,
+    dashboardLayout: user.dashboardLayout,
+    dashboardTemplates: user.dashboardTemplates,
+    calendarSettings: user.calendarSettings
+  };
+}
+
 async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
   const buf = (await scryptAsync(password, salt, 64)) as Buffer;
@@ -39,8 +55,12 @@ export function setupAuth(app: Express) {
     tableName: "sessions",
   });
 
+  if (!process.env.SESSION_SECRET) {
+    throw new Error('SESSION_SECRET environment variable is required');
+  }
+
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || 'fallback-secret-for-dev',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: sessionStore,

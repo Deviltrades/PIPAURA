@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./auth";
+import { setupAuth, isAuthenticated, sanitizeUser } from "./auth";
 import { insertTradeSchema, insertSignalSchema } from "@shared/schema";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
@@ -16,7 +16,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
-      res.json(user);
+      res.json(sanitizeUser(user));
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -24,16 +24,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Object storage routes for file uploads
-  app.get("/objects/:objectPath(*)", /* isAuthenticated, */ async (req, res) => {
-    const userId = (req.user as any)?.id || "development-user-id";
+  app.get("/objects/:objectPath(*)", isAuthenticated, async (req, res) => {
+    const userId = (req.user as any)?.id;
     const objectStorageService = new ObjectStorageService();
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(
         req.path,
       );
       
-      // Skip ACL check in development mode 
-      const isDevelopment = process.env.NODE_ENV === "development";
+      // Always enforce ACL checks for security
+      const isDevelopment = false;
       
       if (!isDevelopment) {
         const canAccess = await objectStorageService.canAccessObjectEntity({
@@ -187,34 +187,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Calendar settings routes
   app.put('/api/calendar/settings', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any)?.id;
       const calendarSettings = req.body;
       await storage.updateUserCalendarSettings(userId, calendarSettings);
       res.json({ success: true });
     } catch (error) {
       console.error("Error updating calendar settings:", error);
       res.status(500).json({ message: "Failed to update calendar settings" });
-    }
-  });
-
-  app.delete("/api/trades/:id", isAuthenticated, async (req, res) => {
-    try {
-      const trade = await storage.getTrade(req.params.id);
-      if (!trade) {
-        return res.status(404).json({ message: "Trade not found" });
-      }
-
-      // Check if user owns this trade
-      const userId = (req.user as any)?.id;
-      if (trade.userId !== userId) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      await storage.deleteTrade(req.params.id);
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error updating trade:", error);
-      res.status(500).json({ message: "Failed to update trade" });
     }
   });
 
@@ -532,7 +511,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = await storage.getUser(userId);
       
-      res.json(user);
+      res.json(sanitizeUser(user));
     } catch (error) {
       console.error("Error fetching user profile:", error);
       res.status(500).json({ error: "Internal server error" });
