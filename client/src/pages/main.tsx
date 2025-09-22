@@ -394,14 +394,19 @@ export default function MainPage() {
           <p className="text-lg text-muted-foreground mb-6">
             Join thousands of traders who have elevated their performance with TJ - Traders Brotherhood
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">£7.99</div>
-              <div className="text-sm text-muted-foreground">per month</div>
-            </div>
+          <div className="flex flex-col gap-4 justify-center items-center">
             <Button size="lg" className="text-lg px-8 py-3" onClick={() => setActiveTab("register")}>
               Try Demo Journal
             </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button size="lg" className="text-lg px-8 py-3" onClick={() => setActiveTab("register")}>
+                Start now
+              </Button>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">£7.99</div>
+                <div className="text-sm text-muted-foreground">per month</div>
+              </div>
+            </div>
           </div>
         </div>
 
