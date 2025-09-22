@@ -1,11 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase configuration
-const supabaseUrl = process.env.Project_URL_SUPABASE;
-const supabaseKey = process.env.SUPABASE_API_KEY;
+// Supabase configuration - use the same env vars as frontend
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables: Project_URL_SUPABASE and SUPABASE_API_KEY are required');
+  throw new Error('Missing Supabase environment variables: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required');
 }
 
 // Create Supabase client for server-side operations
