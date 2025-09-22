@@ -317,7 +317,7 @@ export default function MainPage() {
             signal sharing, and community-driven performance tracking. Transform your trading from guesswork to precision.
           </p>
           <div className="flex flex-wrap gap-2 justify-center text-sm text-muted-foreground">
-            <span className="bg-primary/10 px-3 py-1 rounded-full">✓ 30-Day Free Trial</span>
+            <span className="bg-primary/10 px-3 py-1 rounded-full">✓ View Journal before Purchase</span>
             <span className="bg-primary/10 px-3 py-1 rounded-full">✓ No Setup Fees</span>
             <span className="bg-primary/10 px-3 py-1 rounded-full">✓ Cancel Anytime</span>
           </div>
@@ -396,16 +396,13 @@ export default function MainPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary">$29.99</div>
+              <div className="text-3xl font-bold text-primary">£7.99</div>
               <div className="text-sm text-muted-foreground">per month</div>
             </div>
             <Button size="lg" className="text-lg px-8 py-3" onClick={() => setActiveTab("register")}>
               Start Free Trial
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-4">
-            No credit card required • 30-day money-back guarantee
-          </p>
         </div>
 
         {/* Feature Highlights */}
