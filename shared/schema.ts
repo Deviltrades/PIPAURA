@@ -1,138 +1,49 @@
-import { sql } from "drizzle-orm";
-import {
-  index,
-  jsonb,
-  pgTable,
-  timestamp,
-  varchar,
-  text,
-  decimal,
-  boolean,
-  pgEnum,
-} from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Session storage table for Replit Auth
-export const sessions = pgTable(
-  "sessions",
-  {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull(),
-  },
-  (table) => [index("IDX_session_expire").on(table.expire)],
-);
+// Journal entry type definitions for Supabase
+export interface JournalEntry {
+  id: string;
+  user_id: string;
+  created_at: string;
+  notes: string;
+  trade_data: any;
+  image_url?: string;
+}
 
-// User storage table
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique().notNull(),
-  password: varchar("password").notNull(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
-  isAdmin: boolean("is_admin").default(false),
-  dashboardWidgets: text("dashboard_widgets").array().default([]),
-  dashboardLayout: jsonb("dashboard_layout").default({}),
-  dashboardTemplates: jsonb("dashboard_templates").default({}),
-  calendarSettings: jsonb("calendar_settings").default({
-    backgroundColor: "#1a1a1a",
-    borderColor: "#374151",
-    dayBackgroundColor: "#2d2d2d",
-    dayBorderColor: "#4b5563"
-  }),
-  sidebarSettings: jsonb("sidebar_settings").default({
-    primaryColor: "blue",
-    gradientFrom: "from-blue-950",
-    gradientVia: "via-blue-900", 
-    gradientTo: "to-slate-950",
-    headerFrom: "from-blue-600",
-    headerTo: "to-blue-500",
-    activeGradient: "from-blue-600/20 to-blue-500/20",
-    activeBorder: "border-blue-500/30",
-    hoverColor: "hover:bg-blue-900/30"
-  }),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export interface CreateJournalEntry {
+  notes: string;
+  trade_data: any;
+  image_url?: string;
+}
+
+// Zod schemas for validation
+export const createJournalEntrySchema = z.object({
+  notes: z.string().min(1, "Notes are required"),
+  trade_data: z.any(),
+  image_url: z.string().url().optional(),
 });
 
-// Enums for trade types and statuses
-export const tradeTypeEnum = pgEnum("trade_type", ["BUY", "SELL"]);
-export const tradeStatusEnum = pgEnum("trade_status", ["OPEN", "CLOSED", "CANCELLED"]);
-export const instrumentTypeEnum = pgEnum("instrument_type", ["FOREX", "INDICES", "CRYPTO"]);
-
-// Trades table
-export const trades = pgTable("trades", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  instrument: varchar("instrument").notNull(),
-  instrumentType: instrumentTypeEnum("instrument_type").notNull(),
-  tradeType: tradeTypeEnum("trade_type").notNull(),
-  positionSize: decimal("position_size", { precision: 10, scale: 2 }).notNull(),
-  entryPrice: decimal("entry_price", { precision: 10, scale: 5 }).notNull(),
-  exitPrice: decimal("exit_price", { precision: 10, scale: 5 }),
-  stopLoss: decimal("stop_loss", { precision: 10, scale: 5 }),
-  takeProfit: decimal("take_profit", { precision: 10, scale: 5 }),
-  pnl: decimal("pnl", { precision: 10, scale: 2 }),
-  status: tradeStatusEnum("status").default("OPEN"),
-  notes: text("notes"),
-  attachments: text("attachments").array(),
-  entryDate: timestamp("entry_date").defaultNow(),
-  exitDate: timestamp("exit_date"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const updateJournalEntrySchema = z.object({
+  notes: z.string().min(1).optional(),
+  trade_data: z.any().optional(),
+  image_url: z.string().url().optional(),
 });
 
-// Signals table
-export const signals = pgTable("signals", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  instrument: varchar("instrument").notNull(),
-  instrumentType: instrumentTypeEnum("instrument_type").notNull(),
-  tradeType: tradeTypeEnum("trade_type").notNull(),
-  entryPrice: decimal("entry_price", { precision: 10, scale: 5 }).notNull(),
-  stopLoss: decimal("stop_loss", { precision: 10, scale: 5 }),
-  takeProfit: decimal("take_profit", { precision: 10, scale: 5 }),
-  riskReward: varchar("risk_reward"),
-  description: text("description").notNull(),
-  status: varchar("status").default("ACTIVE"),
-  result: varchar("result"),
-  resultPips: decimal("result_pips", { precision: 10, scale: 1 }),
-  closedAt: timestamp("closed_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Insert schemas
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertTradeSchema = createInsertSchema(trades).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-}).extend({
-  positionSize: z.union([z.string(), z.number()]).transform(val => String(val)),
-  entryPrice: z.union([z.string(), z.number()]).transform(val => String(val)),
-  exitPrice: z.union([z.string(), z.number(), z.null()]).optional().transform(val => val && val !== null ? String(val) : undefined),
-  stopLoss: z.union([z.string(), z.number(), z.null()]).optional().transform(val => val && val !== null ? String(val) : undefined),
-  takeProfit: z.union([z.string(), z.number(), z.null()]).optional().transform(val => val && val !== null ? String(val) : undefined),
-  pnl: z.union([z.string(), z.number(), z.null()]).optional().transform(val => val && val !== null ? String(val) : undefined),
-});
-
-export const insertSignalSchema = createInsertSchema(signals).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-// Types
-export type UpsertUser = typeof users.$inferInsert;
-export type User = typeof users.$inferSelect;
+// User profile type for Supabase Auth
+export interface UserProfile {
+  id: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  profile_image_url?: string;
+  dashboard_widgets?: string[];
+  dashboard_layout?: any;
+  dashboard_templates?: any;
+  calendar_settings?: CalendarSettings;
+  sidebar_settings?: SidebarSettings;
+  created_at: string;
+  updated_at: string;
+}
 
 // Calendar settings type
 export interface CalendarSettings {
@@ -155,7 +66,6 @@ export interface SidebarSettings {
   hoverColor: string;
 }
 
-export type InsertTrade = z.infer<typeof insertTradeSchema>;
-export type Trade = typeof trades.$inferSelect;
-export type InsertSignal = z.infer<typeof insertSignalSchema>;
-export type Signal = typeof signals.$inferSelect;
+// Types for backward compatibility
+export type User = UserProfile;
+export type InsertJournalEntry = CreateJournalEntry;
