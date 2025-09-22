@@ -30,8 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { insertSignalSchema } from "@shared/schema";
-import type { InsertSignal } from "@shared/schema";
+import { createJournalEntrySchema } from "@shared/schema";
+import type { CreateJournalEntry } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { z } from "zod";
 
