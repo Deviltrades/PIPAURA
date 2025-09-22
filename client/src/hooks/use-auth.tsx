@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Signed in",
         description: "Welcome back!",
       });
-      setLocation("/dashboard");
+      // Don't redirect here - let the auth state change handle navigation
     },
     onError: (error: Error) => {
       toast({
