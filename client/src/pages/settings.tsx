@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
 import { LogOut } from "lucide-react";
+import SidebarColorPicker from "@/components/SidebarColorPicker";
 
 export default function Settings() {
   const { logoutMutation } = useAuth();
@@ -68,6 +69,17 @@ export default function Settings() {
                   </SelectContent>
                 </Select>
               </div>
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium">Interface Customization</h4>
+                <div className="space-y-2">
+                  <Label>Sidebar Color Theme</Label>
+                  <SidebarColorPicker />
+                </div>
+              </div>
+              
               <Button>Save Changes</Button>
             </CardContent>
           </Card>
