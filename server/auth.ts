@@ -1,114 +1,31 @@
-import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
-import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
-import { storage } from "./storage";
-import { User as SelectUser } from "@shared/schema";
-import connectPg from "connect-pg-simple";
+import { supabase } from "./supabase";
+import { UserProfile } from "@shared/schema";
 
 declare global {
   namespace Express {
-    interface User extends SelectUser {}
+    interface User extends UserProfile {}
   }
 }
 
-const scryptAsync = promisify(scrypt);
-
-export function sanitizeUser(user: SelectUser) {
+export function sanitizeUser(user: UserProfile) {
   return {
     id: user.id,
     email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    profileImageUrl: user.profileImageUrl,
-    isAdmin: user.isAdmin,
-    sidebarSettings: user.sidebarSettings,
-    dashboardWidgets: user.dashboardWidgets,
-    dashboardLayout: user.dashboardLayout,
-    dashboardTemplates: user.dashboardTemplates,
-    calendarSettings: user.calendarSettings
+    first_name: user.first_name,
+    last_name: user.last_name,
+    profile_image_url: user.profile_image_url,
+    dashboard_widgets: user.dashboard_widgets,
+    dashboard_layout: user.dashboard_layout,
+    dashboard_templates: user.dashboard_templates,
+    calendar_settings: user.calendar_settings,
+    sidebar_settings: user.sidebar_settings
   };
-}
-
-async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
-}
-
-async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
 export function setupAuth(app: Express) {
-  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: true,
-    ttl: sessionTtl,
-    tableName: "sessions",
-  });
-
-  if (!process.env.SESSION_SECRET) {
-    throw new Error('SESSION_SECRET environment variable is required');
-  }
-
-  const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    store: sessionStore,
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: sessionTtl,
-      sameSite: 'lax',
-    },
-  };
-
-  app.set("trust proxy", 1);
-  app.use(session(sessionSettings));
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  passport.use(
-    new LocalStrategy(
-      { usernameField: 'email' },
-      async (email, password, done) => {
-        try {
-          const user = await storage.getUserByEmail(email);
-          if (!user || !(await comparePasswords(password, user.password))) {
-            return done(null, false, { message: 'Invalid email or password' });
-          }
-          return done(null, user);
-        } catch (error) {
-          return done(error);
-        }
-      }
-    )
-  );
-
-  passport.serializeUser((user, done) => done(null, user.id));
-  passport.deserializeUser(async (id: string, done) => {
-    try {
-      const user = await storage.getUser(id);
-      if (!user) {
-        return done(null, false);
-      }
-      done(null, user);
-    } catch (error) {
-      console.error('Error deserializing user:', error);
-      done(null, false);
-    }
-  });
-
-  app.post("/api/register", async (req, res, next) => {
+  // Register endpoint - uses Supabase Auth
+  app.post("/api/register", async (req, res) => {
     try {
       const { email, password, firstName, lastName } = req.body;
       
@@ -116,29 +33,44 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "Email and password are required" });
       }
 
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
-        return res.status(400).json({ message: "User already exists with this email" });
+      // Create user with Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName || null,
+            last_name: lastName || null,
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Registration error:', error);
+        return res.status(400).json({ message: error.message });
       }
 
-      const hashedPassword = await hashPassword(password);
-      const user = await storage.createUser({
-        email,
-        password: hashedPassword,
-        firstName: firstName || null,
-        lastName: lastName || null,
-        profileImageUrl: null,
-        isAdmin: false,
-        dashboardWidgets: [],
-        dashboardLayout: {},
-        dashboardTemplates: {},
-        calendarSettings: {
+      if (!data.user) {
+        return res.status(400).json({ message: "Registration failed" });
+      }
+
+      // Create user profile in our database
+      const userProfile = {
+        id: data.user.id,
+        email: data.user.email!,
+        first_name: firstName || null,
+        last_name: lastName || null,
+        profile_image_url: null,
+        dashboard_widgets: [],
+        dashboard_layout: {},
+        dashboard_templates: {},
+        calendar_settings: {
           backgroundColor: "#1a1a1a",
           borderColor: "#374151",
           dayBackgroundColor: "#2d2d2d",
           dayBorderColor: "#4b5563"
         },
-        sidebarSettings: {
+        sidebar_settings: {
           primaryColor: "blue",
           gradientFrom: "from-blue-950",
           gradientVia: "via-blue-900",
@@ -148,12 +80,26 @@ export function setupAuth(app: Express) {
           activeGradient: "from-blue-600/20 to-blue-500/20",
           activeBorder: "border-blue-500/30",
           hoverColor: "hover:bg-blue-900/30"
-        }
-      });
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
 
-      req.login(user, (err) => {
-        if (err) return next(err);
-        res.status(201).json({ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName });
+      // Store user profile in Supabase database
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert(userProfile);
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        // Continue even if profile creation fails - user is still created in auth
+      }
+
+      res.status(201).json({ 
+        id: data.user.id, 
+        email: data.user.email, 
+        first_name: firstName, 
+        last_name: lastName 
       });
     } catch (error) {
       console.error('Registration error:', error);
@@ -161,42 +107,106 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err: any, user: any, info: any) => {
-      if (err) {
-        return res.status(500).json({ message: "Authentication error" });
+  // Login endpoint - uses Supabase Auth
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
       }
-      if (!user) {
-        return res.status(401).json({ message: info?.message || "Invalid credentials" });
-      }
-      req.login(user, (err) => {
-        if (err) {
-          return res.status(500).json({ message: "Login failed" });
-        }
-        res.json({ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName });
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-    })(req, res, next);
-  });
 
-  app.post("/api/logout", (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.json({ message: "Logged out successfully" });
-    });
-  });
+      if (error) {
+        console.error('Login error:', error);
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
 
-  app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Not authenticated" });
+      if (!data.user) {
+        return res.status(401).json({ message: "Login failed" });
+      }
+
+      res.json({ 
+        id: data.user.id, 
+        email: data.user.email,
+        access_token: data.session?.access_token
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: "Login failed" });
     }
-    const user = req.user as SelectUser;
-    res.json({ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName });
+  });
+
+  // Logout endpoint - uses Supabase Auth
+  app.post("/api/logout", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (authHeader) {
+        const token = authHeader.replace('Bearer ', '');
+        await supabase.auth.signOut();
+      }
+      res.json({ message: "Logged out successfully" });
+    } catch (error) {
+      console.error('Logout error:', error);
+      res.status(500).json({ message: "Logout failed" });
+    }
+  });
+
+  // Get current user endpoint
+  app.get("/api/user", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        return res.status(401).json({ message: "No authorization header" });
+      }
+
+      const token = authHeader.replace('Bearer ', '');
+      
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      
+      if (error || !user) {
+        return res.status(401).json({ message: "Invalid token" });
+      }
+
+      res.json({ 
+        id: user.id, 
+        email: user.email,
+        first_name: user.user_metadata?.first_name,
+        last_name: user.user_metadata?.last_name
+      });
+    } catch (error) {
+      console.error('Get user error:', error);
+      res.status(401).json({ message: "Unauthorized" });
+    }
   });
 }
 
-export const isAuthenticated = (req: any, res: any, next: any) => {
-  if (req.isAuthenticated()) {
-    return next();
+// Middleware to check authentication using Supabase token
+export const isAuthenticated = async (req: any, res: any, next: any) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: "No authorization header" });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Attach user to request object
+    req.user = user;
+    req.userId = user.id;
+    next();
+  } catch (error) {
+    console.error('Authentication error:', error);
+    res.status(401).json({ message: "Unauthorized" });
   }
-  res.status(401).json({ message: "Unauthorized" });
 };
