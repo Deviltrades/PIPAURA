@@ -172,6 +172,7 @@ export default function SidebarColorPicker({ onColorChange }: SidebarColorPicker
     },
     onSuccess: (_, settings) => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/profile"] });
+      queryClient.refetchQueries({ queryKey: ["/api/user/profile"] });
       onColorChange?.(settings);
       toast({
         title: "Sidebar Color Updated",
