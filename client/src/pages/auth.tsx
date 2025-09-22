@@ -7,8 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { Shield, TrendingUp, Users, BarChart3 } from "lucide-react";
@@ -19,10 +17,7 @@ const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-const registerSchema = loginSchema.extend({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().optional(),
-});
+const registerSchema = loginSchema;
 
 type LoginFormData = z.infer<typeof loginSchema>;
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -61,61 +56,24 @@ export default function AuthPage() {
     defaultValues: {
       email: "",
       password: "",
-      firstName: "",
-      lastName: "",
     },
   });
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: LoginFormData) => {
-      const res = await apiRequest("POST", "/api/login", data);
-      return await res.json();
-    },
-    onSuccess: (user) => {
-      queryClient.setQueryData(["/api/auth/user"], user);
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-      });
-      setLocation("/");
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const registerMutation = useMutation({
-    mutationFn: async (data: RegisterFormData) => {
-      const res = await apiRequest("POST", "/api/register", data);
-      return await res.json();
-    },
-    onSuccess: (user) => {
-      queryClient.setQueryData(["/api/auth/user"], user);
-      toast({
-        title: "Welcome to TJ!",
-        description: "Your account has been created successfully.",
-      });
-      setLocation("/");
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Registration failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  // Get auth methods from the new Supabase Auth hook
+  const { signIn, signUp } = useAuth();
 
   const onLogin = (data: LoginFormData) => {
-    loginMutation.mutate(data);
+    signIn.mutate({
+      email: data.email,
+      password: data.password,
+    });
   };
 
   const onRegister = (data: RegisterFormData) => {
-    registerMutation.mutate(data);
+    signUp.mutate({
+      email: data.email,
+      password: data.password,
+    });
   };
 
   return (
@@ -222,10 +180,10 @@ export default function AuthPage() {
                       <Button 
                         type="submit" 
                         className="w-full" 
-                        disabled={loginMutation.isPending}
+                        disabled={signIn.isPending}
                         data-testid="button-login"
                       >
-                        {loginMutation.isPending ? "Signing in..." : "Sign In"}
+                        {signIn.isPending ? "Signing in..." : "Sign In"}
                       </Button>
                     </form>
                   </Form>
@@ -234,42 +192,6 @@ export default function AuthPage() {
                 <TabsContent value="register">
                   <Form {...registerForm}>
                     <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={registerForm.control}
-                          name="firstName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>First Name</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="First name" 
-                                  data-testid="input-firstName"
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={registerForm.control}
-                          name="lastName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Last Name</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="Last name" 
-                                  data-testid="input-lastName"
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
                       <FormField
                         control={registerForm.control}
                         name="email"
@@ -309,10 +231,10 @@ export default function AuthPage() {
                       <Button 
                         type="submit" 
                         className="w-full" 
-                        disabled={registerMutation.isPending}
+                        disabled={signUp.isPending}
                         data-testid="button-register"
                       >
-                        {registerMutation.isPending ? "Creating account..." : "Create Account"}
+                        {signUp.isPending ? "Creating account..." : "Create Account"}
                       </Button>
                     </form>
                   </Form>
