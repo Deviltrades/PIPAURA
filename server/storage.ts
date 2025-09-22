@@ -397,7 +397,7 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .update(users)
       .set({ 
-        sidebarSettings: sidebarSettings,
+        sidebarSettings,
         updatedAt: new Date(),
       })
       .where(eq(users.id, id))

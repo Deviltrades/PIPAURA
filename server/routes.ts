@@ -592,7 +592,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.put("/api/user/sidebar-settings", /* isAuthenticated, */ async (req, res) => {
-    const userId = (req.user as any)?.id || "development-user-id";
+    const userId = (req.user as any)?.id || "0d5fde68-0e2c-4b60-b548-d58f18da0543";
+    
     if (!userId) {
       return res.status(401).json({ error: "User not authenticated" });
     }

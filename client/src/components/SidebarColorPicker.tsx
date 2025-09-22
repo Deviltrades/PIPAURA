@@ -168,13 +168,9 @@ export default function SidebarColorPicker({ onColorChange }: SidebarColorPicker
 
   const updateSidebarMutation = useMutation({
     mutationFn: async (settings: SidebarSettings) => {
-      console.log("🚀 Sending PUT request with settings:", settings);
-      const response = await apiRequest("PUT", "/api/user/sidebar-settings", settings);
-      console.log("✅ PUT request completed:", response);
-      return response;
+      return await apiRequest("PUT", "/api/user/sidebar-settings", settings);
     },
     onSuccess: (_, settings) => {
-      console.log("🎉 Mutation success! Settings:", settings);
       queryClient.invalidateQueries({ queryKey: ["/api/user/profile"] });
       queryClient.refetchQueries({ queryKey: ["/api/user/profile"] });
       onColorChange?.(settings);
@@ -185,7 +181,6 @@ export default function SidebarColorPicker({ onColorChange }: SidebarColorPicker
       setDialogOpen(false);
     },
     onError: (error: Error) => {
-      console.error("❌ Mutation failed:", error);
       toast({
         title: "Update Failed",
         description: error.message,
@@ -200,8 +195,6 @@ export default function SidebarColorPicker({ onColorChange }: SidebarColorPicker
   ) || colorThemes[0];
 
   const handleThemeSelect = (theme: ColorTheme) => {
-    console.log("🎨 Theme selected:", theme.name, theme.settings);
-    console.log("🔧 Mutation status:", updateSidebarMutation.status);
     updateSidebarMutation.mutate(theme.settings);
   };
 
