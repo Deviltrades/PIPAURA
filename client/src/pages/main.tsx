@@ -400,7 +400,7 @@ export default function MainPage() {
               <div className="text-sm text-muted-foreground">per month</div>
             </div>
             <Button size="lg" className="text-lg px-8 py-3" onClick={() => setActiveTab("register")}>
-              Start Free Trial
+              Try Demo Journal
             </Button>
           </div>
         </div>
