@@ -23,6 +23,7 @@ export interface IStorage {
   updateUserDashboardLayouts(id: string, layouts: any): Promise<User | undefined>;
   updateUserDashboardTemplates(id: string, templates: any): Promise<User | undefined>;
   updateUserCalendarSettings(id: string, calendarSettings: any): Promise<User | undefined>;
+  updateUserSidebarSettings(id: string, sidebarSettings: any): Promise<User | undefined>;
   
   // Trade operations
   createTrade(trade: InsertTrade): Promise<Trade>;
@@ -71,6 +72,17 @@ export class MemStorage implements IStorage {
         borderColor: "#374151",
         dayBackgroundColor: "#2d2d2d",
         dayBorderColor: "#4b5563"
+      },
+      sidebarSettings: userData.sidebarSettings || {
+        primaryColor: "blue",
+        gradientFrom: "from-blue-950",
+        gradientVia: "via-blue-900",
+        gradientTo: "to-slate-950",
+        headerFrom: "from-blue-600",
+        headerTo: "to-blue-500",
+        activeGradient: "from-blue-600/20 to-blue-500/20",
+        activeBorder: "border-blue-500/30",
+        hoverColor: "hover:bg-blue-900/30"
       },
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -163,6 +175,19 @@ export class MemStorage implements IStorage {
     const updatedUser: User = {
       ...existingUser,
       calendarSettings: calendarSettings,
+      updatedAt: new Date(),
+    };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserSidebarSettings(id: string, sidebarSettings: any): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+
+    const updatedUser: User = {
+      ...existingUser,
+      sidebarSettings: sidebarSettings,
       updatedAt: new Date(),
     };
     this.users.set(id, updatedUser);
@@ -349,6 +374,18 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         calendarSettings: calendarSettings,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async updateUserSidebarSettings(id: string, sidebarSettings: any): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        sidebarSettings: sidebarSettings,
         updatedAt: new Date(),
       })
       .where(eq(users.id, id))

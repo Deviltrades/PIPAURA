@@ -4,6 +4,8 @@ import { useTheme } from "./ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import type { SidebarSettings } from "@shared/schema";
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -49,10 +51,30 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const { theme, toggleTheme } = useTheme();
   const { logoutMutation } = useAuth();
   const isMobile = useIsMobile();
+  
+  const { data: user } = useQuery({
+    queryKey: ["/api/user/profile"],
+    retry: false,
+  });
+
+  // Default sidebar settings
+  const defaultSidebarSettings: SidebarSettings = {
+    primaryColor: "blue",
+    gradientFrom: "from-blue-950",
+    gradientVia: "via-blue-900",
+    gradientTo: "to-slate-950",
+    headerFrom: "from-blue-600",
+    headerTo: "to-blue-500",
+    activeGradient: "from-blue-600/20 to-blue-500/20",
+    activeBorder: "border-blue-500/30",
+    hoverColor: "hover:bg-blue-900/30"
+  };
+
+  const sidebarSettings = (user as any)?.sidebarSettings || defaultSidebarSettings;
 
   const sidebarContent = (
     <>
-      <div className="flex items-center justify-center h-16 bg-gradient-to-r from-blue-600 to-blue-500">
+      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo}`}>
         <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
           <img 
             src="/logo.jpg"
@@ -79,8 +101,8 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 className={cn(
                   "flex items-center px-6 py-3 text-sm font-medium transition-colors rounded-lg mx-2",
                   isActive
-                    ? "bg-gradient-to-r from-blue-600/20 to-blue-500/20 text-white border border-blue-500/30"
-                    : "text-gray-300 hover:bg-blue-900/30 hover:text-white"
+                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} text-white border ${sidebarSettings.activeBorder}`
+                    : `text-gray-300 ${sidebarSettings.hoverColor} hover:text-white`
                 )}
                 onClick={onClose}
               >
@@ -97,7 +119,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           variant="outline"
           size="sm"
           onClick={toggleTheme}
-          className="w-full border-blue-600/30 text-gray-300 hover:bg-blue-800/50"
+          className={`w-full border-${sidebarSettings.primaryColor}-600/30 text-gray-300 hover:bg-${sidebarSettings.primaryColor}-800/50`}
         >
           {theme === "dark" ? (
             <>
@@ -121,8 +143,8 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         {isOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
-            <div className="fixed inset-y-0 left-0 w-64 bg-gradient-to-br from-blue-950 via-blue-900 to-slate-950 shadow-lg flex flex-col">
-              <div className="flex items-center justify-between h-16 bg-gradient-to-r from-blue-600 to-blue-500 px-4">
+            <div className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-br ${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo} shadow-lg flex flex-col`}>
+              <div className={`flex items-center justify-between h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} px-4`}>
                 <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
                   <img 
                     src="/logo.jpg"
@@ -138,7 +160,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   variant="ghost"
                   size="sm"
                   onClick={onClose}
-                  className="text-white hover:bg-blue-700/50"
+                  className={`text-white hover:bg-${sidebarSettings.primaryColor}-700/50`}
                   data-testid="button-close-mobile-menu"
                 >
                   <X className="h-4 w-4" />
@@ -158,8 +180,8 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         className={cn(
                           "flex items-center px-6 py-3 text-sm font-medium transition-colors rounded-lg mx-2",
                           isActive
-                            ? "bg-gradient-to-r from-blue-600/20 to-blue-500/20 text-white border border-blue-500/30"
-                            : "text-gray-300 hover:bg-blue-900/30 hover:text-white"
+                            ? `bg-gradient-to-r ${sidebarSettings.activeGradient} text-white border ${sidebarSettings.activeBorder}`
+                            : `text-gray-300 ${sidebarSettings.hoverColor} hover:text-white`
                         )}
                         onClick={onClose}
                         data-testid={`link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
@@ -177,7 +199,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   variant="outline"
                   size="sm"
                   onClick={toggleTheme}
-                  className="w-full border-blue-600/30 text-gray-300 hover:bg-blue-800/50"
+                  className={`w-full border-${sidebarSettings.primaryColor}-600/30 text-gray-300 hover:bg-${sidebarSettings.primaryColor}-800/50`}
                   data-testid="button-mobile-theme-toggle"
                 >
                   {theme === "dark" ? (
@@ -197,7 +219,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   size="sm"
                   onClick={() => logoutMutation.mutate()}
                   disabled={logoutMutation.isPending}
-                  className="w-full border-blue-600/30 text-gray-300 hover:bg-blue-800/50"
+                  className={`w-full border-${sidebarSettings.primaryColor}-600/30 text-gray-300 hover:bg-${sidebarSettings.primaryColor}-800/50`}
                   data-testid="button-mobile-logout"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
@@ -212,7 +234,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   }
 
   return (
-    <div className="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-br from-blue-950 via-blue-900 to-slate-950 shadow-lg hidden lg:flex lg:flex-col">
+    <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-br ${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo} shadow-lg hidden lg:flex lg:flex-col`}>
       {sidebarContent}
     </div>
   );

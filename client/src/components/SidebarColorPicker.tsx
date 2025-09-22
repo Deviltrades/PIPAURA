@@ -188,7 +188,7 @@ export default function SidebarColorPicker({ onColorChange }: SidebarColorPicker
     },
   });
 
-  const currentSettings = user?.sidebarSettings || colorThemes[0].settings;
+  const currentSettings = (user as any)?.sidebarSettings || colorThemes[0].settings;
   const currentTheme = colorThemes.find(theme => 
     theme.settings.primaryColor === currentSettings.primaryColor
   ) || colorThemes[0];

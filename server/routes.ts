@@ -525,6 +525,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User profile routes
+  app.get("/api/user/profile", isAuthenticated, async (req, res) => {
+    const userId = (req.user as any)?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    try {
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/user/sidebar-settings", isAuthenticated, async (req, res) => {
+    const userId = (req.user as any)?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    try {
+      await storage.updateUserSidebarSettings(userId, req.body);
+      res.json({ message: "Sidebar settings updated successfully" });
+    } catch (error) {
+      console.error("Error updating sidebar settings:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
