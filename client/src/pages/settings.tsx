@@ -11,10 +11,10 @@ import { LogOut } from "lucide-react";
 import SidebarColorPicker from "@/components/SidebarColorPicker";
 
 export default function Settings() {
-  const { logoutMutation } = useAuth();
+  const { signOut } = useAuth();
 
   const handleLogout = () => {
-    logoutMutation.mutate();
+    signOut.mutate();
   };
 
   return (
@@ -333,12 +333,12 @@ export default function Settings() {
                     variant="destructive" 
                     size="lg"
                     onClick={handleLogout}
-                    disabled={logoutMutation.isPending}
+                    disabled={signOut.isPending}
                     data-testid="button-logout-tab"
                     className="flex items-center gap-2 min-w-[150px]"
                   >
                     <LogOut className="h-4 w-4" />
-                    {logoutMutation.isPending ? "Logging out..." : "Logout"}
+                    {signOut.isPending ? "Logging out..." : "Logout"}
                   </Button>
                   
                   <Button 
