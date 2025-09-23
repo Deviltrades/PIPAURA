@@ -141,6 +141,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Tag routes
+  app.post("/api/tags", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.user.id;
+      const { name, category, color } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: "Tag name is required" });
+      }
+      
+      const tag = await storage.createTag(userId, { name, category, color });
+      res.status(201).json(tag);
+    } catch (error) {
+      console.error("Error creating tag:", error);
+      res.status(500).json({ message: "Failed to create tag" });
+    }
+  });
+
+  app.get("/api/tags", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.user.id;
+      const tags = await storage.getTags(userId);
+      res.json(tags);
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+      res.status(500).json({ message: "Failed to fetch tags" });
+    }
+  });
+
+  app.put("/api/tags/:id", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.user.id;
+      const tagId = req.params.id;
+      const updates = req.body;
+      
+      const tag = await storage.updateTag(userId, tagId, updates);
+      res.json(tag);
+    } catch (error) {
+      console.error("Error updating tag:", error);
+      res.status(500).json({ message: "Failed to update tag" });
+    }
+  });
+
+  app.delete("/api/tags/:id", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.user.id;
+      const tagId = req.params.id;
+      
+      await storage.deleteTag(userId, tagId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting tag:", error);
+      res.status(500).json({ message: "Failed to delete tag" });
+    }
+  });
+
   // Image upload routes for Supabase storage
   app.post("/api/upload-image", isAuthenticated, upload.single('image'), async (req, res) => {
     try {

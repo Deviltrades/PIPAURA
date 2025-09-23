@@ -16,6 +16,7 @@ export const JOURNAL_IMAGES_BUCKET = 'journal-images';
 
 // Database table names
 export const JOURNAL_ENTRIES_TABLE = 'journal_entries';
+export const TAGS_TABLE = 'tags';
 
 // Journal entry type definitions
 export interface JournalEntry {
@@ -243,6 +244,99 @@ export class SupabaseService {
     } catch (error) {
       console.error('Error deleting image:', error);
       return false;
+    }
+  }
+
+  /**
+   * Create a new tag
+   */
+  async createTag(userId: string, tag: { name: string; category?: string; color?: string }): Promise<any> {
+    try {
+      const { data, error } = await supabase
+        .from(TAGS_TABLE)
+        .insert({
+          user_id: userId,
+          name: tag.name,
+          category: tag.category || 'general',
+          color: tag.color || '#3b82f6'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Failed to create tag: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error creating tag:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all tags for a user
+   */
+  async getTags(userId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from(TAGS_TABLE)
+        .select('*')
+        .eq('user_id', userId)
+        .order('name', { ascending: true });
+
+      if (error) {
+        throw new Error(`Failed to get tags: ${error.message}`);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error getting tags:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a tag
+   */
+  async updateTag(userId: string, tagId: string, updates: any): Promise<any> {
+    try {
+      const { data, error } = await supabase
+        .from(TAGS_TABLE)
+        .update(updates)
+        .eq('user_id', userId)
+        .eq('id', tagId)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Failed to update tag: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error updating tag:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a tag
+   */
+  async deleteTag(userId: string, tagId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from(TAGS_TABLE)
+        .delete()
+        .eq('user_id', userId)
+        .eq('id', tagId);
+
+      if (error) {
+        throw new Error(`Failed to delete tag: ${error.message}`);
+      }
+    } catch (error) {
+      console.error('Error deleting tag:', error);
+      throw error;
     }
   }
 
