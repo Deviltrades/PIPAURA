@@ -7,8 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { TrendingUp, BarChart3, Calendar, Signal, Shield, Zap, Users } from "lucide-react";
@@ -67,56 +65,21 @@ export default function MainPage() {
     },
   });
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: LoginFormData) => {
-      const res = await apiRequest("POST", "/api/login", data);
-      return await res.json();
-    },
-    onSuccess: (user) => {
-      queryClient.setQueryData(["/api/auth/user"], user);
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-      });
-      setLocation("/dashboard");
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const registerMutation = useMutation({
-    mutationFn: async (data: RegisterFormData) => {
-      const res = await apiRequest("POST", "/api/register", data);
-      return await res.json();
-    },
-    onSuccess: (user) => {
-      queryClient.setQueryData(["/api/auth/user"], user);
-      toast({
-        title: "Welcome to TJ!",
-        description: "Your account has been created successfully.",
-      });
-      setLocation("/dashboard");
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Registration failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  // Get auth methods from the Supabase Auth hook
+  const { signIn, signUp } = useAuth();
 
   const onLogin = (data: LoginFormData) => {
-    loginMutation.mutate(data);
+    signIn.mutate({
+      email: data.email,
+      password: data.password,
+    });
   };
 
   const onRegister = (data: RegisterFormData) => {
-    registerMutation.mutate(data);
+    signUp.mutate({
+      email: data.email,
+      password: data.password,
+    });
   };
 
   return (
@@ -202,10 +165,10 @@ export default function MainPage() {
                           <Button 
                             type="submit" 
                             className="w-full" 
-                            disabled={loginMutation.isPending}
+                            disabled={signIn.isPending}
                             data-testid="button-login"
                           >
-                            {loginMutation.isPending ? "Signing in..." : "Sign In"}
+                            {signIn.isPending ? "Signing in..." : "Sign In"}
                           </Button>
                         </form>
                       </Form>
@@ -289,10 +252,10 @@ export default function MainPage() {
                           <Button 
                             type="submit" 
                             className="w-full" 
-                            disabled={registerMutation.isPending}
+                            disabled={signUp.isPending}
                             data-testid="button-register"
                           >
-                            {registerMutation.isPending ? "Creating account..." : "Create Account"}
+                            {signUp.isPending ? "Creating account..." : "Create Account"}
                           </Button>
                         </form>
                       </Form>
