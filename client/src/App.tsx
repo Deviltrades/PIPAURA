@@ -22,6 +22,7 @@ import Charts from "@/pages/charts";
 import Mentor from "@/pages/mentor";
 import Settings from "@/pages/settings";
 import CalendarSettings from "@/pages/CalendarSettings";
+import Journal from "@/pages/journal";
 import Layout from "@/components/Layout";
 import NotFound from "@/pages/not-found";
 
@@ -49,6 +50,7 @@ function Router() {
         <Layout>
           <Route path="/" component={Dashboard} />
           <Route path="/dashboard" component={Dashboard} />
+          <Route path="/journal" component={Journal} />
           <Route path="/signals" component={Signals} />
           <Route path="/trades" component={Trades} />
           <Route path="/calendar" component={Calendar} />

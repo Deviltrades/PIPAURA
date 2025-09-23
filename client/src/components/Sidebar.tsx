@@ -24,14 +24,17 @@ import {
   LineChart,
   Brain,
   Settings as SettingsIcon,
-  LogOut
+  LogOut,
+  FileText
 } from "lucide-react";
 
 const navigation = [
-  { name: "Signals", href: "/signals", icon: Radio },
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Journal", href: "/journal", icon: FileText },
   { name: "Trades", href: "/trades", icon: BookOpen },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Calendar", href: "/calendar", icon: Calendar },
+  { name: "Signals", href: "/signals", icon: Radio },
   { name: "Accounts", href: "/accounts", icon: Wallet },
   { name: "Widgets", href: "/widgets", icon: Grid3X3 },
   { name: "Strategy/Playbook", href: "/strategy", icon: MapPin },
@@ -49,7 +52,7 @@ interface SidebarProps {
 function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const [location] = useLocation();
   const { theme, toggleTheme } = useTheme();
-  const { logoutMutation } = useAuth();
+  const { signOut } = useAuth();
   const isMobile = useIsMobile();
   
   const { data: user } = useQuery({
@@ -217,13 +220,13 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => logoutMutation.mutate()}
-                  disabled={logoutMutation.isPending}
+                  onClick={() => signOut.mutate()}
+                  disabled={signOut.isPending}
                   className={`w-full border-${sidebarSettings.primaryColor}-600/30 text-gray-300 hover:bg-${sidebarSettings.primaryColor}-800/50`}
                   data-testid="button-mobile-logout"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  {logoutMutation.isPending ? "Logging out..." : "Logout"}
+                  {signOut.isPending ? "Logging out..." : "Logout"}
                 </Button>
               </div>
             </div>
