@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -55,8 +55,13 @@ const cryptos = ["BTC/USD", "ETH/USD", "ADA/USD", "XRP/USD", "SOL/USD", "DOT/USD
 export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [attachments, setAttachments] = useState<string[]>(trade?.attachments || []);
+  const [attachments, setAttachments] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Initialize attachments when trade changes
+  useEffect(() => {
+    setAttachments(trade?.attachments || []);
+  }, [trade?.id]); // Only reset when editing a different trade
 
   const form = useForm<TradeFormData>({
     resolver: zodResolver(tradeFormSchema),
