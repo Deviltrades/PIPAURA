@@ -31,6 +31,7 @@ import { AddTradeModal } from "./AddTradeModal";
 import { EditTradeModal } from "./EditTradeModal";
 import { SignedImageDisplay } from "./SignedImageDisplay";
 import { ImageViewerModal } from "./ImageViewerModal";
+import { PlanGate } from "./PlanGate";
 import type { Trade, User } from "@shared/schema";
 import { Plus as PlusIcon } from "lucide-react";
 import { Link } from "wouter";
@@ -1066,17 +1067,24 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 
                 {/* Add Trade Button - Only show on hover for empty days */}
                 {dayTrades.length === 0 && isCurrentMonth && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setAddTradeDate(day);
-                      setIsAddTradeModalOpen(true);
-                    }}
-                    className="absolute top-1 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-4 h-4 bg-gray-600 hover:bg-gray-700 rounded-full flex items-center justify-center z-10"
-                    title="Add trade for this date"
+                  <PlanGate 
+                    action="add-trade" 
+                    buttonId="add-trade"
+                    showUpgrade={false}
                   >
-                    <PlusIcon className="h-2.5 w-2.5 text-white" />
-                  </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAddTradeDate(day);
+                        setIsAddTradeModalOpen(true);
+                      }}
+                      className="absolute top-1 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-4 h-4 bg-gray-600 hover:bg-gray-700 rounded-full flex items-center justify-center z-10"
+                      title="Add trade for this date"
+                      data-testid="button-add-trade"
+                    >
+                      <PlusIcon className="h-2.5 w-2.5 text-white" />
+                    </button>
+                  </PlanGate>
                 )}
                 
                 {/* Trading Day Content */}

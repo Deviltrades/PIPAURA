@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { SignedImageDisplay } from "@/components/SignedImageDisplay";
+import { PlanGate, FeatureGate } from "@/components/PlanGate";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -525,7 +526,8 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
               />
 
               {/* Image Upload Section */}
-              <div className="border rounded-lg p-4 bg-muted/20">
+              <FeatureGate feature="notes_uploads">
+                <div className="border rounded-lg p-4 bg-muted/20">
                 <div className="flex items-center justify-between mb-3">
                   <Label className="text-sm font-medium">Attach Images</Label>
                   <div className="flex items-center gap-2">
@@ -593,7 +595,8 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                     <p className="text-xs">Supports JPG, PNG, GIF formats</p>
                   </div>
                 )}
-              </div>
+                </div>
+              </FeatureGate>
             </div>
 
             <div className="flex justify-between items-center pt-4">
@@ -609,12 +612,15 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={addTradeMutation.isPending}
-                >
-                  {addTradeMutation.isPending ? "Adding..." : "Add Trade"}
-                </Button>
+                <PlanGate action="save" buttonId="save">
+                  <Button
+                    type="submit"
+                    disabled={addTradeMutation.isPending}
+                    data-testid="button-submit"
+                  >
+                    {addTradeMutation.isPending ? "Adding..." : "Add Trade"}
+                  </Button>
+                </PlanGate>
               </div>
             </div>
           </form>
