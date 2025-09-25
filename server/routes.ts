@@ -272,6 +272,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route that frontend expects for object uploads
+  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.user.id;
+      
+      // Generate a unique filename for the upload
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substr(2, 9);
+      const uniqueFileName = `${timestamp}-${randomId}.jpg`; // Default to jpg, frontend will handle actual extension
+
+      const signedUrl = await storage.generateUploadSignedUrl(uniqueFileName, userId);
+      
+      // Return format that frontend expects
+      res.json({
+        uploadURL: signedUrl,
+        fileName: uniqueFileName
+      });
+    } catch (error) {
+      console.error("Error generating upload URL:", error);
+      res.status(500).json({ message: "Failed to generate upload URL" });
+    }
+  });
+
   // Analytics routes for journal entries
   app.get("/api/analytics", isAuthenticated, async (req, res) => {
     try {
