@@ -3,13 +3,20 @@ import { getAuthToken } from "./supabase";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
+    // Clone the response so we can read it multiple times if needed
+    const responseClone = res.clone();
     try {
       const json = await res.json();
       throw new Error(json.message || res.statusText);
     } catch (e) {
-      // If JSON parsing fails, fall back to text
-      const text = await res.text() || res.statusText;
-      throw new Error(text);
+      // If JSON parsing fails, fall back to text using the cloned response
+      try {
+        const text = await responseClone.text() || res.statusText;
+        throw new Error(text);
+      } catch (textError) {
+        // If both fail, just use status text
+        throw new Error(res.statusText || `HTTP ${res.status}`);
+      }
     }
   }
 }
