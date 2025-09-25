@@ -415,6 +415,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const tradeData = req.body;
       
       // Map frontend field names to database field names
+      console.log("=== DEBUG: Raw trade data received ===", JSON.stringify(tradeData, null, 2));
+      
       const trade = {
         instrument: tradeData.instrument,
         instrument_type: tradeData.instrumentType,
@@ -431,6 +433,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entry_date: tradeData.entryDate || new Date().toISOString(),
         exit_date: tradeData.exitDate || null
       };
+      
+      console.log("=== DEBUG: Parsed trade object ===", JSON.stringify(trade, null, 2));
       
       const createdTrade = await storage.createTrade(userId, trade);
       res.status(201).json(createdTrade);
