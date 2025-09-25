@@ -157,6 +157,11 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
 
         // Step 1: Get upload URL from server
         const uploadResponse = await apiRequest("POST", "/api/objects/upload");
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text();
+          console.error("Upload URL request failed:", uploadResponse.status, errorText);
+          throw new Error(`Failed to get upload URL: ${uploadResponse.status}`);
+        }
         const { uploadURL } = await uploadResponse.json();
 
         // Step 2: Upload file to the signed URL
@@ -176,10 +181,17 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
           const aclResponse = await apiRequest("PUT", "/api/trade-attachments", {
             fileURL: fileURL
           });
+          if (!aclResponse.ok) {
+            const errorText = await aclResponse.text();
+            console.error("ACL request failed:", aclResponse.status, errorText);
+            throw new Error(`Failed to process attachment: ${aclResponse.status}`);
+          }
           const { objectPath } = await aclResponse.json();
           uploadedUrls.push(objectPath);
         } else {
-          throw new Error('Upload failed');
+          const errorText = await putResponse.text();
+          console.error("File upload failed:", putResponse.status, errorText);
+          throw new Error(`Upload failed: ${putResponse.status}`);
         }
       }
 
