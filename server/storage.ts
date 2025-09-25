@@ -5,6 +5,9 @@ import {
   CalendarSettings,
   SidebarSettings,
   Tag,
+  Trade,
+  CreateTrade,
+  UpdateTrade,
 } from "@shared/schema";
 import { supabaseService } from "./supabase";
 
@@ -21,6 +24,13 @@ export interface IStorage {
   getTags(userId: string): Promise<Tag[]>;
   updateTag(userId: string, tagId: string, updates: Partial<Tag>): Promise<Tag>;
   deleteTag(userId: string, tagId: string): Promise<void>;
+  
+  // Trade operations
+  createTrade(userId: string, trade: CreateTrade): Promise<Trade>;
+  getTrades(userId: string): Promise<Trade[]>;
+  getTrade(userId: string, tradeId: string): Promise<Trade | null>;
+  updateTrade(userId: string, tradeId: string, updates: UpdateTrade): Promise<Trade>;
+  deleteTrade(userId: string, tradeId: string): Promise<void>;
   
   // Image operations
   uploadImage(file: Buffer, fileName: string, userId: string): Promise<string>;
@@ -67,6 +77,27 @@ export class SupabaseStorage implements IStorage {
 
   async deleteTag(userId: string, tagId: string): Promise<void> {
     return await supabaseService.deleteTag(userId, tagId);
+  }
+
+  // Trade operations
+  async createTrade(userId: string, trade: CreateTrade): Promise<Trade> {
+    return await supabaseService.createTrade(userId, trade);
+  }
+
+  async getTrades(userId: string): Promise<Trade[]> {
+    return await supabaseService.getTrades(userId);
+  }
+
+  async getTrade(userId: string, tradeId: string): Promise<Trade | null> {
+    return await supabaseService.getTrade(userId, tradeId);
+  }
+
+  async updateTrade(userId: string, tradeId: string, updates: UpdateTrade): Promise<Trade> {
+    return await supabaseService.updateTrade(userId, tradeId, updates);
+  }
+
+  async deleteTrade(userId: string, tradeId: string): Promise<void> {
+    return await supabaseService.deleteTrade(userId, tradeId);
   }
 
   // Image operations
