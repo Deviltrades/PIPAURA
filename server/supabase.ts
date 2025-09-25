@@ -276,6 +276,28 @@ export class SupabaseService {
   }
 
   /**
+   * Generate a signed URL for viewing uploaded images
+   * @param filePath Path to the file in storage
+   * @returns Signed URL for viewing (valid for 1 hour)
+   */
+  async generateViewSignedUrl(filePath: string): Promise<string> {
+    try {
+      const { data, error } = await supabaseAdmin.storage
+        .from(JOURNAL_IMAGES_BUCKET)
+        .createSignedUrl(filePath, 3600); // Valid for 1 hour
+
+      if (error) {
+        throw new Error(`Failed to generate view signed URL: ${error.message}`);
+      }
+
+      return data.signedUrl;
+    } catch (error) {
+      console.error('Error generating view signed URL:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Delete an image from Supabase storage
    * @param imagePath Path to the image file
    * @returns Success status

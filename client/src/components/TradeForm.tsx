@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { SignedImageDisplay } from "@/components/SignedImageDisplay";
 
 const tradeFormSchema = z.object({
   instrument: z.string().min(1, "Instrument is required"),
@@ -546,8 +547,8 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {attachments.map((url, index) => (
                         <div key={index} className="relative group">
-                          <img
-                            src={url}
+                          <SignedImageDisplay
+                            imageUrl={url}
                             alt={`Attachment ${index + 1}`}
                             className="w-full h-20 object-cover rounded border"
                             data-testid={`img-attachment-${index}`}

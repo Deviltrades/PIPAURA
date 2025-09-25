@@ -33,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { SignedImageDisplay } from "@/components/SignedImageDisplay";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -563,10 +564,11 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {uploadedImages.map((imageUrl, index) => (
                       <div key={index} className="relative group">
-                        <img
-                          src={imageUrl}
+                        <SignedImageDisplay
+                          imageUrl={imageUrl}
                           alt={`Trade attachment ${index + 1}`}
                           className="w-full h-20 object-cover rounded border bg-gray-100"
+                          data-testid={`img-attachment-${index}`}
                         />
                         <Button
                           type="button"

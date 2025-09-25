@@ -25,6 +25,7 @@ export interface IStorage {
   // Image operations
   uploadImage(file: Buffer, fileName: string, userId: string): Promise<string>;
   generateUploadSignedUrl(fileName: string, userId: string): Promise<string>;
+  generateViewSignedUrl(filePath: string): Promise<string>;
   deleteImage(imagePath: string): Promise<boolean>;
 }
 
@@ -77,6 +78,10 @@ export class SupabaseStorage implements IStorage {
     // Ensure bucket exists before generating URL
     await supabaseService.ensureBucketExists();
     return await supabaseService.generateUploadSignedUrl(fileName, userId);
+  }
+
+  async generateViewSignedUrl(filePath: string): Promise<string> {
+    return await supabaseService.generateViewSignedUrl(filePath);
   }
 
   async deleteImage(imagePath: string): Promise<boolean> {

@@ -323,6 +323,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route to get signed URL for viewing uploaded images
+  app.get("/api/images/signed-url", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const { imageUrl } = req.query;
+      
+      if (!imageUrl || typeof imageUrl !== 'string') {
+        return res.status(400).json({ message: "imageUrl parameter is required" });
+      }
+      
+      // Extract the path from the full URL for signed URL generation
+      // URL format: https://xxx.supabase.co/storage/v1/object/public/bucket-name/path
+      const urlParts = imageUrl.split('/');
+      const bucketIndex = urlParts.findIndex(part => part === 'journal-images');
+      
+      if (bucketIndex === -1) {
+        return res.status(400).json({ message: "Invalid image URL format" });
+      }
+      
+      const filePath = urlParts.slice(bucketIndex + 1).join('/');
+      
+      // Generate signed URL for viewing (valid for 1 hour)
+      const signedUrl = await storage.generateViewSignedUrl(filePath);
+      
+      res.json({ signedUrl });
+    } catch (error) {
+      console.error("Error generating signed URL:", error);
+      res.status(500).json({ message: "Failed to generate signed URL" });
+    }
+  });
+
   // Analytics routes for journal entries
   app.get("/api/analytics", isAuthenticated, async (req, res) => {
     try {
