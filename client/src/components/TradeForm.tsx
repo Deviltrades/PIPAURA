@@ -10,11 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { ObjectUploader } from "./ObjectUploader";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import type { UploadResult } from "@uppy/core";
 
 const tradeFormSchema = z.object({
   instrument: z.string().min(1, "Instrument is required"),
@@ -57,6 +55,7 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [attachments, setAttachments] = useState<string[]>(trade?.attachments || []);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<TradeFormData>({
     resolver: zodResolver(tradeFormSchema),
@@ -138,38 +137,72 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
     },
   });
 
-  const handleGetUploadParameters = async () => {
-    const response = await apiRequest("POST", "/api/objects/upload");
-    const data = await response.json();
-    return {
-      method: "PUT" as const,
-      url: data.uploadURL,
-    };
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    setIsUploading(true);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) {
+          toast({
+            title: "Invalid file type",
+            description: "Please upload only image files (JPG, PNG, GIF, etc.)",
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        // Step 1: Get upload URL from server
+        const uploadResponse = await apiRequest("POST", "/api/objects/upload");
+        const { uploadURL } = await uploadResponse.json();
+
+        // Step 2: Upload file to the signed URL
+        const putResponse = await fetch(uploadURL, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': file.type,
+          },
+        });
+
+        if (putResponse.ok) {
+          // Step 3: Get the final file URL by constructing it from the upload URL
+          const fileURL = uploadURL.split('?')[0];
+          
+          // Step 4: Call the server to set ACL and get normalized path
+          const aclResponse = await apiRequest("PUT", "/api/trade-attachments", {
+            fileURL: fileURL
+          });
+          const { objectPath } = await aclResponse.json();
+          uploadedUrls.push(objectPath);
+        } else {
+          throw new Error('Upload failed');
+        }
+      }
+
+      setAttachments(prev => [...prev, ...uploadedUrls]);
+      toast({
+        title: "Images uploaded",
+        description: `Successfully uploaded ${uploadedUrls.length} image(s)`,
+      });
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload images. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      // Reset input
+      event.target.value = '';
+    }
   };
 
-  const handleUploadComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-    if (result.successful && result.successful.length > 0) {
-      const uploadURL = result.successful[0].uploadURL;
-      
-      try {
-        const response = await apiRequest("PUT", "/api/trade-attachments", {
-          fileURL: uploadURL,
-        });
-        const data = await response.json();
-        setAttachments(prev => [...prev, data.objectPath]);
-        
-        toast({
-          title: "Success",
-          description: "File uploaded successfully",
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to process uploaded file",
-          variant: "destructive",
-        });
-      }
-    }
+  const removeAttachment = (indexToRemove: number) => {
+    setAttachments(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
   const getInstrumentOptions = (type: string) => {
@@ -472,23 +505,51 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
             <div>
               <FormLabel>Attachments</FormLabel>
               <div className="mt-2">
-                <ObjectUploader
-                  maxNumberOfFiles={5}
-                  maxFileSize={10485760}
-                  onGetUploadParameters={handleGetUploadParameters}
-                  onComplete={handleUploadComplete}
-                  buttonClassName="w-full"
-                >
-                  <div className="flex items-center justify-center gap-2 p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    disabled={isUploading}
+                    data-testid="input-attachments"
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="flex items-center justify-center gap-2 p-2 cursor-pointer hover:bg-muted/50 rounded transition-colors"
+                  >
                     <span>📁</span>
-                    <span>Upload Files</span>
-                  </div>
-                </ObjectUploader>
+                    <span>{isUploading ? "Uploading..." : "Upload Images"}</span>
+                  </label>
+                </div>
+                
                 {attachments.length > 0 && (
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {attachments.length} file(s) uploaded
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Uploaded images ({attachments.length}):
                     </p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {attachments.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Attachment ${index + 1}`}
+                            className="w-full h-20 object-cover rounded border"
+                            data-testid={`img-attachment-${index}`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeAttachment(index)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                            data-testid={`button-remove-attachment-${index}`}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

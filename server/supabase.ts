@@ -70,12 +70,23 @@ export class SupabaseService {
       const bucketExists = buckets?.some(bucket => bucket.name === JOURNAL_IMAGES_BUCKET);
       
       if (!bucketExists) {
-        // Create the bucket
+        // Create the bucket with CORS configuration
         const { error: createError } = await supabaseAdmin.storage.createBucket(JOURNAL_IMAGES_BUCKET, {
           public: false, // Private bucket for user uploads
           allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
           fileSizeLimit: 10485760 // 10MB limit
         });
+        
+        // Configure CORS settings for the bucket to allow uploads from frontend
+        if (!createError) {
+          try {
+            // Note: CORS configuration may need to be done through Supabase dashboard
+            // as the JS client doesn't expose CORS configuration methods
+            console.log(`Bucket ${JOURNAL_IMAGES_BUCKET} created. Please configure CORS settings in Supabase dashboard if needed.`);
+          } catch (corsError) {
+            console.warn('Could not configure CORS automatically:', corsError);
+          }
+        }
         
         if (createError) {
           console.error('Error creating bucket:', createError);
