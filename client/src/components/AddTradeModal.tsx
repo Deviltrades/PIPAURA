@@ -173,6 +173,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
     const files = event.target.files;
     if (!files) return;
 
+    console.log("AddTradeModal: Starting image upload, current form values:", form.getValues());
     setIsUploading(true);
     const uploadedUrls: string[] = [];
 
@@ -229,6 +230,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
       }
 
       setUploadedImages(prev => [...prev, ...uploadedUrls]);
+      console.log("AddTradeModal: After image upload, form values:", form.getValues());
       toast({
         title: "✅ Images uploaded successfully!",
         description: `Successfully uploaded ${uploadedUrls.length} image(s). You can now save your trade.`,

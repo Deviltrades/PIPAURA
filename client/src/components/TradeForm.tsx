@@ -58,23 +58,18 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Initialize attachments when trade changes
-  useEffect(() => {
-    setAttachments(trade?.attachments || []);
-  }, [trade?.id]); // Only reset when editing a different trade
-
   const form = useForm<TradeFormData>({
     resolver: zodResolver(tradeFormSchema),
     defaultValues: {
       instrument: trade?.instrument || "",
       instrumentType: trade?.instrumentType || "FOREX",
       tradeType: trade?.tradeType || "BUY",
-      positionSize: trade?.positionSize || "",
-      entryPrice: trade?.entryPrice || "",
-      stopLoss: trade?.stopLoss || "",
-      takeProfit: trade?.takeProfit || "",
-      exitPrice: trade?.exitPrice || "",
-      pnl: trade?.pnl || "",
+      positionSize: trade?.positionSize?.toString() || "",
+      entryPrice: trade?.entryPrice?.toString() || "",
+      stopLoss: trade?.stopLoss?.toString() || "",
+      takeProfit: trade?.takeProfit?.toString() || "",
+      exitPrice: trade?.exitPrice?.toString() || "",
+      pnl: trade?.pnl?.toString() || "",
       status: trade?.status || "OPEN",
       notes: trade?.notes || "",
       hasPnL: false,
@@ -82,6 +77,11 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
       pnlAmount: "",
     },
   });
+
+  // Initialize attachments when trade changes
+  useEffect(() => {
+    setAttachments(trade?.attachments || []);
+  }, [trade?.id]); // Only reset when editing a different trade
 
   const createTradeMutation = useMutation({
     mutationFn: async (data: TradeFormData) => {
@@ -147,6 +147,7 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
     const files = event.target.files;
     if (!files) return;
 
+    console.log("Starting image upload, current form values:", form.getValues());
     setIsUploading(true);
     const uploadedUrls: string[] = [];
 
@@ -202,6 +203,7 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
       }
 
       setAttachments(prev => [...prev, ...uploadedUrls]);
+      console.log("After image upload, form values:", form.getValues());
       toast({
         title: "✅ Images uploaded successfully!",
         description: `Successfully uploaded ${uploadedUrls.length} image(s). You can now save your trade.`,
