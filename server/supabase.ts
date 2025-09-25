@@ -404,6 +404,117 @@ export class SupabaseService {
   }
 
   /**
+   * Create a new trade
+   */
+  async createTrade(userId: string, trade: any): Promise<any> {
+    try {
+      const result = await sql`
+        INSERT INTO trades (
+          user_id, instrument, instrument_type, trade_type, position_size,
+          entry_price, exit_price, stop_loss, take_profit, pnl, status,
+          notes, attachments, entry_date, exit_date
+        ) VALUES (
+          ${userId}, ${trade.instrument}, ${trade.instrument_type}, ${trade.trade_type},
+          ${trade.position_size}, ${trade.entry_price}, ${trade.exit_price || null},
+          ${trade.stop_loss || null}, ${trade.take_profit || null}, ${trade.pnl || null},
+          ${trade.status || 'OPEN'}, ${trade.notes || ''}, ${trade.attachments || []},
+          ${trade.entry_date || null}, ${trade.exit_date || null}
+        )
+        RETURNING *
+      `;
+
+      return result[0];
+    } catch (error) {
+      console.error('Error creating trade:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all trades for a user
+   */
+  async getTrades(userId: string): Promise<any[]> {
+    try {
+      const result = await sql`
+        SELECT * FROM trades 
+        WHERE user_id = ${userId} 
+        ORDER BY created_at DESC
+      `;
+
+      return result;
+    } catch (error) {
+      console.error('Error getting trades:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get a specific trade
+   */
+  async getTrade(userId: string, tradeId: string): Promise<any | null> {
+    try {
+      const result = await sql`
+        SELECT * FROM trades 
+        WHERE user_id = ${userId} AND id = ${tradeId}
+      `;
+
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error getting trade:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Update a trade
+   */
+  async updateTrade(userId: string, tradeId: string, updates: any): Promise<any> {
+    try {
+      const result = await sql`
+        UPDATE trades 
+        SET 
+          instrument = COALESCE(${updates.instrument}, instrument),
+          instrument_type = COALESCE(${updates.instrument_type}, instrument_type),
+          trade_type = COALESCE(${updates.trade_type}, trade_type),
+          position_size = COALESCE(${updates.position_size}, position_size),
+          entry_price = COALESCE(${updates.entry_price}, entry_price),
+          exit_price = COALESCE(${updates.exit_price}, exit_price),
+          stop_loss = COALESCE(${updates.stop_loss}, stop_loss),
+          take_profit = COALESCE(${updates.take_profit}, take_profit),
+          pnl = COALESCE(${updates.pnl}, pnl),
+          status = COALESCE(${updates.status}, status),
+          notes = COALESCE(${updates.notes}, notes),
+          attachments = COALESCE(${updates.attachments}, attachments),
+          entry_date = COALESCE(${updates.entry_date}, entry_date),
+          exit_date = COALESCE(${updates.exit_date}, exit_date),
+          updated_at = now()
+        WHERE user_id = ${userId} AND id = ${tradeId}
+        RETURNING *
+      `;
+
+      return result[0];
+    } catch (error) {
+      console.error('Error updating trade:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a trade
+   */
+  async deleteTrade(userId: string, tradeId: string): Promise<void> {
+    try {
+      await sql`
+        DELETE FROM trades 
+        WHERE user_id = ${userId} AND id = ${tradeId}
+      `;
+    } catch (error) {
+      console.error('Error deleting trade:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get content type based on file extension
    * @param fileName File name
    * @returns Content type
