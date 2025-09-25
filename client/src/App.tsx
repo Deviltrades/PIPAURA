@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { UserProfileProvider } from "@/hooks/use-user-profile";
 import MainPage from "@/pages/main";
 import Landing from "@/pages/landing";
 import Pricing from "@/pages/pricing";
@@ -76,8 +77,10 @@ function App() {
       <ThemeProvider>
         <TooltipProvider>
           <AuthProvider>
-            <Toaster />
-            <Router />
+            <UserProfileProvider>
+              <Toaster />
+              <Router />
+            </UserProfileProvider>
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
