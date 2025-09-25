@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
+import { drizzle } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
 
-// Supabase configuration - use the same env vars as frontend
+// Supabase configuration - use the same env vars as frontend  
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
@@ -8,8 +10,16 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required');
 }
 
-// Create Supabase client for server-side operations
+// Create Supabase client for server-side operations (auth only)
 export const supabase = createClient(supabaseUrl, supabaseKey);
+
+// PostgreSQL database connection for data operations
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL not found");
+}
+
+const sql = neon(process.env.DATABASE_URL);
+export const db = drizzle(sql);
 
 // Storage bucket name for journal images
 export const JOURNAL_IMAGES_BUCKET = 'journal-images';
@@ -40,24 +50,25 @@ export class SupabaseService {
   /**
    * Create a new journal entry
    */
-  async createJournalEntry(userId: string, entry: CreateJournalEntry): Promise<JournalEntry> {
+  async createJournalEntry(userId: string, entry: any): Promise<any> {
     try {
-      const { data, error } = await supabase
-        .from(JOURNAL_ENTRIES_TABLE)
-        .insert({
-          user_id: userId,
-          notes: entry.notes,
-          trade_data: entry.trade_data,
-          image_url: entry.image_url
-        })
-        .select()
-        .single();
+      const result = await sql`
+        INSERT INTO journal_entries (
+          user_id, notes, trade_data, image_url, trade_date, pair_symbol,
+          lot_size, entry_price, exit_price, stop_loss, take_profit,
+          profit_loss, trade_type, status, tags, timeframe, strategy, session
+        ) VALUES (
+          ${userId}, ${entry.notes || ''}, ${JSON.stringify(entry.trade_data || {})},
+          ${entry.image_url || null}, ${entry.trade_date}, ${entry.pair_symbol},
+          ${entry.lot_size || 0}, ${entry.entry_price || 0}, ${entry.exit_price || 0},
+          ${entry.stop_loss || 0}, ${entry.take_profit || 0}, ${entry.profit_loss || 0},
+          ${entry.trade_type || 'BUY'}, ${entry.status || 'CLOSED'}, ${entry.tags || []},
+          ${entry.timeframe || null}, ${entry.strategy || null}, ${entry.session || null}
+        )
+        RETURNING *
+      `;
 
-      if (error) {
-        throw new Error(`Failed to create journal entry: ${error.message}`);
-      }
-
-      return data;
+      return result[0];
     } catch (error) {
       console.error('Error creating journal entry:', error);
       throw error;
@@ -67,19 +78,15 @@ export class SupabaseService {
   /**
    * Get all journal entries for a user
    */
-  async getJournalEntries(userId: string): Promise<JournalEntry[]> {
+  async getJournalEntries(userId: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
-        .from(JOURNAL_ENTRIES_TABLE)
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+      const result = await sql`
+        SELECT * FROM journal_entries 
+        WHERE user_id = ${userId} 
+        ORDER BY created_at DESC
+      `;
 
-      if (error) {
-        throw new Error(`Failed to get journal entries: ${error.message}`);
-      }
-
-      return data || [];
+      return result;
     } catch (error) {
       console.error('Error getting journal entries:', error);
       throw error;
@@ -89,20 +96,14 @@ export class SupabaseService {
   /**
    * Get a specific journal entry
    */
-  async getJournalEntry(userId: string, entryId: string): Promise<JournalEntry | null> {
+  async getJournalEntry(userId: string, entryId: string): Promise<any | null> {
     try {
-      const { data, error } = await supabase
-        .from(JOURNAL_ENTRIES_TABLE)
-        .select('*')
-        .eq('user_id', userId)
-        .eq('id', entryId)
-        .single();
+      const result = await sql`
+        SELECT * FROM journal_entries 
+        WHERE user_id = ${userId} AND id = ${entryId}
+      `;
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = not found
-        throw new Error(`Failed to get journal entry: ${error.message}`);
-      }
-
-      return data || null;
+      return result[0] || null;
     } catch (error) {
       console.error('Error getting journal entry:', error);
       return null;
@@ -112,21 +113,34 @@ export class SupabaseService {
   /**
    * Update a journal entry
    */
-  async updateJournalEntry(userId: string, entryId: string, updates: Partial<CreateJournalEntry>): Promise<JournalEntry> {
+  async updateJournalEntry(userId: string, entryId: string, updates: any): Promise<any> {
     try {
-      const { data, error } = await supabase
-        .from(JOURNAL_ENTRIES_TABLE)
-        .update(updates)
-        .eq('user_id', userId)
-        .eq('id', entryId)
-        .select()
-        .single();
+      const result = await sql`
+        UPDATE journal_entries 
+        SET 
+          notes = ${updates.notes || ''},
+          trade_data = ${JSON.stringify(updates.trade_data || {})},
+          image_url = ${updates.image_url || null},
+          trade_date = ${updates.trade_date || null}::date,
+          pair_symbol = ${updates.pair_symbol || ''},
+          lot_size = ${updates.lot_size || 0},
+          entry_price = ${updates.entry_price || 0},
+          exit_price = ${updates.exit_price || 0},
+          stop_loss = ${updates.stop_loss || 0},
+          take_profit = ${updates.take_profit || 0},
+          profit_loss = ${updates.profit_loss || 0},
+          trade_type = ${updates.trade_type || 'BUY'},
+          status = ${updates.status || 'CLOSED'},
+          tags = ${updates.tags || []},
+          timeframe = ${updates.timeframe || null},
+          strategy = ${updates.strategy || null},
+          session = ${updates.session || null},
+          updated_at = now()
+        WHERE user_id = ${userId} AND id = ${entryId}
+        RETURNING *
+      `;
 
-      if (error) {
-        throw new Error(`Failed to update journal entry: ${error.message}`);
-      }
-
-      return data;
+      return result[0];
     } catch (error) {
       console.error('Error updating journal entry:', error);
       throw error;
@@ -138,15 +152,10 @@ export class SupabaseService {
    */
   async deleteJournalEntry(userId: string, entryId: string): Promise<void> {
     try {
-      const { error } = await supabase
-        .from(JOURNAL_ENTRIES_TABLE)
-        .delete()
-        .eq('user_id', userId)
-        .eq('id', entryId);
-
-      if (error) {
-        throw new Error(`Failed to delete journal entry: ${error.message}`);
-      }
+      await sql`
+        DELETE FROM journal_entries 
+        WHERE user_id = ${userId} AND id = ${entryId}
+      `;
     } catch (error) {
       console.error('Error deleting journal entry:', error);
       throw error;
@@ -252,22 +261,13 @@ export class SupabaseService {
    */
   async createTag(userId: string, tag: { name: string; category?: string; color?: string }): Promise<any> {
     try {
-      const { data, error } = await supabase
-        .from(TAGS_TABLE)
-        .insert({
-          user_id: userId,
-          name: tag.name,
-          category: tag.category || 'general',
-          color: tag.color || '#3b82f6'
-        })
-        .select()
-        .single();
+      const result = await sql`
+        INSERT INTO tags (user_id, name, category, color)
+        VALUES (${userId}, ${tag.name}, ${tag.category || 'general'}, ${tag.color || '#3b82f6'})
+        RETURNING *
+      `;
 
-      if (error) {
-        throw new Error(`Failed to create tag: ${error.message}`);
-      }
-
-      return data;
+      return result[0];
     } catch (error) {
       console.error('Error creating tag:', error);
       throw error;
@@ -279,17 +279,13 @@ export class SupabaseService {
    */
   async getTags(userId: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
-        .from(TAGS_TABLE)
-        .select('*')
-        .eq('user_id', userId)
-        .order('name', { ascending: true });
+      const result = await sql`
+        SELECT * FROM tags 
+        WHERE user_id = ${userId} 
+        ORDER BY name ASC
+      `;
 
-      if (error) {
-        throw new Error(`Failed to get tags: ${error.message}`);
-      }
-
-      return data || [];
+      return result;
     } catch (error) {
       console.error('Error getting tags:', error);
       throw error;
@@ -301,19 +297,17 @@ export class SupabaseService {
    */
   async updateTag(userId: string, tagId: string, updates: any): Promise<any> {
     try {
-      const { data, error } = await supabase
-        .from(TAGS_TABLE)
-        .update(updates)
-        .eq('user_id', userId)
-        .eq('id', tagId)
-        .select()
-        .single();
+      const result = await sql`
+        UPDATE tags 
+        SET 
+          name = ${updates.name || ''},
+          category = ${updates.category || 'general'},
+          color = ${updates.color || '#3b82f6'}
+        WHERE user_id = ${userId} AND id = ${tagId}
+        RETURNING *
+      `;
 
-      if (error) {
-        throw new Error(`Failed to update tag: ${error.message}`);
-      }
-
-      return data;
+      return result[0];
     } catch (error) {
       console.error('Error updating tag:', error);
       throw error;
@@ -325,15 +319,10 @@ export class SupabaseService {
    */
   async deleteTag(userId: string, tagId: string): Promise<void> {
     try {
-      const { error } = await supabase
-        .from(TAGS_TABLE)
-        .delete()
-        .eq('user_id', userId)
-        .eq('id', tagId);
-
-      if (error) {
-        throw new Error(`Failed to delete tag: ${error.message}`);
-      }
+      await sql`
+        DELETE FROM tags 
+        WHERE user_id = ${userId} AND id = ${tagId}
+      `;
     } catch (error) {
       console.error('Error deleting tag:', error);
       throw error;
