@@ -74,6 +74,8 @@ export class SupabaseStorage implements IStorage {
   }
 
   async generateUploadSignedUrl(fileName: string, userId: string): Promise<string> {
+    // Ensure bucket exists before generating URL
+    await supabaseService.ensureBucketExists();
     return await supabaseService.generateUploadSignedUrl(fileName, userId);
   }
 

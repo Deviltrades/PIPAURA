@@ -13,6 +13,13 @@ if (!supabaseUrl || !supabaseKey) {
 // Create Supabase client for server-side operations (auth only)
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Create Supabase admin client for storage operations (requires service role key)
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!supabaseServiceKey) {
+  console.warn('SUPABASE_SERVICE_ROLE_KEY not found - storage operations will be limited');
+}
+export const supabaseAdmin = supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : supabase;
+
 // PostgreSQL database connection for data operations
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL not found");
@@ -46,6 +53,40 @@ export interface CreateJournalEntry {
 
 // Comprehensive Supabase service for journal entries and storage
 export class SupabaseService {
+  
+  /**
+   * Ensure the journal images bucket exists
+   */
+  async ensureBucketExists(): Promise<void> {
+    try {
+      // Check if bucket exists
+      const { data: buckets, error: listError } = await supabaseAdmin.storage.listBuckets();
+      
+      if (listError) {
+        console.error('Error listing buckets:', listError);
+        return;
+      }
+      
+      const bucketExists = buckets?.some(bucket => bucket.name === JOURNAL_IMAGES_BUCKET);
+      
+      if (!bucketExists) {
+        // Create the bucket
+        const { error: createError } = await supabaseAdmin.storage.createBucket(JOURNAL_IMAGES_BUCKET, {
+          public: false, // Private bucket for user uploads
+          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+          fileSizeLimit: 10485760 // 10MB limit
+        });
+        
+        if (createError) {
+          console.error('Error creating bucket:', createError);
+        } else {
+          console.log(`Created storage bucket: ${JOURNAL_IMAGES_BUCKET}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error ensuring bucket exists:', error);
+    }
+  }
   
   /**
    * Create a new journal entry
@@ -175,7 +216,7 @@ export class SupabaseService {
       const filePath = `${userId}/journal_images/${fileName}`;
       
       // Upload file to Supabase storage
-      const { data, error } = await supabase.storage
+      const { data, error } = await supabaseAdmin.storage
         .from(JOURNAL_IMAGES_BUCKET)
         .upload(filePath, file, {
           contentType: this.getContentType(fileName),
@@ -187,7 +228,7 @@ export class SupabaseService {
       }
 
       // Get public URL
-      const { data: publicUrl } = supabase.storage
+      const { data: publicUrl } = supabaseAdmin.storage
         .from(JOURNAL_IMAGES_BUCKET)
         .getPublicUrl(filePath);
 
@@ -208,7 +249,7 @@ export class SupabaseService {
     try {
       const filePath = `${userId}/journal_images/${fileName}`;
       
-      const { data, error } = await supabase.storage
+      const { data, error } = await supabaseAdmin.storage
         .from(JOURNAL_IMAGES_BUCKET)
         .createSignedUploadUrl(filePath);
 
@@ -240,7 +281,7 @@ export class SupabaseService {
 
       const filePath = pathParts.slice(bucketIndex + 1).join('/');
 
-      const { error } = await supabase.storage
+      const { error } = await supabaseAdmin.storage
         .from(JOURNAL_IMAGES_BUCKET)
         .remove([filePath]);
 
