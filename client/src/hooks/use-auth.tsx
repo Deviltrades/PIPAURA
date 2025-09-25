@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { queryClient } from "@/lib/queryClient";
 
 interface AuthUser {
   id: string;
@@ -127,6 +128,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
     },
     onSuccess: () => {
+      // Clear all React Query cache to prevent data leakage between users
+      queryClient.clear();
       toast({
         title: "Signed out",
         description: "You have been successfully signed out.",
