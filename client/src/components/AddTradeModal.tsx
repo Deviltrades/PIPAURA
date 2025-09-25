@@ -188,7 +188,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
 
         // Step 1: Get upload URL from server
         const uploadResponse = await apiRequest("POST", "/api/objects/upload");
-        const { uploadURL } = await uploadResponse.json();
+        const { uploadURL, fileName } = await uploadResponse.json();
 
         // Step 2: Upload file to the signed URL
         const putResponse = await fetch(uploadURL, {
@@ -200,9 +200,13 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
         });
 
         if (putResponse.ok) {
-          // Step 3: Call the server to set ACL and get normalized path
+          // Step 3: Get the final file URL by constructing it from the upload URL
+          // For Supabase storage: remove query parameters from upload URL to get file URL
+          const fileURL = uploadURL.split('?')[0];
+          
+          // Step 4: Call the server to set ACL and get normalized path
           const aclResponse = await apiRequest("PUT", "/api/trade-attachments", {
-            fileURL: uploadURL
+            fileURL: fileURL
           });
           const { objectPath } = await aclResponse.json();
           uploadedUrls.push(objectPath);
