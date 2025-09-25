@@ -197,8 +197,9 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
 
       setAttachments(prev => [...prev, ...uploadedUrls]);
       toast({
-        title: "Images uploaded",
-        description: `Successfully uploaded ${uploadedUrls.length} image(s)`,
+        title: "✅ Images uploaded successfully!",
+        description: `Successfully uploaded ${uploadedUrls.length} image(s). You can now save your trade.`,
+        duration: 5000,
       });
     } catch (error) {
       toast({
