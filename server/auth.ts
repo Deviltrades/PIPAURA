@@ -284,3 +284,35 @@ export const isAuthenticated = async (req: any, res: any, next: any) => {
     res.status(401).json({ message: "Unauthorized" });
   }
 };
+
+// Middleware to check user plan permissions for specific actions
+export const requiresPlanPermission = (action: string) => {
+  return async (req: any, res: any, next: any) => {
+    try {
+      if (!req.user || !req.userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const userId = req.userId;
+      
+      // Import storage to check user limits
+      const { storage } = await import('./index');
+      
+      // Check if user can perform the requested action
+      const canPerformAction = await storage.checkUserLimits(userId, {
+        action: action
+      });
+
+      if (!canPerformAction) {
+        return res.status(403).json({ 
+          message: "Action not allowed: Plan restriction or limits exceeded" 
+        });
+      }
+
+      next();
+    } catch (error) {
+      console.error('Plan permission check error:', error);
+      res.status(500).json({ message: "Permission check failed" });
+    }
+  };
+};

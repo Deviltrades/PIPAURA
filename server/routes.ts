@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated, sanitizeUser } from "./auth";
+import { setupAuth, isAuthenticated, sanitizeUser, requiresPlanPermission } from "./auth";
 import { createJournalEntrySchema, updateJournalEntrySchema } from "@shared/schema";
 import multer from "multer";
 
@@ -44,7 +44,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User info endpoint is handled in auth.ts as /api/user
 
   // Journal Entry routes
-  app.post("/api/journal-entries", isAuthenticated, async (req, res) => {
+  app.post("/api/journal-entries", isAuthenticated, requiresPlanPermission("create_journal"), async (req, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -96,7 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/journal-entries/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/journal-entries/:id", isAuthenticated, requiresPlanPermission("edit_journal"), async (req, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -119,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/journal-entries/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/journal-entries/:id", isAuthenticated, requiresPlanPermission("delete_journal"), async (req, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -142,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Tag routes
-  app.post("/api/tags", isAuthenticated, async (req, res) => {
+  app.post("/api/tags", isAuthenticated, requiresPlanPermission("create_tag"), async (req, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -178,7 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/tags/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/tags/:id", isAuthenticated, requiresPlanPermission("edit_tag"), async (req, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -196,7 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/tags/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/tags/:id", isAuthenticated, requiresPlanPermission("delete_tag"), async (req, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -463,7 +463,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Trade routes (using proper trades table)
-  app.post("/api/trades", isAuthenticated, async (req, res) => {
+  app.post("/api/trades", isAuthenticated, requiresPlanPermission("create_trade"), async (req, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -566,7 +566,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/trades/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/trades/:id", isAuthenticated, requiresPlanPermission("edit_trade"), async (req, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -624,7 +624,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/trades/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/trades/:id", isAuthenticated, requiresPlanPermission("delete_trade"), async (req, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "User not authenticated" });
