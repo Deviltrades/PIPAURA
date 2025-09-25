@@ -50,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       
       const validatedData = createJournalEntrySchema.parse(req.body);
       const entry = await storage.createJournalEntry(userId, validatedData);
@@ -67,7 +67,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       const entries = await storage.getJournalEntries(userId);
       res.json(entries);
     } catch (error) {
@@ -82,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       const entry = await storage.getJournalEntry(userId, req.params.id);
       
       if (!entry) {
@@ -102,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       
       // Check if entry exists and user owns it
       const existingEntry = await storage.getJournalEntry(userId, req.params.id);
@@ -125,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       
       // Check if entry exists and user owns it
       const existingEntry = await storage.getJournalEntry(userId, req.params.id);
@@ -148,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       const { name, category, color } = req.body;
       
       if (!name) {
@@ -169,7 +169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       const tags = await storage.getTags(userId);
       res.json(tags);
     } catch (error) {
@@ -184,7 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       const tagId = req.params.id;
       const updates = req.body;
       
@@ -202,7 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       const tagId = req.params.id;
       
       await storage.deleteTag(userId, tagId);
@@ -220,7 +220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       
       if (!req.file) {
         return res.status(400).json({ message: "No image file provided" });
@@ -248,7 +248,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       const fileName = req.query.fileName as string;
       
       if (!fileName) {
@@ -279,7 +279,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       
       // Generate a unique filename for the upload
       const timestamp = Date.now();
@@ -364,7 +364,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       const entries = await storage.getJournalEntries(userId);
       
       // Calculate basic analytics from journal entries
@@ -411,7 +411,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       const tradeData = req.body;
       
       // Map frontend field names to database field names
@@ -446,7 +446,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       const trades = await storage.getTrades(userId);
       
       // Map database field names to frontend expected field names
@@ -478,7 +478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       const trade = await storage.getTrade(userId, req.params.id);
       
       if (!trade) {
@@ -514,7 +514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       
       // Check if trade exists and user owns it
       const existingTrade = await storage.getTrade(userId, req.params.id);
@@ -572,7 +572,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const userId = req.user.id;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       
       // Check if trade exists and user owns it
       const existingTrade = await storage.getTrade(userId, req.params.id);

@@ -201,49 +201,78 @@ export const isAuthenticated = async (req: any, res: any, next: any) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // Find existing user in local database by email (keep existing ID structure)
+    // Sync user profile with role-based access control
     try {
       const { neon } = await import('@neondatabase/serverless');
       const sql = neon(process.env.DATABASE_URL!);
       
-      // Find existing user by email
+      // Check for existing user in both tables
       const existingUsers = await sql`
         SELECT id, email, first_name, last_name FROM users WHERE email = ${user.email}
       `;
+      
+      const existingProfiles = await sql`
+        SELECT id, email, first_name, last_name, plan_type, storage_used_mb, storage_limit_mb, 
+               image_count, image_limit, account_limit FROM user_profiles WHERE email = ${user.email}
+      `;
 
-      let localUser;
+      let localUserId;
+      
       if (existingUsers.length > 0) {
-        // Use existing user - keep their existing ID to preserve trades
-        localUser = existingUsers[0];
-        
-        // Update their profile info if needed
+        // Update existing user in users table
+        localUserId = existingUsers[0].id;
         await sql`
           UPDATE users 
-          SET first_name = ${user.user_metadata?.first_name || localUser.first_name},
-              last_name = ${user.user_metadata?.last_name || localUser.last_name},
+          SET first_name = ${user.user_metadata?.first_name || existingUsers[0].first_name},
+              last_name = ${user.user_metadata?.last_name || existingUsers[0].last_name},
               updated_at = NOW()
           WHERE email = ${user.email}
         `;
       } else {
-        // Create new user with Supabase Auth ID
+        // Create new user in users table with Supabase Auth ID
+        localUserId = user.id;
         await sql`
           INSERT INTO users (id, email, first_name, last_name, created_at, updated_at)
           VALUES (${user.id}, ${user.email}, ${user.user_metadata?.first_name || null}, 
                   ${user.user_metadata?.last_name || null}, NOW(), NOW())
         `;
-        localUser = {
-          id: user.id,
-          email: user.email,
-          first_name: user.user_metadata?.first_name || null,
-          last_name: user.user_metadata?.last_name || null
-        };
+      }
+
+      // Sync or create user profile with role-based access control
+      if (existingProfiles.length > 0) {
+        // Update existing profile
+        await sql`
+          UPDATE user_profiles 
+          SET id = ${localUserId},
+              first_name = ${user.user_metadata?.first_name || existingProfiles[0].first_name},
+              last_name = ${user.user_metadata?.last_name || existingProfiles[0].last_name},
+              updated_at = NOW()
+          WHERE email = ${user.email}
+        `;
+      } else {
+        // Create new profile with default demo plan
+        await sql`
+          INSERT INTO user_profiles (
+            id, email, first_name, last_name, 
+            plan_type, storage_used_mb, storage_limit_mb, 
+            image_count, image_limit, account_limit,
+            created_at, updated_at
+          )
+          VALUES (
+            ${localUserId}, ${user.email}, 
+            ${user.user_metadata?.first_name || null}, 
+            ${user.user_metadata?.last_name || null},
+            'demo', 0.00, 0.00, 0, 0, 0,
+            NOW(), NOW()
+          )
+        `;
       }
 
       // Use local user ID for requests (preserves existing trades)
-      req.userId = localUser.id;
+      req.userId = localUserId;
     } catch (dbError) {
-      console.error('Database error finding user:', dbError);
-      return res.status(500).json({ message: "Failed to sync user data" });
+      console.error('Database error syncing user profile:', dbError);
+      return res.status(500).json({ message: "Failed to sync user profile" });
     }
 
     // Attach user to request object
