@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { Shield, TrendingUp, Users, BarChart3 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/lib/supabase";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -26,14 +27,65 @@ export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("login");
+  const [verifyingEmail, setVerifyingEmail] = useState(false);
   
   // Redirect to dashboard if already logged in
   const { user, isLoading } = useAuth();
+
+  // Handle email verification from URL hash parameters
+  useEffect(() => {
+    const handleEmailVerification = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const access_token = hashParams.get('access_token');
+      const refresh_token = hashParams.get('refresh_token');
+      const type = hashParams.get('type');
+
+      if (access_token && refresh_token && type === 'signup') {
+        setVerifyingEmail(true);
+        try {
+          // Set the session using the tokens from email verification
+          const { error } = await supabase.auth.setSession({
+            access_token,
+            refresh_token
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          toast({
+            title: "Email verified!",
+            description: "Your account has been successfully verified.",
+          });
+
+          // Clear the hash from URL
+          window.history.replaceState(null, '', window.location.pathname);
+          
+        } catch (error: any) {
+          console.error('Email verification error:', error);
+          toast({
+            title: "Verification failed",
+            description: error.message || "Failed to verify email. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setVerifyingEmail(false);
+        }
+      }
+    };
+
+    handleEmailVerification();
+  }, [toast]);
   
-  if (isLoading) {
+  if (isLoading || verifyingEmail) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">
+            {verifyingEmail ? "Verifying your email..." : "Loading..."}
+          </p>
+        </div>
       </div>
     );
   }

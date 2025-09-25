@@ -52,9 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: session.user.email!,
             created_at: session.user.created_at!
           });
-          // Navigate to dashboard when user signs in
-          if (event === 'SIGNED_IN') {
-            console.log('Navigating to dashboard after SIGNED_IN');
+          // Navigate to dashboard when user signs in or when token is refreshed
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            console.log('Navigating to dashboard after', event);
             setLocation('/dashboard');
           }
         } else {
@@ -76,6 +76,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`
+        }
       });
       if (error) throw error;
     },
