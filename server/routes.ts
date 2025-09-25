@@ -319,6 +319,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Trade routes (trades are stored as journal entries with trade_data)
+  app.post("/api/trades", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.user.id;
+      
+      // Convert trade data to journal entry format
+      const tradeData = req.body;
+      const journalEntryData = {
+        notes: tradeData.notes || '',
+        trade_date: tradeData.entryDate,
+        pair_symbol: tradeData.instrument,
+        lot_size: parseFloat(tradeData.positionSize) || 0,
+        entry_price: parseFloat(tradeData.entryPrice) || 0,
+        exit_price: parseFloat(tradeData.exitPrice) || 0,
+        stop_loss: parseFloat(tradeData.stopLoss) || 0,
+        take_profit: parseFloat(tradeData.takeProfit) || 0,
+        profit_loss: parseFloat(tradeData.pnl) || 0,
+        trade_type: tradeData.tradeType,
+        status: tradeData.status || 'CLOSED',
+        trade_data: tradeData, // Store complete trade data as well
+        tags: tradeData.tags || [],
+        timeframe: tradeData.timeframe,
+        strategy: tradeData.strategy,
+        session: tradeData.session
+      };
+      
+      const entry = await storage.createJournalEntry(userId, journalEntryData);
+      res.status(201).json(entry);
+    } catch (error) {
+      console.error("Error creating trade:", error);
+      res.status(500).json({ message: "Failed to create trade" });
+    }
+  });
+
+  app.get("/api/trades", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.user.id;
+      const entries = await storage.getJournalEntries(userId);
+      
+      // Filter entries that have trade data and format as trades
+      const trades = entries
+        .filter(entry => entry.trade_data || entry.pair_symbol)
+        .map(entry => ({
+          ...entry,
+          // Ensure trade-specific fields are accessible
+          instrument: entry.pair_symbol,
+          positionSize: entry.lot_size,
+          entryPrice: entry.entry_price,
+          exitPrice: entry.exit_price,
+          stopLoss: entry.stop_loss,
+          takeProfit: entry.take_profit,
+          pnl: entry.profit_loss,
+          tradeType: entry.trade_type,
+          entryDate: entry.trade_date
+        }));
+      
+      res.json(trades);
+    } catch (error) {
+      console.error("Error fetching trades:", error);
+      res.status(500).json({ message: "Failed to fetch trades" });
+    }
+  });
+
+  app.get("/api/trades/:id", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.user.id;
+      const entry = await storage.getJournalEntry(userId, req.params.id);
+      
+      if (!entry) {
+        return res.status(404).json({ message: "Trade not found" });
+      }
+
+      // Format as trade
+      const trade = {
+        ...entry,
+        instrument: entry.pair_symbol,
+        positionSize: entry.lot_size,
+        entryPrice: entry.entry_price,
+        exitPrice: entry.exit_price,
+        stopLoss: entry.stop_loss,
+        takeProfit: entry.take_profit,
+        pnl: entry.profit_loss,
+        tradeType: entry.trade_type,
+        entryDate: entry.trade_date
+      };
+
+      res.json(trade);
+    } catch (error) {
+      console.error("Error fetching trade:", error);
+      res.status(500).json({ message: "Failed to fetch trade" });
+    }
+  });
+
+  app.put("/api/trades/:id", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.user.id;
+      
+      // Check if entry exists and user owns it
+      const existingEntry = await storage.getJournalEntry(userId, req.params.id);
+      if (!existingEntry) {
+        return res.status(404).json({ message: "Trade not found" });
+      }
+
+      // Convert trade data to journal entry format
+      const tradeData = req.body;
+      const updates = {
+        notes: tradeData.notes,
+        trade_date: tradeData.entryDate,
+        pair_symbol: tradeData.instrument,
+        lot_size: parseFloat(tradeData.positionSize),
+        entry_price: parseFloat(tradeData.entryPrice),
+        exit_price: parseFloat(tradeData.exitPrice),
+        stop_loss: parseFloat(tradeData.stopLoss),
+        take_profit: parseFloat(tradeData.takeProfit),
+        profit_loss: parseFloat(tradeData.pnl),
+        trade_type: tradeData.tradeType,
+        status: tradeData.status,
+        trade_data: tradeData,
+        tags: tradeData.tags,
+        timeframe: tradeData.timeframe,
+        strategy: tradeData.strategy,
+        session: tradeData.session
+      };
+
+      const updatedEntry = await storage.updateJournalEntry(userId, req.params.id, updates);
+      res.json(updatedEntry);
+    } catch (error) {
+      console.error("Error updating trade:", error);
+      res.status(500).json({ message: "Failed to update trade" });
+    }
+  });
+
+  app.delete("/api/trades/:id", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.user.id;
+      
+      // Check if entry exists and user owns it
+      const existingEntry = await storage.getJournalEntry(userId, req.params.id);
+      if (!existingEntry) {
+        return res.status(404).json({ message: "Trade not found" });
+      }
+
+      await storage.deleteJournalEntry(userId, req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting trade:", error);
+      res.status(500).json({ message: "Failed to delete trade" });
+    }
+  });
+
   // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
