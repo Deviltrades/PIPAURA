@@ -226,6 +226,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No image file provided" });
       }
 
+      // Calculate file size in MB
+      const fileSizeMB = req.file.size / (1024 * 1024);
+      
+      // Check user limits before uploading
+      const canUpload = await storage.checkUserLimits(userId, {
+        action: "upload_image",
+        storage_mb: fileSizeMB,
+        image_count: 1
+      });
+      
+      if (!canUpload) {
+        return res.status(403).json({ 
+          message: "Upload failed: Storage limit exceeded or plan restriction" 
+        });
+      }
+
       // Generate unique filename
       const timestamp = Date.now();
       const originalName = req.file.originalname;
@@ -234,6 +250,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Upload to Supabase storage
       const imageUrl = await storage.uploadImage(req.file.buffer, fileName, userId);
+      
+      // Update user storage tracking after successful upload
+      await storage.updateUserStorage(userId, {
+        storage_mb_delta: fileSizeMB,
+        image_count_delta: 1
+      });
       
       res.json({ image_url: imageUrl });
     } catch (error) {
@@ -281,6 +303,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
       
+      // Check basic upload limits for signed URL generation (we'll do detailed check on completion)
+      const canUpload = await storage.checkUserLimits(userId, {
+        action: "upload_image",
+        image_count: 1
+      });
+      
+      if (!canUpload) {
+        return res.status(403).json({ 
+          message: "Upload failed: Plan restriction or limits exceeded" 
+        });
+      }
+      
       // Generate a unique filename for the upload
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substr(2, 9);
@@ -306,10 +340,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      const { fileURL } = req.body;
+      const userId = req.userId!; // Use local database user ID, not Supabase Auth ID
+      const { fileURL, fileSize } = req.body;
       
       if (!fileURL) {
         return res.status(400).json({ message: "fileURL is required" });
+      }
+      
+      // If fileSize is provided, update storage tracking
+      if (fileSize && typeof fileSize === 'number') {
+        const fileSizeMB = fileSize / (1024 * 1024);
+        
+        // Check storage limits with actual file size
+        const canStore = await storage.checkUserLimits(userId, {
+          action: "store_file",
+          storage_mb: fileSizeMB
+        });
+        
+        if (!canStore) {
+          return res.status(403).json({ 
+            message: "File storage failed: Storage limit exceeded" 
+          });
+        }
+        
+        // Update user storage tracking
+        await storage.updateUserStorage(userId, {
+          storage_mb_delta: fileSizeMB,
+          image_count_delta: 1
+        });
       }
       
       // For Supabase storage, we just return the original URL as the object path
