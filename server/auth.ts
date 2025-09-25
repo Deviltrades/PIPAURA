@@ -296,7 +296,7 @@ export const requiresPlanPermission = (action: string) => {
       const userId = req.userId;
       
       // Import storage to check user limits
-      const { storage } = await import('./index');
+      const { storage } = await import('./storage');
       
       // Check if user can perform the requested action
       const canPerformAction = await storage.checkUserLimits(userId, {
