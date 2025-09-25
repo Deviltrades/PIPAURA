@@ -37,6 +37,11 @@ export interface IStorage {
   generateUploadSignedUrl(fileName: string, userId: string): Promise<string>;
   generateViewSignedUrl(filePath: string): Promise<string>;
   deleteImage(imagePath: string): Promise<boolean>;
+  
+  // User profile and role-based access control
+  getUserProfile(userId: string): Promise<UserProfile | null>;
+  updateUserStorage(userId: string, deltas: { storage_mb_delta: number; image_count_delta: number }): Promise<UserProfile>;
+  checkUserLimits(userId: string, requirements: { action: string; storage_mb?: number; image_count?: number }): Promise<boolean>;
 }
 
 export class SupabaseStorage implements IStorage {
@@ -117,6 +122,19 @@ export class SupabaseStorage implements IStorage {
 
   async deleteImage(imagePath: string): Promise<boolean> {
     return await supabaseService.deleteImage(imagePath);
+  }
+  
+  // User profile and role-based access control operations
+  async getUserProfile(userId: string): Promise<UserProfile | null> {
+    return await supabaseService.getUserProfile(userId);
+  }
+
+  async updateUserStorage(userId: string, deltas: { storage_mb_delta: number; image_count_delta: number }): Promise<UserProfile> {
+    return await supabaseService.updateUserStorage(userId, deltas);
+  }
+
+  async checkUserLimits(userId: string, requirements: { action: string; storage_mb?: number; image_count?: number }): Promise<boolean> {
+    return await supabaseService.checkUserLimits(userId, requirements);
   }
 }
 

@@ -515,6 +515,85 @@ export class SupabaseService {
   }
 
   /**
+   * Get user profile with role-based access control information
+   */
+  async getUserProfile(userId: string): Promise<any> {
+    try {
+      const result = await sql`
+        SELECT * FROM user_profiles WHERE id = ${userId}
+      `;
+
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error getting user profile:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Update user storage usage
+   */
+  async updateUserStorage(userId: string, deltas: { storage_mb_delta: number; image_count_delta: number }): Promise<any> {
+    try {
+      const result = await sql`
+        UPDATE user_profiles 
+        SET 
+          storage_used_mb = storage_used_mb + ${deltas.storage_mb_delta},
+          image_count = image_count + ${deltas.image_count_delta},
+          updated_at = NOW()
+        WHERE id = ${userId}
+        RETURNING *
+      `;
+
+      return result[0];
+    } catch (error) {
+      console.error('Error updating user storage:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if user can perform action based on their plan limits
+   */
+  async checkUserLimits(userId: string, requirements: { action: string; storage_mb?: number; image_count?: number }): Promise<boolean> {
+    try {
+      const result = await sql`
+        SELECT plan_type, storage_used_mb, storage_limit_mb, image_count, image_limit
+        FROM user_profiles 
+        WHERE id = ${userId}
+      `;
+
+      if (result.length === 0) {
+        return false; // User profile not found
+      }
+
+      const profile = result[0];
+      
+      // Demo plan restrictions
+      if (profile.plan_type === 'demo') {
+        // Demo users cannot perform any write operations
+        if (['upload', 'save', 'add', 'create', 'edit', 'delete'].some(action => requirements.action.includes(action))) {
+          return false;
+        }
+      }
+
+      // Storage and image limits for basic/premium plans
+      if (requirements.storage_mb && (profile.storage_used_mb + requirements.storage_mb) > profile.storage_limit_mb) {
+        return false;
+      }
+
+      if (requirements.image_count && (profile.image_count + requirements.image_count) > profile.image_limit) {
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error checking user limits:', error);
+      return false;
+    }
+  }
+
+  /**
    * Get content type based on file extension
    * @param fileName File name
    * @returns Content type

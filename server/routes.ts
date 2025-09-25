@@ -588,6 +588,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User profile routes for role-based access control
+  app.get("/api/user/profile", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user || !req.userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.userId;
+      const profile = await storage.getUserProfile(userId);
+      
+      if (!profile) {
+        return res.status(404).json({ message: "User profile not found" });
+      }
+      
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
+
+  app.post("/api/user/profile/update-storage", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user || !req.userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.userId;
+      const { storage_mb_delta, image_count_delta } = req.body;
+      
+      const updatedProfile = await storage.updateUserStorage(userId, {
+        storage_mb_delta: parseFloat(storage_mb_delta || 0),
+        image_count_delta: parseInt(image_count_delta || 0)
+      });
+      
+      res.json(updatedProfile);
+    } catch (error) {
+      console.error("Error updating user storage:", error);
+      res.status(500).json({ message: "Failed to update storage usage" });
+    }
+  });
+
+  app.post("/api/user/profile/check-limits", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user || !req.userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.userId;
+      const { action, storage_mb, image_count } = req.body;
+      
+      const canPerformAction = await storage.checkUserLimits(userId, {
+        action,
+        storage_mb: parseFloat(storage_mb || 0),
+        image_count: parseInt(image_count || 0)
+      });
+      
+      res.json({ canPerformAction });
+    } catch (error) {
+      console.error("Error checking user limits:", error);
+      res.status(500).json({ message: "Failed to check user limits" });
+    }
+  });
+
   // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
