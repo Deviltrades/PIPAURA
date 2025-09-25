@@ -299,6 +299,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route to handle trade attachment ACL and normalization
+  app.put("/api/trade-attachments", isAuthenticated, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const { fileURL } = req.body;
+      
+      if (!fileURL) {
+        return res.status(400).json({ message: "fileURL is required" });
+      }
+      
+      // For Supabase storage, we just return the original URL as the object path
+      // Since the file is already uploaded to Supabase, we don't need additional ACL setup
+      const objectPath = fileURL;
+      
+      res.json({ objectPath });
+    } catch (error) {
+      console.error("Error processing trade attachment:", error);
+      res.status(500).json({ message: "Failed to process attachment" });
+    }
+  });
+
   // Analytics routes for journal entries
   app.get("/api/analytics", isAuthenticated, async (req, res) => {
     try {
