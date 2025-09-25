@@ -47,7 +47,7 @@ export interface CreateJournalEntry {
   session?: 'LONDON' | 'NYC' | 'TOKYO' | 'SYDNEY';
 }
 
-// Enhanced User Profile interface
+// Enhanced User Profile interface with role-based access control
 export interface UserProfile {
   id: string;
   email: string;
@@ -66,7 +66,97 @@ export interface UserProfile {
   sidebar_settings?: SidebarSettings;
   created_at: string;
   updated_at: string;
+  
+  // Role-based access control fields
+  plan_type: 'demo' | 'basic' | 'premium';
+  storage_used_mb: number;
+  storage_limit_mb: number;
+  image_count: number;
+  image_limit: number;
+  account_limit: number;
 }
+
+// Plan configuration type
+export interface PlanConfig {
+  name: string;
+  storage_limit_mb: number;
+  image_limit: number;
+  account_limit: number;
+  features: {
+    dashboard: boolean;
+    calendar: boolean;
+    notes_uploads: boolean;
+    charts: boolean;
+    strategy_playbook: boolean;
+    ai_mentor: boolean;
+    multiple_accounts: boolean;
+  };
+  ui_restrictions: {
+    read_only: boolean;
+    disabled_buttons: string[];
+  };
+}
+
+// Plan configurations
+export const PLAN_CONFIGS: Record<'demo' | 'basic' | 'premium', PlanConfig> = {
+  demo: {
+    name: 'Demo',
+    storage_limit_mb: 0,
+    image_limit: 0,
+    account_limit: 0,
+    features: {
+      dashboard: true,
+      calendar: true,
+      notes_uploads: false,
+      charts: true,
+      strategy_playbook: true,
+      ai_mentor: true,
+      multiple_accounts: false,
+    },
+    ui_restrictions: {
+      read_only: true,
+      disabled_buttons: ['add-trade', 'upload-image', 'save', 'edit'],
+    },
+  },
+  basic: {
+    name: 'Basic',
+    storage_limit_mb: 500,
+    image_limit: 50,
+    account_limit: 1,
+    features: {
+      dashboard: true,
+      calendar: true,
+      notes_uploads: true,
+      charts: false,
+      strategy_playbook: false,
+      ai_mentor: false,
+      multiple_accounts: false,
+    },
+    ui_restrictions: {
+      read_only: false,
+      disabled_buttons: [],
+    },
+  },
+  premium: {
+    name: 'Premium',
+    storage_limit_mb: 5120, // 5GB
+    image_limit: 999999,
+    account_limit: 5,
+    features: {
+      dashboard: true,
+      calendar: true,
+      notes_uploads: true,
+      charts: true,
+      strategy_playbook: true,
+      ai_mentor: true,
+      multiple_accounts: true,
+    },
+    ui_restrictions: {
+      read_only: false,
+      disabled_buttons: [],
+    },
+  },
+};
 
 // Media interface for trade screenshots
 export interface Media {
