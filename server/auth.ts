@@ -201,43 +201,54 @@ export const isAuthenticated = async (req: any, res: any, next: any) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // Ensure user exists in local database with correct Supabase Auth ID
+    // Find existing user in local database by email (keep existing ID structure)
     try {
-      // Use neon SQL connection directly 
       const { neon } = await import('@neondatabase/serverless');
       const sql = neon(process.env.DATABASE_URL!);
       
-      // First, check if user exists by email
-      const existingUser = await sql`
-        SELECT id FROM users WHERE email = ${user.email}
+      // Find existing user by email
+      const existingUsers = await sql`
+        SELECT id, email, first_name, last_name FROM users WHERE email = ${user.email}
       `;
 
-      if (existingUser.length > 0) {
-        // Update existing user with correct Supabase Auth ID
+      let localUser;
+      if (existingUsers.length > 0) {
+        // Use existing user - keep their existing ID to preserve trades
+        localUser = existingUsers[0];
+        
+        // Update their profile info if needed
         await sql`
           UPDATE users 
-          SET id = ${user.id}, 
-              first_name = ${user.user_metadata?.first_name || null},
-              last_name = ${user.user_metadata?.last_name || null},
+          SET first_name = ${user.user_metadata?.first_name || localUser.first_name},
+              last_name = ${user.user_metadata?.last_name || localUser.last_name},
               updated_at = NOW()
           WHERE email = ${user.email}
         `;
       } else {
-        // Create new user
+        // Create new user with Supabase Auth ID
         await sql`
           INSERT INTO users (id, email, first_name, last_name, created_at, updated_at)
           VALUES (${user.id}, ${user.email}, ${user.user_metadata?.first_name || null}, 
                   ${user.user_metadata?.last_name || null}, NOW(), NOW())
         `;
+        localUser = {
+          id: user.id,
+          email: user.email,
+          first_name: user.user_metadata?.first_name || null,
+          last_name: user.user_metadata?.last_name || null
+        };
       }
+
+      // Use local user ID for requests (preserves existing trades)
+      req.userId = localUser.id;
     } catch (dbError) {
-      console.error('Database error syncing user:', dbError);
+      console.error('Database error finding user:', dbError);
       return res.status(500).json({ message: "Failed to sync user data" });
     }
 
     // Attach user to request object
     req.user = user;
-    req.userId = user.id;
+    // req.userId already set above with local user ID
     next();
   } catch (error) {
     console.error('Authentication error:', error);
