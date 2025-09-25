@@ -404,7 +404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Trade routes (trades are stored as journal entries with trade_data)
+  // Trade routes (using proper trades table)
   app.post("/api/trades", isAuthenticated, async (req, res) => {
     try {
       if (!req.user) {
@@ -412,30 +412,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const userId = req.user.id;
-      
-      // Convert trade data to journal entry format
       const tradeData = req.body;
-      const journalEntryData = {
-        notes: tradeData.notes || '',
-        trade_date: tradeData.entryDate,
-        pair_symbol: tradeData.instrument,
-        lot_size: parseFloat(tradeData.positionSize) || 0,
-        entry_price: parseFloat(tradeData.entryPrice) || 0,
-        exit_price: parseFloat(tradeData.exitPrice) || 0,
-        stop_loss: parseFloat(tradeData.stopLoss) || 0,
-        take_profit: parseFloat(tradeData.takeProfit) || 0,
-        profit_loss: parseFloat(tradeData.pnl) || 0,
+      
+      // Map frontend field names to database field names
+      const trade = {
+        instrument: tradeData.instrument,
+        instrument_type: tradeData.instrumentType,
         trade_type: tradeData.tradeType,
+        position_size: parseFloat(tradeData.positionSize),
+        entry_price: parseFloat(tradeData.entryPrice),
+        exit_price: tradeData.exitPrice ? parseFloat(tradeData.exitPrice) : undefined,
+        stop_loss: tradeData.stopLoss ? parseFloat(tradeData.stopLoss) : undefined,
+        take_profit: tradeData.takeProfit ? parseFloat(tradeData.takeProfit) : undefined,
+        pnl: tradeData.pnl ? parseFloat(tradeData.pnl) : undefined,
         status: tradeData.status || 'CLOSED',
-        trade_data: tradeData, // Store complete trade data as well
-        tags: tradeData.tags || [],
-        timeframe: tradeData.timeframe,
-        strategy: tradeData.strategy,
-        session: tradeData.session
+        notes: tradeData.notes || '',
+        attachments: tradeData.attachments || [],
+        entry_date: tradeData.entryDate || new Date().toISOString(),
+        exit_date: tradeData.exitDate || null
       };
       
-      const entry = await storage.createJournalEntry(userId, journalEntryData);
-      res.status(201).json(entry);
+      const createdTrade = await storage.createTrade(userId, trade);
+      res.status(201).json(createdTrade);
     } catch (error) {
       console.error("Error creating trade:", error);
       res.status(500).json({ message: "Failed to create trade" });
@@ -449,26 +447,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const userId = req.user.id;
-      const entries = await storage.getJournalEntries(userId);
+      const trades = await storage.getTrades(userId);
       
-      // Filter entries that have trade data and format as trades
-      const trades = entries
-        .filter(entry => entry.trade_data || entry.pair_symbol)
-        .map(entry => ({
-          ...entry,
-          // Ensure trade-specific fields are accessible
-          instrument: entry.pair_symbol,
-          positionSize: entry.lot_size,
-          entryPrice: entry.entry_price,
-          exitPrice: entry.exit_price,
-          stopLoss: entry.stop_loss,
-          takeProfit: entry.take_profit,
-          pnl: entry.profit_loss,
-          tradeType: entry.trade_type,
-          entryDate: entry.trade_date
-        }));
+      // Map database field names to frontend expected field names
+      const formattedTrades = trades.map(trade => ({
+        ...trade,
+        instrumentType: trade.instrument_type,
+        tradeType: trade.trade_type,
+        positionSize: trade.position_size,
+        entryPrice: trade.entry_price,
+        exitPrice: trade.exit_price,
+        stopLoss: trade.stop_loss,
+        takeProfit: trade.take_profit,
+        entryDate: trade.entry_date,
+        exitDate: trade.exit_date,
+        createdAt: trade.created_at,
+        updatedAt: trade.updated_at
+      }));
       
-      res.json(trades);
+      res.json(formattedTrades);
     } catch (error) {
       console.error("Error fetching trades:", error);
       res.status(500).json({ message: "Failed to fetch trades" });
@@ -482,27 +479,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const userId = req.user.id;
-      const entry = await storage.getJournalEntry(userId, req.params.id);
+      const trade = await storage.getTrade(userId, req.params.id);
       
-      if (!entry) {
+      if (!trade) {
         return res.status(404).json({ message: "Trade not found" });
       }
 
-      // Format as trade
-      const trade = {
-        ...entry,
-        instrument: entry.pair_symbol,
-        positionSize: entry.lot_size,
-        entryPrice: entry.entry_price,
-        exitPrice: entry.exit_price,
-        stopLoss: entry.stop_loss,
-        takeProfit: entry.take_profit,
-        pnl: entry.profit_loss,
-        tradeType: entry.trade_type,
-        entryDate: entry.trade_date
+      // Map database field names to frontend expected field names
+      const formattedTrade = {
+        ...trade,
+        instrumentType: trade.instrument_type,
+        tradeType: trade.trade_type,
+        positionSize: trade.position_size,
+        entryPrice: trade.entry_price,
+        exitPrice: trade.exit_price,
+        stopLoss: trade.stop_loss,
+        takeProfit: trade.take_profit,
+        entryDate: trade.entry_date,
+        exitDate: trade.exit_date,
+        createdAt: trade.created_at,
+        updatedAt: trade.updated_at
       };
 
-      res.json(trade);
+      res.json(formattedTrade);
     } catch (error) {
       console.error("Error fetching trade:", error);
       res.status(500).json({ message: "Failed to fetch trade" });
@@ -517,35 +516,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userId = req.user.id;
       
-      // Check if entry exists and user owns it
-      const existingEntry = await storage.getJournalEntry(userId, req.params.id);
-      if (!existingEntry) {
+      // Check if trade exists and user owns it
+      const existingTrade = await storage.getTrade(userId, req.params.id);
+      if (!existingTrade) {
         return res.status(404).json({ message: "Trade not found" });
       }
 
-      // Convert trade data to journal entry format
+      // Map frontend field names to database field names
       const tradeData = req.body;
       const updates = {
-        notes: tradeData.notes,
-        trade_date: tradeData.entryDate,
-        pair_symbol: tradeData.instrument,
-        lot_size: parseFloat(tradeData.positionSize),
-        entry_price: parseFloat(tradeData.entryPrice),
-        exit_price: parseFloat(tradeData.exitPrice),
-        stop_loss: parseFloat(tradeData.stopLoss),
-        take_profit: parseFloat(tradeData.takeProfit),
-        profit_loss: parseFloat(tradeData.pnl),
+        instrument: tradeData.instrument,
+        instrument_type: tradeData.instrumentType,
         trade_type: tradeData.tradeType,
+        position_size: tradeData.positionSize ? parseFloat(tradeData.positionSize) : undefined,
+        entry_price: tradeData.entryPrice ? parseFloat(tradeData.entryPrice) : undefined,
+        exit_price: tradeData.exitPrice ? parseFloat(tradeData.exitPrice) : undefined,
+        stop_loss: tradeData.stopLoss ? parseFloat(tradeData.stopLoss) : undefined,
+        take_profit: tradeData.takeProfit ? parseFloat(tradeData.takeProfit) : undefined,
+        pnl: tradeData.pnl ? parseFloat(tradeData.pnl) : undefined,
         status: tradeData.status,
-        trade_data: tradeData,
-        tags: tradeData.tags,
-        timeframe: tradeData.timeframe,
-        strategy: tradeData.strategy,
-        session: tradeData.session
+        notes: tradeData.notes,
+        attachments: tradeData.attachments,
+        entry_date: tradeData.entryDate,
+        exit_date: tradeData.exitDate
       };
 
-      const updatedEntry = await storage.updateJournalEntry(userId, req.params.id, updates);
-      res.json(updatedEntry);
+      const updatedTrade = await storage.updateTrade(userId, req.params.id, updates);
+      
+      // Map database field names back to frontend expected field names
+      const formattedTrade = {
+        ...updatedTrade,
+        instrumentType: updatedTrade.instrument_type,
+        tradeType: updatedTrade.trade_type,
+        positionSize: updatedTrade.position_size,
+        entryPrice: updatedTrade.entry_price,
+        exitPrice: updatedTrade.exit_price,
+        stopLoss: updatedTrade.stop_loss,
+        takeProfit: updatedTrade.take_profit,
+        entryDate: updatedTrade.entry_date,
+        exitDate: updatedTrade.exit_date,
+        createdAt: updatedTrade.created_at,
+        updatedAt: updatedTrade.updated_at
+      };
+      
+      res.json(formattedTrade);
     } catch (error) {
       console.error("Error updating trade:", error);
       res.status(500).json({ message: "Failed to update trade" });
@@ -560,13 +574,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userId = req.user.id;
       
-      // Check if entry exists and user owns it
-      const existingEntry = await storage.getJournalEntry(userId, req.params.id);
-      if (!existingEntry) {
+      // Check if trade exists and user owns it
+      const existingTrade = await storage.getTrade(userId, req.params.id);
+      if (!existingTrade) {
         return res.status(404).json({ message: "Trade not found" });
       }
 
-      await storage.deleteJournalEntry(userId, req.params.id);
+      await storage.deleteTrade(userId, req.params.id);
       res.status(204).send();
     } catch (error) {
       console.error("Error deleting trade:", error);
