@@ -29,13 +29,13 @@ export default function Analytics() {
     );
   }
 
-  const stats = analytics || {
-    totalPnL: 0,
-    winRate: 0,
-    profitFactor: 0,
-    maxDrawdown: 0,
-    monthlyData: [],
-    equityCurve: []
+  const stats = {
+    totalPnL: analytics?.totalPnL || 0,
+    winRate: analytics?.winRate || 0,
+    profitFactor: analytics?.profitFactor || 0,
+    maxDrawdown: analytics?.maxDrawdown || 0,
+    monthlyData: analytics?.monthlyData || [],
+    equityCurve: analytics?.equityCurve || []
   };
 
   return (
@@ -62,7 +62,7 @@ export default function Analytics() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Win Rate</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.winRate.toFixed(1)}%</div>
+            <div className="text-2xl font-bold">{(stats.winRate || 0).toFixed(1)}%</div>
           </CardContent>
         </Card>
 
@@ -71,7 +71,7 @@ export default function Analytics() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Profit Factor</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.profitFactor.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{(stats.profitFactor || 0).toFixed(2)}</div>
           </CardContent>
         </Card>
 
