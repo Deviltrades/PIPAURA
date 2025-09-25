@@ -29,6 +29,8 @@ import {
 } from "date-fns";
 import { AddTradeModal } from "./AddTradeModal";
 import { EditTradeModal } from "./EditTradeModal";
+import { SignedImageDisplay } from "./SignedImageDisplay";
+import { ImageViewerModal } from "./ImageViewerModal";
 import type { Trade, User } from "@shared/schema";
 import { Plus as PlusIcon } from "lucide-react";
 import { Link } from "wouter";
@@ -1516,8 +1518,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                                     setIsImageViewerOpen(true);
                                   }}
                                 >
-                                  <img
-                                    src={imageUrl}
+                                  <SignedImageDisplay
+                                    imageUrl={imageUrl}
                                     alt={`Trade attachment ${index + 1}`}
                                     className="max-w-full max-h-full object-cover rounded"
                                   />
@@ -1598,29 +1600,14 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
         {/* Image Viewer Modal */}
         {isImageViewerOpen && selectedImage && (
-          <div
-            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-            onClick={() => setIsImageViewerOpen(false)}
-          >
-            <div
-              className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img
-                src={selectedImage}
-                alt="Expanded trade attachment"
-                className="max-w-full max-h-full object-contain rounded-lg"
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white border-white/20 z-10"
-                onClick={() => setIsImageViewerOpen(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <ImageViewerModal
+            isOpen={isImageViewerOpen}
+            onClose={() => {
+              setIsImageViewerOpen(false);
+              setSelectedImage(null);
+            }}
+            imageUrl={selectedImage}
+          />
         )}
       </CardContent>
     </Card>
