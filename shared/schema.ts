@@ -168,6 +168,98 @@ export const createTagSchema = z.object({
   color: z.string().default('#3b82f6'),
 });
 
+// Trade interfaces matching the trades table structure
+export interface Trade {
+  id: string;
+  user_id: string;
+  instrument: string;
+  instrument_type: 'FOREX' | 'INDICES' | 'CRYPTO';
+  trade_type: 'BUY' | 'SELL';
+  position_size: number;
+  entry_price: number;
+  exit_price?: number;
+  stop_loss?: number;
+  take_profit?: number;
+  pnl?: number;
+  status: 'OPEN' | 'CLOSED' | 'CANCELLED';
+  notes?: string;
+  attachments?: string[];
+  entry_date?: string;
+  exit_date?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateTrade {
+  instrument: string;
+  instrument_type: 'FOREX' | 'INDICES' | 'CRYPTO';
+  trade_type: 'BUY' | 'SELL';
+  position_size: number;
+  entry_price: number;
+  exit_price?: number;
+  stop_loss?: number;
+  take_profit?: number;
+  pnl?: number;
+  status?: 'OPEN' | 'CLOSED' | 'CANCELLED';
+  notes?: string;
+  attachments?: string[];
+  entry_date?: string;
+  exit_date?: string;
+}
+
+export interface UpdateTrade {
+  instrument?: string;
+  instrument_type?: 'FOREX' | 'INDICES' | 'CRYPTO';
+  trade_type?: 'BUY' | 'SELL';
+  position_size?: number;
+  entry_price?: number;
+  exit_price?: number;
+  stop_loss?: number;
+  take_profit?: number;
+  pnl?: number;
+  status?: 'OPEN' | 'CLOSED' | 'CANCELLED';
+  notes?: string;
+  attachments?: string[];
+  entry_date?: string;
+  exit_date?: string;
+}
+
+// Zod schemas for Trade validation
+export const createTradeSchema = z.object({
+  instrument: z.string().min(1, "Instrument is required"),
+  instrument_type: z.enum(['FOREX', 'INDICES', 'CRYPTO']),
+  trade_type: z.enum(['BUY', 'SELL']),
+  position_size: z.number().positive("Position size must be positive"),
+  entry_price: z.number().positive("Entry price must be positive"),
+  exit_price: z.number().positive().optional(),
+  stop_loss: z.number().positive().optional(),
+  take_profit: z.number().positive().optional(),
+  pnl: z.number().optional(),
+  status: z.enum(['OPEN', 'CLOSED', 'CANCELLED']).default('OPEN'),
+  notes: z.string().optional(),
+  attachments: z.array(z.string()).default([]),
+  entry_date: z.string().optional(),
+  exit_date: z.string().optional(),
+});
+
+export const updateTradeSchema = z.object({
+  instrument: z.string().min(1).optional(),
+  instrument_type: z.enum(['FOREX', 'INDICES', 'CRYPTO']).optional(),
+  trade_type: z.enum(['BUY', 'SELL']).optional(),
+  position_size: z.number().positive().optional(),
+  entry_price: z.number().positive().optional(),
+  exit_price: z.number().positive().optional(),
+  stop_loss: z.number().positive().optional(),
+  take_profit: z.number().positive().optional(),
+  pnl: z.number().optional(),
+  status: z.enum(['OPEN', 'CLOSED', 'CANCELLED']).optional(),
+  notes: z.string().optional(),
+  attachments: z.array(z.string()).optional(),
+  entry_date: z.string().optional(),
+  exit_date: z.string().optional(),
+});
+
 // Types for backward compatibility
 export type User = UserProfile;
 export type InsertJournalEntry = CreateJournalEntry;
+export type InsertTrade = CreateTrade;
