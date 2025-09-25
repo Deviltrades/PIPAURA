@@ -14,6 +14,11 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Get the API base URL from environment variables
+const getApiBaseUrl = () => {
+  return import.meta.env.VITE_API_BASE_URL || '';
+};
+
 export async function apiRequest(
   method: string,
   url: string,
@@ -37,7 +42,10 @@ export async function apiRequest(
     body = JSON.stringify(data);
   }
 
-  const res = await fetch(url, {
+  // Prepend API base URL if the url starts with /api
+  const fullUrl = url.startsWith('/api') ? `${getApiBaseUrl()}${url}` : url;
+
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body,
@@ -60,7 +68,11 @@ export const getQueryFn: <T>(options: {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const res = await fetch(queryKey.join("/") as string, {
+    const url = queryKey.join("/") as string;
+    // Prepend API base URL if the url starts with /api
+    const fullUrl = url.startsWith('/api') ? `${getApiBaseUrl()}${url}` : url;
+
+    const res = await fetch(fullUrl, {
       headers,
     });
 
