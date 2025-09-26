@@ -4,9 +4,10 @@ import { spawn } from 'child_process';
 console.log('🚀 Starting TJ - Traders Brotherhood (Pure Frontend + Supabase)');
 console.log('📦 Express server removed - now using pure Vite + Supabase architecture');
 
-// Start Vite dev server
-const vite = spawn('npx', ['vite', '--host', '0.0.0.0', '--port', '5000'], {
-  stdio: 'inherit'
+// Start Vite dev server with --no-clearScreen to see startup messages
+const vite = spawn('npx', ['vite', '--host', '0.0.0.0', '--port', '5000', '--no-clearScreen'], {
+  stdio: 'inherit',
+  env: { ...process.env, NODE_ENV: 'development' }
 });
 
 vite.on('close', (code) => {
