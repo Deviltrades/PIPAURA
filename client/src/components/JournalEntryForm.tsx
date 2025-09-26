@@ -42,6 +42,7 @@ export default function JournalEntryForm({ open, onOpenChange }: JournalEntryFor
       notes: "",
       trade_data: {},
       image_url: "",
+      status: "OPEN" as const,
     },
   });
 
@@ -50,6 +51,7 @@ export default function JournalEntryForm({ open, onOpenChange }: JournalEntryFor
       return await createJournalEntry({
         ...data,
         status: 'OPEN' as const,
+        tags: data.tags || [],
       });
     },
     onSuccess: () => {
