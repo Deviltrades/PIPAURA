@@ -37,6 +37,7 @@ import { Plus as PlusIcon } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { getTrades, updateTrade } from "@/lib/supabase-service";
 
 interface TradingCalendarProps {
   className?: string;
@@ -65,12 +66,11 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   // Mutation for updating trade fields
   const updateTradeMutation = useMutation({
     mutationFn: async ({ tradeId, updates }: { tradeId: string; updates: Partial<Trade> }) => {
-      const response = await apiRequest("PUT", `/api/trades/${tradeId}`, updates);
-      return response.json();
+      return await updateTrade(tradeId, updates);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/trades"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["trades"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
       toast({
         title: "Trade updated",
         description: "Your changes have been saved successfully.",
@@ -221,7 +221,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
-    queryKey: ["/api/trades"],
+    queryKey: ["trades"],
+    queryFn: getTrades,
+    retry: false,
   });
 
   // Fetch user data for calendar settings
@@ -248,17 +250,17 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
     // Symbol filter
     if (selectedSymbol !== "all") {
-      if (selectedSymbol === "forex" && trade.instrumentType !== "FOREX") return false;
-      if (selectedSymbol === "indices" && trade.instrumentType !== "INDICES") return false;
-      if (selectedSymbol === "crypto" && trade.instrumentType !== "CRYPTO") return false;
+      if (selectedSymbol === "forex" && trade.instrument_type !== "FOREX") return false;
+      if (selectedSymbol === "indices" && trade.instrument_type !== "INDICES") return false;
+      if (selectedSymbol === "crypto" && trade.instrument_type !== "CRYPTO") return false;
     }
 
     // Strategy filter - for now using simple heuristics based on trade data
     if (selectedStrategy !== "all") {
       // This is a placeholder implementation - can be enhanced with actual strategy field
       const pnl = typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0);
-      const entryPrice = typeof trade.entryPrice === 'string' ? parseFloat(trade.entryPrice) : trade.entryPrice;
-      const stopLoss = typeof trade.stopLoss === 'string' ? parseFloat(trade.stopLoss) : trade.stopLoss;
+      const entryPrice = typeof trade.entry_price === 'string' ? parseFloat(trade.entry_price) : trade.entry_price;
+      const stopLoss = typeof trade.stop_loss === 'string' ? parseFloat(trade.stop_loss) : trade.stop_loss;
       
       if (selectedStrategy === "scalping") {
         // Small profit targets, quick trades
@@ -280,8 +282,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
     // Direction filter
     if (selectedDirection !== "all") {
-      if (selectedDirection === "buy" && trade.tradeType !== "BUY") return false;
-      if (selectedDirection === "sell" && trade.tradeType !== "SELL") return false;
+      if (selectedDirection === "buy" && trade.trade_type !== "BUY") return false;
+      if (selectedDirection === "sell" && trade.trade_type !== "SELL") return false;
     }
 
     return true;
@@ -290,15 +292,15 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
   // Group filtered trades by date
   const tradesByDate = filteredTrades ? filteredTrades.reduce((acc, trade) => {
-    if (trade.entryDate) {
+    if (trade.entry_date) {
       // Handle different date formats
       let entryDate: Date;
-      if (typeof trade.entryDate === 'string') {
+      if (typeof trade.entry_date === 'string') {
         // Try parsing ISO string first, then fallback to Date constructor
-        const dateString = trade.entryDate as string;
+        const dateString = trade.entry_date as string;
         entryDate = dateString.indexOf('T') !== -1 ? parseISO(dateString) : new Date(dateString);
       } else {
-        entryDate = new Date(trade.entryDate);
+        entryDate = new Date(trade.entry_date);
       }
       
       const dateKey = format(entryDate, "yyyy-MM-dd");
@@ -333,14 +335,14 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     
     // Get trades for the current month
     const monthTrades = filteredTrades.filter(trade => {
-      if (!trade.entryDate) return false;
+      if (!trade.entry_date) return false;
       
       let entryDate: Date;
-      if (typeof trade.entryDate === 'string') {
-        const dateString = trade.entryDate as string;
+      if (typeof trade.entry_date === 'string') {
+        const dateString = trade.entry_date as string;
         entryDate = dateString.indexOf('T') !== -1 ? parseISO(dateString) : new Date(dateString);
       } else {
-        entryDate = new Date(trade.entryDate);
+        entryDate = new Date(trade.entry_date);
       }
       
       return entryDate >= monthStart && entryDate <= monthEnd;
@@ -355,13 +357,13 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     // Calculate total days traded (unique dates)
     const uniqueDates = new Set();
     monthTrades.forEach(trade => {
-      if (trade.entryDate) {
+      if (trade.entry_date) {
         let entryDate: Date;
-        if (typeof trade.entryDate === 'string') {
-          const dateString = trade.entryDate as string;
+        if (typeof trade.entry_date === 'string') {
+          const dateString = trade.entry_date as string;
           entryDate = dateString.indexOf('T') !== -1 ? parseISO(dateString) : new Date(dateString);
         } else {
-          entryDate = new Date(trade.entryDate);
+          entryDate = new Date(trade.entry_date);
         }
         uniqueDates.add(format(entryDate, "yyyy-MM-dd"));
       }
@@ -413,14 +415,14 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     
     // Get trades for the current month
     const monthTrades = filteredTrades.filter(trade => {
-      if (!trade.entryDate) return false;
+      if (!trade.entry_date) return false;
       
       let entryDate: Date;
-      if (typeof trade.entryDate === 'string') {
-        const dateString = trade.entryDate as string;
+      if (typeof trade.entry_date === 'string') {
+        const dateString = trade.entry_date as string;
         entryDate = dateString.indexOf('T') !== -1 ? parseISO(dateString) : new Date(dateString);
       } else {
-        entryDate = new Date(trade.entryDate);
+        entryDate = new Date(trade.entry_date);
       }
       
       return entryDate >= monthStart && entryDate <= monthEnd;
@@ -432,13 +434,13 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     const totalDaysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd }).length;
     const tradingDays = new Set();
     monthTrades.forEach(trade => {
-      if (trade.entryDate) {
+      if (trade.entry_date) {
         let entryDate: Date;
-        if (typeof trade.entryDate === 'string') {
-          const dateString = trade.entryDate as string;
+        if (typeof trade.entry_date === 'string') {
+          const dateString = trade.entry_date as string;
           entryDate = dateString.indexOf('T') !== -1 ? parseISO(dateString) : new Date(dateString);
         } else {
-          entryDate = new Date(trade.entryDate);
+          entryDate = new Date(trade.entry_date);
         }
         tradingDays.add(format(entryDate, "yyyy-MM-dd"));
       }
@@ -965,7 +967,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
             
             // Get calendar settings with proper typing
-            const calendarSettings = (user?.calendarSettings as any) || {
+            const calendar_settings = (user?.calendar_settings as any) || {
               backgroundColor: "#1a1a1a",
               borderColor: "#374151",
               dayBackgroundColor: "#2d2d2d",
@@ -1187,16 +1189,16 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                     <div className="flex items-center justify-between p-3 border-b bg-muted/30">
                       <div className="flex items-center gap-3">
                         <Badge variant="outline" className="text-xs">
-                          {trade.instrumentType}
+                          {trade.instrument_type}
                         </Badge>
                         <span className="font-medium">
                           {trade.instrument}
                         </span>
                         <Badge 
-                          variant={trade.tradeType === "BUY" ? "default" : "secondary"}
+                          variant={trade.trade_type === "BUY" ? "default" : "secondary"}
                           className="text-xs"
                         >
-                          {trade.tradeType}
+                          {trade.trade_type}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2">
@@ -1255,9 +1257,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                           ) : (
                             <div 
                               className="font-medium cursor-pointer hover:bg-muted/50 px-1 py-0.5 rounded"
-                              onClick={() => startEdit(trade.id, 'positionSize', trade.positionSize)}
+                              onClick={() => startEdit(trade.id, 'position_size', String(trade.position_size || ''))}
                             >
-                              {trade.positionSize}
+                              {trade.position_size}
                             </div>
                           )}
                         </div>
@@ -1265,7 +1267,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                         {/* Entry Price */}
                         <div className="space-y-1">
                           <span className="text-muted-foreground text-xs">Entry Price:</span>
-                          {isEditing(trade.id, 'entryPrice') ? (
+                          {isEditing(trade.id, 'entry_price') ? (
                             <div className="flex items-center gap-2">
                               <Input
                                 value={editValue}
@@ -1289,9 +1291,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                           ) : (
                             <div 
                               className="font-medium cursor-pointer hover:bg-muted/50 px-1 py-0.5 rounded"
-                              onClick={() => startEdit(trade.id, 'entryPrice', trade.entryPrice)}
+                              onClick={() => startEdit(trade.id, 'entry_price', String(trade.entry_price || ''))}
                             >
-                              ${trade.entryPrice}
+                              ${trade.entry_price}
                             </div>
                           )}
                         </div>
@@ -1299,7 +1301,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                         {/* Stop Loss */}
                         <div className="space-y-1">
                           <span className="text-muted-foreground text-xs">Stop Loss:</span>
-                          {isEditing(trade.id, 'stopLoss') ? (
+                          {isEditing(trade.id, 'stop_loss') ? (
                             <div className="flex items-center gap-2">
                               <Input
                                 value={editValue}
@@ -1323,9 +1325,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                           ) : (
                             <div 
                               className="font-medium cursor-pointer hover:bg-muted/50 px-1 py-0.5 rounded"
-                              onClick={() => startEdit(trade.id, 'stopLoss', trade.stopLoss || '')}
+                              onClick={() => startEdit(trade.id, 'stop_loss', String(trade.stop_loss || ''))}
                             >
-                              {trade.stopLoss ? `$${trade.stopLoss}` : 'Click to set'}
+                              {trade.stop_loss ? `$${trade.stop_loss}` : 'Click to set'}
                             </div>
                           )}
                         </div>
@@ -1333,7 +1335,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                         {/* Take Profit */}
                         <div className="space-y-1">
                           <span className="text-muted-foreground text-xs">Take Profit:</span>
-                          {isEditing(trade.id, 'takeProfit') ? (
+                          {isEditing(trade.id, 'take_profit') ? (
                             <div className="flex items-center gap-2">
                               <Input
                                 value={editValue}
@@ -1357,9 +1359,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                           ) : (
                             <div 
                               className="font-medium cursor-pointer hover:bg-muted/50 px-1 py-0.5 rounded"
-                              onClick={() => startEdit(trade.id, 'takeProfit', trade.takeProfit || '')}
+                              onClick={() => startEdit(trade.id, 'take_profit', String(trade.take_profit || ''))}
                             >
-                              {trade.takeProfit ? `$${trade.takeProfit}` : 'Click to set'}
+                              {trade.take_profit ? `$${trade.take_profit}` : 'Click to set'}
                             </div>
                           )}
                         </div>
@@ -1367,7 +1369,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                         {/* Exit Price */}
                         <div className="space-y-1">
                           <span className="text-muted-foreground text-xs">Exit Price:</span>
-                          {isEditing(trade.id, 'exitPrice') ? (
+                          {isEditing(trade.id, 'exit_price') ? (
                             <div className="flex items-center gap-2">
                               <Input
                                 value={editValue}
@@ -1391,9 +1393,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                           ) : (
                             <div 
                               className="font-medium cursor-pointer hover:bg-muted/50 px-1 py-0.5 rounded"
-                              onClick={() => startEdit(trade.id, 'exitPrice', trade.exitPrice || '')}
+                              onClick={() => startEdit(trade.id, 'exit_price', String(trade.exit_price || ''))}
                             >
-                              {trade.exitPrice ? `$${trade.exitPrice}` : 'Click to set'}
+                              {trade.exit_price ? `$${trade.exit_price}` : 'Click to set'}
                             </div>
                           )}
                         </div>
@@ -1402,20 +1404,20 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                         <div className="space-y-1">
                           <span className="text-muted-foreground text-xs">Entry Date:</span>
                           <div className="font-medium">
-                            {trade.entryDate ? format(
-                              typeof trade.entryDate === 'string' ? parseISO(trade.entryDate) : trade.entryDate, 
+                            {trade.entry_date ? format(
+                              typeof trade.entry_date === 'string' ? parseISO(trade.entry_date) : trade.entry_date, 
                               'MMM dd, yyyy'
                             ) : 'Not set'}
                           </div>
                         </div>
 
                         {/* Exit Date */}
-                        {(trade.exitDate || isEditing(trade.id, 'exitDate')) && (
+                        {(trade.exit_date || isEditing(trade.id, 'exit_date')) && (
                           <div className="space-y-1">
                             <span className="text-muted-foreground text-xs">Exit Date:</span>
                             <div className="font-medium">
-                              {trade.exitDate ? format(
-                                typeof trade.exitDate === 'string' ? parseISO(trade.exitDate) : trade.exitDate, 
+                              {trade.exit_date ? format(
+                                typeof trade.exit_date === 'string' ? parseISO(trade.exit_date) : trade.exit_date, 
                                 'MMM dd, yyyy'
                               ) : 'Not set'}
                             </div>
