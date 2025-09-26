@@ -36,7 +36,7 @@ import { Label } from "@/components/ui/label";
 import { SignedImageDisplay } from "@/components/SignedImageDisplay";
 import { PlanGate, FeatureGate } from "@/components/PlanGate";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { createTrade, uploadFile } from "@/lib/supabase-service";
 
 const addTradeSchema = z.object({
   instrumentType: z.enum(["FOREX", "INDICES", "CRYPTO"]),
@@ -115,34 +115,36 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
         String(selectedDate.getDate()).padStart(2, '0');
       
       // Calculate P&L based on user input
-      let calculatedPnL = "0";
+      let calculatedPnL = 0;
       if (data.hasPnL && data.pnlAmount) {
         const amount = parseFloat(data.pnlAmount);
-        calculatedPnL = data.pnlType === "loss" ? (-amount).toString() : amount.toString();
+        calculatedPnL = data.pnlType === "loss" ? -amount : amount;
       }
 
       const tradeData = {
-        ...data,
-        entryDate: localDateString, // Send as local date string
+        instrument: data.instrument,
+        instrument_type: data.instrumentType as 'FOREX' | 'INDICES' | 'CRYPTO',
+        trade_type: data.tradeType as 'BUY' | 'SELL',
+        position_size: parseFloat(data.positionSize),
+        entry_price: parseFloat(data.entryPrice),
+        stop_loss: parseFloat(data.stopLoss),
+        take_profit: parseFloat(data.takeProfit),
         pnl: calculatedPnL,
-        status: "CLOSED", // Always set to CLOSED since we're tracking completed trades only
-        attachments: uploadedImages, // Include uploaded images
-        // Remove the extra fields that aren't in the backend schema
-        hasPnL: undefined,
-        pnlType: undefined,
-        pnlAmount: undefined,
+        status: "CLOSED" as const,
+        notes: data.notes || '',
+        attachments: uploadedImages,
+        entry_date: localDateString,
       };
       
-      const response = await apiRequest("POST", "/api/trades", tradeData);
-      return response.json();
+      return await createTrade(tradeData);
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "Trade added successfully",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/trades"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["trades"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
       form.reset();
       setUploadedImages([]); // Clear uploaded images
       onClose();
@@ -189,45 +191,9 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
           continue;
         }
 
-        // Step 1: Get upload URL from server
-        const uploadResponse = await apiRequest("POST", "/api/objects/upload");
-        if (!uploadResponse.ok) {
-          const errorText = await uploadResponse.text();
-          console.error("Upload URL request failed:", uploadResponse.status, errorText);
-          throw new Error(`Failed to get upload URL: ${uploadResponse.status}`);
-        }
-        const { uploadURL, fileName } = await uploadResponse.json();
-
-        // Step 2: Upload file to the signed URL
-        const putResponse = await fetch(uploadURL, {
-          method: 'PUT',
-          body: file,
-          headers: {
-            'Content-Type': file.type,
-          },
-        });
-
-        if (putResponse.ok) {
-          // Step 3: Get the final file URL by constructing it from the upload URL
-          // For Supabase storage: remove query parameters from upload URL to get file URL
-          const fileURL = uploadURL.split('?')[0];
-          
-          // Step 4: Call the server to set ACL and get normalized path
-          const aclResponse = await apiRequest("PUT", "/api/trade-attachments", {
-            fileURL: fileURL
-          });
-          if (!aclResponse.ok) {
-            const errorText = await aclResponse.text();
-            console.error("ACL request failed:", aclResponse.status, errorText);
-            throw new Error(`Failed to process attachment: ${aclResponse.status}`);
-          }
-          const { objectPath } = await aclResponse.json();
-          uploadedUrls.push(objectPath);
-        } else {
-          const errorText = await putResponse.text();
-          console.error("File upload failed:", putResponse.status, errorText);
-          throw new Error(`Upload failed: ${putResponse.status}`);
-        }
+        // Upload file directly to Supabase storage
+        const fileUrl = await uploadFile(file);
+        uploadedUrls.push(fileUrl);
       }
 
       setUploadedImages(prev => [...prev, ...uploadedUrls]);
