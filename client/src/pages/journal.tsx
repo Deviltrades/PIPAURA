@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Plus, Upload, Tag, TrendingUp, TrendingDown, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import { getTags, createTag, createJournalEntry } from "@/lib/supabase-service";
 import { createJournalEntrySchema, type CreateJournalEntry } from "@shared/schema";
 
 type JournalFormData = CreateJournalEntry;
@@ -34,18 +35,18 @@ export default function Journal() {
     },
   });
 
-  const { data: existingTags = [] } = useQuery<any[]>({
-    queryKey: ["/api/tags"],
+  const { data: existingTags = [] } = useQuery({
+    queryKey: ["tags"],
+    queryFn: getTags,
     retry: false,
   });
 
   const createEntryMutation = useMutation({
     mutationFn: async (data: JournalFormData) => {
-      const response = await apiRequest("POST", "/api/journal-entries", {
+      return await createJournalEntry({
         ...data,
         tags: selectedTags,
       });
-      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -54,8 +55,8 @@ export default function Journal() {
       });
       form.reset();
       setSelectedTags([]);
-      queryClient.invalidateQueries({ queryKey: ["/api/journal-entries"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
     },
     onError: (error: Error) => {
       toast({
@@ -68,11 +69,10 @@ export default function Journal() {
 
   const createTagMutation = useMutation({
     mutationFn: async (tagData: { name: string; category?: string }) => {
-      const response = await apiRequest("POST", "/api/tags", tagData);
-      return response.json();
+      return await createTag(tagData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tags"] });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
       setNewTag("");
     },
   });

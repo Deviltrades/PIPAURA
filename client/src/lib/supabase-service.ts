@@ -254,6 +254,38 @@ export async function uploadFile(file: File): Promise<string> {
   return publicUrl;
 }
 
+// Tag operations
+export async function getTags() {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data, error } = await supabase
+    .from('tags')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('name', { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
+export async function createTag(tag: { name: string; category?: string }) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data, error } = await supabase
+    .from('tags')
+    .insert([{ 
+      ...tag, 
+      user_id: user.id 
+    }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 // User profile operations  
 export async function updateUserProfile(updates: Partial<UserProfile>) {
   const user = await getCurrentUser();
