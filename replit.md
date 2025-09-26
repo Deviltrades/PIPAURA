@@ -10,6 +10,31 @@ Preferred communication style: Simple, everyday language.
 Authentication preference: Supabase Auth with email/password authentication (migrated from custom auth on 2025-09-22).
 Settings access: Settings icon next to theme toggle with dedicated logout tab.
 
+## Recent Changes
+
+### Express.js to Supabase Migration (2025-09-26)
+Started comprehensive migration from Express.js server to pure Supabase architecture for cleaner frontend-only deployment:
+
+**Migration Progress:**
+- ✅ Created `supabase-service.ts` with direct database operations (createTrade, getTrades, getAnalytics, uploadFile)
+- ✅ Migrated key components to use Supabase directly:
+  - AddTradeModal: Now uses createTrade from supabase-service
+  - Trades page: Now uses getTrades and deleteTrade from supabase-service
+  - TradingAnalytics: Now uses getAnalytics and getTrades from supabase-service
+- ✅ Build configuration verified working - creates frontend assets in dist/public/ ready for Vercel deployment
+- 🔄 Additional components still using Express API endpoints (journal entries, tags, image uploads, user profiles)
+
+**Architecture Benefits:**
+- Eliminates need for Express server on production deployment
+- Simplifies Vercel deployment (frontend-only build)
+- Direct Supabase integration reduces complexity
+- Better alignment with modern JAMstack architecture
+
+**Next Steps for Complete Migration:**
+- Migrate remaining components using `/api/*` endpoints to equivalent Supabase service functions
+- Add journal entries, tags, and user profile operations to supabase-service.ts
+- Update file upload flows to use direct Supabase Storage APIs
+
 ## System Architecture
 
 ### Frontend Architecture
