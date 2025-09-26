@@ -9,7 +9,7 @@ const vite = spawn('npx', ['vite', '--host', '0.0.0.0', '--port', '5000', '--no-
   stdio: 'inherit',
   env: { 
     ...process.env, 
-    NODE_ENV: 'development',
+    NODE_ENV: 'production', // Disable cartographer plugin
     VITE_ALLOWED_HOSTS: '.replit.dev'
   }
 });
