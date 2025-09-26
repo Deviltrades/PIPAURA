@@ -126,11 +126,6 @@ export async function createTrade(trade: Omit<TradeData, 'user_id'>) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  console.log('🔗 User Authentication Check:');
-  console.log('📧 User Email:', user.email);
-  console.log('🆔 User ID:', user.id);
-  console.log('📅 User Created:', user.created_at);
-
   const { data, error } = await supabase
     .from('trades')
     .insert([{ 
@@ -140,17 +135,7 @@ export async function createTrade(trade: Omit<TradeData, 'user_id'>) {
     .select()
     .single();
 
-  if (error) {
-    console.error('❌ Trade creation failed:', error);
-    throw error;
-  }
-  
-  console.log('✅ Trade successfully linked to user:', {
-    trade_id: data.id,
-    user_id: data.user_id,
-    user_email: user.email
-  });
-  
+  if (error) throw error;
   return data;
 }
 

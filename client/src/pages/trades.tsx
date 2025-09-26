@@ -93,12 +93,12 @@ export default function Trades() {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <Badge variant={trade.tradeType === 'BUY' ? 'default' : 'secondary'} className={
-                        trade.tradeType === 'BUY' 
+                      <Badge variant={trade.trade_type === 'BUY' ? 'default' : 'secondary'} className={
+                        trade.trade_type === 'BUY' 
                           ? 'bg-green-600 text-white hover:bg-green-700' 
                           : 'bg-red-600 text-white hover:bg-red-700'
                       }>
-                        {trade.tradeType}
+                        {trade.trade_type}
                       </Badge>
                       <h3 className="text-lg font-semibold text-white">{trade.instrument}</h3>
                       <Badge variant={trade.status === 'OPEN' ? 'default' : 
@@ -111,16 +111,16 @@ export default function Trades() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
                         <p className="text-gray-400">Position Size</p>
-                        <p className="font-medium text-white">{trade.positionSize}</p>
+                        <p className="font-medium text-white">{trade.position_size}</p>
                       </div>
                       <div>
                         <p className="text-gray-400">Entry Price</p>
-                        <p className="font-medium text-white">{trade.entryPrice}</p>
+                        <p className="font-medium text-white">{trade.entry_price}</p>
                       </div>
-                      {trade.exitPrice && (
+                      {trade.exit_price && (
                         <div>
                           <p className="text-gray-400">Exit Price</p>
-                          <p className="font-medium text-white">{trade.exitPrice}</p>
+                          <p className="font-medium text-white">{trade.exit_price}</p>
                         </div>
                       )}
                       {trade.pnl !== null && (
@@ -140,8 +140,13 @@ export default function Trades() {
                       </div>
                     )}
 
-                    <p className="text-xs text-gray-500 mt-4">
-                      {new Date(trade.createdAt).toLocaleString()}
+                    {trade.entry_date && (
+                      <p className="text-xs text-gray-500 mt-4">
+                        Entry Date: {new Date(trade.entry_date).toLocaleDateString()}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      Created: {new Date(trade.created_at).toLocaleString()}
                     </p>
                   </div>
 
