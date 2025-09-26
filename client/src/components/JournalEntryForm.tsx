@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { createJournalEntrySchema } from "@shared/schema";
 import type { CreateJournalEntry } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
+import { createJournalEntry, uploadFile } from "@/lib/supabase-service";
 
 interface JournalEntryFormProps {
   open: boolean;
@@ -47,11 +47,10 @@ export default function JournalEntryForm({ open, onOpenChange }: JournalEntryFor
 
   const createEntry = useMutation({
     mutationFn: async (data: CreateJournalEntry) => {
-      const response = await apiRequest("POST", "/api/journal-entries", data);
-      return response.json();
+      return await createJournalEntry(data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/journal-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
       toast({
         title: "Journal Entry Created",
         description: "Your journal entry has been saved successfully.",
@@ -74,13 +73,12 @@ export default function JournalEntryForm({ open, onOpenChange }: JournalEntryFor
 
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('image', file);
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Please upload only image files');
+      }
 
-      const response = await apiRequest("POST", "/api/upload-image", formData);
-      const result = await response.json();
-      
-      form.setValue("image_url", result.image_url);
+      const fileUrl = await uploadFile(file);
+      form.setValue("image_url", fileUrl);
       toast({
         title: "Image Uploaded",
         description: "Your image has been uploaded successfully.",
