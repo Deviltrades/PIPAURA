@@ -126,28 +126,16 @@ export async function createTrade(trade: Omit<TradeData, 'user_id'>) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  console.log('🔵 Creating trade with data:', trade);
-  console.log('🔵 User ID:', user.id);
-
-  const tradeWithUser = { 
-    ...trade,
-    user_id: user.id 
-  };
-
-  console.log('🔵 Full trade data being sent to Supabase:', tradeWithUser);
-
   const { data, error } = await supabase
     .from('trades')
-    .insert([tradeWithUser])
+    .insert([{ 
+      ...trade,
+      user_id: user.id 
+    }])
     .select()
     .single();
 
-  if (error) {
-    console.error('❌ Supabase error creating trade:', error);
-    throw error;
-  }
-  
-  console.log('✅ Trade created successfully:', data);
+  if (error) throw error;
   return data;
 }
 
