@@ -11,3 +11,11 @@
     }
   ]
 }
+server: {
+  allowedHosts: [process.env.REPLIT_DOMAINS || '.replit.dev'],
+  fs: {
+    strict: true,
+    deny: ["**/.*"],
+  },
+},
+  
