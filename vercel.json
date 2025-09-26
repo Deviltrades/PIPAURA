@@ -1,7 +1,7 @@
 {
   "version": 2,
   "buildCommand": "vite build",
-  "outputDirectory": "dist/public",
+  "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
   "rewrites": [
@@ -11,11 +11,3 @@
     }
   ]
 }
-server: {
-  allowedHosts: [process.env.REPLIT_DOMAINS || '.replit.dev'],
-  fs: {
-    strict: true,
-    deny: ["**/.*"],
-  },
-},
-  
