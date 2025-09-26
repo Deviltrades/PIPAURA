@@ -1,9 +1,24 @@
--- Create enums for trades table
-CREATE TYPE instrument_type AS ENUM ('FOREX', 'INDICES', 'CRYPTO');
-CREATE TYPE trade_type AS ENUM ('BUY', 'SELL');
-CREATE TYPE trade_status AS ENUM ('OPEN', 'CLOSED', 'CANCELLED');
+-- Create enums for trades table (use IF NOT EXISTS to avoid conflicts)
+DO $$ BEGIN
+    CREATE TYPE instrument_type AS ENUM ('FOREX', 'INDICES', 'CRYPTO');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- Create trades table
+DO $$ BEGIN
+    CREATE TYPE trade_type AS ENUM ('BUY', 'SELL');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE trade_status AS ENUM ('OPEN', 'CLOSED', 'CANCELLED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- Create trades table (drop and recreate if exists)
+DROP TABLE IF EXISTS trades CASCADE;
 CREATE TABLE trades (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) NOT NULL,
