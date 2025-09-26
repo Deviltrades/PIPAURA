@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { apiRequest } from "@/lib/queryClient";
+import { createTrade, updateTrade, uploadFile } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { SignedImageDisplay } from "@/components/SignedImageDisplay";
@@ -95,26 +95,30 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
       }
 
       const payload = {
-        ...data,
+        instrument: data.instrument,
+        instrument_type: data.instrumentType as 'FOREX' | 'INDICES' | 'CRYPTO',
+        trade_type: data.tradeType as 'BUY' | 'SELL',
+        position_size: parseFloat(data.positionSize),
+        entry_price: parseFloat(data.entryPrice),
+        stop_loss: data.stopLoss ? parseFloat(data.stopLoss) : undefined,
+        take_profit: data.takeProfit ? parseFloat(data.takeProfit) : undefined,
+        exit_price: data.exitPrice ? parseFloat(data.exitPrice) : undefined,
+        pnl: calculatedPnl || 0,
+        status: data.status as 'OPEN' | 'CLOSED' | 'CANCELLED',
+        notes: data.notes || '',
         attachments,
-        positionSize: parseFloat(data.positionSize),
-        entryPrice: parseFloat(data.entryPrice),
-        stopLoss: data.stopLoss ? parseFloat(data.stopLoss) : null,
-        takeProfit: data.takeProfit ? parseFloat(data.takeProfit) : null,
-        exitPrice: data.exitPrice ? parseFloat(data.exitPrice) : null,
-        pnl: calculatedPnl,
+        entry_date: new Date().toISOString(),
       };
 
       if (trade?.id) {
-        return await apiRequest("PUT", `/api/trades/${trade.id}`, payload);
+        return await updateTrade(trade.id, payload);
       } else {
-        return await apiRequest("POST", "/api/trades", payload);
+        return await createTrade(payload);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/trades"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics/stats"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics/daily-pnl"] });
+      queryClient.invalidateQueries({ queryKey: ["trades"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
       toast({
         title: "Success",
         description: trade?.id ? "Trade updated successfully" : "Trade created successfully",
@@ -130,8 +134,9 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
           description: "You are logged out. Logging in again...",
           variant: "destructive",
         });
+        // Redirect to login page handled by auth
         setTimeout(() => {
-          window.location.href = "/api/login";
+          window.location.href = "/login";
         }, 500);
         return;
       }
@@ -147,7 +152,6 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
     const files = event.target.files;
     if (!files) return;
 
-    console.log("Starting image upload, current form values:", form.getValues());
     setIsUploading(true);
     const uploadedUrls: string[] = [];
 
@@ -162,48 +166,12 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
           continue;
         }
 
-        // Step 1: Get upload URL from server
-        const uploadResponse = await apiRequest("POST", "/api/objects/upload");
-        if (!uploadResponse.ok) {
-          const errorText = await uploadResponse.text();
-          console.error("Upload URL request failed:", uploadResponse.status, errorText);
-          throw new Error(`Failed to get upload URL: ${uploadResponse.status}`);
-        }
-        const { uploadURL } = await uploadResponse.json();
-
-        // Step 2: Upload file to the signed URL
-        const putResponse = await fetch(uploadURL, {
-          method: 'PUT',
-          body: file,
-          headers: {
-            'Content-Type': file.type,
-          },
-        });
-
-        if (putResponse.ok) {
-          // Step 3: Get the final file URL by constructing it from the upload URL
-          const fileURL = uploadURL.split('?')[0];
-          
-          // Step 4: Call the server to set ACL and get normalized path
-          const aclResponse = await apiRequest("PUT", "/api/trade-attachments", {
-            fileURL: fileURL
-          });
-          if (!aclResponse.ok) {
-            const errorText = await aclResponse.text();
-            console.error("ACL request failed:", aclResponse.status, errorText);
-            throw new Error(`Failed to process attachment: ${aclResponse.status}`);
-          }
-          const { objectPath } = await aclResponse.json();
-          uploadedUrls.push(objectPath);
-        } else {
-          const errorText = await putResponse.text();
-          console.error("File upload failed:", putResponse.status, errorText);
-          throw new Error(`Upload failed: ${putResponse.status}`);
-        }
+        // Upload directly to Supabase storage
+        const fileUrl = await uploadFile(file);
+        uploadedUrls.push(fileUrl);
       }
 
       setAttachments(prev => [...prev, ...uploadedUrls]);
-      console.log("After image upload, form values:", form.getValues());
       toast({
         title: "✅ Images uploaded successfully!",
         description: `Successfully uploaded ${uploadedUrls.length} image(s). You can now save your trade.`,
