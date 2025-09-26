@@ -48,24 +48,16 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
   // Update storage mutation
   const updateStorageMutation = useMutation({
-    mutationFn: async (deltas: { storage_mb_delta: number; image_count_delta: number }) => {
-      const response = await apiRequest('POST', '/api/user/profile/update-storage', deltas);
-      return response.json();
+    mutationFn: async (updates: Partial<UserProfile>) => {
+      return await updateUserProfile(updates);
     },
     onSuccess: (updatedProfile) => {
       setProfile(updatedProfile);
-      queryClient.setQueryData(['/api/user/profile'], updatedProfile);
+      queryClient.setQueryData(['user-profile'], updatedProfile);
     }
   });
 
-  // Check limits function
-  const checkLimitsMutation = useMutation({
-    mutationFn: async (requirements: { action: string; storage_mb?: number; image_count?: number }) => {
-      const response = await apiRequest('POST', '/api/user/profile/check-limits', requirements);
-      const data = await response.json();
-      return data.canPerformAction;
-    }
-  });
+  // Note: Check limits now handled client-side since we have the profile data
 
   const planConfig = profile ? PLAN_CONFIGS[profile.plan_type] : null;
 
@@ -92,7 +84,12 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
   };
 
   const updateStorage = async (deltas: { storage_mb_delta: number; image_count_delta: number }) => {
-    await updateStorageMutation.mutateAsync(deltas);
+    if (!profile) return;
+    const updates = {
+      storage_used_mb: profile.storage_used_mb + deltas.storage_mb_delta,
+      image_count: profile.image_count + deltas.image_count_delta,
+    };
+    await updateStorageMutation.mutateAsync(updates);
   };
 
   const contextValue: UserProfileContextType = {

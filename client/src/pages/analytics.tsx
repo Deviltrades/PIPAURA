@@ -34,10 +34,10 @@ export default function Analytics() {
   const stats = {
     totalPnL: analytics?.totalPnL || 0,
     winRate: analytics?.winRate || 0,
-    profitFactor: analytics?.profitFactor || 0,
-    maxDrawdown: analytics?.maxDrawdown || 0,
-    monthlyData: analytics?.monthlyData || [],
-    equityCurve: analytics?.equityCurve || []
+    profitFactor: 0, // TODO: Add to analytics service
+    maxDrawdown: 0, // TODO: Add to analytics service  
+    monthlyData: [], // TODO: Add to analytics service
+    equityCurve: [] // TODO: Add to analytics service
   };
 
   return (

@@ -46,6 +46,7 @@ export default function Journal() {
       return await createJournalEntry({
         ...data,
         tags: selectedTags,
+        status: data.status || 'OPEN',
       });
     },
     onSuccess: () => {

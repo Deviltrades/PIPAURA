@@ -47,7 +47,10 @@ export default function JournalEntryForm({ open, onOpenChange }: JournalEntryFor
 
   const createEntry = useMutation({
     mutationFn: async (data: CreateJournalEntry) => {
-      return await createJournalEntry(data);
+      return await createJournalEntry({
+        ...data,
+        status: 'OPEN' as const,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
