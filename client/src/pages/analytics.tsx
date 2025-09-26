@@ -2,10 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer } from "recharts";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { getAnalytics } from "@/lib/supabase-service";
 
 export default function Analytics() {
   const { data: analytics, isLoading } = useQuery({
-    queryKey: ["/api/analytics"],
+    queryKey: ["analytics"],
+    queryFn: getAnalytics,
     retry: false,
   });
 

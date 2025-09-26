@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserProfile, PLAN_CONFIGS, PlanConfig } from "@shared/schema";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./use-auth";
-import { apiRequest } from "@/lib/queryClient";
+import { getUserProfile, updateUserProfile } from "@/lib/supabase-service";
 
 interface UserProfileContextType {
   profile: UserProfile | null;
@@ -33,7 +33,8 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     error,
     refetch
   } = useQuery({
-    queryKey: ['/api/user/profile'],
+    queryKey: ['user-profile'],
+    queryFn: getUserProfile,
     enabled: !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
