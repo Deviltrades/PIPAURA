@@ -1,14 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
+import { getTrades, getAnalytics } from "@/lib/supabase-service";
 import DashboardGrid from "./DashboardGrid";
 
 interface AnalyticsData {
-  totalPnL: number;
+  totalEntries: number;
   totalTrades: number;
-  closedTrades: number;
+  totalPnL: number;
   winRate: number;
-  avgWin: number;
-  avgLoss: number;
+  averageTrade: number;
   profitableTrades: number;
+  losingTrades: number;
 }
 
 interface Trade {
@@ -22,12 +23,14 @@ interface Trade {
 
 export default function TradingAnalytics() {
   const { data: analytics } = useQuery<AnalyticsData>({
-    queryKey: ["/api/analytics/stats"],
+    queryKey: ["analytics"],
+    queryFn: getAnalytics,
     retry: false,
   });
 
   const { data: trades } = useQuery<Trade[]>({
-    queryKey: ["/api/trades"],
+    queryKey: ["trades"],
+    queryFn: getTrades,
     retry: false,
   });
 

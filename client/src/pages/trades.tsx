@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import TradeForm from "@/components/TradeForm";
 import { formatCurrency } from "@/lib/utils";
-import { apiRequest } from "@/lib/queryClient";
+import { getTrades, deleteTrade } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Trades() {
@@ -16,16 +16,15 @@ export default function Trades() {
   const queryClient = useQueryClient();
 
   const { data: trades = [], isLoading } = useQuery({
-    queryKey: ["/api/trades"],
+    queryKey: ["trades"],
+    queryFn: getTrades,
     retry: false,
-  });
+  }) as { data: any[], isLoading: boolean };
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/trades/${id}`);
-    },
+    mutationFn: deleteTrade,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/trades"] });
+      queryClient.invalidateQueries({ queryKey: ["trades"] });
       toast({
         title: "Trade deleted successfully",
       });
