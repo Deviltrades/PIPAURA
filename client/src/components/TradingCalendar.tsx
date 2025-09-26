@@ -37,7 +37,7 @@ import { Plus as PlusIcon } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { getTrades, updateTrade } from "@/lib/supabase-service";
+import { getTrades, updateTrade, uploadFile } from "@/lib/supabase-service";
 
 interface TradingCalendarProps {
   className?: string;
@@ -131,29 +131,9 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
           continue;
         }
 
-        // Step 1: Get upload URL from server
-        const uploadResponse = await apiRequest("POST", "/api/objects/upload");
-        const { uploadURL } = await uploadResponse.json();
-
-        // Step 2: Upload file to the signed URL
-        const putResponse = await fetch(uploadURL, {
-          method: 'PUT',
-          body: file,
-          headers: {
-            'Content-Type': file.type,
-          },
-        });
-
-        if (putResponse.ok) {
-          // Step 3: Call the server to set ACL and get normalized path
-          const aclResponse = await apiRequest("PUT", "/api/trade-attachments", {
-            fileURL: uploadURL
-          });
-          const { objectPath } = await aclResponse.json();
-          uploadedUrls.push(objectPath);
-        } else {
-          throw new Error('Upload failed');
-        }
+        // Upload directly to Supabase storage
+        const fileUrl = await uploadFile(file);
+        uploadedUrls.push(fileUrl);
       }
 
       if (uploadedUrls.length > 0) {

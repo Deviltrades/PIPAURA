@@ -35,6 +35,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { uploadFile, updateTrade } from "@/lib/supabase-service";
 import type { Trade } from "@shared/schema";
 
 const editTradeSchema = z.object({
@@ -85,25 +86,25 @@ interface EditTradeModalProps {
 export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedInstrumentType, setSelectedInstrumentType] = useState<string>(trade.instrumentType || "FOREX");
+  const [selectedInstrumentType, setSelectedInstrumentType] = useState<string>(trade.instrument_type || "FOREX");
   const [uploadedImages, setUploadedImages] = useState<string[]>(trade.attachments || []);
   const [isUploading, setIsUploading] = useState(false);
 
   // Calculate if trade has manual P&L
-  const currentPnL = parseFloat(trade.pnl || "0");
+  const currentPnL = typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0);
   const hasPnLValue = Math.abs(currentPnL) > 0;
 
   const form = useForm<EditTradeFormData>({
     resolver: zodResolver(editTradeSchema),
     defaultValues: {
-      instrumentType: (trade.instrumentType as "FOREX" | "INDICES" | "CRYPTO") || "FOREX",
+      instrumentType: (trade.instrument_type as "FOREX" | "INDICES" | "CRYPTO") || "FOREX",
       instrument: trade.instrument || "",
-      tradeType: (trade.tradeType as "BUY" | "SELL") || "BUY",
-      positionSize: trade.positionSize || "1.0",
-      entryPrice: trade.entryPrice || "",
-      exitPrice: trade.exitPrice || "",
-      stopLoss: trade.stopLoss || "",
-      takeProfit: trade.takeProfit || "",
+      tradeType: (trade.trade_type as "BUY" | "SELL") || "BUY",
+      positionSize: trade.position_size || "1.0",
+      entryPrice: trade.entry_price || "",
+      exitPrice: trade.exit_price || "",
+      stopLoss: trade.stop_loss || "",
+      takeProfit: trade.take_profit || "",
       notes: trade.notes || "",
       attachments: trade.attachments || [],
       hasPnL: hasPnLValue,
@@ -115,10 +116,10 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
   const editTradeMutation = useMutation({
     mutationFn: async (data: EditTradeFormData) => {
       // Calculate P&L based on user input or automatic calculation
-      let calculatedPnL = "0";
+      let calculatedPnL = 0;
       if (data.hasPnL && data.pnlAmount) {
         const amount = parseFloat(data.pnlAmount);
-        calculatedPnL = data.pnlType === "loss" ? (-amount).toString() : amount.toString();
+        calculatedPnL = data.pnlType === "loss" ? -amount : amount;
       } else if (data.exitPrice && data.entryPrice) {
         // Auto-calculate P&L if exit price is provided
         const entryPrice = parseFloat(data.entryPrice);
@@ -131,34 +132,34 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
         } else {
           pnl = (entryPrice - exitPrice) * positionSize;
         }
-        calculatedPnL = pnl.toString();
+        calculatedPnL = pnl;
       }
 
       const tradeData = {
-        ...data,
-        // Convert empty strings to null for numeric fields
-        exitPrice: data.exitPrice && data.exitPrice.trim() !== "" ? data.exitPrice : null,
-        stopLoss: data.stopLoss && data.stopLoss.trim() !== "" ? data.stopLoss : null,
-        takeProfit: data.takeProfit && data.takeProfit.trim() !== "" ? data.takeProfit : null,
+        instrument: data.instrument,
+        instrument_type: data.instrumentType as 'FOREX' | 'INDICES' | 'CRYPTO',
+        trade_type: data.tradeType as 'BUY' | 'SELL',
+        position_size: parseFloat(data.positionSize),
+        entry_price: parseFloat(data.entryPrice),
+        exit_price: data.exitPrice ? parseFloat(data.exitPrice) : undefined,
+        stop_loss: data.stopLoss ? parseFloat(data.stopLoss) : undefined,
+        take_profit: data.takeProfit ? parseFloat(data.takeProfit) : undefined,
         pnl: calculatedPnL,
-        status: "CLOSED", // Always set to CLOSED since we're tracking completed trades only
-        attachments: uploadedImages, // Include uploaded images
-        // Remove the extra fields that aren't in the backend schema
-        hasPnL: undefined,
-        pnlType: undefined,
-        pnlAmount: undefined,
+        status: "CLOSED" as const,
+        notes: data.notes || '',
+        attachments: uploadedImages,
+        entry_date: trade.entry_date, // Keep original entry date
       };
       
-      const response = await apiRequest("PUT", `/api/trades/${trade.id}`, tradeData);
-      return response.json();
+      return await updateTrade(trade.id, tradeData);
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "Trade updated successfully",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/trades"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["trades"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
       form.reset();
       onClose();
     },
@@ -194,29 +195,9 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
           continue;
         }
 
-        // Step 1: Get upload URL from server
-        const uploadResponse = await apiRequest("POST", "/api/objects/upload");
-        const { uploadURL } = await uploadResponse.json();
-
-        // Step 2: Upload file to the signed URL
-        const putResponse = await fetch(uploadURL, {
-          method: 'PUT',
-          body: file,
-          headers: {
-            'Content-Type': file.type,
-          },
-        });
-
-        if (putResponse.ok) {
-          // Step 3: Call the server to set ACL and get normalized path
-          const aclResponse = await apiRequest("PUT", "/api/trade-attachments", {
-            fileURL: uploadURL
-          });
-          const { objectPath } = await aclResponse.json();
-          uploadedUrls.push(objectPath);
-        } else {
-          throw new Error('Upload failed');
-        }
+        // Upload directly to Supabase storage
+        const fileUrl = await uploadFile(file);
+        uploadedUrls.push(fileUrl);
       }
 
       setUploadedImages(prev => [...prev, ...uploadedUrls]);
@@ -258,7 +239,7 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
         <DialogHeader className="space-y-0 pb-4">
           <DialogTitle className="text-xl font-semibold">Edit Trade</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Update {trade.instrument} {trade.tradeType} position
+            Update {trade.instrument} {trade.trade_type} position
           </DialogDescription>
         </DialogHeader>
 
