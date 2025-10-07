@@ -279,42 +279,38 @@ export function FloatingDNACore() {
               filter="url(#strongGlow)"
               strokeLinecap="round"
             />
-
-            {/* Horizontal ladder rungs - COLOR CODED by zone */}
-            {Array.from({ length: 18 }).map((_, i) => {
-              const yPosition = (i / 17 - 0.5) * 450;
-              
-              // Find closest points on inner strands
-              const point1 = strand1Inner.reduce((closest, point) => 
-                Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
-              , strand1Inner[0]);
-              
-              const point2 = strand2Inner.reduce((closest, point) => 
-                Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
-              , strand2Inner[0]);
-              
-              // Get vibrant zone color
-              const rungColor = getZoneColorAtY(yPosition);
-
-              return (
-                <motion.line
-                  key={`rung-${i}`}
-                  x1={point1.x}
-                  y1={point1.y}
-                  x2={point2.x}
-                  y2={point2.y}
-                  stroke={rungColor}
-                  strokeWidth={5}
-                  opacity={0.95}
-                  filter="url(#strongGlow)"
-                  strokeLinecap="round"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.95 }}
-                  transition={{ duration: 0.5, delay: i * 0.03 }}
-                />
-              );
-            })}
           </motion.g>
+
+          {/* Horizontal ladder rungs - RENDERED ON TOP - COLOR CODED by zone */}
+          {Array.from({ length: 18 }).map((_, i) => {
+            const yPosition = (i / 17 - 0.5) * 450;
+            
+            // Find closest points on inner strands
+            const point1 = strand1Inner.reduce((closest, point) => 
+              Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
+            , strand1Inner[0]);
+            
+            const point2 = strand2Inner.reduce((closest, point) => 
+              Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
+            , strand2Inner[0]);
+            
+            // Get vibrant zone color
+            const zoneColor = getZoneColorAtY(yPosition);
+
+            return (
+              <line
+                key={`rung-${i}`}
+                x1={point1.x}
+                y1={point1.y}
+                x2={point2.x}
+                y2={point2.y}
+                stroke={zoneColor}
+                strokeWidth={6}
+                opacity={1}
+                strokeLinecap="round"
+              />
+            );
+          })}
         </g>
 
         {/* Metrics attached to DNA strands - moving with rotation */}
