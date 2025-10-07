@@ -174,15 +174,17 @@ export function FloatingDNACore() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Radial gradient for glowing effect */}
-          <radialGradient id="glowGradient">
-            <stop offset="0%" stopColor="#00DCFF" stopOpacity="1" />
-            <stop offset="50%" stopColor="#00B8D4" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#0097A7" stopOpacity="0.3" />
-          </radialGradient>
+          {/* DNA gradient: Cyan → Green → Purple → Magenta */}
+          <linearGradient id="dnaGradient" gradientUnits="userSpaceOnUse" x1="0" y1="-250" x2="0" y2="250">
+            <stop offset="0%" stopColor="#00D4FF" />      {/* Bright Cyan */}
+            <stop offset="35%" stopColor="#00E5CC" />     {/* Cyan-Green */}
+            <stop offset="50%" stopColor="#00FF88" />     {/* Green */}
+            <stop offset="70%" stopColor="#9370DB" />     {/* Purple */}
+            <stop offset="100%" stopColor="#FF00FF" />    {/* Bright Magenta */}
+          </linearGradient>
 
-          {/* Enhanced glow filters */}
-          <filter id="softGlow">
+          {/* Enhanced glow filters with expanded regions */}
+          <filter id="softGlow" filterUnits="userSpaceOnUse" x="-200" y="-300" width="600" height="700">
             <feGaussianBlur stdDeviation="3" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
@@ -191,7 +193,7 @@ export function FloatingDNACore() {
             </feMerge>
           </filter>
 
-          <filter id="strongGlow">
+          <filter id="strongGlow" filterUnits="userSpaceOnUse" x="-200" y="-300" width="600" height="700">
             <feGaussianBlur stdDeviation="6" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
@@ -201,7 +203,7 @@ export function FloatingDNACore() {
             </feMerge>
           </filter>
 
-          <filter id="ultraGlow">
+          <filter id="ultraGlow" filterUnits="userSpaceOnUse" x="-200" y="-300" width="600" height="700">
             <feGaussianBlur stdDeviation="10" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
@@ -218,7 +220,7 @@ export function FloatingDNACore() {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {/* Breathing pulse effect */}
+          {/* Breathing pulse effect with glow filter applied to group */}
           <motion.g
             animate={{
               scale: [1, 1.02, 1],
@@ -229,91 +231,98 @@ export function FloatingDNACore() {
               repeat: Infinity,
               ease: "easeInOut"
             }}
+            filter="url(#strongGlow)"
           >
-            {/* Strand 1 Outer Edge */}
-            {createColoredSegments(strand1Outer).map((segment, i) => (
-              <path
-                key={`s1-outer-${i}`}
-                d={segment.path}
-                stroke={segment.color}
-                strokeWidth="4"
-                fill="none"
-                opacity={0.95}
-                filter="url(#strongGlow)"
-                strokeLinecap="round"
-              />
-            ))}
+            {/* Strand 1 Outer Edge - Continuous path with gradient */}
+            <path
+              d={createSmoothPath(strand1Outer)}
+              stroke="url(#dnaGradient)"
+              strokeWidth="4"
+              fill="none"
+              opacity={0.95}
+              strokeLinecap="round"
+            />
 
-            {/* Strand 1 Inner Edge */}
-            {createColoredSegments(strand1Inner).map((segment, i) => (
-              <path
-                key={`s1-inner-${i}`}
-                d={segment.path}
-                stroke={segment.color}
-                strokeWidth="4"
-                fill="none"
-                opacity={0.95}
-                filter="url(#strongGlow)"
-                strokeLinecap="round"
-              />
-            ))}
+            {/* Strand 1 Inner Edge - Continuous path with gradient */}
+            <path
+              d={createSmoothPath(strand1Inner)}
+              stroke="url(#dnaGradient)"
+              strokeWidth="4"
+              fill="none"
+              opacity={0.95}
+              strokeLinecap="round"
+            />
 
-            {/* Strand 2 Outer Edge */}
-            {createColoredSegments(strand2Outer).map((segment, i) => (
-              <path
-                key={`s2-outer-${i}`}
-                d={segment.path}
-                stroke={segment.color}
-                strokeWidth="4"
-                fill="none"
-                opacity={0.95}
-                filter="url(#strongGlow)"
-                strokeLinecap="round"
-              />
-            ))}
+            {/* Strand 2 Outer Edge - Continuous path with gradient */}
+            <path
+              d={createSmoothPath(strand2Outer)}
+              stroke="url(#dnaGradient)"
+              strokeWidth="4"
+              fill="none"
+              opacity={0.95}
+              strokeLinecap="round"
+            />
 
-            {/* Strand 2 Inner Edge */}
-            {createColoredSegments(strand2Inner).map((segment, i) => (
-              <path
-                key={`s2-inner-${i}`}
-                d={segment.path}
-                stroke={segment.color}
-                strokeWidth="4"
-                fill="none"
-                opacity={0.95}
-                filter="url(#strongGlow)"
-                strokeLinecap="round"
-              />
-            ))}
+            {/* Strand 2 Inner Edge - Continuous path with gradient */}
+            <path
+              d={createSmoothPath(strand2Inner)}
+              stroke="url(#dnaGradient)"
+              strokeWidth="4"
+              fill="none"
+              opacity={0.95}
+              strokeLinecap="round"
+            />
+          </motion.g>
 
-            {/* Enhanced glow layers */}
-            {createColoredSegments(strand1Outer).map((segment, i) => (
-              <path
-                key={`s1-outer-glow-${i}`}
-                d={segment.path}
-                stroke={segment.color}
-                strokeWidth="8"
-                fill="none"
-                opacity={0.3}
-                filter="url(#ultraGlow)"
-                strokeLinecap="round"
-              />
-            ))}
+          {/* Enhanced glow layers underneath - also continuous */}
+          <motion.g
+            animate={{
+              scale: [1, 1.02, 1],
+              opacity: [0.3, 0.4, 0.3]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            filter="url(#ultraGlow)"
+          >
+            <path
+              d={createSmoothPath(strand1Outer)}
+              stroke="url(#dnaGradient)"
+              strokeWidth="8"
+              fill="none"
+              opacity={0.3}
+              strokeLinecap="round"
+            />
+            <path
+              d={createSmoothPath(strand2Outer)}
+              stroke="url(#dnaGradient)"
+              strokeWidth="8"
+              fill="none"
+              opacity={0.3}
+              strokeLinecap="round"
+            />
+            <path
+              d={createSmoothPath(strand1Inner)}
+              stroke="url(#dnaGradient)"
+              strokeWidth="8"
+              fill="none"
+              opacity={0.3}
+              strokeLinecap="round"
+            />
+            <path
+              d={createSmoothPath(strand2Inner)}
+              stroke="url(#dnaGradient)"
+              strokeWidth="8"
+              fill="none"
+              opacity={0.3}
+              strokeLinecap="round"
+            />
+          </motion.g>
 
-            {createColoredSegments(strand2Outer).map((segment, i) => (
-              <path
-                key={`s2-outer-glow-${i}`}
-                d={segment.path}
-                stroke={segment.color}
-                strokeWidth="8"
-                fill="none"
-                opacity={0.3}
-                filter="url(#ultraGlow)"
-                strokeLinecap="round"
-              />
-            ))}
-
-            {/* Base pair rungs - MANY CRISP HORIZONTAL ladder bars connecting INNER strands */}
+          {/* Base pair rungs - MANY CRISP HORIZONTAL ladder bars connecting INNER strands */}
+          <g>
             {Array.from({ length: 25 }).map((_, i) => {
               // Create evenly spaced rungs from top to bottom
               const yPosition = (i / 24 - 0.5) * 480; // -240 to 240
@@ -332,6 +341,9 @@ export function FloatingDNACore() {
               const depthFactor = (avgZ + 60) / 120;
               const opacity = 0.85 + depthFactor * 0.15;
               const strokeWidth = 3 + depthFactor * 1;
+              
+              // Get color from gradient based on Y position
+              const rungColor = getColorForPosition(yPosition);
 
               return (
                 <g key={`rung-${i}`}>
@@ -341,7 +353,7 @@ export function FloatingDNACore() {
                     y1={point1.y}
                     x2={point2.x}
                     y2={point2.y}
-                    stroke={point1.color}
+                    stroke={rungColor}
                     strokeWidth={strokeWidth + 2}
                     opacity={0.4}
                     filter="url(#softGlow)"
@@ -356,7 +368,7 @@ export function FloatingDNACore() {
                     y1={point1.y}
                     x2={point2.x}
                     y2={point2.y}
-                    stroke={point1.color}
+                    stroke={rungColor}
                     strokeWidth={strokeWidth}
                     opacity={opacity}
                     strokeLinecap="round"
@@ -367,9 +379,10 @@ export function FloatingDNACore() {
                 </g>
               );
             })}
+          </g>
 
-
-            {/* Subtle floating particles around DNA */}
+          {/* Subtle floating particles around DNA */}
+          <g>
             {Array.from({ length: 12 }).map((_, i) => {
               const t = i / 12;
               const y = (t - 0.5) * 480;
@@ -401,7 +414,7 @@ export function FloatingDNACore() {
                 />
               );
             })}
-          </motion.g>
+          </g>
         </g>
 
         {/* Orbiting Metrics */}
