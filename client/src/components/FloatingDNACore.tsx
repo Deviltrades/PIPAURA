@@ -313,96 +313,50 @@ export function FloatingDNACore() {
           })}
         </g>
 
-        {/* Metrics attached to DNA strands - moving with rotation */}
-        {dnaZones.map((metric, index) => {
-          // Find point on DNA strand at this metric's Y position
-          const targetY = metric.yPosition;
-          const closestPoint = strand1Outer.reduce((closest, point) => {
-            return Math.abs(point.y - targetY) < Math.abs(closest.y - targetY) ? point : closest;
-          }, strand1Outer[0]);
-          
-          // Position relative to DNA center
-          const helixX = closestPoint.x;
-          const helixY = closestPoint.y;
-          
-          // Determine if we're on left or right based on rotation
-          const isLeft = closestPoint.z < 0; // Negative Z means in front on left side
-          
-          // Position text to the side of the DNA strand
-          const textOffset = 120; // Distance from DNA center
-          const textX = 400 + (isLeft ? -(textOffset) : textOffset);
-          const textY = 300 + helixY;
-          
-          const textAnchor = isLeft ? "end" : "start";
-          
-          // Dot position - place OUTSIDE the text area
-          // For left-aligned text (right side): dot goes to the left of text
-          // For right-aligned text (left side): dot goes to the right of text
-          const dotX = isLeft ? textX + 15 : textX - 15;
-
-          return (
-            <g key={metric.name}>
-              {/* Dot on DNA helix */}
-              <motion.circle
-                cx={400 + helixX}
-                cy={300 + helixY}
-                r={6}
-                fill={metric.color}
-                filter="url(#strongGlow)"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                data-testid={`metric-dot-helix-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
-              />
-              
-              {/* Dot next to text label - positioned BEFORE text rendering */}
-              <motion.circle
-                cx={dotX}
-                cy={textY + 3}
-                r={5}
-                fill={metric.color}
-                filter="url(#softGlow)"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 0.9 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                data-testid={`metric-dot-label-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
-              />
-              
-              {/* Metric label and value - positioned on side */}
-              <motion.text
-                x={textX}
-                y={textY - 5}
-                textAnchor={textAnchor}
-                fill="white"
-                fontSize="14"
-                fontWeight="600"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.95 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                data-testid={`metric-label-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
-              >
-                {metric.name}
-              </motion.text>
-              
-              {/* Metric value below label */}
-              <motion.text
-                x={textX}
-                y={textY + 12}
-                textAnchor={textAnchor}
-                fill={metric.color}
-                fontSize="16"
-                fontWeight="700"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
-                data-testid={`metric-value-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
-              >
-                {metric.value.toFixed(0)}%
-              </motion.text>
-            </g>
-          );
-        })}
       </svg>
+
+      {/* Metrics Box - Top Left */}
+      <motion.div
+        className="absolute top-8 left-8 bg-slate-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-6"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
+      >
+        <div className="space-y-3">
+          {dnaZones.map((metric, index) => (
+            <motion.div
+              key={metric.key}
+              className="flex items-center gap-3"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
+            >
+              {/* Colored dot */}
+              <div
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: metric.color, boxShadow: `0 0 8px ${metric.color}` }}
+                data-testid={`metric-dot-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
+              />
+              {/* Metric name and value */}
+              <div className="flex items-baseline gap-3 min-w-[200px]">
+                <span 
+                  className="text-white text-sm font-semibold flex-1"
+                  data-testid={`metric-label-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
+                >
+                  {metric.name}
+                </span>
+                <span
+                  className="text-lg font-bold"
+                  style={{ color: metric.color }}
+                  data-testid={`metric-value-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
+                >
+                  {metric.value.toFixed(0)}%
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
 
       {/* Edge Integrity Score Display */}
       <motion.div
