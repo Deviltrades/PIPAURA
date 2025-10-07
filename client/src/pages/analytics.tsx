@@ -303,11 +303,16 @@ export default function Analytics() {
                   </svg>
                 </div>
                 
-                <div className="mt-6 text-center">
-                  <span className="text-gray-400 text-sm lg:text-base">Best Month: </span>
-                  <span className="text-white font-bold text-base lg:text-lg">
-                    {formatCurrency(stats.bestMonth)} ({stats.bestMonthName})
-                  </span>
+                <div className="mt-6 text-center space-y-2">
+                  <div>
+                    <span className="text-gray-400 text-sm lg:text-base">Best Month: </span>
+                    <span className="text-white font-bold text-base lg:text-lg">
+                      {formatCurrency(stats.bestMonth)} ({stats.bestMonthName})
+                    </span>
+                  </div>
+                  <div className="text-gray-500 text-xs">
+                    Showing {monthlyOrbitData.length} month{monthlyOrbitData.length !== 1 ? 's' : ''} with trade data
+                  </div>
                 </div>
               </div>
             ) : (
