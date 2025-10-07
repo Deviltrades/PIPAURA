@@ -376,25 +376,35 @@ export function FloatingDNACore() {
         </div>
       </motion.div>
 
-      {/* Right side percentage displays */}
-      <div className="absolute top-1/2 right-8 transform -translate-y-1/2 space-y-[60px]">
-        {dnaZones.map((metric, index) => (
-          <motion.div
-            key={`right-${metric.key}`}
-            className="bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-6 py-3 text-center min-w-[100px]"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
-          >
-            <div
-              className="text-2xl font-bold"
-              style={{ color: metric.color }}
-              data-testid={`right-value-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
+      {/* Right side percentage displays - aligned with DNA zones */}
+      <div className="absolute top-1/2 right-8">
+        {dnaZones.map((metric, index) => {
+          // Convert DNA Y position to screen percentage offset
+          // DNA ranges from -320 to 320 (640 total), center is at 50%
+          const yOffsetPercent = (metric.yPosition / 640) * 100;
+          
+          return (
+            <motion.div
+              key={`right-${metric.key}`}
+              className="absolute bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-4 py-2 text-center"
+              style={{
+                top: `${yOffsetPercent}%`,
+                transform: 'translateY(-50%)'
+              }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
             >
-              {metric.value.toFixed(0)}%
-            </div>
-          </motion.div>
-        ))}
+              <div
+                className="text-lg font-bold whitespace-nowrap"
+                style={{ color: metric.color }}
+                data-testid={`right-value-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
+              >
+                {metric.value.toFixed(0)}%
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Controls hint */}
