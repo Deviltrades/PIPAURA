@@ -458,7 +458,7 @@ export function FloatingDNACore() {
           </DialogContent>
         </Dialog>
 
-        <div className="text-[9px] md:text-xs font-semibold text-cyan-400 mb-0.5 leading-none" data-testid="label-edge-integrity">
+        <div className="text-[9px] md:text-xs font-semibold text-cyan-400 mb-0.5 leading-none mt-3 md:mt-4" data-testid="label-edge-integrity">
           EDGE INTEGRITY SCORE
         </div>
         <div 
