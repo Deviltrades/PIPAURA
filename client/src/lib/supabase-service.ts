@@ -227,27 +227,101 @@ export async function getAnalytics() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id);
 
-  // Get trades data
+  // Get all trades with dates for comprehensive analytics
   const { data: trades, error: tradesError } = await supabase
     .from('trades')
-    .select('pnl, status')
-    .eq('user_id', user.id);
+    .select('pnl, status, entry_date, exit_date, created_at')
+    .eq('user_id', user.id)
+    .order('entry_date', { ascending: true });
 
   if (tradesError) throw tradesError;
 
-  // Calculate analytics
+  // Calculate basic analytics
   const profitableTrades = trades?.filter(trade => parseFloat(trade.pnl || '0') > 0) || [];
+  const losingTrades = trades?.filter(trade => parseFloat(trade.pnl || '0') < 0) || [];
   const totalPnL = trades?.reduce((sum, trade) => sum + parseFloat(trade.pnl || '0'), 0) || 0;
   const winRate = trades && trades.length > 0 ? (profitableTrades.length / trades.length) * 100 : 0;
+  
+  // Calculate profit factor (total wins / total losses)
+  const totalWins = profitableTrades.reduce((sum, trade) => sum + parseFloat(trade.pnl || '0'), 0);
+  const totalLosses = Math.abs(losingTrades.reduce((sum, trade) => sum + parseFloat(trade.pnl || '0'), 0));
+  const profitFactor = totalLosses > 0 ? totalWins / totalLosses : totalWins > 0 ? 999 : 0;
+
+  // Calculate monthly performance
+  const monthlyData: { [key: string]: { pnl: number, wins: number, total: number } } = {};
+  trades?.forEach(trade => {
+    const tradeDate = new Date(trade.entry_date || trade.created_at);
+    const monthKey = `${tradeDate.getFullYear()}-${String(tradeDate.getMonth() + 1).padStart(2, '0')}`;
+    
+    if (!monthlyData[monthKey]) {
+      monthlyData[monthKey] = { pnl: 0, wins: 0, total: 0 };
+    }
+    
+    const pnl = parseFloat(trade.pnl || '0');
+    monthlyData[monthKey].pnl += pnl;
+    monthlyData[monthKey].total += 1;
+    if (pnl > 0) monthlyData[monthKey].wins += 1;
+  });
+
+  // Format monthly data for chart
+  const monthlyPerformance = Object.entries(monthlyData).map(([month, data]) => ({
+    month: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    monthKey: month,
+    pnl: data.pnl,
+    winRate: data.total > 0 ? (data.wins / data.total) * 100 : 0,
+    trades: data.total
+  })).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+
+  // Calculate equity curve (cumulative P&L over time)
+  let cumulativePnL = 0;
+  const equityCurve = trades?.map(trade => {
+    cumulativePnL += parseFloat(trade.pnl || '0');
+    return {
+      date: new Date(trade.entry_date || trade.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      equity: cumulativePnL,
+      pnl: parseFloat(trade.pnl || '0')
+    };
+  }) || [];
+
+  // Calculate max drawdown
+  let maxDrawdown = 0;
+  let peak = 0;
+  let currentEquity = 0;
+  
+  trades?.forEach(trade => {
+    currentEquity += parseFloat(trade.pnl || '0');
+    if (currentEquity > peak) {
+      peak = currentEquity;
+    }
+    const drawdown = peak > 0 ? ((peak - currentEquity) / peak) * 100 : 0;
+    if (drawdown > maxDrawdown) {
+      maxDrawdown = drawdown;
+    }
+  });
+
+  // Calculate monthly statistics
+  const monthlyPnLs = Object.values(monthlyData).map(m => m.pnl);
+  const averageMonthlyReturn = monthlyPnLs.length > 0 
+    ? monthlyPnLs.reduce((sum, pnl) => sum + pnl, 0) / monthlyPnLs.length 
+    : 0;
+  const bestMonth = monthlyPnLs.length > 0 ? Math.max(...monthlyPnLs) : 0;
+  const worstMonth = monthlyPnLs.length > 0 ? Math.min(...monthlyPnLs) : 0;
 
   return {
     totalEntries: journalCount || 0,
     totalTrades: trades?.length || 0,
     totalPnL,
     winRate,
+    profitFactor,
+    maxDrawdown,
     averageTrade: trades && trades.length > 0 ? totalPnL / trades.length : 0,
     profitableTrades: profitableTrades.length,
-    losingTrades: (trades?.length || 0) - profitableTrades.length
+    losingTrades: losingTrades.length,
+    monthlyPerformance,
+    equityCurve,
+    averageMonthlyReturn,
+    bestMonth,
+    worstMonth
   };
 }
 
