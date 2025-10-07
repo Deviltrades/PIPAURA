@@ -272,7 +272,7 @@ export function FloatingDNACore() {
               strokeLinecap="round"
             />
 
-            {/* Ladder rungs connecting inner strands - HIGHLY VISIBLE */}
+            {/* Ladder rungs - COLOR CODED by zone */}
             {Array.from({ length: 25 }).map((_, i) => {
               const yPosition = (i / 24 - 0.5) * 480;
               
@@ -286,25 +286,25 @@ export function FloatingDNACore() {
               
               const avgZ = (point1.z + point2.z) / 2;
               const depthFactor = (avgZ + 60) / 120;
-              const strokeWidth = 4 + depthFactor * 2;
+              const strokeWidth = 5 + depthFactor * 2;
               const rungColor = getFlowingColorAtY(yPosition);
 
               return (
                 <g key={`rung-${i}`}>
-                  {/* White underlay for contrast */}
+                  {/* Dark underlay for depth */}
                   <motion.line
                     x1={point1.x}
                     y1={point1.y}
                     x2={point2.x}
                     y2={point2.y}
-                    stroke="rgba(255,255,255,0.4)"
-                    strokeWidth={strokeWidth + 2}
+                    stroke="rgba(0,0,0,0.5)"
+                    strokeWidth={strokeWidth + 1}
                     strokeLinecap="round"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.6, delay: i * 0.02 }}
                   />
-                  {/* Colored rung */}
+                  {/* Vibrant color-coded rung */}
                   <motion.line
                     x1={point1.x}
                     y1={point1.y}
