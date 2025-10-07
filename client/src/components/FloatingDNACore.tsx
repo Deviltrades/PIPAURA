@@ -310,50 +310,56 @@ export function FloatingDNACore() {
               />
             ))}
 
-            {/* Base pair rungs - CRISP HORIZONTAL ladder bars */}
-            {strand1Outer.filter((_, i) => i % 3 === 0).map((point1, i) => {
-              const actualIndex = i * 3;
-              // Find the matching point on strand2 at the same Y position
-              const matchingPoint = strand2Outer.find(p => Math.abs(p.y - point1.y) < 1);
+            {/* Base pair rungs - MANY CRISP HORIZONTAL ladder bars */}
+            {Array.from({ length: 25 }).map((_, i) => {
+              // Create evenly spaced rungs from top to bottom
+              const yPosition = (i / 24 - 0.5) * 480; // -240 to 240
               
-              if (!matchingPoint) return null;
+              // Find closest points on each strand at this Y position
+              const point1 = strand1Outer.reduce((closest, point) => 
+                Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
+              , strand1Outer[0]);
               
-              // Calculate depth - use distance from viewer (z value)
-              const avgZ = (point1.z + matchingPoint.z) / 2;
+              const point2 = strand2Outer.reduce((closest, point) => 
+                Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
+              , strand2Outer[0]);
+              
+              // Calculate depth for this rung
+              const avgZ = (point1.z + point2.z) / 2;
               const depthFactor = (avgZ + 80) / 160;
-              const opacity = 0.8 + depthFactor * 0.2;
-              const strokeWidth = 8 + depthFactor * 2; // Thicker for visibility
+              const opacity = 0.85 + depthFactor * 0.15;
+              const strokeWidth = 3 + depthFactor * 1;
 
               return (
-                <g key={`rung-${actualIndex}`}>
-                  {/* Glow layer UNDERNEATH (drawn first) */}
+                <g key={`rung-${i}`}>
+                  {/* Soft glow underneath */}
                   <motion.line
                     x1={point1.x}
                     y1={point1.y}
-                    x2={matchingPoint.x}
-                    y2={matchingPoint.y}
+                    x2={point2.x}
+                    y2={point2.y}
                     stroke={point1.color}
-                    strokeWidth={strokeWidth + 4}
-                    opacity={0.3}
+                    strokeWidth={strokeWidth + 2}
+                    opacity={0.4}
                     filter="url(#softGlow)"
                     strokeLinecap="round"
                     initial={{ opacity: 0, pathLength: 0 }}
-                    animate={{ opacity: 0.3, pathLength: 1 }}
-                    transition={{ duration: 0.8, delay: i * 0.03 }}
+                    animate={{ opacity: 0.4, pathLength: 1 }}
+                    transition={{ duration: 0.6, delay: i * 0.02 }}
                   />
-                  {/* CRISP solid rung (NO FILTER) - drawn on top */}
+                  {/* Crisp solid rung */}
                   <motion.line
                     x1={point1.x}
                     y1={point1.y}
-                    x2={matchingPoint.x}
-                    y2={matchingPoint.y}
+                    x2={point2.x}
+                    y2={point2.y}
                     stroke={point1.color}
                     strokeWidth={strokeWidth}
                     opacity={opacity}
                     strokeLinecap="round"
                     initial={{ opacity: 0, pathLength: 0 }}
                     animate={{ opacity, pathLength: 1 }}
-                    transition={{ duration: 0.8, delay: i * 0.03 }}
+                    transition={{ duration: 0.6, delay: i * 0.02 }}
                   />
                 </g>
               );
