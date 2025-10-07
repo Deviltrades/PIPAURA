@@ -369,7 +369,7 @@ export function FloatingDNACore() {
 
       {/* Edge Integrity Score Display - Below Metrics Box - Mobile Responsive */}
       <motion.div
-        className="absolute top-[140px] left-2 md:top-[220px] md:left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-3 md:p-6 text-center min-w-[120px] md:min-w-[180px]"
+        className="absolute bottom-[80px] left-2 md:top-[220px] md:left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-3 md:p-6 text-center min-w-[120px] md:min-w-[180px]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 1.5 }}
@@ -457,7 +457,7 @@ export function FloatingDNACore() {
       </motion.div>
 
       {/* Right side percentage displays - next to DNA helix aligned with zones - Mobile Responsive */}
-      <div className="absolute top-1/2 left-1/2">
+      <div className="absolute top-1/2 left-1/2 md:left-1/2">
         {dnaZones.map((metric, index) => {
           // Compress vertical spacing by 15%
           const compressedYPosition = metric.yPosition * 0.85;
@@ -467,8 +467,8 @@ export function FloatingDNACore() {
               key={`right-${metric.key}`}
               className="absolute bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-2 py-1 md:px-3 md:py-1.5 text-center"
               style={{
-                top: `${compressedYPosition - 35}px`,
-                left: '100px',
+                top: `${compressedYPosition}px`,
+                left: '90px',
                 transform: 'translateY(-50%)'
               }}
               initial={{ opacity: 0, x: 20 }}
