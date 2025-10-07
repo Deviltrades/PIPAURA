@@ -1,29 +1,12 @@
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { getTrades, getAnalytics } from "@/lib/supabase-service";
-import { useQuery } from "@tanstack/react-query";
-
-interface TraderMetrics {
-  winRate: number;
-  avgRiskReward: number;
-  riskConsistency: number;
-  emotionalControl: number;
-  discipline: number;
-  sessionFocus: number;
-  edgeIntegrity: number;
-}
-
-interface OrbitingMetric {
-  name: string;
-  value: number;
-  angle: number;
-  color: string;
-}
+import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { getTrades, getAnalytics } from '@/lib/supabase-service';
 
 export function FloatingDNACore() {
-  const [metrics, setMetrics] = useState<TraderMetrics>({
+  const [metrics, setMetrics] = useState({
     winRate: 0,
-    avgRiskReward: 0,
+    riskReward: 0,
     riskConsistency: 0,
     emotionalControl: 0,
     discipline: 0,
@@ -56,167 +39,154 @@ export function FloatingDNACore() {
     return () => cancelAnimationFrame(animationFrameId);
   }, [isPaused, prefersReducedMotion]);
 
-  // Fetch trades and analytics data
-  const { data: trades } = useQuery({
-    queryKey: ['/api/trades'],
-    queryFn: getTrades,
-    refetchInterval: 5000, // Real-time updates every 5 seconds
-  });
-
+  // Fetch analytics data which contains all the metrics we need
   const { data: analytics } = useQuery({
-    queryKey: ['/api/analytics'],
+    queryKey: ['analytics'],
     queryFn: getAnalytics,
   });
 
   useEffect(() => {
-    if (trades && analytics) {
-      calculateMetrics(trades, analytics);
-    }
-  }, [trades, analytics]);
+    if (analytics) {
+      // Calculate metrics from analytics data
+      const winRate = analytics.winRate || 0;
+      const profitFactor = analytics.profitFactor || 0;
+      const riskReward = Math.min((profitFactor / 2) * 100, 100); // Convert profit factor to 0-100 scale
+      
+      // Use analytics data to derive trader performance metrics
+      const riskConsistency = Math.max(0, 100 - (analytics.maxDrawdown || 0)); // Lower drawdown = higher consistency
+      const emotionalControl = winRate > 50 ? Math.min(winRate * 1.2, 100) : winRate * 0.8; // Bonus for winning
+      const discipline = analytics.totalTrades > 10 ? Math.min((analytics.totalTrades / 100) * 50 + 50, 100) : 50;
+      const sessionFocus = analytics.monthlyPerformance?.length > 0 ? Math.min(analytics.monthlyPerformance.length * 20, 100) : 0;
+      
+      // Edge Integrity is the composite score
+      const edgeIntegrity = (winRate + riskReward + riskConsistency + emotionalControl + discipline + sessionFocus) / 6;
 
-
-  const calculateMetrics = (tradesData: any[], analyticsData: any) => {
-    const closedTrades = tradesData.filter(t => t.status === 'CLOSED' && t.pnl !== null);
-    
-    if (closedTrades.length === 0) {
       setMetrics({
-        winRate: 0,
-        avgRiskReward: 0,
-        riskConsistency: 0,
-        emotionalControl: 0,
-        discipline: 0,
-        sessionFocus: 0,
-        edgeIntegrity: 0,
+        winRate,
+        riskReward,
+        riskConsistency,
+        emotionalControl,
+        discipline,
+        sessionFocus,
+        edgeIntegrity,
       });
-      return;
     }
+  }, [analytics]);
 
-    // Win Rate (0-100%)
-    const winningTrades = closedTrades.filter(t => parseFloat(t.pnl) > 0);
-    const winRate = (winningTrades.length / closedTrades.length) * 100;
-
-    // Average Risk:Reward
-    let totalRR = 0;
-    let rrCount = 0;
-    closedTrades.forEach(trade => {
-      const entry = parseFloat(trade.entry_price);
-      const exit = parseFloat(trade.exit_price || 0);
-      const sl = parseFloat(trade.stop_loss || 0);
-      const tp = parseFloat(trade.take_profit || 0);
-      
-      if (entry && sl && tp) {
-        const risk = Math.abs(entry - sl);
-        const reward = Math.abs(tp - entry);
-        if (risk > 0) {
-          totalRR += reward / risk;
-          rrCount++;
-        }
-      }
-    });
-    const avgRiskReward = rrCount > 0 ? Math.min((totalRR / rrCount) * 20, 100) : 0; // Scale to 0-100
-
-    // Risk Consistency (based on position size variance)
-    const positionSizes = closedTrades.map(t => parseFloat(t.position_size));
-    const avgSize = positionSizes.reduce((a, b) => a + b, 0) / positionSizes.length;
-    const variance = positionSizes.reduce((sum, size) => sum + Math.pow(size - avgSize, 2), 0) / positionSizes.length;
-    const stdDev = Math.sqrt(variance);
-    const riskConsistency = avgSize > 0 ? Math.max(0, 100 - (stdDev / avgSize) * 100) : 0;
-
-    // Emotional Control (based on adherence to stop loss and take profit)
-    let adheredToStopLoss = 0;
-    closedTrades.forEach(trade => {
-      const pnl = parseFloat(trade.pnl);
-      const entry = parseFloat(trade.entry_price);
-      const exit = parseFloat(trade.exit_price || 0);
-      const sl = parseFloat(trade.stop_loss || 0);
-      
-      if (pnl < 0 && sl && entry && exit) {
-        // Check if exit was near stop loss (within 10%)
-        const expectedLoss = Math.abs(entry - sl);
-        const actualLoss = Math.abs(entry - exit);
-        if (Math.abs(actualLoss - expectedLoss) / expectedLoss < 0.1) {
-          adheredToStopLoss++;
-        }
-      } else if (pnl < 0) {
-        // No stop loss but took loss - not good
-      } else {
-        // Winning trade - good emotional control
-        adheredToStopLoss += 0.5;
-      }
-    });
-    const emotionalControl = (adheredToStopLoss / closedTrades.length) * 100;
-
-    // Discipline (trades with notes and proper setup)
-    const tradesWithNotes = closedTrades.filter(t => t.notes && t.notes.length > 20);
-    const discipline = (tradesWithNotes.length / closedTrades.length) * 100;
-
-    // Session Focus (based on trading during specific sessions)
-    // For now, using a placeholder calculation
-    const sessionFocus = Math.min(100, closedTrades.length * 5);
-
-    // Edge Integrity (composite score: weighted average)
-    const edgeIntegrity = (
-      winRate * 0.25 +
-      avgRiskReward * 0.20 +
-      riskConsistency * 0.15 +
-      emotionalControl * 0.20 +
-      discipline * 0.15 +
-      sessionFocus * 0.05
-    );
-
-    setMetrics({
-      winRate,
-      avgRiskReward,
-      riskConsistency,
-      emotionalControl,
-      discipline,
-      sessionFocus,
-      edgeIntegrity,
-    });
-  };
-
-  // Orbiting metrics configuration
-  const orbitingMetrics: OrbitingMetric[] = [
-    { name: "Win Rate", value: metrics.winRate, angle: 0, color: "#10b981" },
-    { name: "Avg R:R", value: metrics.avgRiskReward, angle: 60, color: "#3b82f6" },
-    { name: "Risk Consistency", value: metrics.riskConsistency, angle: 120, color: "#8b5cf6" },
-    { name: "Emotional Control", value: metrics.emotionalControl, angle: 180, color: "#ec4899" },
-    { name: "Discipline", value: metrics.discipline, angle: 240, color: "#f59e0b" },
-    { name: "Session Focus", value: metrics.sessionFocus, angle: 300, color: "#06b6d4" },
+  // Enhanced metrics for orbiting display
+  const orbitingMetrics = [
+    { name: 'Win Rate', value: metrics.winRate, color: '#00DCFF', angle: 0 },
+    { name: 'Risk:Reward', value: metrics.riskReward, color: '#00B8D4', angle: 60 },
+    { name: 'Risk Consistency', value: metrics.riskConsistency, color: '#0097A7', angle: 120 },
+    { name: 'Emotional Control', value: metrics.emotionalControl, color: '#00838F', angle: 180 },
+    { name: 'Discipline', value: metrics.discipline, color: '#006064', angle: 240 },
+    { name: 'Session Focus', value: metrics.sessionFocus, color: '#004D40', angle: 300 },
   ];
 
-  // DNA helix color - blue/cyan with intensity based on Edge Integrity
-  const getHelixColor = (integrity: number) => {
-    // Brighter cyan/blue when integrity is higher
-    const intensity = 0.5 + (integrity / 100) * 0.5; // 0.5 to 1.0
-    const cyan = Math.round(220 * intensity);
-    const blue = Math.round(255 * intensity);
-    return `rgb(0, ${cyan}, ${blue})`;
+  // Dynamic color based on edge integrity
+  const helixColor = `hsl(${190 + metrics.edgeIntegrity * 0.2}, ${80 + metrics.edgeIntegrity * 0.2}%, ${50 + metrics.edgeIntegrity * 0.3}%)`;
+
+  // Generate DNA points for smooth curves
+  const generateDNAPoints = (strandOffset: number) => {
+    const points = [];
+    const numPoints = 60; // More points for smoother curve
+    for (let i = 0; i < numPoints; i++) {
+      const t = i / (numPoints - 1);
+      const y = (t - 0.5) * 500; // Vertical position
+      const angle = ((t * 720) + rotationPhase + strandOffset) * Math.PI / 180; // 2 full rotations
+      const x = Math.sin(angle) * 70;
+      const z = Math.cos(angle) * 70; // For depth calculation
+      points.push({ x, y, z });
+    }
+    return points;
   };
 
-  const helixColor = getHelixColor(metrics.edgeIntegrity);
+  const strand1Points = generateDNAPoints(0);
+  const strand2Points = generateDNAPoints(180);
+
+  // Create smooth path from points
+  const createSmoothPath = (points: { x: number; y: number }[]) => {
+    if (points.length < 2) return '';
+    
+    let path = `M ${points[0].x} ${points[0].y}`;
+    
+    for (let i = 1; i < points.length - 2; i++) {
+      const xc = (points[i].x + points[i + 1].x) / 2;
+      const yc = (points[i].y + points[i + 1].y) / 2;
+      path += ` Q ${points[i].x} ${points[i].y} ${xc} ${yc}`;
+    }
+    
+    const lastPoint = points[points.length - 1];
+    const secondLastPoint = points[points.length - 2];
+    path += ` Q ${secondLastPoint.x} ${secondLastPoint.y} ${lastPoint.x} ${lastPoint.y}`;
+    
+    return path;
+  };
 
   return (
-    <div className="relative w-full h-[600px] flex items-center justify-center bg-gradient-to-b from-background via-background/95 to-background overflow-hidden rounded-lg border border-border/50">
-      {/* DNA Core Container */}
+    <div className="w-full h-screen relative overflow-hidden bg-gradient-to-b from-slate-950 via-blue-950 to-slate-950">
+      {/* Ambient particles background */}
+      <div className="absolute inset-0">
+        {Array.from({ length: 50 }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-cyan-400 rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              filter: 'blur(1px)',
+            }}
+            animate={{
+              opacity: [0.2, 0.6, 0.2],
+              scale: [1, 1.5, 1],
+            }}
+            transition={{
+              duration: 2 + Math.random() * 3,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+            }}
+          />
+        ))}
+      </div>
+
       <svg
-        className="absolute inset-0 w-full h-full"
+        className="w-full h-full"
         viewBox="0 0 800 600"
+        preserveAspectRatio="xMidYMid meet"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Enhanced glow filters for cyan/blue DNA */}
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+          {/* Radial gradient for glowing effect */}
+          <radialGradient id="glowGradient">
+            <stop offset="0%" stopColor="#00DCFF" stopOpacity="1" />
+            <stop offset="50%" stopColor="#00B8D4" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#0097A7" stopOpacity="0.3" />
+          </radialGradient>
+
+          {/* Enhanced glow filters */}
+          <filter id="softGlow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+
           <filter id="strongGlow">
-            <feGaussianBlur stdDeviation="8" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="6" result="coloredBlur" />
             <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          <filter id="ultraGlow">
+            <feGaussianBlur stdDeviation="10" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
@@ -224,200 +194,250 @@ export function FloatingDNACore() {
           </filter>
         </defs>
 
-        {/* DNA Double Helix - Spinning */}
+        {/* DNA Double Helix */}
         <g 
           transform="translate(400, 300)"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {/* Breathing pulse */}
+          {/* Breathing pulse effect */}
           <motion.g
             animate={{
-              scale: [1, 1.015, 1],
-              opacity: [0.98, 1, 0.98]
+              scale: [1, 1.02, 1],
+              opacity: [0.95, 1, 0.95]
             }}
             transition={{
-              duration: 6,
+              duration: 4,
               repeat: Infinity,
               ease: "easeInOut"
             }}
           >
-          {/* Draw helix strands */}
-          {Array.from({ length: 12 }).map((_, i) => {
-            const y = (i - 5.5) * 40;
-            const phase1 = ((i * 30) + rotationPhase) % 360;
-            const phase2 = (phase1 + 180) % 360;
-            const x1 = Math.sin((phase1 * Math.PI) / 180) * 60;
-            const x2 = Math.sin((phase2 * Math.PI) / 180) * 60;
-            
-            return (
-              <g key={i}>
-                {/* Connecting rung */}
-                <motion.line
-                  x1={x1}
-                  y1={y}
-                  x2={x2}
-                  y2={y}
-                  stroke={helixColor}
-                  strokeWidth="2"
-                  opacity={0.7}
-                  filter="url(#glow)"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 0.7 }}
-                  transition={{ duration: 1, delay: i * 0.1 }}
-                />
-                
-                {/* Left strand node */}
-                <motion.circle
-                  cx={x1}
-                  cy={y}
-                  r="6"
-                  fill={helixColor}
-                  filter="url(#strongGlow)"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
-                />
-                
-                {/* Right strand node */}
-                <motion.circle
-                  cx={x2}
-                  cy={y}
-                  r="6"
-                  fill={helixColor}
-                  filter="url(#strongGlow)"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
-                />
-              </g>
-            );
-          })}
+            {/* Strand 1 - Main backbone with thick glow */}
+            <path
+              d={createSmoothPath(strand1Points)}
+              stroke="url(#glowGradient)"
+              strokeWidth="3"
+              fill="none"
+              opacity={0.9}
+              filter="url(#strongGlow)"
+              strokeLinecap="round"
+            />
 
-          {/* Helix connecting curves */}
-          <path
-            d={(() => {
-              const points = [];
-              for (let t = 0; t <= 480; t += 40) {
-                const angle = ((t * 0.75) + rotationPhase) * Math.PI / 180;
-                const x = Math.sin(angle) * 60;
-                const y = t - 220;
-                points.push([x, y]);
-              }
-              return `M ${points[0][0]} ${points[0][1]} ${points.slice(1).map((p, i) => 
-                i % 2 === 0 ? `Q ${p[0]} ${p[1]},` : `${p[0]} ${p[1]}`
-              ).join(' ')}`;
-            })()}
-            stroke={helixColor}
-            strokeWidth="4"
-            fill="none"
-            opacity={0.9}
-            filter="url(#strongGlow)"
-          />
-          
-          <path
-            d={(() => {
-              const points = [];
-              for (let t = 0; t <= 480; t += 40) {
-                const angle = ((t * 0.75) + rotationPhase + 180) * Math.PI / 180;
-                const x = Math.sin(angle) * 60;
-                const y = t - 220;
-                points.push([x, y]);
-              }
-              return `M ${points[0][0]} ${points[0][1]} ${points.slice(1).map((p, i) => 
-                i % 2 === 0 ? `Q ${p[0]} ${p[1]},` : `${p[0]} ${p[1]}`
-              ).join(' ')}`;
-            })()}
-            stroke={helixColor}
-            strokeWidth="4"
-            fill="none"
-            opacity={0.9}
-            filter="url(#strongGlow)"
-          />
+            {/* Strand 2 - Main backbone with thick glow */}
+            <path
+              d={createSmoothPath(strand2Points)}
+              stroke="url(#glowGradient)"
+              strokeWidth="3"
+              fill="none"
+              opacity={0.9}
+              filter="url(#strongGlow)"
+              strokeLinecap="round"
+            />
+
+            {/* Enhanced glow layers for depth */}
+            <path
+              d={createSmoothPath(strand1Points)}
+              stroke={helixColor}
+              strokeWidth="1"
+              fill="none"
+              opacity={0.6}
+              filter="url(#ultraGlow)"
+              strokeLinecap="round"
+            />
+
+            <path
+              d={createSmoothPath(strand2Points)}
+              stroke={helixColor}
+              strokeWidth="1"
+              fill="none"
+              opacity={0.6}
+              filter="url(#ultraGlow)"
+              strokeLinecap="round"
+            />
+
+            {/* Base pair rungs - connecting bars */}
+            {strand1Points.filter((_, i) => i % 5 === 0).map((point1, i) => {
+              const index = i * 5;
+              const point2 = strand2Points[index];
+              
+              // Calculate depth-based opacity and width
+              const avgZ = (point1.z + point2.z) / 2;
+              const depthFactor = (avgZ + 70) / 140; // 0 to 1
+              const opacity = 0.3 + depthFactor * 0.5;
+              const strokeWidth = 1.5 + depthFactor * 1;
+
+              return (
+                <motion.line
+                  key={`rung-${i}`}
+                  x1={point1.x}
+                  y1={point1.y}
+                  x2={point2.x}
+                  y2={point2.y}
+                  stroke={helixColor}
+                  strokeWidth={strokeWidth}
+                  opacity={opacity}
+                  filter="url(#softGlow)"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 1, delay: i * 0.05 }}
+                />
+              );
+            })}
+
+            {/* Glowing nodes along strands */}
+            {strand1Points.filter((_, i) => i % 4 === 0).map((point, i) => {
+              const depthFactor = (point.z + 70) / 140;
+              const size = 3 + depthFactor * 4;
+              const opacity = 0.6 + depthFactor * 0.4;
+
+              return (
+                <motion.circle
+                  key={`node1-${i}`}
+                  cx={point.x}
+                  cy={point.y}
+                  r={size}
+                  fill={helixColor}
+                  opacity={opacity}
+                  filter="url(#strongGlow)"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity }}
+                  transition={{ duration: 0.5, delay: i * 0.05 }}
+                />
+              );
+            })}
+
+            {strand2Points.filter((_, i) => i % 4 === 0).map((point, i) => {
+              const depthFactor = (point.z + 70) / 140;
+              const size = 3 + depthFactor * 4;
+              const opacity = 0.6 + depthFactor * 0.4;
+
+              return (
+                <motion.circle
+                  key={`node2-${i}`}
+                  cx={point.x}
+                  cy={point.y}
+                  r={size}
+                  fill={helixColor}
+                  opacity={opacity}
+                  filter="url(#strongGlow)"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity }}
+                  transition={{ duration: 0.5, delay: i * 0.05 }}
+                />
+              );
+            })}
+
+            {/* Floating particles around DNA */}
+            {Array.from({ length: 30 }).map((_, i) => {
+              const t = i / 30;
+              const y = (t - 0.5) * 480;
+              const radius = 80 + Math.random() * 40;
+              const angle = (Math.random() * 360 + rotationPhase * 0.5) * Math.PI / 180;
+              const x = Math.cos(angle) * radius;
+              const particleZ = Math.sin(angle) * radius;
+              const particleDepth = (particleZ + 120) / 240;
+
+              return (
+                <motion.circle
+                  key={`particle-${i}`}
+                  cx={x}
+                  cy={y}
+                  r={1 + Math.random() * 2}
+                  fill="#00DCFF"
+                  opacity={0.3 + particleDepth * 0.4}
+                  filter="url(#softGlow)"
+                  animate={{
+                    opacity: [0.2, 0.6, 0.2],
+                    scale: [0.8, 1.2, 0.8],
+                  }}
+                  transition={{
+                    duration: 2 + Math.random() * 2,
+                    repeat: Infinity,
+                    delay: Math.random() * 2,
+                  }}
+                />
+              );
+            })}
           </motion.g>
         </g>
 
         {/* Orbiting Metrics */}
         {orbitingMetrics.map((metric, index) => {
           const orbitRadius = 250;
-          const angle = metric.angle + (Date.now() / 50) % 360; // Slow rotation
+          const angle = metric.angle + (Date.now() / 50) % 360;
           const x = 400 + Math.cos((angle * Math.PI) / 180) * orbitRadius;
           const y = 300 + Math.sin((angle * Math.PI) / 180) * orbitRadius;
           
           // Connection point on helix
-          const helixIndex = index * 2;
-          const helixY = (helixIndex - 5.5) * 40;
-          const helixPhase = (helixIndex * 30) % 360;
-          const helixX = 400 + Math.sin((helixPhase * Math.PI) / 180) * 60;
-          const helixYAbs = 300 + helixY;
+          const helixIndex = Math.floor(index * 10);
+          const helixPoint = index % 2 === 0 ? strand1Points[helixIndex] : strand2Points[helixIndex];
+          const helixX = helixPoint ? 400 + helixPoint.x : 400;
+          const helixY = helixPoint ? 300 + helixPoint.y : 300;
           
-          const dotSize = 8 + (metric.value / 100) * 12; // 8-20px
-          const beamOpacity = 0.2 + (metric.value / 100) * 0.4; // 0.2-0.6
+          const dotSize = 8 + (metric.value / 100) * 12;
+          const beamOpacity = 0.2 + (metric.value / 100) * 0.4;
 
           return (
             <g key={metric.name}>
               {/* Connecting beam */}
               <motion.line
                 x1={helixX}
-                y1={helixYAbs}
+                y1={helixY}
                 x2={x}
                 y2={y}
                 stroke={metric.color}
                 strokeWidth="1.5"
                 opacity={beamOpacity}
-                filter="url(#glow)"
+                filter="url(#softGlow)"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
                 transition={{ duration: 1.5, delay: index * 0.2 }}
               />
-
-              {/* Orbiting dot */}
-              <motion.g
+              
+              {/* Metric orb */}
+              <motion.circle
+                cx={x}
+                cy={y}
+                r={dotSize}
+                fill={metric.color}
+                filter="url(#strongGlow)"
                 initial={{ scale: 0, opacity: 0 }}
-                animate={{ 
-                  scale: 1, 
-                  opacity: 1,
-                  x: [0, Math.cos((angle * Math.PI) / 180) * 10, 0],
-                  y: [0, Math.sin((angle * Math.PI) / 180) * 10, 0],
-                }}
-                transition={{ 
-                  scale: { duration: 0.5, delay: index * 0.1 },
-                  opacity: { duration: 0.5, delay: index * 0.1 },
-                  x: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-                  y: { duration: 3, repeat: Infinity, ease: "easeInOut" }
-                }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
+                data-testid={`metric-orb-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
+              />
+              
+              {/* Metric label */}
+              <motion.text
+                x={x}
+                y={y - dotSize - 10}
+                textAnchor="middle"
+                fill="#00DCFF"
+                fontSize="12"
+                fontWeight="600"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.9 }}
+                transition={{ duration: 0.5, delay: index * 0.2 + 0.5 }}
+                data-testid={`metric-label-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
               >
-                <circle
-                  cx={x}
-                  cy={y}
-                  r={dotSize}
-                  fill={metric.color}
-                  filter="url(#strongGlow)"
-                />
-                
-                {/* Metric label */}
-                <text
-                  x={x}
-                  y={y - dotSize - 10}
-                  textAnchor="middle"
-                  fill={metric.color}
-                  fontSize="12"
-                  fontWeight="600"
-                  filter="url(#glow)"
-                >
-                  {metric.name}
-                </text>
-                <text
-                  x={x}
-                  y={y - dotSize - 22}
-                  textAnchor="middle"
-                  fill="white"
-                  fontSize="14"
-                  fontWeight="700"
-                >
-                  {metric.value.toFixed(0)}%
-                </text>
-              </motion.g>
+                {metric.name}
+              </motion.text>
+              
+              {/* Metric value */}
+              <motion.text
+                x={x}
+                y={y + dotSize + 18}
+                textAnchor="middle"
+                fill="#fff"
+                fontSize="14"
+                fontWeight="700"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.2 + 0.7 }}
+                data-testid={`metric-value-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
+              >
+                {metric.value.toFixed(0)}%
+              </motion.text>
             </g>
           );
         })}
@@ -428,34 +448,29 @@ export function FloatingDNACore() {
         className="absolute top-8 left-1/2 transform -translate-x-1/2 text-center"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 1 }}
+        transition={{ duration: 1, delay: 1.5 }}
       >
-        <div className="text-sm font-medium text-muted-foreground mb-1">
-          Edge Integrity
+        <div className="text-sm font-semibold text-cyan-400 mb-1" data-testid="label-edge-integrity">
+          EDGE INTEGRITY SCORE
         </div>
         <div 
-          className="text-5xl font-bold"
-          style={{ 
-            color: helixColor,
-            textShadow: `0 0 20px ${helixColor}`,
-          }}
+          className="text-6xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent"
+          data-testid="value-edge-integrity"
         >
           {metrics.edgeIntegrity.toFixed(1)}%
         </div>
-        <div className="text-xs text-muted-foreground mt-1">
-          Trader Genome Score
-        </div>
       </motion.div>
 
-      {/* Loading state */}
-      {(!trades || trades.length === 0) && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <div className="text-center">
-            <div className="text-muted-foreground mb-2">Analyzing trade data...</div>
-            <div className="text-sm text-muted-foreground/60">Add trades to see your DNA Core</div>
-          </div>
-        </div>
-      )}
+      {/* Controls hint */}
+      <motion.div
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-cyan-400/60 text-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 2 }}
+        data-testid="text-controls-hint"
+      >
+        Hover over DNA to pause rotation
+      </motion.div>
     </div>
   );
 }
