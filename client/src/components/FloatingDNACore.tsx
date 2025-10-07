@@ -376,6 +376,27 @@ export function FloatingDNACore() {
         </div>
       </motion.div>
 
+      {/* Right side percentage displays */}
+      <div className="absolute top-1/2 right-8 transform -translate-y-1/2 space-y-[60px]">
+        {dnaZones.map((metric, index) => (
+          <motion.div
+            key={`right-${metric.key}`}
+            className="bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-6 py-3 text-center min-w-[100px]"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
+          >
+            <div
+              className="text-2xl font-bold"
+              style={{ color: metric.color }}
+              data-testid={`right-value-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
+            >
+              {metric.value.toFixed(0)}%
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
       {/* Controls hint */}
       <motion.div
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-cyan-400/60 text-sm"
