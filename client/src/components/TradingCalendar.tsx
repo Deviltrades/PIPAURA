@@ -644,20 +644,6 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   return (
     <Card className={`${className} bg-background border`}>
       <CardContent className="p-3 sm:p-6">
-        {/* Settings Icon - Top Right */}
-        <div className="absolute top-3 right-3 sm:top-6 sm:right-6 z-10">
-          <Link href="/calendar-settings">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 w-9 p-0 hover:bg-muted rounded-full"
-              title="Calendar Settings"
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-
         {/* Header with Month Navigation and Display Mode Toggle */}
         <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
           {/* Clear View Toggle */}
@@ -703,6 +689,18 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               ))}
             </SelectContent>
           </Select>
+          
+          {/* Settings Icon */}
+          <Link href="/calendar-settings">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0 hover:bg-muted"
+              title="Calendar Settings"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+          </Link>
           
           {!clearView && (
             <>
