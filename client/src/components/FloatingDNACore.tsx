@@ -439,9 +439,10 @@ export function FloatingDNACore() {
           
           const textAnchor = isLeft ? "end" : "start";
           
-          // Dot position - offset more from text to avoid overlap
-          const dotOffset = 25; // Extra space from text
-          const dotX = isLeft ? textX - dotOffset : textX + dotOffset;
+          // Dot position - place OUTSIDE the text area
+          // For left-aligned text (right side): dot goes to the left of text
+          // For right-aligned text (left side): dot goes to the right of text
+          const dotX = isLeft ? textX + 15 : textX - 15;
 
           return (
             <g key={metric.name}>
@@ -456,6 +457,19 @@ export function FloatingDNACore() {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 data-testid={`metric-dot-helix-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
+              />
+              
+              {/* Dot next to text label - positioned BEFORE text rendering */}
+              <motion.circle
+                cx={dotX}
+                cy={textY + 3}
+                r={5}
+                fill={metric.color}
+                filter="url(#softGlow)"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 0.9 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                data-testid={`metric-dot-label-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
               />
               
               {/* Metric label and value - positioned on side */}
@@ -489,19 +503,6 @@ export function FloatingDNACore() {
               >
                 {metric.value.toFixed(0)}%
               </motion.text>
-              
-              {/* Dot next to text label - positioned to not overlap */}
-              <motion.circle
-                cx={dotX}
-                cy={textY + 3}
-                r={5}
-                fill={metric.color}
-                filter="url(#softGlow)"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 0.9 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                data-testid={`metric-dot-label-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
-              />
             </g>
           );
         })}
