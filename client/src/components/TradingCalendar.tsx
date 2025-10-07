@@ -645,56 +645,56 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     <Card className={`${className} bg-background border`}>
       <CardContent className="p-3 sm:p-6">
         {/* Header with Month Navigation and Display Mode Toggle */}
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Clear View Toggle */}
             <Button
               variant={clearView ? "default" : "outline"}
               size="sm"
               onClick={() => setClearView(!clearView)}
-              className="text-xs"
+              className="text-xs h-9"
               data-testid="button-clear-view"
             >
               Clear View
             </Button>
             
-            <div className="flex items-center gap-2">
-              <Select 
-                value={viewMonth.getMonth().toString()} 
-                onValueChange={handleMonthChange}
-              >
-                <SelectTrigger className="w-[120px] h-9" data-testid="select-month">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthNames.map((name, index) => (
-                    <SelectItem key={index} value={index.toString()}>
-                      {name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select 
-                value={viewMonth.getFullYear().toString()} 
-                onValueChange={handleYearChange}
-              >
-                <SelectTrigger className="w-[90px] h-9" data-testid="select-year">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {yearOptions.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Month/Year Selectors */}
+            <Select 
+              value={viewMonth.getMonth().toString()} 
+              onValueChange={handleMonthChange}
+            >
+              <SelectTrigger className="w-[100px] sm:w-[120px] h-9 text-xs sm:text-sm" data-testid="select-month">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {monthNames.map((name, index) => (
+                  <SelectItem key={index} value={index.toString()}>
+                    {name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select 
+              value={viewMonth.getFullYear().toString()} 
+              onValueChange={handleYearChange}
+            >
+              <SelectTrigger className="w-[75px] sm:w-[90px] h-9 text-xs sm:text-sm" data-testid="select-year">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {yearOptions.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
             {!clearView && (
               <>
                 <Select value={displayMode} onValueChange={(value: "percentage" | "dollar") => setDisplayMode(value)}>
-                  <SelectTrigger className="w-28 h-8 text-xs">
+                  <SelectTrigger className="w-16 sm:w-20 h-9 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -705,7 +705,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-9" data-testid="button-optionals">
+                    <Button variant="outline" size="sm" className="h-9 text-xs sm:text-sm" data-testid="button-optionals">
                       Optionals
                     </Button>
                   </PopoverTrigger>
@@ -766,7 +766,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               </>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             <Link href="/calendar-settings">
               <Button
                 variant="ghost"
