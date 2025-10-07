@@ -83,25 +83,25 @@ export function FloatingDNACore() {
     session: '#2AD6C6',    // Aqua
   };
 
-  // 6 zones from top to bottom
+  // 6 zones from top to bottom - EXTENDED VERTICALLY
   const dnaZones = [
-    { name: 'Win Rate', key: 'win', value: metrics.winRate, color: ZONE_COLORS.win, yPosition: -200 },
-    { name: 'Risk:Reward', key: 'rr', value: metrics.riskReward, color: ZONE_COLORS.rr, yPosition: -120 },
-    { name: 'Risk Consistency', key: 'risk', value: metrics.riskConsistency, color: ZONE_COLORS.risk, yPosition: -40 },
-    { name: 'Emotional Control', key: 'emotion', value: metrics.emotionalControl, color: ZONE_COLORS.emotion, yPosition: 40 },
-    { name: 'Discipline', key: 'discipline', value: metrics.discipline, color: ZONE_COLORS.discipline, yPosition: 120 },
-    { name: 'Session Focus', key: 'session', value: metrics.sessionFocus, color: ZONE_COLORS.session, yPosition: 200 },
+    { name: 'Win Rate', key: 'win', value: metrics.winRate, color: ZONE_COLORS.win, yPosition: -266 },
+    { name: 'Risk:Reward', key: 'rr', value: metrics.riskReward, color: ZONE_COLORS.rr, yPosition: -160 },
+    { name: 'Risk Consistency', key: 'risk', value: metrics.riskConsistency, color: ZONE_COLORS.risk, yPosition: -53 },
+    { name: 'Emotional Control', key: 'emotion', value: metrics.emotionalControl, color: ZONE_COLORS.emotion, yPosition: 53 },
+    { name: 'Discipline', key: 'discipline', value: metrics.discipline, color: ZONE_COLORS.discipline, yPosition: 160 },
+    { name: 'Session Focus', key: 'session', value: metrics.sessionFocus, color: ZONE_COLORS.session, yPosition: 266 },
   ];
 
-  // DNA zone dimensions
-  const DNA_TOP = -240;
-  const DNA_BOTTOM = 240;
-  const DNA_HEIGHT = DNA_BOTTOM - DNA_TOP; // 480
-  const ZONE_HEIGHT = DNA_HEIGHT / 6; // 80 each
+  // DNA zone dimensions - EXTENDED VERTICALLY
+  const DNA_TOP = -320;
+  const DNA_BOTTOM = 320;
+  const DNA_HEIGHT = DNA_BOTTOM - DNA_TOP; // 640
+  const ZONE_HEIGHT = DNA_HEIGHT / 6; // ~107 each
 
   // Get smooth flowing color based on Y position (for gradient with fill logic)
   const getFlowingColorAtY = (y: number) => {
-    // Normalize Y from -240 to 240 into 0 to 1
+    // Normalize Y from -320 to 320 into 0 to 1
     const normalizedY = (y - DNA_TOP) / DNA_HEIGHT;
     
     // Determine which zone and position within zone
@@ -132,13 +132,13 @@ export function FloatingDNACore() {
     return dnaZones[clampedIndex].color;
   };
 
-  // Generate DNA points for smooth curves
+  // Generate DNA points for smooth curves - EXTENDED HEIGHT
   const generateDNAPoints = (strandOffset: number, radius: number) => {
     const points = [];
-    const numPoints = 60;
+    const numPoints = 80; // More points for longer helix
     for (let i = 0; i < numPoints; i++) {
       const t = i / (numPoints - 1);
-      const y = (t - 0.5) * 480; // -240 to 240
+      const y = (t - 0.5) * 640; // -320 to 320 (extended)
       const angle = ((t * 720) + rotationPhase + strandOffset) * Math.PI / 180;
       const x = Math.sin(angle) * radius;
       const z = Math.cos(angle) * radius;
@@ -178,13 +178,13 @@ export function FloatingDNACore() {
 
       <svg
         className="w-full h-full"
-        viewBox="0 0 800 600"
+        viewBox="0 0 800 700"
         preserveAspectRatio="xMidYMid meet"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Create gradient stops for each zone based on fill percentage */}
-          <linearGradient id="dnaFlowGradient" x1="0" y1="-240" x2="0" y2="240" gradientUnits="userSpaceOnUse">
+          {/* Create gradient stops for each zone based on fill percentage - EXTENDED */}
+          <linearGradient id="dnaFlowGradient" x1="0" y1="-320" x2="0" y2="320" gradientUnits="userSpaceOnUse">
             {dnaZones.map((zone, i) => {
               const zoneStart = (i / 6) * 100;
               const zoneEnd = ((i + 1) / 6) * 100;
