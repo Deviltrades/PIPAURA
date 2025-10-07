@@ -73,53 +73,44 @@ export function FloatingDNACore() {
     }
   }, [analytics]);
 
-  // Enhanced metrics for orbiting display with positions along DNA
-  const orbitingMetrics = [
-    { name: 'Win Rate', value: metrics.winRate, color: '#00DCFF', angle: 0, yPosition: -200 },
-    { name: 'Risk:Reward', value: metrics.riskReward, color: '#00B8D4', angle: 60, yPosition: -120 },
-    { name: 'Risk Consistency', value: metrics.riskConsistency, color: '#7B68EE', angle: 120, yPosition: -40 },
-    { name: 'Emotional Control', value: metrics.emotionalControl, color: '#9370DB', angle: 180, yPosition: 40 },
-    { name: 'Discipline', value: metrics.discipline, color: '#BA55D3', angle: 240, yPosition: 120 },
-    { name: 'Session Focus', value: metrics.sessionFocus, color: '#DA70D6', angle: 300, yPosition: 200 },
-  ];
-
-  // Get color based on vertical position (y) for gradient effect - smooth professional gradient
-  const getColorForPosition = (y: number) => {
-    // Map y from -250 to 250 to 0 to 1
-    const normalizedY = (y + 250) / 500;
-    
-    // Professional gradient: Cyan → Cyan-Blue → Green → Purple → Magenta
-    if (normalizedY < 0.25) {
-      // Top: Bright cyan
-      const t = normalizedY / 0.25;
-      return `hsl(${190 - t * 10}, 100%, ${60 - t * 5}%)`; // Cyan #00D4FF
-    } else if (normalizedY < 0.5) {
-      // Upper-middle: Cyan to Green transition
-      const t = (normalizedY - 0.25) / 0.25;
-      return `hsl(${180 - t * 60}, 100%, ${55 - t * 5}%)`; // Cyan to Green
-    } else if (normalizedY < 0.75) {
-      // Lower-middle: Green to Purple transition
-      const t = (normalizedY - 0.5) / 0.25;
-      return `hsl(${120 + t * 150}, ${100 - t * 10}%, ${50 + t * 5}%)`; // Green to Purple
-    } else {
-      // Bottom: Purple to Bright Magenta
-      const t = (normalizedY - 0.75) / 0.25;
-      return `hsl(${270 + t * 30}, ${90 + t * 10}%, ${55 + t * 10}%)`; // Magenta #FF00FF
-    }
+  // DNA Zone colors - each metric gets its own color zone
+  const ZONE_COLORS = {
+    win: '#00E5FF',        // Cyan
+    rr: '#4DA3FF',         // Blue
+    risk: '#8E6BFF',       // Violet
+    emotion: '#FF3DF0',    // Magenta
+    discipline: '#FFB000', // Amber
+    session: '#2AD6C6',    // Aqua
   };
 
-  // Generate DNA points for smooth curves - now with inner and outer edges
+  // 6 zones from top to bottom
+  const dnaZones = [
+    { name: 'Win Rate', key: 'win', value: metrics.winRate, color: ZONE_COLORS.win, yPosition: -200 },
+    { name: 'Risk:Reward', key: 'rr', value: metrics.riskReward, color: ZONE_COLORS.rr, yPosition: -120 },
+    { name: 'Risk Consistency', key: 'risk', value: metrics.riskConsistency, color: ZONE_COLORS.risk, yPosition: -40 },
+    { name: 'Emotional Control', key: 'emotion', value: metrics.emotionalControl, color: ZONE_COLORS.emotion, yPosition: 40 },
+    { name: 'Discipline', key: 'discipline', value: metrics.discipline, color: ZONE_COLORS.discipline, yPosition: 120 },
+    { name: 'Session Focus', key: 'session', value: metrics.sessionFocus, color: ZONE_COLORS.session, yPosition: 200 },
+  ];
+
+  // DNA zone dimensions
+  const DNA_TOP = -240;
+  const DNA_BOTTOM = 240;
+  const DNA_HEIGHT = DNA_BOTTOM - DNA_TOP; // 480
+  const ZONE_HEIGHT = DNA_HEIGHT / 6; // 80 each
+  const DNA_WIDTH = 220;
+
+  // Generate DNA points for smooth curves
   const generateDNAPoints = (strandOffset: number, radius: number) => {
     const points = [];
-    const numPoints = 60; // More points for smoother curve
+    const numPoints = 60;
     for (let i = 0; i < numPoints; i++) {
       const t = i / (numPoints - 1);
-      const y = (t - 0.5) * 500; // Vertical position
+      const y = (t - 0.5) * 480; // -240 to 240
       const angle = ((t * 720) + rotationPhase + strandOffset) * Math.PI / 180; // 2 full rotations
       const x = Math.sin(angle) * radius;
-      const z = Math.cos(angle) * radius; // For depth calculation
-      const color = getColorForPosition(y);
-      points.push({ x, y, z, color });
+      const z = Math.cos(angle) * radius;
+      points.push({ x, y, z });
     }
     return points;
   };
@@ -149,19 +140,13 @@ export function FloatingDNACore() {
     return path;
   };
 
-  // Create segments for color-coded strands
-  const createColoredSegments = (points: { x: number; y: number; color: string }[]) => {
-    const segments = [];
-    const segmentSize = 5; // Points per segment
-    
-    for (let i = 0; i < points.length - segmentSize; i += segmentSize) {
-      const segmentPoints = points.slice(i, i + segmentSize + 1);
-      const path = createSmoothPath(segmentPoints);
-      const color = points[i].color;
-      segments.push({ path, color });
-    }
-    
-    return segments;
+  // Helper to convert hex to rgba
+  const hexToRgba = (hex: string, alpha: number) => {
+    const n = parseInt(hex.slice(1), 16);
+    const r = (n >> 16) & 255;
+    const g = (n >> 8) & 255;
+    const b = n & 255;
+    return `rgba(${r},${g},${b},${alpha})`;
   };
 
   return (
@@ -174,251 +159,118 @@ export function FloatingDNACore() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* DNA gradient: Cyan → Green → Purple → Magenta */}
-          <linearGradient id="dnaGradient" gradientUnits="userSpaceOnUse" x1="0" y1="-250" x2="0" y2="250">
-            <stop offset="0%" stopColor="#00D4FF" />      {/* Bright Cyan */}
-            <stop offset="35%" stopColor="#00E5CC" />     {/* Cyan-Green */}
-            <stop offset="50%" stopColor="#00FF88" />     {/* Green */}
-            <stop offset="70%" stopColor="#9370DB" />     {/* Purple */}
-            <stop offset="100%" stopColor="#FF00FF" />    {/* Bright Magenta */}
-          </linearGradient>
+          {/* DNA Mask - defines where colors can appear */}
+          <mask id="dnaMask">
+            <rect x="0" y="0" width="800" height="600" fill="black" />
+            {/* White areas show through - DNA strands */}
+            <g transform="translate(400, 300)">
+              {/* Strands in white for mask */}
+              <path d={createSmoothPath(strand1Outer)} stroke="white" strokeWidth="12" fill="none" />
+              <path d={createSmoothPath(strand1Inner)} stroke="white" strokeWidth="12" fill="none" />
+              <path d={createSmoothPath(strand2Outer)} stroke="white" strokeWidth="12" fill="none" />
+              <path d={createSmoothPath(strand2Inner)} stroke="white" strokeWidth="12" fill="none" />
+              
+              {/* Rungs in white for mask */}
+              {Array.from({ length: 25 }).map((_, i) => {
+                const yPosition = (i / 24 - 0.5) * 480;
+                const point1 = strand1Inner.reduce((closest, point) => 
+                  Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
+                , strand1Inner[0]);
+                const point2 = strand2Inner.reduce((closest, point) => 
+                  Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
+                , strand2Inner[0]);
+                
+                return (
+                  <line
+                    key={i}
+                    x1={point1.x}
+                    y1={point1.y}
+                    x2={point2.x}
+                    y2={point2.y}
+                    stroke="white"
+                    strokeWidth="4"
+                  />
+                );
+              })}
+            </g>
+          </mask>
 
-          {/* Enhanced glow filters with expanded regions */}
-          <filter id="softGlow" filterUnits="userSpaceOnUse" x="-200" y="-300" width="600" height="700">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+          {/* Glow filters */}
+          <filter id="softGlow">
+            <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
 
-          <filter id="strongGlow" filterUnits="userSpaceOnUse" x="-200" y="-300" width="600" height="700">
-            <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+          <filter id="strongGlow">
+            <feGaussianBlur stdDeviation="6" result="blur" />
             <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          <filter id="ultraGlow" filterUnits="userSpaceOnUse" x="-200" y="-300" width="600" height="700">
-            <feGaussianBlur stdDeviation="10" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="blur" />
+              <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
 
-        {/* DNA Double Helix */}
+        {/* Base DNA helix structure (neutral white glow) */}
+        <g transform="translate(400, 300)">
+          <g filter="url(#softGlow)">
+            <path d={createSmoothPath(strand1Outer)} stroke="rgba(200,220,255,0.3)" strokeWidth="6" fill="none" />
+            <path d={createSmoothPath(strand1Inner)} stroke="rgba(200,220,255,0.3)" strokeWidth="6" fill="none" />
+            <path d={createSmoothPath(strand2Outer)} stroke="rgba(200,220,255,0.3)" strokeWidth="6" fill="none" />
+            <path d={createSmoothPath(strand2Inner)} stroke="rgba(200,220,255,0.3)" strokeWidth="6" fill="none" />
+          </g>
+        </g>
+
+        {/* Colored zone fills - masked to DNA shape */}
         <g 
+          mask="url(#dnaMask)" 
           transform="translate(400, 300)"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {/* Breathing pulse effect with glow filter applied to group */}
-          <motion.g
-            animate={{
-              scale: [1, 1.02, 1],
-              opacity: [0.95, 1, 0.95]
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            filter="url(#strongGlow)"
-          >
-            {/* Strand 1 Outer Edge - Continuous path with gradient */}
-            <path
-              d={createSmoothPath(strand1Outer)}
-              stroke="url(#dnaGradient)"
-              strokeWidth="4"
-              fill="none"
-              opacity={0.95}
-              strokeLinecap="round"
-            />
-
-            {/* Strand 1 Inner Edge - Continuous path with gradient */}
-            <path
-              d={createSmoothPath(strand1Inner)}
-              stroke="url(#dnaGradient)"
-              strokeWidth="4"
-              fill="none"
-              opacity={0.95}
-              strokeLinecap="round"
-            />
-
-            {/* Strand 2 Outer Edge - Continuous path with gradient */}
-            <path
-              d={createSmoothPath(strand2Outer)}
-              stroke="url(#dnaGradient)"
-              strokeWidth="4"
-              fill="none"
-              opacity={0.95}
-              strokeLinecap="round"
-            />
-
-            {/* Strand 2 Inner Edge - Continuous path with gradient */}
-            <path
-              d={createSmoothPath(strand2Inner)}
-              stroke="url(#dnaGradient)"
-              strokeWidth="4"
-              fill="none"
-              opacity={0.95}
-              strokeLinecap="round"
-            />
-          </motion.g>
-
-          {/* Enhanced glow layers underneath - also continuous */}
-          <motion.g
-            animate={{
-              scale: [1, 1.02, 1],
-              opacity: [0.3, 0.4, 0.3]
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            filter="url(#ultraGlow)"
-          >
-            <path
-              d={createSmoothPath(strand1Outer)}
-              stroke="url(#dnaGradient)"
-              strokeWidth="8"
-              fill="none"
-              opacity={0.3}
-              strokeLinecap="round"
-            />
-            <path
-              d={createSmoothPath(strand2Outer)}
-              stroke="url(#dnaGradient)"
-              strokeWidth="8"
-              fill="none"
-              opacity={0.3}
-              strokeLinecap="round"
-            />
-            <path
-              d={createSmoothPath(strand1Inner)}
-              stroke="url(#dnaGradient)"
-              strokeWidth="8"
-              fill="none"
-              opacity={0.3}
-              strokeLinecap="round"
-            />
-            <path
-              d={createSmoothPath(strand2Inner)}
-              stroke="url(#dnaGradient)"
-              strokeWidth="8"
-              fill="none"
-              opacity={0.3}
-              strokeLinecap="round"
-            />
-          </motion.g>
-
-          {/* Base pair rungs - MANY CRISP HORIZONTAL ladder bars connecting INNER strands */}
-          <g>
-            {Array.from({ length: 25 }).map((_, i) => {
-              // Create evenly spaced rungs from top to bottom
-              const yPosition = (i / 24 - 0.5) * 480; // -240 to 240
-              
-              // Find closest points on INNER strands at this Y position
-              const point1 = strand1Inner.reduce((closest, point) => 
-                Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
-              , strand1Inner[0]);
-              
-              const point2 = strand2Inner.reduce((closest, point) => 
-                Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
-              , strand2Inner[0]);
-              
-              // Calculate depth for this rung
-              const avgZ = (point1.z + point2.z) / 2;
-              const depthFactor = (avgZ + 60) / 120;
-              const opacity = 0.85 + depthFactor * 0.15;
-              const strokeWidth = 3 + depthFactor * 1;
-              
-              // Get color from gradient based on Y position
-              const rungColor = getColorForPosition(yPosition);
-
-              return (
-                <g key={`rung-${i}`}>
-                  {/* Soft glow underneath */}
-                  <motion.line
-                    x1={point1.x}
-                    y1={point1.y}
-                    x2={point2.x}
-                    y2={point2.y}
-                    stroke={rungColor}
-                    strokeWidth={strokeWidth + 2}
-                    opacity={0.4}
-                    filter="url(#softGlow)"
-                    strokeLinecap="round"
-                    initial={{ opacity: 0, pathLength: 0 }}
-                    animate={{ opacity: 0.4, pathLength: 1 }}
-                    transition={{ duration: 0.6, delay: i * 0.02 }}
-                  />
-                  {/* Crisp solid rung */}
-                  <motion.line
-                    x1={point1.x}
-                    y1={point1.y}
-                    x2={point2.x}
-                    y2={point2.y}
-                    stroke={rungColor}
-                    strokeWidth={strokeWidth}
-                    opacity={opacity}
-                    strokeLinecap="round"
-                    initial={{ opacity: 0, pathLength: 0 }}
-                    animate={{ opacity, pathLength: 1 }}
-                    transition={{ duration: 0.6, delay: i * 0.02 }}
-                  />
-                </g>
-              );
-            })}
-          </g>
-
-          {/* Subtle floating particles around DNA */}
-          <g>
-            {Array.from({ length: 12 }).map((_, i) => {
-              const t = i / 12;
-              const y = (t - 0.5) * 480;
-              const radius = 90 + Math.random() * 30;
-              const angle = (Math.random() * 360 + rotationPhase * 0.5) * Math.PI / 180;
-              const x = Math.cos(angle) * radius;
-              const particleZ = Math.sin(angle) * radius;
-              const particleDepth = (particleZ + 120) / 240;
-              const particleColor = getColorForPosition(y);
-
-              return (
-                <motion.circle
-                  key={`particle-${i}`}
-                  cx={x}
-                  cy={y}
-                  r={1.5}
-                  fill={particleColor}
-                  opacity={0.25 + particleDepth * 0.25}
-                  filter="url(#softGlow)"
-                  animate={{
-                    opacity: [0.15, 0.4, 0.15],
-                    scale: [0.9, 1.1, 0.9],
-                  }}
-                  transition={{
-                    duration: 3 + Math.random() * 2,
-                    repeat: Infinity,
-                    delay: Math.random() * 2,
-                  }}
+          {dnaZones.map((zone, i) => {
+            const y0 = DNA_TOP + i * ZONE_HEIGHT;
+            const filledHeight = ZONE_HEIGHT * (zone.value / 100);
+            const yFilled = y0 + (ZONE_HEIGHT - filledHeight); // Fill from bottom to top of zone
+            
+            return (
+              <motion.g 
+                key={zone.key}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: i * 0.1 }}
+              >
+                {/* Unfilled portion (faint) */}
+                <rect
+                  x={-DNA_WIDTH / 2}
+                  y={y0}
+                  width={DNA_WIDTH}
+                  height={ZONE_HEIGHT}
+                  fill={hexToRgba(zone.color, 0.15)}
                 />
-              );
-            })}
-          </g>
+                
+                {/* Filled portion (bright) */}
+                <motion.rect
+                  x={-DNA_WIDTH / 2}
+                  y={yFilled}
+                  width={DNA_WIDTH}
+                  height={filledHeight}
+                  fill={zone.color}
+                  filter="url(#strongGlow)"
+                  initial={{ height: 0, y: y0 + ZONE_HEIGHT }}
+                  animate={{ height: filledHeight, y: yFilled }}
+                  transition={{ duration: 1.2, delay: i * 0.1, ease: "easeOut" }}
+                />
+              </motion.g>
+            );
+          })}
         </g>
 
         {/* Metrics attached to DNA strands - moving with rotation */}
-        {orbitingMetrics.map((metric, index) => {
+        {dnaZones.map((metric, index) => {
           // Find point on DNA strand at this metric's Y position
           const targetY = metric.yPosition;
           const closestPoint = strand1Outer.reduce((closest, point) => {

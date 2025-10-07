@@ -1,0 +1,158 @@
+How to tell Replit to build it (clear + code)
+Concept
+
+Keep your existing spinning helix group.
+
+Create one mask from the helix (both strands + rungs) so color appears only on the DNA.
+
+Split the helix height into 6 equal zones (top→bottom):
+
+Win Rate (cyan)
+
+Avg R:R (blue) → still show 2.3× elsewhere; for the color bar, normalize RR to 0–100
+
+Risk Consistency (violet)
+
+Emotional Control (magenta)
+
+Discipline (amber)
+
+Session Focus (aqua)
+
+For each zone, draw two rectangles inside the mask:
+
+a faint “unfilled” layer (low alpha)
+
+a filled height = zoneHeight * (value/100) using the metric color
+
+Because rectangles are inside the helix mask, you’ll see the color only on the strands/rungs for that vertical slice.
+
+Entire group spins in place like you have.
+
+Palette (consistent with your UI)
+const COLORS = {
+  win:       '#00E5FF',  // cyan
+  rr:        '#4DA3FF',  // blue
+  risk:      '#8E6BFF',  // violet
+  emotion:   '#FF3DF0',  // magenta
+  discipline:'#FFB000',  // amber
+  session:   '#2AD6C6',  // aqua
+  base:      '#72F8FF'   // base helix neutral glow
+};
+
+Core SVG structure (drop-in idea)
+// inside your component
+const W = 420, H = 640;
+const cx = W/2, cy = H/2;
+const top = 40, bot = H-40;
+const dnaWidth = 220; // width of the mask paint area around helix
+
+// 6 equal zones vertically
+const Z = 6;
+const zoneH = (bot - top) / Z;
+
+// values 0..100 (RR normalized to 0..100 for the color fill only)
+const vals = {
+  win: 100, rr: 100, risk: 98, emotion: 100, discipline: 56, session: 80
+};
+
+// order top→bottom
+const order = [
+  {k:'win',        color: COLORS.win},
+  {k:'rr',         color: COLORS.rr},
+  {k:'risk',       color: COLORS.risk},
+  {k:'emotion',    color: COLORS.emotion},
+  {k:'discipline', color: COLORS.discipline},
+  {k:'session',    color: COLORS.session}
+];
+
+return (
+  <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+    <defs>
+      {/* HELIX MASK: white = visible, black = hidden */}
+      <mask id="dnaMask">
+        <rect x="0" y="0" width={W} height={H} fill="black"/>
+        {/* use your existing helix paths + rungs, but stroke in WHITE */}
+        <use href="#helixL" stroke="white" strokeWidth="12" fill="none" />
+        <use href="#helixR" stroke="white" strokeWidth="12" fill="none" />
+        {/** if you draw rungs: */}
+        {Array.from({length:36}, (_,i)=>{
+           const y = top + (i/35) * (bot-top);
+           return <line key={i} x1={cx-80} x2={cx+80} y1={y} y2={y} stroke="white" strokeWidth="3" />
+        })}
+      </mask>
+
+      {/* gentle glow */}
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="4" result="b"/>
+        <feMerge>
+          <feMergeNode in="b"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+
+    {/* 1) Base helix (neutral) – this sits under everything */}
+    <g id="helix">
+      <path id="helixL" d={helixPath(W,H,+1)} stroke={COLORS.base} strokeWidth="6" fill="none" filter="url(#glow)"/>
+      <path id="helixR" d={helixPath(W,H,-1)} stroke={COLORS.base} strokeWidth="6" fill="none" filter="url(#glow)"/>
+    </g>
+
+    {/* 2) Colored zone fills – masked to DNA shape */}
+    <g style={{ mixBlendMode:'screen' }} mask="url(#dnaMask)">
+      {order.map((o, i) => {
+        const y0 = top + i*zoneH;
+        const filledH = zoneH * (vals[o.k as keyof typeof vals] / 100);
+        const yFill = y0 + (zoneH - filledH); // fill from bottom→top
+        return (
+          <g key={o.k}>
+            {/* unfilled faint tint */}
+            <rect x={cx - dnaWidth/2} y={y0} width={dnaWidth} height={zoneH}
+                  fill={hexA(o.color, 0.10)} />
+            {/* filled portion */}
+            <rect x={cx - dnaWidth/2} y={yFill} width={dnaWidth} height={filledH}
+                  fill={o.color} style={{filter:'url(#glow)'}} />
+          </g>
+        );
+      })}
+    </g>
+
+    {/* 3) Your spinning group wraps helix + colored layer (keep labels outside) */}
+  </svg>
+);
+
+// helpers
+function helixPath(w:number,h:number,dir:1|-1){
+  const cx = w/2, top = 40, bot = h-40, amp = 80, loops = 3.2, steps = 160;
+  const pts = Array.from({length:steps+1},(_,i)=>{
+    const t=i/steps, y=top+(bot-top)*t, x=cx + dir*amp*Math.sin(t*Math.PI*loops);
+    return `${x},${y}`;
+  });
+  return `M ${pts.join(' L ')}`;
+}
+function hexA(hex:string, a:number){
+  const n=parseInt(hex.slice(1),16); const r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+Notes / Options
+
+Spins exactly as before: wrap the base helix + colored layer in your rotating <g>; keep metric labels outside.
+
+Blend mode: mix-blend-mode: screen on the colored group keeps overlaps pretty (additive glow).
+
+Filling direction: I set each zone to fill bottom→top. Flip by changing yFill.
+
+RR display: keep chip as “2.3×” but normalize RR 0→4× to 0–100 only for zone fill:
+
+const rrPercent = Math.min(100, Math.max(0, (RR/4)*100));
+
+
+Performance: rectangles + mask are cheap; still 60fps with the spin.
+
+What the user now “sees”
+
+The whole DNA is a stacked 6-band progress bar (but on your helix):
+every band = a metric, and the fill height is the %.
+e.g., Discipline 56% → the 5th band is just over half lit in amber;
+Win Rate 100% → top band fully lit cyan.
