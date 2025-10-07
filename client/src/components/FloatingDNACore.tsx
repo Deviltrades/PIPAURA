@@ -337,18 +337,18 @@ export function FloatingDNACore() {
 
       </svg>
 
-      {/* Metrics Box - Top Left - Compact - Mobile Responsive */}
+      {/* Metrics Box - Top Left on Desktop, Horizontal Top on Mobile */}
       <motion.div
-        className="absolute top-2 left-2 md:top-8 md:left-8 bg-slate-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-2 md:p-3 scale-[0.85] md:scale-100 origin-top-left"
+        className="absolute top-2 left-2 right-2 md:top-8 md:left-8 md:right-auto bg-slate-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-2 md:p-3"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.5 }}
       >
-        <div className="space-y-1 md:space-y-1.5">
+        <div className="grid grid-cols-2 gap-x-2 gap-y-1 md:space-y-1.5 md:flex md:flex-col">
           {dnaZones.map((metric, index) => (
             <motion.div
               key={metric.key}
-              className="flex items-center gap-1.5 md:gap-2"
+              className="flex items-center gap-1 md:gap-2"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
@@ -360,15 +360,15 @@ export function FloatingDNACore() {
                 data-testid={`metric-dot-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
               />
               {/* Metric name and value */}
-              <div className="flex items-baseline gap-1 md:gap-2 min-w-[100px] md:min-w-[140px]">
+              <div className="flex items-baseline gap-1 md:gap-2 min-w-0 md:min-w-[140px]">
                 <span 
-                  className="text-white text-[10px] md:text-xs font-semibold flex-1"
+                  className="text-white text-[9px] md:text-xs font-semibold flex-1 truncate"
                   data-testid={`metric-label-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
                 >
                   {metric.name}
                 </span>
                 <span
-                  className="text-xs md:text-sm font-bold"
+                  className="text-[10px] md:text-sm font-bold"
                   style={{ color: metric.color }}
                   data-testid={`metric-value-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
                 >
