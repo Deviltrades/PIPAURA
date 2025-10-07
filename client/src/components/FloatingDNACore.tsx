@@ -196,7 +196,7 @@ export function FloatingDNACore() {
 
 
   return (
-    <div className="w-full h-screen relative overflow-hidden bg-gradient-to-b from-slate-950 via-blue-950 to-slate-950">
+    <div className="w-full h-[680px] md:h-screen relative overflow-hidden bg-gradient-to-b from-slate-950 via-blue-950 to-slate-950">
 
       <svg
         className="w-full h-full"
