@@ -53,8 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: session.user.email!,
             created_at: session.user.created_at!
           });
-          // Navigate to dashboard when user signs in or when token is refreshed
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          // Only navigate to dashboard on SIGNED_IN event and if we're on the auth page
+          if (event === 'SIGNED_IN' && window.location.pathname === '/auth') {
             console.log('Navigating to dashboard after', event);
             setLocation('/dashboard');
           }
