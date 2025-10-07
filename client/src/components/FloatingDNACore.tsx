@@ -310,7 +310,7 @@ export function FloatingDNACore() {
               />
             ))}
 
-            {/* Base pair rungs - prominent ladder bars */}
+            {/* Base pair rungs - VERY prominent ladder bars */}
             {strand1Outer.filter((_, i) => i % 2 === 0).map((point1, i) => {
               const index = i * 2;
               const point2 = strand2Outer[index];
@@ -318,25 +318,42 @@ export function FloatingDNACore() {
               // Calculate depth-based opacity and width
               const avgZ = (point1.z + point2.z) / 2;
               const depthFactor = (avgZ + 80) / 160;
-              const opacity = 0.6 + depthFactor * 0.35;
-              const strokeWidth = 3 + depthFactor * 1;
+              const opacity = 0.85 + depthFactor * 0.15; // Much more opaque
+              const strokeWidth = 5 + depthFactor * 2; // Much thicker
 
               return (
-                <motion.line
-                  key={`rung-${i}`}
-                  x1={point1.x}
-                  y1={point1.y}
-                  x2={point2.x}
-                  y2={point2.y}
-                  stroke={point1.color}
-                  strokeWidth={strokeWidth}
-                  opacity={opacity}
-                  filter="url(#strongGlow)"
-                  strokeLinecap="round"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: 1, delay: i * 0.02 }}
-                />
+                <g key={`rung-group-${i}`}>
+                  {/* Main rung */}
+                  <motion.line
+                    x1={point1.x}
+                    y1={point1.y}
+                    x2={point2.x}
+                    y2={point2.y}
+                    stroke={point1.color}
+                    strokeWidth={strokeWidth}
+                    opacity={opacity}
+                    filter="url(#strongGlow)"
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1, delay: i * 0.02 }}
+                  />
+                  {/* Extra glow layer for visibility */}
+                  <motion.line
+                    x1={point1.x}
+                    y1={point1.y}
+                    x2={point2.x}
+                    y2={point2.y}
+                    stroke={point1.color}
+                    strokeWidth={strokeWidth + 4}
+                    opacity={0.4}
+                    filter="url(#ultraGlow)"
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1, delay: i * 0.02 }}
+                  />
+                </g>
               );
             })}
 
