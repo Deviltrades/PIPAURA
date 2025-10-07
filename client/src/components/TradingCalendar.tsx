@@ -640,50 +640,67 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                     <SelectItem value="dollar">$</SelectItem>
                   </SelectContent>
                 </Select>
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    id="weekends-toggle" 
-                    checked={showWeekends} 
-                    onCheckedChange={setShowWeekends}
-                    data-testid="switch-weekends"
-                  />
-                  <Label htmlFor="weekends-toggle" className="text-sm font-medium">
-                    Weekends
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    id="weekly-totals-toggle" 
-                    checked={showWeeklyTotals} 
-                    onCheckedChange={setShowWeeklyTotals}
-                    data-testid="switch-weekly-totals"
-                  />
-                  <Label htmlFor="weekly-totals-toggle" className="text-sm font-medium">
-                    Weekly Totals
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    id="monthly-summary-toggle" 
-                    checked={showMonthlySummary} 
-                    onCheckedChange={setShowMonthlySummary}
-                    data-testid="switch-monthly-summary"
-                  />
-                  <Label htmlFor="monthly-summary-toggle" className="text-sm font-medium">
-                    Monthly Stats
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    id="consistency-tracker-toggle" 
-                    checked={showConsistencyTracker} 
-                    onCheckedChange={setShowConsistencyTracker}
-                    data-testid="switch-consistency-tracker"
-                  />
-                  <Label htmlFor="consistency-tracker-toggle" className="text-sm font-medium">
-                    Consistency
-                  </Label>
-                </div>
+                
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-9" data-testid="button-optionals">
+                      Optionals
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56" align="start">
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-sm mb-3">Display Options</h4>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="weekends-check"
+                          checked={showWeekends} 
+                          onCheckedChange={(checked) => setShowWeekends(checked === true)}
+                          data-testid="checkbox-weekends"
+                        />
+                        <Label htmlFor="weekends-check" className="text-sm font-normal cursor-pointer">
+                          Weekends
+                        </Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="weekly-totals-check"
+                          checked={showWeeklyTotals} 
+                          onCheckedChange={(checked) => setShowWeeklyTotals(checked === true)}
+                          data-testid="checkbox-weekly-totals"
+                        />
+                        <Label htmlFor="weekly-totals-check" className="text-sm font-normal cursor-pointer">
+                          Weekly Totals
+                        </Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="monthly-stats-check"
+                          checked={showMonthlySummary} 
+                          onCheckedChange={(checked) => setShowMonthlySummary(checked === true)}
+                          data-testid="checkbox-monthly-stats"
+                        />
+                        <Label htmlFor="monthly-stats-check" className="text-sm font-normal cursor-pointer">
+                          Monthly Stats
+                        </Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="consistency-check"
+                          checked={showConsistencyTracker} 
+                          onCheckedChange={(checked) => setShowConsistencyTracker(checked === true)}
+                          data-testid="checkbox-consistency"
+                        />
+                        <Label htmlFor="consistency-check" className="text-sm font-normal cursor-pointer">
+                          Consistency
+                        </Label>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </>
             )}
           </div>
