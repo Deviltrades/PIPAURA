@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,12 +8,24 @@ import TradeForm from "@/components/TradeForm";
 import { formatCurrency } from "@/lib/utils";
 import { getTrades, deleteTrade } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 export default function Trades() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [location, setLocation] = useLocation();
+
+  // Auto-open Add Trade modal when navigated from calendar
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('add') === 'true') {
+      setIsFormOpen(true);
+      // Clean up URL without the parameter
+      window.history.replaceState({}, '', '/trades');
+    }
+  }, []);
 
   const { data: trades = [], isLoading } = useQuery({
     queryKey: ["trades"],
