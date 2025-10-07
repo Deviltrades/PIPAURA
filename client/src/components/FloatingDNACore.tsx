@@ -382,7 +382,7 @@ export function FloatingDNACore() {
 
       {/* Edge Integrity Score Display - Below Metrics Box - Mobile Responsive */}
       <motion.div
-        className="absolute top-[90px] left-2 md:top-[220px] md:left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-3 py-2 md:px-4 md:py-2 text-center max-h-[70px] md:max-h-[80px] scale-[0.35] md:scale-100 origin-top-left"
+        className="absolute top-[90px] left-2 md:top-[220px] md:left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-2 py-1.5 md:px-4 md:py-2 text-center max-h-[60px] md:max-h-[80px] max-w-[100px] md:max-w-none"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 1.5 }}
