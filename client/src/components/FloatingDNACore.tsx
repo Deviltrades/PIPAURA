@@ -279,16 +279,16 @@ export function FloatingDNACore() {
               />
             ))}
 
-            {/* Base pair rungs - connecting bars */}
-            {strand1Points.filter((_, i) => i % 5 === 0).map((point1, i) => {
-              const index = i * 5;
+            {/* Base pair rungs - ladder bars connecting sides */}
+            {strand1Points.filter((_, i) => i % 3 === 0).map((point1, i) => {
+              const index = i * 3;
               const point2 = strand2Points[index];
               
               // Calculate depth-based opacity and width
               const avgZ = (point1.z + point2.z) / 2;
               const depthFactor = (avgZ + 70) / 140; // 0 to 1
-              const opacity = 0.3 + depthFactor * 0.5;
-              const strokeWidth = 1.5 + depthFactor * 1;
+              const opacity = 0.5 + depthFactor * 0.4; // More opaque
+              const strokeWidth = 2 + depthFactor * 1.5; // Thicker bars
 
               return (
                 <motion.line
@@ -301,9 +301,10 @@ export function FloatingDNACore() {
                   strokeWidth={strokeWidth}
                   opacity={opacity}
                   filter="url(#softGlow)"
+                  strokeLinecap="round"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
-                  transition={{ duration: 1, delay: i * 0.05 }}
+                  transition={{ duration: 1, delay: i * 0.03 }}
                 />
               );
             })}
