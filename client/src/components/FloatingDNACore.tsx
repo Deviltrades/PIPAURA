@@ -73,18 +73,37 @@ export function FloatingDNACore() {
     }
   }, [analytics]);
 
-  // Enhanced metrics for orbiting display
+  // Enhanced metrics for orbiting display with positions along DNA
   const orbitingMetrics = [
-    { name: 'Win Rate', value: metrics.winRate, color: '#00DCFF', angle: 0 },
-    { name: 'Risk:Reward', value: metrics.riskReward, color: '#00B8D4', angle: 60 },
-    { name: 'Risk Consistency', value: metrics.riskConsistency, color: '#0097A7', angle: 120 },
-    { name: 'Emotional Control', value: metrics.emotionalControl, color: '#00838F', angle: 180 },
-    { name: 'Discipline', value: metrics.discipline, color: '#006064', angle: 240 },
-    { name: 'Session Focus', value: metrics.sessionFocus, color: '#004D40', angle: 300 },
+    { name: 'Win Rate', value: metrics.winRate, color: '#00DCFF', angle: 0, yPosition: -200 },
+    { name: 'Risk:Reward', value: metrics.riskReward, color: '#00B8D4', angle: 60, yPosition: -120 },
+    { name: 'Risk Consistency', value: metrics.riskConsistency, color: '#7B68EE', angle: 120, yPosition: -40 },
+    { name: 'Emotional Control', value: metrics.emotionalControl, color: '#9370DB', angle: 180, yPosition: 40 },
+    { name: 'Discipline', value: metrics.discipline, color: '#BA55D3', angle: 240, yPosition: 120 },
+    { name: 'Session Focus', value: metrics.sessionFocus, color: '#DA70D6', angle: 300, yPosition: 200 },
   ];
 
-  // Dynamic color based on edge integrity
-  const helixColor = `hsl(${190 + metrics.edgeIntegrity * 0.2}, ${80 + metrics.edgeIntegrity * 0.2}%, ${50 + metrics.edgeIntegrity * 0.3}%)`;
+  // Get color based on vertical position (y) for gradient effect
+  const getColorForPosition = (y: number) => {
+    // Map y from -250 to 250 to 0 to 1
+    const normalizedY = (y + 250) / 500;
+    
+    // Define color stops: cyan -> blue -> purple -> magenta
+    if (normalizedY < 0.25) {
+      // Top section: cyan
+      return '#00DCFF';
+    } else if (normalizedY < 0.5) {
+      // Upper-middle: blue to purple transition
+      const t = (normalizedY - 0.25) / 0.25;
+      return `hsl(${190 + t * 80}, 100%, 50%)`; // Cyan to purple hue
+    } else if (normalizedY < 0.75) {
+      // Lower-middle: purple
+      return '#9370DB';
+    } else {
+      // Bottom section: magenta/pink
+      return '#DA70D6';
+    }
+  };
 
   // Generate DNA points for smooth curves
   const generateDNAPoints = (strandOffset: number) => {
@@ -96,7 +115,8 @@ export function FloatingDNACore() {
       const angle = ((t * 720) + rotationPhase + strandOffset) * Math.PI / 180; // 2 full rotations
       const x = Math.sin(angle) * 70;
       const z = Math.cos(angle) * 70; // For depth calculation
-      points.push({ x, y, z });
+      const color = getColorForPosition(y);
+      points.push({ x, y, z, color });
     }
     return points;
   };
@@ -121,6 +141,21 @@ export function FloatingDNACore() {
     path += ` Q ${secondLastPoint.x} ${secondLastPoint.y} ${lastPoint.x} ${lastPoint.y}`;
     
     return path;
+  };
+
+  // Create segments for color-coded strands
+  const createColoredSegments = (points: { x: number; y: number; color: string }[]) => {
+    const segments = [];
+    const segmentSize = 5; // Points per segment
+    
+    for (let i = 0; i < points.length - segmentSize; i += segmentSize) {
+      const segmentPoints = points.slice(i, i + segmentSize + 1);
+      const path = createSmoothPath(segmentPoints);
+      const color = points[i].color;
+      segments.push({ path, color });
+    }
+    
+    return segments;
   };
 
   return (
@@ -212,48 +247,60 @@ export function FloatingDNACore() {
               ease: "easeInOut"
             }}
           >
-            {/* Strand 1 - Main backbone with thick glow */}
-            <path
-              d={createSmoothPath(strand1Points)}
-              stroke="url(#glowGradient)"
-              strokeWidth="3"
-              fill="none"
-              opacity={0.9}
-              filter="url(#strongGlow)"
-              strokeLinecap="round"
-            />
+            {/* Strand 1 - Color-coded segments */}
+            {createColoredSegments(strand1Points).map((segment, i) => (
+              <path
+                key={`strand1-seg-${i}`}
+                d={segment.path}
+                stroke={segment.color}
+                strokeWidth="3"
+                fill="none"
+                opacity={0.9}
+                filter="url(#strongGlow)"
+                strokeLinecap="round"
+              />
+            ))}
 
-            {/* Strand 2 - Main backbone with thick glow */}
-            <path
-              d={createSmoothPath(strand2Points)}
-              stroke="url(#glowGradient)"
-              strokeWidth="3"
-              fill="none"
-              opacity={0.9}
-              filter="url(#strongGlow)"
-              strokeLinecap="round"
-            />
+            {/* Strand 2 - Color-coded segments */}
+            {createColoredSegments(strand2Points).map((segment, i) => (
+              <path
+                key={`strand2-seg-${i}`}
+                d={segment.path}
+                stroke={segment.color}
+                strokeWidth="3"
+                fill="none"
+                opacity={0.9}
+                filter="url(#strongGlow)"
+                strokeLinecap="round"
+              />
+            ))}
 
             {/* Enhanced glow layers for depth */}
-            <path
-              d={createSmoothPath(strand1Points)}
-              stroke={helixColor}
-              strokeWidth="1"
-              fill="none"
-              opacity={0.6}
-              filter="url(#ultraGlow)"
-              strokeLinecap="round"
-            />
+            {createColoredSegments(strand1Points).map((segment, i) => (
+              <path
+                key={`strand1-glow-${i}`}
+                d={segment.path}
+                stroke={segment.color}
+                strokeWidth="1"
+                fill="none"
+                opacity={0.4}
+                filter="url(#ultraGlow)"
+                strokeLinecap="round"
+              />
+            ))}
 
-            <path
-              d={createSmoothPath(strand2Points)}
-              stroke={helixColor}
-              strokeWidth="1"
-              fill="none"
-              opacity={0.6}
-              filter="url(#ultraGlow)"
-              strokeLinecap="round"
-            />
+            {createColoredSegments(strand2Points).map((segment, i) => (
+              <path
+                key={`strand2-glow-${i}`}
+                d={segment.path}
+                stroke={segment.color}
+                strokeWidth="1"
+                fill="none"
+                opacity={0.4}
+                filter="url(#ultraGlow)"
+                strokeLinecap="round"
+              />
+            ))}
 
             {/* Base pair rungs - connecting bars */}
             {strand1Points.filter((_, i) => i % 5 === 0).map((point1, i) => {
@@ -273,7 +320,7 @@ export function FloatingDNACore() {
                   y1={point1.y}
                   x2={point2.x}
                   y2={point2.y}
-                  stroke={helixColor}
+                  stroke={point1.color}
                   strokeWidth={strokeWidth}
                   opacity={opacity}
                   filter="url(#softGlow)"
@@ -296,7 +343,7 @@ export function FloatingDNACore() {
                   cx={point.x}
                   cy={point.y}
                   r={size}
-                  fill={helixColor}
+                  fill={point.color}
                   opacity={opacity}
                   filter="url(#strongGlow)"
                   initial={{ scale: 0, opacity: 0 }}
@@ -317,7 +364,7 @@ export function FloatingDNACore() {
                   cx={point.x}
                   cy={point.y}
                   r={size}
-                  fill={helixColor}
+                  fill={point.color}
                   opacity={opacity}
                   filter="url(#strongGlow)"
                   initial={{ scale: 0, opacity: 0 }}
@@ -336,6 +383,7 @@ export function FloatingDNACore() {
               const x = Math.cos(angle) * radius;
               const particleZ = Math.sin(angle) * radius;
               const particleDepth = (particleZ + 120) / 240;
+              const particleColor = getColorForPosition(y);
 
               return (
                 <motion.circle
@@ -343,7 +391,7 @@ export function FloatingDNACore() {
                   cx={x}
                   cy={y}
                   r={1 + Math.random() * 2}
-                  fill="#00DCFF"
+                  fill={particleColor}
                   opacity={0.3 + particleDepth * 0.4}
                   filter="url(#softGlow)"
                   animate={{
@@ -368,11 +416,14 @@ export function FloatingDNACore() {
           const x = 400 + Math.cos((angle * Math.PI) / 180) * orbitRadius;
           const y = 300 + Math.sin((angle * Math.PI) / 180) * orbitRadius;
           
-          // Connection point on helix
-          const helixIndex = Math.floor(index * 10);
-          const helixPoint = index % 2 === 0 ? strand1Points[helixIndex] : strand2Points[helixIndex];
-          const helixX = helixPoint ? 400 + helixPoint.x : 400;
-          const helixY = helixPoint ? 300 + helixPoint.y : 300;
+          // Connection point on helix - find point closest to metric's yPosition
+          const targetY = metric.yPosition;
+          const closestPoint = strand1Points.reduce((closest, point) => {
+            return Math.abs(point.y - targetY) < Math.abs(closest.y - targetY) ? point : closest;
+          }, strand1Points[0]);
+          
+          const helixX = 400 + closestPoint.x;
+          const helixY = 300 + closestPoint.y;
           
           const dotSize = 8 + (metric.value / 100) * 12;
           const beamOpacity = 0.2 + (metric.value / 100) * 0.4;
@@ -412,7 +463,7 @@ export function FloatingDNACore() {
                 x={x}
                 y={y - dotSize - 10}
                 textAnchor="middle"
-                fill="#00DCFF"
+                fill={metric.color}
                 fontSize="12"
                 fontWeight="600"
                 initial={{ opacity: 0 }}
