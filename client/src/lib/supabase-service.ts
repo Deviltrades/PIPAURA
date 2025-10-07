@@ -24,6 +24,25 @@ export async function getUserProfile() {
     .eq('supabase_user_id', user.id)
     .single();
 
+  // If profile doesn't exist, create it
+  if (error && error.code === 'PGRST116') {
+    const { data: newProfile, error: createError } = await supabase
+      .from('user_profiles')
+      .insert([{
+        supabase_user_id: user.id,
+        email: user.email!,
+        account_type: 'live',
+        timezone: 'UTC',
+        plan_type: 'demo',
+        preferences: {},
+      }])
+      .select()
+      .single();
+
+    if (createError) throw createError;
+    return newProfile as UserProfile;
+  }
+
   if (error) throw error;
   return data as UserProfile;
 }
