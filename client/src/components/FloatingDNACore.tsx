@@ -310,7 +310,7 @@ export function FloatingDNACore() {
               />
             ))}
 
-            {/* Base pair rungs - HORIZONTAL ladder bars */}
+            {/* Base pair rungs - CRISP HORIZONTAL ladder bars */}
             {strand1Outer.filter((_, i) => i % 3 === 0).map((point1, i) => {
               const actualIndex = i * 3;
               // Find the matching point on strand2 at the same Y position
@@ -321,12 +321,27 @@ export function FloatingDNACore() {
               // Calculate depth - use distance from viewer (z value)
               const avgZ = (point1.z + matchingPoint.z) / 2;
               const depthFactor = (avgZ + 80) / 160;
-              const opacity = 0.75 + depthFactor * 0.25;
-              const strokeWidth = 4 + depthFactor * 3;
+              const opacity = 0.8 + depthFactor * 0.2;
+              const strokeWidth = 8 + depthFactor * 2; // Thicker for visibility
 
               return (
                 <g key={`rung-${actualIndex}`}>
-                  {/* Bright main rung */}
+                  {/* Glow layer UNDERNEATH (drawn first) */}
+                  <motion.line
+                    x1={point1.x}
+                    y1={point1.y}
+                    x2={matchingPoint.x}
+                    y2={matchingPoint.y}
+                    stroke={point1.color}
+                    strokeWidth={strokeWidth + 4}
+                    opacity={0.3}
+                    filter="url(#softGlow)"
+                    strokeLinecap="round"
+                    initial={{ opacity: 0, pathLength: 0 }}
+                    animate={{ opacity: 0.3, pathLength: 1 }}
+                    transition={{ duration: 0.8, delay: i * 0.03 }}
+                  />
+                  {/* CRISP solid rung (NO FILTER) - drawn on top */}
                   <motion.line
                     x1={point1.x}
                     y1={point1.y}
@@ -335,25 +350,9 @@ export function FloatingDNACore() {
                     stroke={point1.color}
                     strokeWidth={strokeWidth}
                     opacity={opacity}
-                    filter="url(#strongGlow)"
                     strokeLinecap="round"
                     initial={{ opacity: 0, pathLength: 0 }}
                     animate={{ opacity, pathLength: 1 }}
-                    transition={{ duration: 0.8, delay: i * 0.03 }}
-                  />
-                  {/* Wide glow for visibility */}
-                  <motion.line
-                    x1={point1.x}
-                    y1={point1.y}
-                    x2={matchingPoint.x}
-                    y2={matchingPoint.y}
-                    stroke={point1.color}
-                    strokeWidth={strokeWidth + 6}
-                    opacity={0.5}
-                    filter="url(#ultraGlow)"
-                    strokeLinecap="round"
-                    initial={{ opacity: 0, pathLength: 0 }}
-                    animate={{ opacity: 0.5, pathLength: 1 }}
                     transition={{ duration: 0.8, delay: i * 0.03 }}
                   />
                 </g>
