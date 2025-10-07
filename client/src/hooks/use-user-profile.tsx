@@ -36,8 +36,8 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     queryKey: ['user-profile'],
     queryFn: getUserProfile,
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
+    staleTime: 0, // No caching - always fetch fresh
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {
