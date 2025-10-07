@@ -512,7 +512,12 @@ export function FloatingDNACore() {
         data-testid="text-controls-hint"
       >
         <span className="hidden md:inline">Hover over DNA to pause rotation</span>
-        <span className="md:hidden">Tap DNA to pause rotation</span>
+        <button 
+          className="md:hidden cursor-pointer hover:text-cyan-400/80 transition-colors"
+          onClick={() => setIsPaused(!isPaused)}
+        >
+          {isPaused ? "Tap here to resume DNA" : "Tap here to pause DNA"}
+        </button>
       </motion.div>
     </div>
   );
