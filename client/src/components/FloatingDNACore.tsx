@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import { getTrades, getAnalytics } from "@/lib/supabase-service";
 import { useQuery } from "@tanstack/react-query";
 
@@ -31,6 +31,11 @@ export function FloatingDNACore() {
     edgeIntegrity: 0,
   });
 
+  const controls = useAnimation();
+  const [isPaused, setIsPaused] = useState(false);
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const spinSpeed = 14; // seconds per revolution
+
   // Fetch trades and analytics data
   const { data: trades } = useQuery({
     queryKey: ['/api/trades'],
@@ -48,6 +53,42 @@ export function FloatingDNACore() {
       calculateMetrics(trades, analytics);
     }
   }, [trades, analytics]);
+
+  // DNA spinning animation
+  useEffect(() => {
+    if (prefersReducedMotion || isPaused) {
+      controls.stop();
+      return;
+    }
+
+    controls.start({
+      rotate: 360,
+      transition: {
+        duration: spinSpeed,
+        ease: "linear",
+        repeat: Infinity
+      }
+    });
+
+    // Pause when tab is hidden
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        controls.stop();
+      } else if (!isPaused) {
+        controls.start({
+          rotate: 360,
+          transition: {
+            duration: spinSpeed,
+            ease: "linear",
+            repeat: Infinity
+          }
+        });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [controls, isPaused, prefersReducedMotion, spinSpeed]);
 
   const calculateMetrics = (tradesData: any[], analyticsData: any) => {
     const closedTrades = tradesData.filter(t => t.status === 'CLOSED' && t.pnl !== null);
@@ -201,14 +242,26 @@ export function FloatingDNACore() {
         {/* DNA Double Helix - Spinning */}
         <motion.g
           transform="translate(400, 300)"
-          animate={{ rotate: 360 }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear"
+          animate={controls}
+          style={{ 
+            transformOrigin: "0px 0px",
+            willChange: "transform"
           }}
-          style={{ transformOrigin: "0px 0px" }}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
         >
+          {/* Breathing pulse */}
+          <motion.g
+            animate={{
+              scale: [1, 1.015, 1],
+              opacity: [0.98, 1, 0.98]
+            }}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
           {/* Draw helix strands */}
           {Array.from({ length: 12 }).map((_, i) => {
             const y = (i - 5.5) * 40;
@@ -285,6 +338,7 @@ export function FloatingDNACore() {
             animate={{ pathLength: 1 }}
             transition={{ duration: 2, ease: "easeInOut", delay: 0.2 }}
           />
+          </motion.g>
         </motion.g>
 
         {/* Orbiting Metrics */}

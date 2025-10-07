@@ -1,0 +1,73 @@
+Request: Spin the DNA in place so it looks alive
+
+Goal: The double-helix should rotate around its own center (not orbit around or drift), with a subtle “breathing” pulse. Metric labels stay static.
+
+What to change
+
+Wrap the helix, rungs, beams, and orbit dots in one SVG group and rotate that group.
+
+Keep labels outside the rotating group so they don’t spin.
+
+Set transform origin to the group’s center and use a linear, infinite rotation.
+
+Add a gentle breathing pulse (scale/opacity) to the helix while it spins.
+
+React + Framer Motion snippet
+import { motion, useAnimation } from "framer-motion";
+
+const W = 420, H = 560;
+const cx = W/2, cy = H/2;
+
+export default function TraderDNACore({ spin = true, speed = 14 }) {
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" className="w-full">
+      {/* STATIC labels go here (not inside the rotating group) */}
+
+      {/* ROTATING CORE */}
+      <motion.g
+        id="dnaCore"
+        animate={spin ? { rotate: 360 } : { rotate: 0 }}
+        transition={spin ? { duration: speed, ease: "linear", repeat: Infinity } : {}}
+        style={{
+          transformOrigin: `${cx}px ${cy}px`,
+          willChange: "transform"
+        }}
+      >
+        {/* optional breathing inside the rotating group */}
+        <motion.g
+          animate={{ scale: [1, 1.015, 1], opacity: [0.98, 1, 0.98] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        >
+          {/* Helix paths, rungs, beams, dots */}
+          {/* ... your existing elements ... */}
+        </motion.g>
+      </motion.g>
+    </svg>
+  );
+}
+
+Important SVG CSS (ensures true center spin in all browsers)
+#dnaCore {
+  transform-box: fill-box;     /* use the element’s bbox for transforms */
+  transform-origin: center;    /* fallback for browsers that ignore px origin */
+}
+
+Plain-CSS fallback (if not using Framer Motion)
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+#dnaCore {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spin 14s linear infinite;
+}
+
+#dnaCore .breath {
+  animation: breath 6s ease-in-out infinite;
+}
+
+@keyframes breath {
+  0%,100% { transform: scale(1); opacity: 0.98; }
+  50%     { transform: scale(1.015); opacity: 1; }
+}
