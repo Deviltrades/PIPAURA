@@ -73,6 +73,18 @@ The dashboard includes a fully customizable widget system allowing users to:
 - Clear visual indicators for both drag and resize operations in move mode
 - **Template System**: Save and switch between up to 5 custom dashboard layouts with persistent storage (2025-01-31)
 
+### Calendar Features
+The trading calendar includes comprehensive settings persistence:
+- **Auto-save functionality**: Calendar settings automatically save to database (1-second debounce)
+- **User-specific preferences**: Each user's settings persist across sessions
+- **Saved settings include**:
+  - Display options: Weekends, Weekly Totals, Monthly Stats, Consistency Tracker
+  - View modes: Percentage/Dollar display, Clear View toggle
+  - Filter selections: Account, Symbol, Strategy, Direction
+  - Monthly stats configuration: Risk/Reward, Total P&L, Days Traded, etc.
+- **Optionals dropdown**: Clean UI with checkboxes for toggling display options
+- **Month/Year selectors**: Quick navigation with dropdown selectors (2020-2030 range)
+
 ### Authentication and Authorization
 Authentication is now handled through Supabase Auth (migrated 2025-09-22):
 

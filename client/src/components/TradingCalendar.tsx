@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +37,7 @@ import { Plus as PlusIcon } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { getTrades, updateTrade, uploadFile } from "@/lib/supabase-service";
+import { getTrades, updateTrade, uploadFile, getCalendarSettings, updateCalendarSettings } from "@/lib/supabase-service";
 
 interface TradingCalendarProps {
   className?: string;
@@ -198,6 +198,68 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   
   // Clear view toggle state - hides filters and toggles for clean calendar view
   const [clearView, setClearView] = useState(false);
+
+  // Load calendar settings on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const settings = await getCalendarSettings();
+        if (settings) {
+          if (settings.showWeekends !== undefined) setShowWeekends(settings.showWeekends);
+          if (settings.showWeeklyTotals !== undefined) setShowWeeklyTotals(settings.showWeeklyTotals);
+          if (settings.showMonthlySummary !== undefined) setShowMonthlySummary(settings.showMonthlySummary);
+          if (settings.showConsistencyTracker !== undefined) setShowConsistencyTracker(settings.showConsistencyTracker);
+          if (settings.displayMode) setDisplayMode(settings.displayMode);
+          if (settings.clearView !== undefined) setClearView(settings.clearView);
+          if (settings.monthlyStatsConfig) setMonthlyStatsConfig(settings.monthlyStatsConfig);
+          if (settings.selectedAccount) setSelectedAccount(settings.selectedAccount);
+          if (settings.selectedSymbol) setSelectedSymbol(settings.selectedSymbol);
+          if (settings.selectedStrategy) setSelectedStrategy(settings.selectedStrategy);
+          if (settings.selectedDirection) setSelectedDirection(settings.selectedDirection);
+        }
+      } catch (error) {
+        console.error('Failed to load calendar settings:', error);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  // Auto-save calendar settings when they change (with debounce)
+  useEffect(() => {
+    const timeoutId = setTimeout(async () => {
+      try {
+        await updateCalendarSettings({
+          showWeekends,
+          showWeeklyTotals,
+          showMonthlySummary,
+          showConsistencyTracker,
+          displayMode,
+          clearView,
+          monthlyStatsConfig,
+          selectedAccount,
+          selectedSymbol,
+          selectedStrategy,
+          selectedDirection,
+        });
+      } catch (error) {
+        console.error('Failed to save calendar settings:', error);
+      }
+    }, 1000); // Debounce for 1 second
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    showWeekends,
+    showWeeklyTotals,
+    showMonthlySummary,
+    showConsistencyTracker,
+    displayMode,
+    clearView,
+    monthlyStatsConfig,
+    selectedAccount,
+    selectedSymbol,
+    selectedStrategy,
+    selectedDirection,
+  ]);
 
   // Fetch all trades
   const { data: trades = [], isLoading } = useQuery<Trade[]>({

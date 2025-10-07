@@ -302,6 +302,16 @@ export async function updateUserProfile(updates: Partial<UserProfile>) {
   return data;
 }
 
+// Calendar settings operations
+export async function updateCalendarSettings(settings: CalendarSettings) {
+  return updateUserProfile({ calendar_settings: settings });
+}
+
+export async function getCalendarSettings(): Promise<CalendarSettings | null> {
+  const profile = await getUserProfile();
+  return profile?.calendar_settings || null;
+}
+
 // Dashboard template operations
 export async function saveDashboardTemplate(template: { name: string; layout: any }) {
   const user = await getCurrentUser();

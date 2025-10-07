@@ -181,10 +181,27 @@ export interface Tag {
 
 // Calendar settings interface
 export interface CalendarSettings {
-  backgroundColor: string;
-  borderColor: string;
-  dayBackgroundColor: string;
-  dayBorderColor: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  dayBackgroundColor?: string;
+  dayBorderColor?: string;
+  showWeekends?: boolean;
+  showWeeklyTotals?: boolean;
+  showMonthlySummary?: boolean;
+  showConsistencyTracker?: boolean;
+  displayMode?: 'percentage' | 'dollar';
+  clearView?: boolean;
+  monthlyStatsConfig?: {
+    riskReward: boolean;
+    totalPnL: boolean;
+    daysTraded: boolean;
+    totalTrades: boolean;
+    winRate: boolean;
+  };
+  selectedAccount?: string;
+  selectedSymbol?: string;
+  selectedStrategy?: string;
+  selectedDirection?: string;
 }
 
 // Sidebar settings interface
