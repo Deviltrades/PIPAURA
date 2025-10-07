@@ -72,6 +72,9 @@ export default function Analytics() {
     pnl: m.pnl,
     fullMonth: m.month
   }));
+  
+  // Debug: Log the data
+  console.log('Monthly Orbit Data:', monthlyOrbitData);
 
   // Get current month for highlighting
   const currentDate = new Date();
@@ -218,7 +221,10 @@ export default function Analytics() {
                     
                     {/* Concentric circles (orbits) - one per month with data */}
                     {monthlyOrbitData.map((data, i) => {
-                      const radius = 140 - (i * (60 / Math.max(monthlyOrbitData.length, 1)));
+                      // Space rings from radius 140 (outer) to 75 (inner), with even spacing
+                      const totalSpan = 65; // from 140 to 75
+                      const spacing = totalSpan / (monthlyOrbitData.length > 1 ? monthlyOrbitData.length - 1 : 1);
+                      const radius = 140 - (i * spacing);
                       const isProfitable = data.pnl >= 0;
                       return (
                         <circle 
@@ -228,8 +234,8 @@ export default function Analytics() {
                           r={radius} 
                           fill="none" 
                           stroke={isProfitable ? "#06b6d4" : "#ef4444"} 
-                          strokeWidth="2" 
-                          opacity="0.6" 
+                          strokeWidth="3" 
+                          opacity="0.8" 
                         />
                       );
                     })}
