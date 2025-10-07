@@ -243,16 +243,16 @@ export function FloatingDNACore() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: i * 0.1 }}
               >
-                {/* Unfilled portion (faint) */}
+                {/* Unfilled portion (WHITE/NEUTRAL) */}
                 <rect
                   x={-DNA_WIDTH / 2}
                   y={y0}
                   width={DNA_WIDTH}
                   height={ZONE_HEIGHT}
-                  fill={hexToRgba(zone.color, 0.15)}
+                  fill="rgba(200,210,220,0.4)"
                 />
                 
-                {/* Filled portion (bright) */}
+                {/* Filled portion (COLORED) */}
                 <motion.rect
                   x={-DNA_WIDTH / 2}
                   y={yFilled}
