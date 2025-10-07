@@ -1176,24 +1176,18 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 
                 {/* Add Trade Button - Only show on hover for empty days */}
                 {dayTrades.length === 0 && isCurrentMonth && (
-                  <PlanGate 
-                    action="add-trade" 
-                    buttonId="add-trade"
-                    showUpgrade={false}
-                  >
-                    <Link href="/trades">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                        className="absolute top-1 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-4 h-4 bg-gray-600 hover:bg-gray-700 rounded-full flex items-center justify-center z-10"
-                        title="Add trade for this date"
-                        data-testid="button-add-trade"
-                      >
-                        <PlusIcon className="h-2.5 w-2.5 text-white" />
-                      </button>
-                    </Link>
-                  </PlanGate>
+                  <Link href="/trades">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      className="absolute top-1 right-1.5 opacity-100 transition-opacity duration-200 w-5 h-5 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center z-20 shadow-lg"
+                      title="Add trade - Go to Trades page"
+                      data-testid="button-add-trade"
+                    >
+                      <PlusIcon className="h-3 w-3 text-white" />
+                    </button>
+                  </Link>
                 )}
                 
                 {/* Trading Day Content */}
