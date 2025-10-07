@@ -98,9 +98,29 @@ export function FloatingDNACore() {
   const DNA_BOTTOM = 240;
   const DNA_HEIGHT = DNA_BOTTOM - DNA_TOP; // 480
   const ZONE_HEIGHT = DNA_HEIGHT / 6; // 80 each
-  const DNA_WIDTH = 220;
 
-  // Generate DNA points for smooth curves
+  // Get color for a Y position based on zone and fill percentage
+  const getColorAtY = (y: number) => {
+    // Determine which zone this Y position is in
+    const zoneIndex = Math.floor((y - DNA_TOP) / ZONE_HEIGHT);
+    const clampedIndex = Math.max(0, Math.min(5, zoneIndex));
+    const zone = dnaZones[clampedIndex];
+    
+    // Calculate position within the zone (0 at top, 1 at bottom)
+    const yInZone = (y - (DNA_TOP + clampedIndex * ZONE_HEIGHT)) / ZONE_HEIGHT;
+    
+    // If we're in the filled portion of the zone, use the zone color
+    // Otherwise use white
+    const fillThreshold = 1 - (zone.value / 100); // 0 = fully filled, 1 = empty
+    
+    if (yInZone >= fillThreshold) {
+      return zone.color; // Filled portion
+    } else {
+      return 'rgba(200,210,230,0.6)'; // Unfilled (white/neutral)
+    }
+  };
+
+  // Generate DNA points for smooth curves with color based on Y position
   const generateDNAPoints = (strandOffset: number, radius: number) => {
     const points = [];
     const numPoints = 60;
@@ -110,7 +130,8 @@ export function FloatingDNACore() {
       const angle = ((t * 720) + rotationPhase + strandOffset) * Math.PI / 180; // 2 full rotations
       const x = Math.sin(angle) * radius;
       const z = Math.cos(angle) * radius;
-      points.push({ x, y, z });
+      const color = getColorAtY(y);
+      points.push({ x, y, z, color });
     }
     return points;
   };
@@ -140,13 +161,19 @@ export function FloatingDNACore() {
     return path;
   };
 
-  // Helper to convert hex to rgba
-  const hexToRgba = (hex: string, alpha: number) => {
-    const n = parseInt(hex.slice(1), 16);
-    const r = (n >> 16) & 255;
-    const g = (n >> 8) & 255;
-    const b = n & 255;
-    return `rgba(${r},${g},${b},${alpha})`;
+  // Create colored segments for DNA strands
+  const createColoredSegments = (points: { x: number; y: number; color: string }[]) => {
+    const segments = [];
+    const segmentSize = 3; // Small segments for smooth color transitions
+    
+    for (let i = 0; i < points.length - segmentSize; i += segmentSize) {
+      const segmentPoints = points.slice(i, i + segmentSize + 1);
+      const path = createSmoothPath(segmentPoints);
+      const color = points[i].color;
+      segments.push({ path, color });
+    }
+    
+    return segments;
   };
 
   return (
@@ -159,42 +186,6 @@ export function FloatingDNACore() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* DNA Mask - defines where colors can appear */}
-          <mask id="dnaMask">
-            <rect x="0" y="0" width="800" height="600" fill="black" />
-            {/* White areas show through - DNA strands */}
-            <g transform="translate(400, 300)">
-              {/* Strands in white for mask */}
-              <path d={createSmoothPath(strand1Outer)} stroke="white" strokeWidth="12" fill="none" />
-              <path d={createSmoothPath(strand1Inner)} stroke="white" strokeWidth="12" fill="none" />
-              <path d={createSmoothPath(strand2Outer)} stroke="white" strokeWidth="12" fill="none" />
-              <path d={createSmoothPath(strand2Inner)} stroke="white" strokeWidth="12" fill="none" />
-              
-              {/* Rungs in white for mask */}
-              {Array.from({ length: 25 }).map((_, i) => {
-                const yPosition = (i / 24 - 0.5) * 480;
-                const point1 = strand1Inner.reduce((closest, point) => 
-                  Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
-                , strand1Inner[0]);
-                const point2 = strand2Inner.reduce((closest, point) => 
-                  Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
-                , strand2Inner[0]);
-                
-                return (
-                  <line
-                    key={i}
-                    x1={point1.x}
-                    y1={point1.y}
-                    x2={point2.x}
-                    y2={point2.y}
-                    stroke="white"
-                    strokeWidth="4"
-                  />
-                );
-              })}
-            </g>
-          </mask>
-
           {/* Glow filters */}
           <filter id="softGlow">
             <feGaussianBlur stdDeviation="4" result="blur" />
@@ -214,59 +205,115 @@ export function FloatingDNACore() {
           </filter>
         </defs>
 
-        {/* Base DNA helix structure (neutral white glow) */}
-        <g transform="translate(400, 300)">
-          <g filter="url(#softGlow)">
-            <path d={createSmoothPath(strand1Outer)} stroke="rgba(200,220,255,0.3)" strokeWidth="6" fill="none" />
-            <path d={createSmoothPath(strand1Inner)} stroke="rgba(200,220,255,0.3)" strokeWidth="6" fill="none" />
-            <path d={createSmoothPath(strand2Outer)} stroke="rgba(200,220,255,0.3)" strokeWidth="6" fill="none" />
-            <path d={createSmoothPath(strand2Inner)} stroke="rgba(200,220,255,0.3)" strokeWidth="6" fill="none" />
-          </g>
-        </g>
-
-        {/* Colored zone fills - masked to DNA shape */}
+        {/* DNA Double Helix with Color Zones */}
         <g 
-          mask="url(#dnaMask)" 
           transform="translate(400, 300)"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {dnaZones.map((zone, i) => {
-            const y0 = DNA_TOP + i * ZONE_HEIGHT;
-            const filledHeight = ZONE_HEIGHT * (zone.value / 100);
-            const yFilled = y0 + (ZONE_HEIGHT - filledHeight); // Fill from bottom to top of zone
-            
-            return (
-              <motion.g 
-                key={zone.key}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: i * 0.1 }}
-              >
-                {/* Unfilled portion (WHITE/NEUTRAL) */}
-                <rect
-                  x={-DNA_WIDTH / 2}
-                  y={y0}
-                  width={DNA_WIDTH}
-                  height={ZONE_HEIGHT}
-                  fill="rgba(200,210,220,0.4)"
+          <motion.g
+            animate={{
+              scale: [1, 1.02, 1],
+              opacity: [0.95, 1, 0.95]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            {/* Strand 1 Outer - colored segments */}
+            {createColoredSegments(strand1Outer).map((segment, i) => (
+              <path
+                key={`s1-outer-${i}`}
+                d={segment.path}
+                stroke={segment.color}
+                strokeWidth="5"
+                fill="none"
+                opacity={0.95}
+                filter="url(#strongGlow)"
+                strokeLinecap="round"
+              />
+            ))}
+
+            {/* Strand 1 Inner - colored segments */}
+            {createColoredSegments(strand1Inner).map((segment, i) => (
+              <path
+                key={`s1-inner-${i}`}
+                d={segment.path}
+                stroke={segment.color}
+                strokeWidth="5"
+                fill="none"
+                opacity={0.95}
+                filter="url(#strongGlow)"
+                strokeLinecap="round"
+              />
+            ))}
+
+            {/* Strand 2 Outer - colored segments */}
+            {createColoredSegments(strand2Outer).map((segment, i) => (
+              <path
+                key={`s2-outer-${i}`}
+                d={segment.path}
+                stroke={segment.color}
+                strokeWidth="5"
+                fill="none"
+                opacity={0.95}
+                filter="url(#strongGlow)"
+                strokeLinecap="round"
+              />
+            ))}
+
+            {/* Strand 2 Inner - colored segments */}
+            {createColoredSegments(strand2Inner).map((segment, i) => (
+              <path
+                key={`s2-inner-${i}`}
+                d={segment.path}
+                stroke={segment.color}
+                strokeWidth="5"
+                fill="none"
+                opacity={0.95}
+                filter="url(#strongGlow)"
+                strokeLinecap="round"
+              />
+            ))}
+
+            {/* Base pair rungs - colored based on Y position */}
+            {Array.from({ length: 25 }).map((_, i) => {
+              const yPosition = (i / 24 - 0.5) * 480;
+              
+              const point1 = strand1Inner.reduce((closest, point) => 
+                Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
+              , strand1Inner[0]);
+              
+              const point2 = strand2Inner.reduce((closest, point) => 
+                Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
+              , strand2Inner[0]);
+              
+              const avgZ = (point1.z + point2.z) / 2;
+              const depthFactor = (avgZ + 60) / 120;
+              const strokeWidth = 3 + depthFactor * 1;
+              const rungColor = getColorAtY(yPosition);
+
+              return (
+                <motion.line
+                  key={`rung-${i}`}
+                  x1={point1.x}
+                  y1={point1.y}
+                  x2={point2.x}
+                  y2={point2.y}
+                  stroke={rungColor}
+                  strokeWidth={strokeWidth}
+                  opacity={0.9}
+                  filter="url(#softGlow)"
+                  strokeLinecap="round"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.9 }}
+                  transition={{ duration: 0.6, delay: i * 0.02 }}
                 />
-                
-                {/* Filled portion (COLORED) */}
-                <motion.rect
-                  x={-DNA_WIDTH / 2}
-                  y={yFilled}
-                  width={DNA_WIDTH}
-                  height={filledHeight}
-                  fill={zone.color}
-                  filter="url(#strongGlow)"
-                  initial={{ height: 0, y: y0 + ZONE_HEIGHT }}
-                  animate={{ height: filledHeight, y: yFilled }}
-                  transition={{ duration: 1.2, delay: i * 0.1, ease: "easeOut" }}
-                />
-              </motion.g>
-            );
-          })}
+              );
+            })}
+          </motion.g>
         </g>
 
         {/* Metrics attached to DNA strands - moving with rotation */}
