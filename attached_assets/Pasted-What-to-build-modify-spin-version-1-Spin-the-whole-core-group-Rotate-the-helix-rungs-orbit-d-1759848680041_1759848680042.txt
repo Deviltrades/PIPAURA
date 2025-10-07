@@ -1,0 +1,142 @@
+What to build/modify (spin version)
+1) Spin the whole core group
+
+Rotate the helix + rungs + orbit dots + beams together so connections stay correct. Keep text labels outside the rotating group so they remain readable.
+
+// TraderDNACore.tsx (key idea)
+import { motion, useAnimation } from "framer-motion";
+import { useEffect } from "react";
+
+export default function TraderDNACore({ metrics, spin=true }) {
+  const controls = useAnimation();
+  const health = Math.max(0, Math.min(100, metrics.edgeIntegrity));
+
+  // speed & direction map (gentle)
+  const spinSec = lerp(26, 10, health/100);     // 26s (weak) → 10s (strong)
+  const direction = health >= 50 ? 1 : -1;      // reverse when weak if you want
+
+  useEffect(() => {
+    if (!spin) return;
+    controls.start({
+      rotate: 360 * direction,
+      transition: { duration: spinSec, ease: "linear", repeat: Infinity }
+    });
+  }, [spin, spinSec, direction]);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {/* STATIC labels go OUTSIDE the rotating group */}
+      {/* … draw metric labels with HTML or separate <text> that is NOT in the motion.g … */}
+
+      {/* ROTATING CORE */}
+      <motion.g
+        animate={controls}
+        style={{ transformOrigin: `${cx}px ${cy}px`, willChange: "transform" }}
+        onMouseEnter={() => controls.stop()}     // pause on hover
+        onMouseLeave={() =>
+          controls.start({ rotate: 360 * direction,
+            transition: { duration: spinSec, ease: "linear", repeat: Infinity }})
+        }
+      >
+        {/* helix paths, rungs, orbit dots, beams all inside here */}
+      </motion.g>
+    </svg>
+  );
+}
+
+// helpers
+function lerp(a:number,b:number,t:number){ return a+(b-a)*t; }
+
+2) Add subtle breathing while spinning
+
+Keeps it alive without being noisy.
+
+<motion.g
+  animate={{
+    scale: [1, 1.015, 1],
+    opacity: [0.98, 1, 0.98]
+  }}
+  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+/>
+
+
+Place that inside the rotating group (wrap helix paths with it), not on the outermost group, so it doesn’t affect label positions.
+
+3) Counter-rotate orbit rings (optional but sexy)
+
+Make the orbit circles rotate slowly opposite the core for parallax.
+
+<motion.circle
+  cx={cx} cy={cy} r={orbitR}
+  fill="none" stroke="#3ee7ff14"
+  animate={{ rotate: -360 * direction }}
+  transition={{ duration: spinSec * 1.2, ease: "linear", repeat: Infinity }}
+  style={{ transformOrigin: `${cx}px ${cy}px` }}
+/>
+
+4) Keep text readable
+
+Put metric labels (Win Rate, Avg R:R, etc.) outside the rotating <motion.g>.
+
+If you want labels to appear “attached”, draw thin ghost arcs from the core (in the rotating group) to the static labels (outside).
+
+5) Health-driven color while spinning
+
+Use Edge Integrity to color the helix continuously (red → amber → green) even as it spins.
+
+const helixColor = lerp3(health/100, "#FF4D6D", "#FFB000", "#27E19C");
+// use helixColor as stroke on both helix strands
+
+6) Beam & dot feedback still matters
+
+Even with spinning, keep contribution strength visual:
+
+const beamW = (v:number)=> 1 + 3*(v/100);
+const beamO = (v:number)=> 0.18 + 0.65*(v/100);
+
+<line stroke={METRIC_COLOR} strokeWidth={beamW(val)} style={{opacity: beamO(val)}} />
+<motion.circle
+  cx={px} cy={py} fill={METRIC_COLOR}
+  animate={{ r: [8+6*(val/100)*0.95, 8+6*(val/100), 8+6*(val/100)*0.95] }}
+  transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+/>
+
+7) Performance & UX
+
+Add will-change: transform on the rotating group for GPU accel.
+
+Pause when tab hidden:
+
+useEffect(() => {
+  const h = () => document.hidden ? controls.stop() : controls.start({
+    rotate: 360 * direction, transition: { duration: spinSec, ease:"linear", repeat: Infinity }
+  });
+  document.addEventListener("visibilitychange", h);
+  return () => document.removeEventListener("visibilitychange", h);
+}, [spinSec, direction]);
+
+
+Respect reduced motion:
+
+const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (prefersReduced) spin = false;
+
+8) Props you can expose
+type Props = {
+  metrics: TraderMetrics;
+  spin?: boolean;                 // default true
+  spinSpeedMin?: number;          // e.g., 10s
+  spinSpeedMax?: number;          // e.g., 26s
+  reverseWhenWeak?: boolean;      // default true
+  pauseOnHover?: boolean;         // default true
+}
+
+What to tell the dev (paste this)
+
+Keep the DNA spinning, not the labels. Put helix, rungs, beams, and orbit dots inside a single <motion.g> and rotate that group around the center with Framer Motion (linear, infinite). Keep metric labels outside the rotating group so they stay readable.
+
+Set spin speed based on Edge Integrity (26s when weak → 10s when strong) and optionally reverse direction if integrity < 50. Add a subtle breathing (scale/opacity) to the helix while it spins.
+
+Beams and dots still reflect contribution strength: thickness/opacity and radius scale with metric values. Keep the helix stroke color mapped to integrity (red→amber→green) during spin.
+
+Pause rotation on hover and when the tab is hidden. Use will-change: transform, throttle realtime updates, and respect prefers-reduced-motion.
