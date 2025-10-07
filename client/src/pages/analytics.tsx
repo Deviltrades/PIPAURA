@@ -2,6 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Info } from "lucide-react";
+import { 
   LineChart, 
   Line, 
   ResponsiveContainer,
@@ -16,6 +24,7 @@ import { FloatingDNACore } from "@/components/FloatingDNACore";
 
 export default function Analytics() {
   const [hoveredMonthIndex, setHoveredMonthIndex] = useState<number | null>(null);
+  const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const { data: analytics, isLoading } = useQuery({
     queryKey: ["analytics"],
     queryFn: getAnalytics,
@@ -199,7 +208,16 @@ export default function Analytics() {
         {/* Monthly Orbit Rings */}
         <Card className="bg-[#0f1f3a] border-[#1a2f4a]" data-testid="card-monthly-orbit">
           <CardHeader>
-            <CardTitle className="text-xl text-white">Monthly Orbit Rings</CardTitle>
+            <CardTitle className="text-xl text-white flex items-center gap-2">
+              Monthly Orbit Rings
+              <button 
+                onClick={() => setIsInfoDialogOpen(true)}
+                className="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-cyan-400/20 transition-colors"
+                data-testid="button-info-orbit"
+              >
+                <Info className="w-4 h-4 text-cyan-400" />
+              </button>
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             {monthlyOrbitData.length > 0 ? (
@@ -415,6 +433,100 @@ export default function Analytics() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Info Dialog */}
+      <Dialog open={isInfoDialogOpen} onOpenChange={setIsInfoDialogOpen}>
+        <DialogContent className="bg-[#0f1f3a] border-[#1a2f4a] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-cyan-400 mb-2">Monthly Orbit Rings</DialogTitle>
+            <DialogDescription className="text-gray-300 text-base">
+              Visualize your monthly trading performance at a glance.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 text-gray-300">
+            <div>
+              <p className="leading-relaxed">
+                Each orbit ring represents one month of trading activity — the closer to the center, the more recent the month.
+              </p>
+            </div>
+            
+            <div>
+              <p className="leading-relaxed">
+                Hover over any month to highlight its ring and reveal that month's profit percentage.
+              </p>
+            </div>
+            
+            <div>
+              <p className="leading-relaxed">
+                The center value shows your current month's performance (updated live).
+              </p>
+            </div>
+            
+            <div>
+              <p className="leading-relaxed">
+                The best-performing month is displayed below for quick reference.
+              </p>
+            </div>
+            
+            <div className="pt-4 border-t border-gray-700">
+              <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+                💡 Why it helps
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="font-semibold text-white mb-1">Spot momentum:</p>
+                  <p className="text-sm leading-relaxed">
+                    See instantly whether your performance is improving month-to-month. Expanding inner rings show growing returns; contracting or red rings warn of slowdown.
+                  </p>
+                </div>
+                
+                <div>
+                  <p className="font-semibold text-white mb-1">Pattern recognition:</p>
+                  <p className="text-sm leading-relaxed">
+                    Notice seasonal or session-based trends in your consistency.
+                  </p>
+                </div>
+                
+                <div>
+                  <p className="font-semibold text-white mb-1">Goal tracking:</p>
+                  <p className="text-sm leading-relaxed">
+                    Use the central ring as your "target orbit." Each new month aims to move further outward with higher percentage growth.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="pt-4 border-t border-gray-700">
+              <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+                🧭 Quick tips
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="font-semibold text-white mb-1">Hover a ring:</p>
+                  <p className="text-sm leading-relaxed">
+                    Highlights the month and shows its % gain/loss.
+                  </p>
+                </div>
+                
+                <div>
+                  <p className="font-semibold text-white mb-1">Compare ring thickness:</p>
+                  <p className="text-sm leading-relaxed">
+                    Thicker, brighter rings = stronger consistency.
+                  </p>
+                </div>
+                
+                <div>
+                  <p className="font-semibold text-white mb-1">Use it with your DNA Score:</p>
+                  <p className="text-sm leading-relaxed">
+                    Rising orbit performance usually aligns with higher Edge Integrity — both metrics feed each other.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
