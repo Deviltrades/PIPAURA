@@ -99,7 +99,7 @@ export function FloatingDNACore() {
   const DNA_HEIGHT = DNA_BOTTOM - DNA_TOP; // 480
   const ZONE_HEIGHT = DNA_HEIGHT / 6; // 80 each
 
-  // Get smooth flowing color based on Y position
+  // Get smooth flowing color based on Y position (for gradient with fill logic)
   const getFlowingColorAtY = (y: number) => {
     // Normalize Y from -240 to 240 into 0 to 1
     const normalizedY = (y - DNA_TOP) / DNA_HEIGHT;
@@ -122,6 +122,14 @@ export function FloatingDNACore() {
       // Unfilled - return white/neutral
       return 'rgba(220,230,240,0.7)';
     }
+  };
+
+  // Get zone color based on Y position (always returns zone color, ignores fill)
+  const getZoneColorAtY = (y: number) => {
+    const normalizedY = (y - DNA_TOP) / DNA_HEIGHT;
+    const zoneIndex = Math.floor(normalizedY * 6);
+    const clampedIndex = Math.max(0, Math.min(5, zoneIndex));
+    return dnaZones[clampedIndex].color;
   };
 
   // Generate DNA points for smooth curves
@@ -287,7 +295,7 @@ export function FloatingDNACore() {
               const avgZ = (point1.z + point2.z) / 2;
               const depthFactor = (avgZ + 60) / 120;
               const strokeWidth = 5 + depthFactor * 2;
-              const rungColor = getFlowingColorAtY(yPosition);
+              const rungColor = getZoneColorAtY(yPosition); // Always use zone color
 
               return (
                 <g key={`rung-${i}`}>
@@ -297,7 +305,7 @@ export function FloatingDNACore() {
                     y1={point1.y}
                     x2={point2.x}
                     y2={point2.y}
-                    stroke="rgba(0,0,0,0.5)"
+                    stroke="rgba(0,0,0,0.6)"
                     strokeWidth={strokeWidth + 1}
                     strokeLinecap="round"
                     initial={{ opacity: 0 }}
