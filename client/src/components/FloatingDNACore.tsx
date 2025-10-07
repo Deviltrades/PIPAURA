@@ -159,11 +159,13 @@ export function FloatingDNACore() {
     { name: "Session Focus", value: metrics.sessionFocus, angle: 300, color: "#06b6d4" },
   ];
 
-  // DNA helix color based on Edge Integrity
+  // DNA helix color - blue/cyan with intensity based on Edge Integrity
   const getHelixColor = (integrity: number) => {
-    const red = Math.round(255 * (1 - integrity / 100));
-    const green = Math.round(255 * (integrity / 100));
-    return `rgb(${red}, ${green}, 100)`;
+    // Brighter cyan/blue when integrity is higher
+    const intensity = 0.5 + (integrity / 100) * 0.5; // 0.5 to 1.0
+    const cyan = Math.round(220 * intensity);
+    const blue = Math.round(255 * intensity);
+    return `rgb(0, ${cyan}, ${blue})`;
   };
 
   const helixColor = getHelixColor(metrics.edgeIntegrity);
@@ -177,17 +179,19 @@ export function FloatingDNACore() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Glow filters */}
+          {/* Enhanced glow filters for cyan/blue DNA */}
           <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
             <feMerge>
+              <feMergeNode in="coloredBlur" />
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
           <filter id="strongGlow">
-            <feGaussianBlur stdDeviation="5" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="8" result="coloredBlur" />
             <feMerge>
+              <feMergeNode in="coloredBlur" />
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
@@ -214,10 +218,10 @@ export function FloatingDNACore() {
                   y2={y}
                   stroke={helixColor}
                   strokeWidth="2"
-                  opacity={0.4}
+                  opacity={0.7}
                   filter="url(#glow)"
                   initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 0.4 }}
+                  animate={{ pathLength: 1, opacity: 0.7 }}
                   transition={{ duration: 1, delay: i * 0.1 }}
                 />
                 
@@ -252,10 +256,10 @@ export function FloatingDNACore() {
           <motion.path
             d={`M ${Math.sin(0) * 60} -220 Q ${Math.sin(45 * Math.PI / 180) * 60} -180, ${Math.sin(90 * Math.PI / 180) * 60} -140 T ${Math.sin(180 * Math.PI / 180) * 60} -60 T ${Math.sin(270 * Math.PI / 180) * 60} 20 T ${Math.sin(360 * Math.PI / 180) * 60} 100 T ${Math.sin(450 * Math.PI / 180) * 60} 180 T ${Math.sin(540 * Math.PI / 180) * 60} 260`}
             stroke={helixColor}
-            strokeWidth="3"
+            strokeWidth="4"
             fill="none"
-            opacity={0.6}
-            filter="url(#glow)"
+            opacity={0.9}
+            filter="url(#strongGlow)"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 2, ease: "easeInOut" }}
@@ -264,10 +268,10 @@ export function FloatingDNACore() {
           <motion.path
             d={`M ${Math.sin(180 * Math.PI / 180) * 60} -220 Q ${Math.sin(225 * Math.PI / 180) * 60} -180, ${Math.sin(270 * Math.PI / 180) * 60} -140 T ${Math.sin(360 * Math.PI / 180) * 60} -60 T ${Math.sin(450 * Math.PI / 180) * 60} 20 T ${Math.sin(540 * Math.PI / 180) * 60} 100 T ${Math.sin(630 * Math.PI / 180) * 60} 180 T ${Math.sin(720 * Math.PI / 180) * 60} 260`}
             stroke={helixColor}
-            strokeWidth="3"
+            strokeWidth="4"
             fill="none"
-            opacity={0.6}
-            filter="url(#glow)"
+            opacity={0.9}
+            filter="url(#strongGlow)"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 2, ease: "easeInOut", delay: 0.2 }}
