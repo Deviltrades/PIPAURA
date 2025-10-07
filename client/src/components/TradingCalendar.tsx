@@ -644,156 +644,140 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   return (
     <Card className={`${className} bg-background border`}>
       <CardContent className="p-3 sm:p-6">
+        {/* Settings Icon - Top Right */}
+        <div className="absolute top-3 right-3 sm:top-6 sm:right-6 z-10">
+          <Link href="/calendar-settings">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0 hover:bg-muted rounded-full"
+              title="Calendar Settings"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+
         {/* Header with Month Navigation and Display Mode Toggle */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Clear View Toggle */}
-            <Button
-              variant={clearView ? "default" : "outline"}
-              size="sm"
-              onClick={() => setClearView(!clearView)}
-              className="text-xs h-9"
-              data-testid="button-clear-view"
-            >
-              Clear View
-            </Button>
-            
-            {/* Month/Year Selectors */}
-            <Select 
-              value={viewMonth.getMonth().toString()} 
-              onValueChange={handleMonthChange}
-            >
-              <SelectTrigger className="w-[100px] sm:w-[120px] h-9 text-xs sm:text-sm" data-testid="select-month">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {monthNames.map((name, index) => (
-                  <SelectItem key={index} value={index.toString()}>
-                    {name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Select 
-              value={viewMonth.getFullYear().toString()} 
-              onValueChange={handleYearChange}
-            >
-              <SelectTrigger className="w-[75px] sm:w-[90px] h-9 text-xs sm:text-sm" data-testid="select-year">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {yearOptions.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            {!clearView && (
-              <>
-                <Select value={displayMode} onValueChange={(value: "percentage" | "dollar") => setDisplayMode(value)}>
-                  <SelectTrigger className="w-16 sm:w-20 h-9 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="percentage">%</SelectItem>
-                    <SelectItem value="dollar">$</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-9 text-xs sm:text-sm" data-testid="button-optionals">
-                      Optionals
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-56" align="start">
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-sm mb-3">Display Options</h4>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="weekends-check"
-                          checked={showWeekends} 
-                          onCheckedChange={(checked) => setShowWeekends(checked === true)}
-                          data-testid="checkbox-weekends"
-                        />
-                        <Label htmlFor="weekends-check" className="text-sm font-normal cursor-pointer">
-                          Weekends
-                        </Label>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="weekly-totals-check"
-                          checked={showWeeklyTotals} 
-                          onCheckedChange={(checked) => setShowWeeklyTotals(checked === true)}
-                          data-testid="checkbox-weekly-totals"
-                        />
-                        <Label htmlFor="weekly-totals-check" className="text-sm font-normal cursor-pointer">
-                          Weekly Totals
-                        </Label>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="monthly-stats-check"
-                          checked={showMonthlySummary} 
-                          onCheckedChange={(checked) => setShowMonthlySummary(checked === true)}
-                          data-testid="checkbox-monthly-stats"
-                        />
-                        <Label htmlFor="monthly-stats-check" className="text-sm font-normal cursor-pointer">
-                          Monthly Stats
-                        </Label>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="consistency-check"
-                          checked={showConsistencyTracker} 
-                          onCheckedChange={(checked) => setShowConsistencyTracker(checked === true)}
-                          data-testid="checkbox-consistency"
-                        />
-                        <Label htmlFor="consistency-check" className="text-sm font-normal cursor-pointer">
-                          Consistency
-                        </Label>
-                      </div>
+        <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
+          {/* Clear View Toggle */}
+          <Button
+            variant={clearView ? "default" : "outline"}
+            size="sm"
+            onClick={() => setClearView(!clearView)}
+            className="text-xs h-9"
+            data-testid="button-clear-view"
+          >
+            Clear View
+          </Button>
+          
+          {/* Month/Year Selectors */}
+          <Select 
+            value={viewMonth.getMonth().toString()} 
+            onValueChange={handleMonthChange}
+          >
+            <SelectTrigger className="w-[100px] sm:w-[120px] h-9 text-xs sm:text-sm" data-testid="select-month">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {monthNames.map((name, index) => (
+                <SelectItem key={index} value={index.toString()}>
+                  {name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Select 
+            value={viewMonth.getFullYear().toString()} 
+            onValueChange={handleYearChange}
+          >
+            <SelectTrigger className="w-[75px] sm:w-[90px] h-9 text-xs sm:text-sm" data-testid="select-year">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {yearOptions.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {!clearView && (
+            <>
+              <Select value={displayMode} onValueChange={(value: "percentage" | "dollar") => setDisplayMode(value)}>
+                <SelectTrigger className="w-16 sm:w-20 h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="percentage">%</SelectItem>
+                  <SelectItem value="dollar">$</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9 text-xs sm:text-sm" data-testid="button-optionals">
+                    Optionals
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56" align="start">
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm mb-3">Display Options</h4>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="weekends-check"
+                        checked={showWeekends} 
+                        onCheckedChange={(checked) => setShowWeekends(checked === true)}
+                        data-testid="checkbox-weekends"
+                      />
+                      <Label htmlFor="weekends-check" className="text-sm font-normal cursor-pointer">
+                        Weekends
+                      </Label>
                     </div>
-                  </PopoverContent>
-                </Popover>
-              </>
-            )}
-          </div>
-          <div className="flex items-center gap-2 self-end sm:self-auto">
-            <Link href="/calendar-settings">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 hover:bg-muted"
-                title="Calendar Settings"
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigateMonth("prev")}
-              className="h-8 w-8 p-0 hover:bg-muted"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigateMonth("next")}
-              className="h-8 w-8 p-0 hover:bg-muted"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="weekly-totals-check"
+                        checked={showWeeklyTotals} 
+                        onCheckedChange={(checked) => setShowWeeklyTotals(checked === true)}
+                        data-testid="checkbox-weekly-totals"
+                      />
+                      <Label htmlFor="weekly-totals-check" className="text-sm font-normal cursor-pointer">
+                        Weekly Totals
+                      </Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="monthly-stats-check"
+                        checked={showMonthlySummary} 
+                        onCheckedChange={(checked) => setShowMonthlySummary(checked === true)}
+                        data-testid="checkbox-monthly-stats"
+                      />
+                      <Label htmlFor="monthly-stats-check" className="text-sm font-normal cursor-pointer">
+                        Monthly Stats
+                      </Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="consistency-check"
+                        checked={showConsistencyTracker} 
+                        onCheckedChange={(checked) => setShowConsistencyTracker(checked === true)}
+                        data-testid="checkbox-consistency"
+                      />
+                      <Label htmlFor="consistency-check" className="text-sm font-normal cursor-pointer">
+                        Consistency
+                      </Label>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </>
+          )}
         </div>
 
         {/* Filter Controls */}
