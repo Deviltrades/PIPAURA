@@ -313,7 +313,7 @@ export default function Analytics() {
                             y={y}
                             textAnchor="middle"
                             dominantBaseline="middle"
-                            className={`text-[11px] font-bold transition-all ${
+                            className={`text-[13px] font-bold transition-all ${
                               isHovered 
                                 ? (isProfitable ? 'fill-cyan-400' : 'fill-red-400')
                                 : 'fill-gray-500'
