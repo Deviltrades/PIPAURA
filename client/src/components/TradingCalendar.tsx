@@ -38,6 +38,7 @@ import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { getTrades, updateTrade, uploadFile, getCalendarSettings, updateCalendarSettings } from "@/lib/supabase-service";
+import { useUserProfile } from "@/hooks/use-user-profile";
 
 interface TradingCalendarProps {
   className?: string;
@@ -268,11 +269,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     retry: false,
   });
 
-  // Fetch user data for calendar settings
-  const { data: user } = useQuery<User>({
-    queryKey: ["/api/auth/user"],
-    staleTime: 0, // Always refetch to get latest calendar settings
-  });
+  // Get user profile for calendar settings
+  const { profile } = useUserProfile();
 
   // Apply filters to trades
   const filteredTrades = trades ? trades.filter(trade => {
@@ -628,6 +626,14 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
+  // Get calendar settings for the card styling
+  const cardCalendarSettings = (profile?.calendar_settings as any) || {
+    backgroundColor: "#1a1a1a",
+    borderColor: "#374151",
+    dayBackgroundColor: "#2d2d2d",
+    dayBorderColor: "#4b5563"
+  };
+
   if (isLoading) {
     return (
       <Card className={className}>
@@ -642,7 +648,15 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   }
 
   return (
-    <Card className={`${className} bg-background border`}>
+    <Card 
+      className={`${className}`}
+      style={{
+        backgroundColor: cardCalendarSettings.backgroundColor,
+        borderColor: cardCalendarSettings.borderColor,
+        borderWidth: '2px',
+        borderStyle: 'solid'
+      }}
+    >
       <CardContent className="p-3 sm:p-6">
         {/* Header with Month Navigation and Display Mode Toggle */}
         <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
@@ -1058,7 +1072,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
             
             // Get calendar settings with proper typing
-            const calendar_settings = (user?.calendar_settings as any) || {
+            const calendar_settings = (profile?.calendar_settings as any) || {
               backgroundColor: "#1a1a1a",
               borderColor: "#374151",
               dayBackgroundColor: "#2d2d2d",
@@ -1080,8 +1094,8 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
             const getDayStyles = () => {
               if (dayTrades.length === 0) {
                 return {
-                  backgroundColor: '#1a1a1a',
-                  borderColor: '#374151',
+                  backgroundColor: calendar_settings.dayBackgroundColor,
+                  borderColor: calendar_settings.dayBorderColor,
                   textColor: 'text-white',
                   boxShadow: 'none'
                 };
