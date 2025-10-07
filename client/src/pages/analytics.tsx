@@ -115,7 +115,7 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-xl sm:text-2xl lg:text-3xl font-bold break-words ${stats.totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div className={`text-lg sm:text-xl lg:text-2xl font-bold whitespace-nowrap overflow-hidden ${stats.totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
               {formatCurrency(stats.totalPnL)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -132,7 +132,7 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-400">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-400 whitespace-nowrap">
               {stats.winRate.toFixed(1)}%
             </div>
             <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
@@ -152,7 +152,7 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-xl sm:text-2xl lg:text-3xl font-bold ${stats.profitFactor >= 1 ? 'text-purple-400' : 'text-orange-400'}`}>
+            <div className={`text-lg sm:text-xl lg:text-2xl font-bold whitespace-nowrap ${stats.profitFactor >= 1 ? 'text-purple-400' : 'text-orange-400'}`}>
               {stats.profitFactor >= 999 ? '∞' : stats.profitFactor.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -169,7 +169,7 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-400">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold text-red-400 whitespace-nowrap">
               {stats.maxDrawdown.toFixed(1)}%
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -322,7 +322,7 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-xl lg:text-2xl font-bold break-words ${stats.averageMonthlyReturn >= 0 ? 'text-blue-400' : 'text-orange-400'}`}>
+            <div className={`text-lg lg:text-xl font-bold whitespace-nowrap overflow-hidden ${stats.averageMonthlyReturn >= 0 ? 'text-blue-400' : 'text-orange-400'}`}>
               {formatCurrency(stats.averageMonthlyReturn)}
             </div>
           </CardContent>
@@ -335,7 +335,7 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl lg:text-2xl font-bold break-words text-green-500">
+            <div className="text-lg lg:text-xl font-bold whitespace-nowrap overflow-hidden text-green-500">
               {formatCurrency(stats.bestMonth)}
             </div>
           </CardContent>
@@ -348,7 +348,7 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl lg:text-2xl font-bold break-words text-red-500">
+            <div className="text-lg lg:text-xl font-bold whitespace-nowrap overflow-hidden text-red-500">
               {formatCurrency(stats.worstMonth)}
             </div>
           </CardContent>
@@ -361,7 +361,7 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl lg:text-2xl font-bold text-purple-400">
+            <div className="text-lg lg:text-xl font-bold text-purple-400 whitespace-nowrap">
               {stats.bestMonth > 0 && stats.worstMonth < 0 
                 ? `${((stats.bestMonth - stats.worstMonth) / stats.bestMonth * 100).toFixed(0)}%`
                 : 'N/A'
