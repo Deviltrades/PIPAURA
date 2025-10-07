@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 import { getAnalytics } from "@/lib/supabase-service";
+import { FloatingDNACore } from "@/components/FloatingDNACore";
 
 export default function Analytics() {
   const { data: analytics, isLoading } = useQuery({
@@ -123,6 +124,19 @@ export default function Analytics() {
             <div className="text-2xl lg:text-3xl font-bold text-red-500" data-testid="text-max-drawdown">
               +{stats.maxDrawdown.toFixed(2)}%
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* DNA Core Intelligence Visualization */}
+      <div className="mb-6">
+        <Card className="bg-[#0f1f3a] border-[#1a2f4a]" data-testid="card-dna-core">
+          <CardHeader>
+            <CardTitle className="text-xl text-white">Trader DNA Core</CardTitle>
+            <p className="text-sm text-gray-400">Real-time intelligence core showing your trading genome</p>
+          </CardHeader>
+          <CardContent className="p-6">
+            <FloatingDNACore />
           </CardContent>
         </Card>
       </div>
