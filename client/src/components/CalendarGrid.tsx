@@ -1,8 +1,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CalendarGridProps {
   dailyPnL: Record<string, number>;
@@ -33,6 +40,20 @@ export function CalendarGrid({ dailyPnL }: CalendarGridProps) {
   const nextMonth = () => {
     setCurrentDate(new Date(year, month + 1, 1));
   };
+
+  const handleMonthChange = (value: string) => {
+    const newMonth = parseInt(value);
+    setCurrentDate(new Date(year, newMonth, 1));
+  };
+
+  const handleYearChange = (value: string) => {
+    const newYear = parseInt(value);
+    setCurrentDate(new Date(newYear, month, 1));
+  };
+
+  // Generate year options (current year ± 5 years)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
   const getDayPnL = (day: number) => {
     const date = new Date(year, month, day).toISOString().split('T')[0];
@@ -96,13 +117,40 @@ export function CalendarGrid({ dailyPnL }: CalendarGridProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>{monthNames[month]} {year}</CardTitle>
+        <div className="flex justify-between items-center flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <Select value={month.toString()} onValueChange={handleMonthChange}>
+              <SelectTrigger className="w-[140px]" data-testid="select-month">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {monthNames.map((name, index) => (
+                  <SelectItem key={index} value={index.toString()}>
+                    {name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={year.toString()} onValueChange={handleYearChange}>
+              <SelectTrigger className="w-[100px]" data-testid="select-year">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {yearOptions.map((y) => (
+                  <SelectItem key={y} value={y.toString()}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm" onClick={previousMonth}>
+            <Button variant="outline" size="sm" onClick={previousMonth} data-testid="button-prev-month">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={nextMonth}>
+            <Button variant="outline" size="sm" onClick={nextMonth} data-testid="button-next-month">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
