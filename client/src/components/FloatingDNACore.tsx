@@ -198,8 +198,17 @@ export function FloatingDNACore() {
           </filter>
         </defs>
 
-        {/* DNA Double Helix */}
-        <g transform="translate(400, 300)">
+        {/* DNA Double Helix - Spinning */}
+        <motion.g
+          transform="translate(400, 300)"
+          animate={{ rotate: 360 }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+          style={{ transformOrigin: "0px 0px" }}
+        >
           {/* Draw helix strands */}
           {Array.from({ length: 12 }).map((_, i) => {
             const y = (i - 5.5) * 40;
@@ -276,7 +285,7 @@ export function FloatingDNACore() {
             animate={{ pathLength: 1 }}
             transition={{ duration: 2, ease: "easeInOut", delay: 0.2 }}
           />
-        </g>
+        </motion.g>
 
         {/* Orbiting Metrics */}
         {orbitingMetrics.map((metric, index) => {
