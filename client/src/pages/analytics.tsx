@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   LineChart, 
@@ -14,6 +15,7 @@ import { getAnalytics } from "@/lib/supabase-service";
 import { FloatingDNACore } from "@/components/FloatingDNACore";
 
 export default function Analytics() {
+  const [hoveredMonthIndex, setHoveredMonthIndex] = useState<number | null>(null);
   const { data: analytics, isLoading } = useQuery({
     queryKey: ["analytics"],
     queryFn: getAnalytics,
@@ -72,9 +74,6 @@ export default function Analytics() {
     pnl: m.pnl,
     fullMonth: m.month
   }));
-  
-  // Debug: Log the data
-  console.log('Monthly Orbit Data:', monthlyOrbitData);
 
   // Get current month for highlighting
   const currentDate = new Date();
@@ -226,17 +225,42 @@ export default function Analytics() {
                       const spacing = totalSpan / (monthlyOrbitData.length > 1 ? monthlyOrbitData.length - 1 : 1);
                       const radius = 140 - (i * spacing);
                       const isProfitable = data.pnl >= 0;
+                      const isHovered = hoveredMonthIndex === i;
+                      const baseColor = isProfitable ? "#06b6d4" : "#ef4444";
+                      
                       return (
-                        <circle 
-                          key={`orbit-${i}`}
-                          cx="200" 
-                          cy="200" 
-                          r={radius} 
-                          fill="none" 
-                          stroke={isProfitable ? "#06b6d4" : "#ef4444"} 
-                          strokeWidth="3" 
-                          opacity="0.8" 
-                        />
+                        <g key={`orbit-${i}`}>
+                          {/* Glow effect when hovered */}
+                          {isHovered && (
+                            <circle 
+                              cx="200" 
+                              cy="200" 
+                              r={radius} 
+                              fill="none" 
+                              stroke={baseColor} 
+                              strokeWidth="12" 
+                              opacity="0.3" 
+                              filter="blur(8px)"
+                            />
+                          )}
+                          {/* Main ring */}
+                          <circle 
+                            cx="200" 
+                            cy="200" 
+                            r={radius} 
+                            fill="none" 
+                            stroke={baseColor} 
+                            strokeWidth={isHovered ? "5" : "3"} 
+                            opacity={isHovered ? "1" : "0.8"} 
+                            style={{ 
+                              transition: 'all 0.3s ease',
+                              cursor: 'pointer'
+                            }}
+                            onMouseEnter={() => setHoveredMonthIndex(i)}
+                            onMouseLeave={() => setHoveredMonthIndex(null)}
+                            onClick={() => setHoveredMonthIndex(hoveredMonthIndex === i ? null : i)}
+                          />
+                        </g>
                       );
                     })}
                     
@@ -267,19 +291,42 @@ export default function Analytics() {
                       const radius = 160;
                       const x = 200 + radius * Math.cos(angle);
                       const y = 200 + radius * Math.sin(angle);
+                      const isHovered = hoveredMonthIndex === i;
+                      const isProfitable = data.pnl >= 0;
                       
                       return (
-                        <text
-                          key={`month-${i}`}
-                          x={x}
-                          y={y}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          className="text-[11px] fill-gray-500"
-                          fontFamily="system-ui, -apple-system, sans-serif"
-                        >
-                          {data.month.toUpperCase()}
-                        </text>
+                        <g key={`month-${i}`}>
+                          {/* Interactive background for better click/hover area */}
+                          <circle
+                            cx={x}
+                            cy={y}
+                            r="20"
+                            fill="transparent"
+                            style={{ cursor: 'pointer' }}
+                            onMouseEnter={() => setHoveredMonthIndex(i)}
+                            onMouseLeave={() => setHoveredMonthIndex(null)}
+                            onClick={() => setHoveredMonthIndex(hoveredMonthIndex === i ? null : i)}
+                          />
+                          {/* Month label */}
+                          <text
+                            x={x}
+                            y={y}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            className={`text-[11px] font-bold transition-all ${
+                              isHovered 
+                                ? (isProfitable ? 'fill-cyan-400' : 'fill-red-400')
+                                : 'fill-gray-500'
+                            }`}
+                            fontFamily="system-ui, -apple-system, sans-serif"
+                            style={{ 
+                              cursor: 'pointer',
+                              pointerEvents: 'none'
+                            }}
+                          >
+                            {data.month.toUpperCase()}
+                          </text>
+                        </g>
                       );
                     })}
                     
@@ -287,25 +334,61 @@ export default function Analytics() {
                     <circle cx="200" cy="200" r="65" fill="none" stroke="#06b6d4" strokeWidth="2" opacity="0.8" />
                     <circle cx="200" cy="200" r="50" fill="none" stroke="#06b6d4" strokeWidth="2" opacity="0.6" />
                     
-                    {/* Center text */}
-                    <text
-                      x="200"
-                      y="190"
-                      textAnchor="middle"
-                      className="text-[18px] fill-white font-normal"
-                      fontFamily="system-ui, -apple-system, sans-serif"
-                    >
-                      {stats.bestMonthName.split(' ')[0]}
-                    </text>
-                    <text
-                      x="200"
-                      y="215"
-                      textAnchor="middle"
-                      className="text-[20px] fill-cyan-400 font-bold"
-                      fontFamily="system-ui, -apple-system, sans-serif"
-                    >
-                      {stats.bestMonth > 0 ? '+' : ''}{((stats.bestMonth / (stats.totalPnL || 1)) * 100).toFixed(1)}%
-                    </text>
+                    {/* Center text - shows hovered month info or best month */}
+                    {hoveredMonthIndex !== null ? (
+                      <>
+                        <text
+                          x="200"
+                          y="180"
+                          textAnchor="middle"
+                          className="text-[16px] fill-white font-normal"
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                        >
+                          {monthlyOrbitData[hoveredMonthIndex].fullMonth}
+                        </text>
+                        <text
+                          x="200"
+                          y="205"
+                          textAnchor="middle"
+                          className={`text-[22px] font-bold ${
+                            monthlyOrbitData[hoveredMonthIndex].pnl >= 0 ? 'fill-cyan-400' : 'fill-red-400'
+                          }`}
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                        >
+                          {monthlyOrbitData[hoveredMonthIndex].pnl > 0 ? '+' : ''}{((monthlyOrbitData[hoveredMonthIndex].pnl / (stats.totalPnL || 1)) * 100).toFixed(1)}%
+                        </text>
+                        <text
+                          x="200"
+                          y="225"
+                          textAnchor="middle"
+                          className="text-[14px] fill-gray-400"
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                        >
+                          {formatCurrency(monthlyOrbitData[hoveredMonthIndex].pnl)}
+                        </text>
+                      </>
+                    ) : (
+                      <>
+                        <text
+                          x="200"
+                          y="190"
+                          textAnchor="middle"
+                          className="text-[18px] fill-white font-normal"
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                        >
+                          {stats.bestMonthName.split(' ')[0]}
+                        </text>
+                        <text
+                          x="200"
+                          y="215"
+                          textAnchor="middle"
+                          className="text-[20px] fill-cyan-400 font-bold"
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                        >
+                          {stats.bestMonth > 0 ? '+' : ''}{((stats.bestMonth / (stats.totalPnL || 1)) * 100).toFixed(1)}%
+                        </text>
+                      </>
+                    )}
                   </svg>
                 </div>
                 
