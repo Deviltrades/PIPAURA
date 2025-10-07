@@ -83,24 +83,28 @@ export function FloatingDNACore() {
     { name: 'Session Focus', value: metrics.sessionFocus, color: '#DA70D6', angle: 300, yPosition: 200 },
   ];
 
-  // Get color based on vertical position (y) for gradient effect
+  // Get color based on vertical position (y) for gradient effect - smooth professional gradient
   const getColorForPosition = (y: number) => {
     // Map y from -250 to 250 to 0 to 1
     const normalizedY = (y + 250) / 500;
     
-    // Define color stops to match reference: bright cyan -> blue -> purple -> bright magenta
-    if (normalizedY < 0.33) {
-      // Top section: bright cyan to blue
-      const t = normalizedY / 0.33;
-      return `hsl(${190 - t * 10}, 100%, ${55 - t * 5}%)`; // Cyan to blue
-    } else if (normalizedY < 0.66) {
-      // Middle: blue to purple transition
-      const t = (normalizedY - 0.33) / 0.33;
-      return `hsl(${180 - t * 90}, 100%, 50%)`; // Blue to purple hue
+    // Professional gradient: Cyan → Cyan-Blue → Green → Purple → Magenta
+    if (normalizedY < 0.25) {
+      // Top: Bright cyan
+      const t = normalizedY / 0.25;
+      return `hsl(${190 - t * 10}, 100%, ${60 - t * 5}%)`; // Cyan #00D4FF
+    } else if (normalizedY < 0.5) {
+      // Upper-middle: Cyan to Green transition
+      const t = (normalizedY - 0.25) / 0.25;
+      return `hsl(${180 - t * 60}, 100%, ${55 - t * 5}%)`; // Cyan to Green
+    } else if (normalizedY < 0.75) {
+      // Lower-middle: Green to Purple transition
+      const t = (normalizedY - 0.5) / 0.25;
+      return `hsl(${120 + t * 150}, ${100 - t * 10}%, ${50 + t * 5}%)`; // Green to Purple
     } else {
-      // Bottom section: purple to bright magenta
-      const t = (normalizedY - 0.66) / 0.34;
-      return `hsl(${270 + t * 40}, 100%, ${50 + t * 15}%)`; // Purple to magenta
+      // Bottom: Purple to Bright Magenta
+      const t = (normalizedY - 0.75) / 0.25;
+      return `hsl(${270 + t * 30}, ${90 + t * 10}%, ${55 + t * 10}%)`; // Magenta #FF00FF
     }
   };
 
@@ -364,54 +368,12 @@ export function FloatingDNACore() {
               );
             })}
 
-            {/* Glowing nodes along strands */}
-            {strand1Outer.filter((_, i) => i % 5 === 0).map((point, i) => {
-              const depthFactor = (point.z + 80) / 160;
-              const size = 4 + depthFactor * 3;
-              const opacity = 0.7 + depthFactor * 0.3;
 
-              return (
-                <motion.circle
-                  key={`node1-outer-${i}`}
-                  cx={point.x}
-                  cy={point.y}
-                  r={size}
-                  fill={point.color}
-                  opacity={opacity}
-                  filter="url(#strongGlow)"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity }}
-                  transition={{ duration: 0.5, delay: i * 0.04 }}
-                />
-              );
-            })}
-
-            {strand2Outer.filter((_, i) => i % 5 === 0).map((point, i) => {
-              const depthFactor = (point.z + 80) / 160;
-              const size = 4 + depthFactor * 3;
-              const opacity = 0.7 + depthFactor * 0.3;
-
-              return (
-                <motion.circle
-                  key={`node2-outer-${i}`}
-                  cx={point.x}
-                  cy={point.y}
-                  r={size}
-                  fill={point.color}
-                  opacity={opacity}
-                  filter="url(#strongGlow)"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity }}
-                  transition={{ duration: 0.5, delay: i * 0.04 }}
-                />
-              );
-            })}
-
-            {/* Floating particles around DNA */}
-            {Array.from({ length: 30 }).map((_, i) => {
-              const t = i / 30;
+            {/* Subtle floating particles around DNA */}
+            {Array.from({ length: 12 }).map((_, i) => {
+              const t = i / 12;
               const y = (t - 0.5) * 480;
-              const radius = 80 + Math.random() * 40;
+              const radius = 90 + Math.random() * 30;
               const angle = (Math.random() * 360 + rotationPhase * 0.5) * Math.PI / 180;
               const x = Math.cos(angle) * radius;
               const particleZ = Math.sin(angle) * radius;
@@ -423,16 +385,16 @@ export function FloatingDNACore() {
                   key={`particle-${i}`}
                   cx={x}
                   cy={y}
-                  r={1 + Math.random() * 2}
+                  r={1.5}
                   fill={particleColor}
-                  opacity={0.3 + particleDepth * 0.4}
+                  opacity={0.25 + particleDepth * 0.25}
                   filter="url(#softGlow)"
                   animate={{
-                    opacity: [0.2, 0.6, 0.2],
-                    scale: [0.8, 1.2, 0.8],
+                    opacity: [0.15, 0.4, 0.15],
+                    scale: [0.9, 1.1, 0.9],
                   }}
                   transition={{
-                    duration: 2 + Math.random() * 2,
+                    duration: 3 + Math.random() * 2,
                     repeat: Infinity,
                     delay: Math.random() * 2,
                   }}
