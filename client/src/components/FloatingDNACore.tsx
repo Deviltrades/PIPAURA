@@ -382,7 +382,7 @@ export function FloatingDNACore() {
 
       {/* Edge Integrity Score Display - Below Metrics Box - Mobile Responsive */}
       <motion.div
-        className="absolute bottom-[80px] left-2 md:top-[220px] md:left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-3 py-2 md:px-4 md:pt-2 md:pb-0.5 text-center"
+        className="absolute bottom-[80px] left-2 md:top-[220px] md:left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-3 pt-1.5 pb-1 md:px-4 md:pt-2 md:pb-1 text-center"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 1.5 }}
@@ -458,11 +458,11 @@ export function FloatingDNACore() {
           </DialogContent>
         </Dialog>
 
-        <div className="text-[9px] md:text-xs font-semibold text-cyan-400 mb-0.5 md:mb-1 leading-tight" data-testid="label-edge-integrity">
+        <div className="text-[9px] md:text-xs font-semibold text-cyan-400 mb-0 leading-none" data-testid="label-edge-integrity">
           EDGE INTEGRITY SCORE
         </div>
         <div 
-          className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent leading-none pb-0"
+          className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent leading-none"
           data-testid="value-edge-integrity"
         >
           {metrics.edgeIntegrity.toFixed(1)}%
