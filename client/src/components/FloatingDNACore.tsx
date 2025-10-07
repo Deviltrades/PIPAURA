@@ -219,9 +219,9 @@ export function FloatingDNACore() {
           </filter>
         </defs>
 
-        {/* DNA Double Helix with Flowing Gradient */}
+        {/* DNA Double Helix with Flowing Gradient - Shifted Right */}
         <g 
-          transform="translate(400, 300)"
+          transform="translate(520, 300)"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
