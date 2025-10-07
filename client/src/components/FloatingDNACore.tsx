@@ -105,24 +105,27 @@ export function FloatingDNACore() {
     }
   };
 
-  // Generate DNA points for smooth curves
-  const generateDNAPoints = (strandOffset: number) => {
+  // Generate DNA points for smooth curves - now with inner and outer edges
+  const generateDNAPoints = (strandOffset: number, radius: number) => {
     const points = [];
     const numPoints = 60; // More points for smoother curve
     for (let i = 0; i < numPoints; i++) {
       const t = i / (numPoints - 1);
       const y = (t - 0.5) * 500; // Vertical position
       const angle = ((t * 720) + rotationPhase + strandOffset) * Math.PI / 180; // 2 full rotations
-      const x = Math.sin(angle) * 70;
-      const z = Math.cos(angle) * 70; // For depth calculation
+      const x = Math.sin(angle) * radius;
+      const z = Math.cos(angle) * radius; // For depth calculation
       const color = getColorForPosition(y);
       points.push({ x, y, z, color });
     }
     return points;
   };
 
-  const strand1Points = generateDNAPoints(0);
-  const strand2Points = generateDNAPoints(180);
+  // Create 4 strands: outer and inner edges for each side
+  const strand1Outer = generateDNAPoints(0, 80);
+  const strand1Inner = generateDNAPoints(0, 60);
+  const strand2Outer = generateDNAPoints(180, 80);
+  const strand2Inner = generateDNAPoints(180, 60);
 
   // Create smooth path from points
   const createSmoothPath = (points: { x: number; y: number }[]) => {
@@ -224,71 +227,99 @@ export function FloatingDNACore() {
               ease: "easeInOut"
             }}
           >
-            {/* Strand 1 - Color-coded segments */}
-            {createColoredSegments(strand1Points).map((segment, i) => (
+            {/* Strand 1 Outer Edge */}
+            {createColoredSegments(strand1Outer).map((segment, i) => (
               <path
-                key={`strand1-seg-${i}`}
+                key={`s1-outer-${i}`}
                 d={segment.path}
                 stroke={segment.color}
-                strokeWidth="3"
+                strokeWidth="4"
                 fill="none"
-                opacity={0.9}
+                opacity={0.95}
                 filter="url(#strongGlow)"
                 strokeLinecap="round"
               />
             ))}
 
-            {/* Strand 2 - Color-coded segments */}
-            {createColoredSegments(strand2Points).map((segment, i) => (
+            {/* Strand 1 Inner Edge */}
+            {createColoredSegments(strand1Inner).map((segment, i) => (
               <path
-                key={`strand2-seg-${i}`}
+                key={`s1-inner-${i}`}
                 d={segment.path}
                 stroke={segment.color}
-                strokeWidth="3"
+                strokeWidth="4"
                 fill="none"
-                opacity={0.9}
+                opacity={0.95}
                 filter="url(#strongGlow)"
                 strokeLinecap="round"
               />
             ))}
 
-            {/* Enhanced glow layers for depth */}
-            {createColoredSegments(strand1Points).map((segment, i) => (
+            {/* Strand 2 Outer Edge */}
+            {createColoredSegments(strand2Outer).map((segment, i) => (
               <path
-                key={`strand1-glow-${i}`}
+                key={`s2-outer-${i}`}
                 d={segment.path}
                 stroke={segment.color}
-                strokeWidth="1"
+                strokeWidth="4"
                 fill="none"
-                opacity={0.4}
+                opacity={0.95}
+                filter="url(#strongGlow)"
+                strokeLinecap="round"
+              />
+            ))}
+
+            {/* Strand 2 Inner Edge */}
+            {createColoredSegments(strand2Inner).map((segment, i) => (
+              <path
+                key={`s2-inner-${i}`}
+                d={segment.path}
+                stroke={segment.color}
+                strokeWidth="4"
+                fill="none"
+                opacity={0.95}
+                filter="url(#strongGlow)"
+                strokeLinecap="round"
+              />
+            ))}
+
+            {/* Enhanced glow layers */}
+            {createColoredSegments(strand1Outer).map((segment, i) => (
+              <path
+                key={`s1-outer-glow-${i}`}
+                d={segment.path}
+                stroke={segment.color}
+                strokeWidth="8"
+                fill="none"
+                opacity={0.3}
                 filter="url(#ultraGlow)"
                 strokeLinecap="round"
               />
             ))}
 
-            {createColoredSegments(strand2Points).map((segment, i) => (
+            {createColoredSegments(strand2Outer).map((segment, i) => (
               <path
-                key={`strand2-glow-${i}`}
+                key={`s2-outer-glow-${i}`}
                 d={segment.path}
                 stroke={segment.color}
-                strokeWidth="1"
+                strokeWidth="8"
                 fill="none"
-                opacity={0.4}
+                opacity={0.3}
                 filter="url(#ultraGlow)"
                 strokeLinecap="round"
               />
             ))}
 
-            {/* Base pair rungs - ladder bars connecting sides */}
-            {strand1Points.filter((_, i) => i % 3 === 0).map((point1, i) => {
-              const index = i * 3;
-              const point2 = strand2Points[index];
+            {/* Base pair rungs - prominent ladder bars */}
+            {strand1Outer.filter((_, i) => i % 2 === 0).map((point1, i) => {
+              const index = i * 2;
+              const point2 = strand2Outer[index];
               
               // Calculate depth-based opacity and width
               const avgZ = (point1.z + point2.z) / 2;
-              const depthFactor = (avgZ + 70) / 140; // 0 to 1
-              const opacity = 0.5 + depthFactor * 0.4; // More opaque
-              const strokeWidth = 2 + depthFactor * 1.5; // Thicker bars
+              const depthFactor = (avgZ + 80) / 160;
+              const opacity = 0.6 + depthFactor * 0.35;
+              const strokeWidth = 3 + depthFactor * 1;
 
               return (
                 <motion.line
@@ -300,24 +331,24 @@ export function FloatingDNACore() {
                   stroke={point1.color}
                   strokeWidth={strokeWidth}
                   opacity={opacity}
-                  filter="url(#softGlow)"
+                  filter="url(#strongGlow)"
                   strokeLinecap="round"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
-                  transition={{ duration: 1, delay: i * 0.03 }}
+                  transition={{ duration: 1, delay: i * 0.02 }}
                 />
               );
             })}
 
             {/* Glowing nodes along strands */}
-            {strand1Points.filter((_, i) => i % 4 === 0).map((point, i) => {
-              const depthFactor = (point.z + 70) / 140;
-              const size = 3 + depthFactor * 4;
-              const opacity = 0.6 + depthFactor * 0.4;
+            {strand1Outer.filter((_, i) => i % 5 === 0).map((point, i) => {
+              const depthFactor = (point.z + 80) / 160;
+              const size = 4 + depthFactor * 3;
+              const opacity = 0.7 + depthFactor * 0.3;
 
               return (
                 <motion.circle
-                  key={`node1-${i}`}
+                  key={`node1-outer-${i}`}
                   cx={point.x}
                   cy={point.y}
                   r={size}
@@ -326,19 +357,19 @@ export function FloatingDNACore() {
                   filter="url(#strongGlow)"
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity }}
-                  transition={{ duration: 0.5, delay: i * 0.05 }}
+                  transition={{ duration: 0.5, delay: i * 0.04 }}
                 />
               );
             })}
 
-            {strand2Points.filter((_, i) => i % 4 === 0).map((point, i) => {
-              const depthFactor = (point.z + 70) / 140;
-              const size = 3 + depthFactor * 4;
-              const opacity = 0.6 + depthFactor * 0.4;
+            {strand2Outer.filter((_, i) => i % 5 === 0).map((point, i) => {
+              const depthFactor = (point.z + 80) / 160;
+              const size = 4 + depthFactor * 3;
+              const opacity = 0.7 + depthFactor * 0.3;
 
               return (
                 <motion.circle
-                  key={`node2-${i}`}
+                  key={`node2-outer-${i}`}
                   cx={point.x}
                   cy={point.y}
                   r={size}
@@ -347,7 +378,7 @@ export function FloatingDNACore() {
                   filter="url(#strongGlow)"
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity }}
-                  transition={{ duration: 0.5, delay: i * 0.05 }}
+                  transition={{ duration: 0.5, delay: i * 0.04 }}
                 />
               );
             })}
@@ -396,9 +427,9 @@ export function FloatingDNACore() {
           
           // Connection point on helix - find point closest to metric's yPosition
           const targetY = metric.yPosition;
-          const closestPoint = strand1Points.reduce((closest, point) => {
+          const closestPoint = strand1Outer.reduce((closest, point) => {
             return Math.abs(point.y - targetY) < Math.abs(closest.y - targetY) ? point : closest;
-          }, strand1Points[0]);
+          }, strand1Outer[0]);
           
           const helixX = 400 + closestPoint.x;
           const helixY = 300 + closestPoint.y;
