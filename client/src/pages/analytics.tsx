@@ -216,10 +216,23 @@ export default function Analytics() {
                     {/* Background glow */}
                     <circle cx="200" cy="200" r="150" fill="url(#centerGlow)" />
                     
-                    {/* Concentric circles (orbits) */}
-                    <circle cx="200" cy="200" r="140" fill="none" stroke="#1a2f4a" strokeWidth="1" opacity="0.5" />
-                    <circle cx="200" cy="200" r="110" fill="none" stroke="#1a2f4a" strokeWidth="1" opacity="0.5" />
-                    <circle cx="200" cy="200" r="80" fill="none" stroke="#1a2f4a" strokeWidth="1" opacity="0.5" />
+                    {/* Concentric circles (orbits) - one per month with data */}
+                    {monthlyOrbitData.map((data, i) => {
+                      const radius = 140 - (i * (60 / Math.max(monthlyOrbitData.length, 1)));
+                      const isProfitable = data.pnl >= 0;
+                      return (
+                        <circle 
+                          key={`orbit-${i}`}
+                          cx="200" 
+                          cy="200" 
+                          r={radius} 
+                          fill="none" 
+                          stroke={isProfitable ? "#06b6d4" : "#ef4444"} 
+                          strokeWidth="2" 
+                          opacity="0.6" 
+                        />
+                      );
+                    })}
                     
                     {/* Radial lines */}
                     {Array.from({ length: 12 }, (_, i) => {
