@@ -1,21 +1,20 @@
 import React, { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { updateCalendarSettings } from "@/lib/supabase-service";
 import { ArrowLeft, Palette } from "lucide-react";
 import { Link } from "wouter";
-import type { User, CalendarSettings } from "@shared/schema";
+import { useUserProfile } from "@/hooks/use-user-profile";
+import type { CalendarSettings } from "@shared/schema";
 
 export default function CalendarSettings() {
   const { toast } = useToast();
-  
-  const { data: user, isLoading } = useQuery<User>({
-    queryKey: ["/api/auth/user"],
-  });
+  const queryClient = useQueryClient();
+  const { profile, isLoading } = useUserProfile();
 
   const [settings, setSettings] = useState<CalendarSettings>({
     backgroundColor: "#1a1a1a",
@@ -24,25 +23,24 @@ export default function CalendarSettings() {
     dayBorderColor: "#4b5563"
   });
 
-  // Update settings when user data loads
+  // Update settings when profile data loads
   React.useEffect(() => {
-    if (user?.calendarSettings) {
-      setSettings(user.calendarSettings as CalendarSettings);
+    if (profile?.calendar_settings) {
+      setSettings(profile.calendar_settings as CalendarSettings);
     }
-  }, [user]);
+  }, [profile]);
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (newSettings: CalendarSettings) => {
-      const response = await apiRequest("PUT", "/api/calendar/settings", newSettings);
-      return response.json();
+      return await updateCalendarSettings(newSettings);
     },
     onSuccess: () => {
       toast({
         title: "Settings Updated",
         description: "Calendar appearance settings have been saved.",
       });
-      // Invalidate user data to get updated calendar settings
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      // Invalidate user profile to get updated calendar settings
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
     },
     onError: () => {
       toast({
