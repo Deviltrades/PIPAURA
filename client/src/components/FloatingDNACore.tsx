@@ -376,19 +376,16 @@ export function FloatingDNACore() {
         </div>
       </motion.div>
 
-      {/* Right side percentage displays - aligned with DNA zones */}
-      <div className="absolute top-1/2 right-8">
+      {/* Right side percentage displays - next to DNA helix aligned with zones */}
+      <div className="absolute top-1/2 left-1/2">
         {dnaZones.map((metric, index) => {
-          // Convert DNA Y position to screen percentage offset
-          // DNA ranges from -320 to 320 (640 total), center is at 50%
-          const yOffsetPercent = (metric.yPosition / 640) * 100;
-          
           return (
             <motion.div
               key={`right-${metric.key}`}
-              className="absolute bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-4 py-2 text-center"
+              className="absolute bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-3 py-1.5 text-center"
               style={{
-                top: `${yOffsetPercent}%`,
+                top: `${metric.yPosition}px`,
+                left: '160px',
                 transform: 'translateY(-50%)'
               }}
               initial={{ opacity: 0, x: 20 }}
@@ -396,7 +393,7 @@ export function FloatingDNACore() {
               transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
             >
               <div
-                className="text-lg font-bold whitespace-nowrap"
+                className="text-sm font-bold whitespace-nowrap"
                 style={{ color: metric.color }}
                 data-testid={`right-value-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
               >
