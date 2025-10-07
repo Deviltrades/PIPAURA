@@ -6,6 +6,7 @@ import { Info } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -323,38 +324,38 @@ export function FloatingDNACore() {
 
       </svg>
 
-      {/* Metrics Box - Top Left - Compact */}
+      {/* Metrics Box - Top Left - Compact - Mobile Responsive */}
       <motion.div
-        className="absolute top-8 left-8 bg-slate-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-3"
+        className="absolute top-2 left-2 md:top-8 md:left-8 bg-slate-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-2 md:p-3"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.5 }}
       >
-        <div className="space-y-1.5">
+        <div className="space-y-1 md:space-y-1.5">
           {dnaZones.map((metric, index) => (
             <motion.div
               key={metric.key}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1.5 md:gap-2"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
             >
               {/* Colored dot */}
               <div
-                className="w-2 h-2 rounded-full flex-shrink-0"
-                style={{ backgroundColor: metric.color, boxShadow: `0 0 6px ${metric.color}` }}
+                className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full flex-shrink-0"
+                style={{ backgroundColor: metric.color, boxShadow: `0 0 4px ${metric.color}` }}
                 data-testid={`metric-dot-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
               />
               {/* Metric name and value */}
-              <div className="flex items-baseline gap-2 min-w-[140px]">
+              <div className="flex items-baseline gap-1 md:gap-2 min-w-[100px] md:min-w-[140px]">
                 <span 
-                  className="text-white text-xs font-semibold flex-1"
+                  className="text-white text-[10px] md:text-xs font-semibold flex-1"
                   data-testid={`metric-label-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
                 >
                   {metric.name}
                 </span>
                 <span
-                  className="text-sm font-bold"
+                  className="text-xs md:text-sm font-bold"
                   style={{ color: metric.color }}
                   data-testid={`metric-value-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
                 >
@@ -366,9 +367,9 @@ export function FloatingDNACore() {
         </div>
       </motion.div>
 
-      {/* Edge Integrity Score Display - Below Metrics Box */}
+      {/* Edge Integrity Score Display - Below Metrics Box - Mobile Responsive */}
       <motion.div
-        className="absolute top-[220px] left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-6 text-center min-w-[180px]"
+        className="absolute top-[140px] left-2 md:top-[220px] md:left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-3 md:p-6 text-center min-w-[120px] md:min-w-[180px]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 1.5 }}
@@ -377,17 +378,20 @@ export function FloatingDNACore() {
         <Dialog>
           <DialogTrigger asChild>
             <button 
-              className="absolute top-2 right-2 text-cyan-400/60 hover:text-cyan-400 transition-colors"
+              className="absolute top-1 right-1 md:top-2 md:right-2 text-cyan-400/60 hover:text-cyan-400 transition-colors"
               data-testid="button-info-dna"
             >
-              <Info className="w-4 h-4" />
+              <Info className="w-3 h-3 md:w-4 md:h-4" />
             </button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-slate-950/95 border-cyan-500/30 text-white">
+          <DialogContent className="max-w-[95vw] md:max-w-2xl max-h-[80vh] overflow-y-auto bg-slate-950/95 border-cyan-500/30 text-white p-4 md:p-6">
             <DialogHeader>
-              <DialogTitle className="text-cyan-400 text-xl">How to Read & Use Trader DNA</DialogTitle>
+              <DialogTitle className="text-cyan-400 text-base md:text-xl">How to Read & Use Trader DNA</DialogTitle>
+              <DialogDescription className="text-slate-400 text-xs md:text-sm">
+                Learn how to interpret your Trader DNA visualization and improve your trading edge.
+              </DialogDescription>
             </DialogHeader>
-            <div className="space-y-6 text-sm">
+            <div className="space-y-4 md:space-y-6 text-xs md:text-sm">
               {/* How to read section */}
               <div>
                 <h3 className="text-cyan-400 font-semibold mb-3">How to read Trader DNA</h3>
@@ -441,18 +445,18 @@ export function FloatingDNACore() {
           </DialogContent>
         </Dialog>
 
-        <div className="text-xs font-semibold text-cyan-400 mb-2" data-testid="label-edge-integrity">
+        <div className="text-[9px] md:text-xs font-semibold text-cyan-400 mb-1 md:mb-2" data-testid="label-edge-integrity">
           EDGE INTEGRITY SCORE
         </div>
         <div 
-          className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent"
+          className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent"
           data-testid="value-edge-integrity"
         >
           {metrics.edgeIntegrity.toFixed(1)}%
         </div>
       </motion.div>
 
-      {/* Right side percentage displays - next to DNA helix aligned with zones */}
+      {/* Right side percentage displays - next to DNA helix aligned with zones - Mobile Responsive */}
       <div className="absolute top-1/2 left-1/2">
         {dnaZones.map((metric, index) => {
           // Compress vertical spacing by 15%
@@ -461,10 +465,10 @@ export function FloatingDNACore() {
           return (
             <motion.div
               key={`right-${metric.key}`}
-              className="absolute bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-3 py-1.5 text-center"
+              className="absolute bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-2 py-1 md:px-3 md:py-1.5 text-center"
               style={{
                 top: `${compressedYPosition - 35}px`,
-                left: '160px',
+                left: '100px',
                 transform: 'translateY(-50%)'
               }}
               initial={{ opacity: 0, x: 20 }}
@@ -472,7 +476,7 @@ export function FloatingDNACore() {
               transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
             >
               <div
-                className="text-sm font-bold whitespace-nowrap"
+                className="text-[10px] md:text-sm font-bold whitespace-nowrap"
                 style={{ color: metric.color }}
                 data-testid={`right-value-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
               >
@@ -483,15 +487,16 @@ export function FloatingDNACore() {
         })}
       </div>
 
-      {/* Controls hint */}
+      {/* Controls hint - Mobile Responsive */}
       <motion.div
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-cyan-400/60 text-sm"
+        className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 text-cyan-400/60 text-xs md:text-sm text-center px-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 2 }}
         data-testid="text-controls-hint"
       >
-        Hover over DNA to pause rotation
+        <span className="hidden md:inline">Hover over DNA to pause rotation</span>
+        <span className="md:hidden">Tap DNA to pause rotation</span>
       </motion.div>
     </div>
   );
