@@ -100,22 +100,22 @@ export default function Analytics() {
 
   return (
     <div className="p-4 lg:p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Trading Analytics</h1>
-        <p className="text-muted-foreground">Comprehensive performance analysis and insights</p>
+      <div className="mb-6 lg:mb-8">
+        <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Trading Analytics</h1>
+        <p className="text-sm lg:text-base text-muted-foreground">Comprehensive performance analysis and insights</p>
       </div>
 
       {/* Top Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
         <Card className="border-cyan-500/20 bg-gradient-to-br from-background to-cyan-950/10">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Activity className="h-4 w-4" />
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Activity className="h-3 w-3 lg:h-4 lg:w-4 flex-shrink-0" />
               Total P&L
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${stats.totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div className={`text-xl sm:text-2xl lg:text-3xl font-bold break-words ${stats.totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
               {formatCurrency(stats.totalPnL)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -126,13 +126,13 @@ export default function Analytics() {
 
         <Card className="border-blue-500/20 bg-gradient-to-br from-background to-blue-950/10">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Target className="h-4 w-4" />
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Target className="h-3 w-3 lg:h-4 lg:w-4 flex-shrink-0" />
               Win Rate
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-400">
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-400">
               {stats.winRate.toFixed(1)}%
             </div>
             <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
@@ -146,13 +146,13 @@ export default function Analytics() {
 
         <Card className="border-purple-500/20 bg-gradient-to-br from-background to-purple-950/10">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <TrendingUp className="h-3 w-3 lg:h-4 lg:w-4 flex-shrink-0" />
               Profit Factor
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${stats.profitFactor >= 1 ? 'text-purple-400' : 'text-orange-400'}`}>
+            <div className={`text-xl sm:text-2xl lg:text-3xl font-bold ${stats.profitFactor >= 1 ? 'text-purple-400' : 'text-orange-400'}`}>
               {stats.profitFactor >= 999 ? '∞' : stats.profitFactor.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -163,13 +163,13 @@ export default function Analytics() {
 
         <Card className="border-red-500/20 bg-gradient-to-br from-background to-red-950/10">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <TrendingDown className="h-4 w-4" />
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <TrendingDown className="h-3 w-3 lg:h-4 lg:w-4 flex-shrink-0" />
               Max Drawdown
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-400">
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-400">
               {stats.maxDrawdown.toFixed(1)}%
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -180,19 +180,19 @@ export default function Analytics() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
         {/* Monthly Performance Chart */}
         <Card className="border-border/50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-gradient-to-r from-green-500 to-red-500" />
+            <CardTitle className="text-base lg:text-lg flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-gradient-to-r from-green-500 to-red-500 flex-shrink-0" />
               Monthly Performance
             </CardTitle>
           </CardHeader>
           <CardContent>
             {stats.monthlyData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={stats.monthlyData}>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={stats.monthlyData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
                   <defs>
                     <linearGradient id="greenGlow" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#22c55e" stopOpacity={0.9} />
@@ -206,15 +206,19 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis 
                     dataKey="month" 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
+                    stroke="hsl(var(--foreground))"
+                    fontSize={11}
                     tickLine={false}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
                   />
                   <YAxis 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
+                    stroke="hsl(var(--foreground))"
+                    fontSize={11}
                     tickLine={false}
-                    tickFormatter={(value) => `$${value}`}
+                    tickFormatter={(value) => `$${value >= 1000 ? `${(value/1000).toFixed(0)}k` : value}`}
+                    width={45}
                   />
                   <Tooltip content={<CustomMonthlyTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }} />
                   <Bar 
@@ -237,11 +241,11 @@ export default function Analytics() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[350px] flex items-center justify-center text-muted-foreground">
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
                   <Activity className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                  <p>No trade data available</p>
-                  <p className="text-sm mt-1">Add trades to see monthly performance</p>
+                  <p className="text-sm lg:text-base">No trade data available</p>
+                  <p className="text-xs lg:text-sm mt-1">Add trades to see monthly performance</p>
                 </div>
               </div>
             )}
@@ -251,15 +255,15 @@ export default function Analytics() {
         {/* Equity Curve Chart */}
         <Card className="border-border/50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 animate-pulse" />
+            <CardTitle className="text-base lg:text-lg flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 animate-pulse flex-shrink-0" />
               Equity Curve
             </CardTitle>
           </CardHeader>
           <CardContent>
             {stats.equityCurve.length > 0 ? (
-              <ResponsiveContainer width="100%" height={350}>
-                <AreaChart data={stats.equityCurve}>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={stats.equityCurve} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
                   <defs>
                     <linearGradient id="equityGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.6} />
@@ -270,16 +274,20 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis 
                     dataKey="date" 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
+                    stroke="hsl(var(--foreground))"
+                    fontSize={11}
                     tickLine={false}
                     interval="preserveStartEnd"
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
                   />
                   <YAxis 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
+                    stroke="hsl(var(--foreground))"
+                    fontSize={11}
                     tickLine={false}
-                    tickFormatter={(value) => `$${value}`}
+                    tickFormatter={(value) => `$${value >= 1000 ? `${(value/1000).toFixed(0)}k` : value}`}
+                    width={45}
                   />
                   <Tooltip content={<CustomEquityTooltip />} cursor={{ stroke: '#06b6d4', strokeWidth: 2 }} />
                   <Area 
@@ -293,11 +301,11 @@ export default function Analytics() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[350px] flex items-center justify-center text-muted-foreground">
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
                   <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                  <p>No equity data available</p>
-                  <p className="text-sm mt-1">Add trades to see equity growth</p>
+                  <p className="text-sm lg:text-base">No equity data available</p>
+                  <p className="text-xs lg:text-sm mt-1">Add trades to see equity growth</p>
                 </div>
               </div>
             )}
@@ -306,15 +314,15 @@ export default function Analytics() {
       </div>
 
       {/* Monthly Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <Card className="bg-gradient-to-br from-background to-blue-950/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground">
               Average Monthly Return
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${stats.averageMonthlyReturn >= 0 ? 'text-blue-400' : 'text-orange-400'}`}>
+            <div className={`text-xl lg:text-2xl font-bold break-words ${stats.averageMonthlyReturn >= 0 ? 'text-blue-400' : 'text-orange-400'}`}>
               {formatCurrency(stats.averageMonthlyReturn)}
             </div>
           </CardContent>
@@ -322,12 +330,12 @@ export default function Analytics() {
 
         <Card className="bg-gradient-to-br from-background to-green-950/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground">
               Best Month
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">
+            <div className="text-xl lg:text-2xl font-bold break-words text-green-500">
               {formatCurrency(stats.bestMonth)}
             </div>
           </CardContent>
@@ -335,12 +343,12 @@ export default function Analytics() {
 
         <Card className="bg-gradient-to-br from-background to-red-950/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground">
               Worst Month
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">
+            <div className="text-xl lg:text-2xl font-bold break-words text-red-500">
               {formatCurrency(stats.worstMonth)}
             </div>
           </CardContent>
@@ -348,12 +356,12 @@ export default function Analytics() {
 
         <Card className="bg-gradient-to-br from-background to-purple-950/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-xs lg:text-sm font-medium text-muted-foreground">
               Volatility
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-400">
+            <div className="text-xl lg:text-2xl font-bold text-purple-400">
               {stats.bestMonth > 0 && stats.worstMonth < 0 
                 ? `${((stats.bestMonth - stats.worstMonth) / stats.bestMonth * 100).toFixed(0)}%`
                 : 'N/A'
