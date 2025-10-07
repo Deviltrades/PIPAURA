@@ -384,7 +384,7 @@ export function FloatingDNACore() {
               key={`right-${metric.key}`}
               className="absolute bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-3 py-1.5 text-center"
               style={{
-                top: `${metric.yPosition}px`,
+                top: `${metric.yPosition - 35}px`,
                 left: '160px',
                 transform: 'translateY(-50%)'
               }}
