@@ -280,7 +280,7 @@ export function FloatingDNACore() {
               strokeLinecap="round"
             />
 
-            {/* Ladder rungs - COLOR CODED by zone */}
+            {/* Ladder rungs - VIBRANT COLOR CODED by zone */}
             {Array.from({ length: 25 }).map((_, i) => {
               const yPosition = (i / 24 - 0.5) * 480;
               
@@ -295,39 +295,24 @@ export function FloatingDNACore() {
               const avgZ = (point1.z + point2.z) / 2;
               const depthFactor = (avgZ + 60) / 120;
               const strokeWidth = 5 + depthFactor * 2;
-              const rungColor = getZoneColorAtY(yPosition); // Always use zone color
+              const rungColor = getZoneColorAtY(yPosition);
 
               return (
-                <g key={`rung-${i}`}>
-                  {/* Dark underlay for depth */}
-                  <motion.line
-                    x1={point1.x}
-                    y1={point1.y}
-                    x2={point2.x}
-                    y2={point2.y}
-                    stroke="rgba(0,0,0,0.6)"
-                    strokeWidth={strokeWidth + 1}
-                    strokeLinecap="round"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: i * 0.02 }}
-                  />
-                  {/* Vibrant color-coded rung */}
-                  <motion.line
-                    x1={point1.x}
-                    y1={point1.y}
-                    x2={point2.x}
-                    y2={point2.y}
-                    stroke={rungColor}
-                    strokeWidth={strokeWidth}
-                    opacity={1}
-                    filter="url(#strongGlow)"
-                    strokeLinecap="round"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: i * 0.02 }}
-                  />
-                </g>
+                <motion.line
+                  key={`rung-${i}`}
+                  x1={point1.x}
+                  y1={point1.y}
+                  x2={point2.x}
+                  y2={point2.y}
+                  stroke={rungColor}
+                  strokeWidth={strokeWidth}
+                  opacity={1}
+                  filter="url(#strongGlow)"
+                  strokeLinecap="round"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6, delay: i * 0.02 }}
+                />
               );
             })}
           </motion.g>
