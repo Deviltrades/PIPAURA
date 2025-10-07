@@ -2,6 +2,14 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { getTrades, getAnalytics } from '@/lib/supabase-service';
+import { Info } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 export function FloatingDNACore() {
   const [metrics, setMetrics] = useState({
@@ -365,6 +373,74 @@ export function FloatingDNACore() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 1.5 }}
       >
+        {/* Info Icon in Top Right Corner */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <button 
+              className="absolute top-2 right-2 text-cyan-400/60 hover:text-cyan-400 transition-colors"
+              data-testid="button-info-dna"
+            >
+              <Info className="w-4 h-4" />
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-slate-950/95 border-cyan-500/30 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-cyan-400 text-xl">How to Read & Use Trader DNA</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6 text-sm">
+              {/* How to read section */}
+              <div>
+                <h3 className="text-cyan-400 font-semibold mb-3">How to read Trader DNA</h3>
+                <div className="space-y-2 text-slate-300">
+                  <p>
+                    The helix is split into 6 color bands (top→bottom):
+                  </p>
+                  <p className="pl-4">
+                    <span className="text-cyan-400">Cyan</span> Win Rate • <span className="text-blue-400">Blue</span> Risk:Reward • <span className="text-violet-400">Violet</span> Risk Consistency • <span className="text-magenta-400">Magenta</span> Emotional Control • <span className="text-amber-400">Amber</span> Discipline • <span className="text-cyan-400">Aqua</span> Session Focus
+                  </p>
+                  <p className="mt-3">
+                    Band fill = your score. e.g., Discipline 56% → the amber band is ~56% lit.
+                  </p>
+                  <p className="mt-3">
+                    The big % up top is your Edge Integrity (a weighted blend of all six). A brighter/greener strand = a healthier edge.
+                  </p>
+                  <p className="mt-3">
+                    Hover the DNA to pause. Hover a dot/band to see the value, 30-day trend, and what's driving it.
+                  </p>
+                  <p className="mt-3">
+                    Risk:Reward shows as x.x× in labels; for the band it's normalized 0–100.
+                  </p>
+                </div>
+              </div>
+
+              {/* How to use section */}
+              <div>
+                <h3 className="text-cyan-400 font-semibold mb-3">How to use it</h3>
+                <div className="space-y-2 text-slate-300">
+                  <p>
+                    Fix the lowest band first. Aim to keep every band ≥70%.
+                  </p>
+                  <p className="mt-3">
+                    If Discipline is low → cap risk per trade and trade only your best session.
+                  </p>
+                  <p className="mt-2">
+                    If Risk Consistency dips → standardize position size/SL.
+                  </p>
+                  <p className="mt-2">
+                    If Session Focus is low → restrict entries to the hours where you win most.
+                  </p>
+                  <p className="mt-2">
+                    If Emotional Control drops → log each trade; avoid back-to-back entries.
+                  </p>
+                  <p className="mt-3 font-semibold">
+                    Goal: a strand where all bands are evenly filled and Edge Integrity stays 80%+.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <div className="text-xs font-semibold text-cyan-400 mb-2" data-testid="label-edge-integrity">
           EDGE INTEGRITY SCORE
         </div>
