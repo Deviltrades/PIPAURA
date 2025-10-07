@@ -417,82 +417,57 @@ export function FloatingDNACore() {
           </g>
         </g>
 
-        {/* Orbiting Metrics */}
+        {/* Metrics attached to DNA strands - moving with rotation */}
         {orbitingMetrics.map((metric, index) => {
-          const orbitRadius = 250;
-          const angle = metric.angle + (Date.now() / 50) % 360;
-          const x = 400 + Math.cos((angle * Math.PI) / 180) * orbitRadius;
-          const y = 300 + Math.sin((angle * Math.PI) / 180) * orbitRadius;
-          
-          // Connection point on helix - find point closest to metric's yPosition
+          // Find point on DNA strand at this metric's Y position
           const targetY = metric.yPosition;
           const closestPoint = strand1Outer.reduce((closest, point) => {
             return Math.abs(point.y - targetY) < Math.abs(closest.y - targetY) ? point : closest;
           }, strand1Outer[0]);
           
-          const helixX = 400 + closestPoint.x;
-          const helixY = 300 + closestPoint.y;
+          // Position relative to DNA center
+          const helixX = closestPoint.x;
+          const helixY = closestPoint.y;
           
-          const dotSize = 8 + (metric.value / 100) * 12;
-          const beamOpacity = 0.2 + (metric.value / 100) * 0.4;
+          // Determine if we're on left or right based on rotation
+          const isLeft = closestPoint.z < 0; // Negative Z means in front on left side
+          
+          // Position text to the side of the DNA strand
+          const textOffset = 120; // Distance from DNA center
+          const textX = 400 + (isLeft ? -(textOffset) : textOffset);
+          const textY = 300 + helixY;
+          
+          const textAnchor = isLeft ? "end" : "start";
 
           return (
             <g key={metric.name}>
-              {/* Connecting beam */}
-              <motion.line
-                x1={helixX}
-                y1={helixY}
-                x2={x}
-                y2={y}
-                stroke={metric.color}
-                strokeWidth="1.5"
-                opacity={beamOpacity}
-                filter="url(#softGlow)"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 1.5, delay: index * 0.2 }}
-              />
-              
-              {/* Metric orb */}
-              <motion.circle
-                cx={x}
-                cy={y}
-                r={dotSize}
-                fill={metric.color}
-                filter="url(#strongGlow)"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
-                data-testid={`metric-orb-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
-              />
-              
-              {/* Metric label */}
+              {/* Metric label and value - positioned on side */}
               <motion.text
-                x={x}
-                y={y - dotSize - 10}
-                textAnchor="middle"
-                fill={metric.color}
-                fontSize="12"
+                x={textX}
+                y={textY - 5}
+                textAnchor={textAnchor}
+                fill="white"
+                fontSize="14"
                 fontWeight="600"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 0.9 }}
-                transition={{ duration: 0.5, delay: index * 0.2 + 0.5 }}
+                animate={{ opacity: 0.95 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
                 data-testid={`metric-label-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
               >
                 {metric.name}
               </motion.text>
               
-              {/* Metric value */}
+              {/* Metric value below label */}
               <motion.text
-                x={x}
-                y={y + dotSize + 18}
-                textAnchor="middle"
-                fill="#fff"
-                fontSize="14"
+                x={textX}
+                y={textY + 12}
+                textAnchor={textAnchor}
+                fill={metric.color}
+                fontSize="16"
                 fontWeight="700"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.2 + 0.7 }}
+                transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
                 data-testid={`metric-value-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
               >
                 {metric.value.toFixed(0)}%
