@@ -360,7 +360,7 @@ export function FloatingDNACore() {
 
       {/* Edge Integrity Score Display - Below Metrics Box */}
       <motion.div
-        className="absolute top-[200px] left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-6 text-center min-w-[180px]"
+        className="absolute top-[220px] left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-6 text-center min-w-[180px]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 1.5 }}
