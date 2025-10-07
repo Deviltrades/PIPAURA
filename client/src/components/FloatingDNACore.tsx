@@ -99,39 +99,42 @@ export function FloatingDNACore() {
   const DNA_HEIGHT = DNA_BOTTOM - DNA_TOP; // 480
   const ZONE_HEIGHT = DNA_HEIGHT / 6; // 80 each
 
-  // Get color for a Y position based on zone and fill percentage
-  const getColorAtY = (y: number) => {
-    // Determine which zone this Y position is in
-    const zoneIndex = Math.floor((y - DNA_TOP) / ZONE_HEIGHT);
+  // Get smooth flowing color based on Y position
+  const getFlowingColorAtY = (y: number) => {
+    // Normalize Y from -240 to 240 into 0 to 1
+    const normalizedY = (y - DNA_TOP) / DNA_HEIGHT;
+    
+    // Determine which zone and position within zone
+    const zoneIndex = Math.floor(normalizedY * 6);
     const clampedIndex = Math.max(0, Math.min(5, zoneIndex));
     const zone = dnaZones[clampedIndex];
     
-    // Calculate position within the zone (0 at top, 1 at bottom)
-    const yInZone = (y - (DNA_TOP + clampedIndex * ZONE_HEIGHT)) / ZONE_HEIGHT;
+    // Position within this zone (0 to 1)
+    const yInZone = (normalizedY * 6) - clampedIndex;
     
-    // If we're in the filled portion of the zone, use the zone color
-    // Otherwise use white
-    const fillThreshold = 1 - (zone.value / 100); // 0 = fully filled, 1 = empty
+    // Check if this position should be filled
+    const fillThreshold = 1 - (zone.value / 100);
     
     if (yInZone >= fillThreshold) {
-      return zone.color; // Filled portion
+      // Filled - return the zone color
+      return zone.color;
     } else {
-      return 'rgba(200,210,230,0.6)'; // Unfilled (white/neutral)
+      // Unfilled - return white/neutral
+      return 'rgba(220,230,240,0.7)';
     }
   };
 
-  // Generate DNA points for smooth curves with color based on Y position
+  // Generate DNA points for smooth curves
   const generateDNAPoints = (strandOffset: number, radius: number) => {
     const points = [];
     const numPoints = 60;
     for (let i = 0; i < numPoints; i++) {
       const t = i / (numPoints - 1);
       const y = (t - 0.5) * 480; // -240 to 240
-      const angle = ((t * 720) + rotationPhase + strandOffset) * Math.PI / 180; // 2 full rotations
+      const angle = ((t * 720) + rotationPhase + strandOffset) * Math.PI / 180;
       const x = Math.sin(angle) * radius;
       const z = Math.cos(angle) * radius;
-      const color = getColorAtY(y);
-      points.push({ x, y, z, color });
+      points.push({ x, y, z });
     }
     return points;
   };
@@ -161,20 +164,6 @@ export function FloatingDNACore() {
     return path;
   };
 
-  // Create colored segments for DNA strands
-  const createColoredSegments = (points: { x: number; y: number; color: string }[]) => {
-    const segments = [];
-    const segmentSize = 3; // Small segments for smooth color transitions
-    
-    for (let i = 0; i < points.length - segmentSize; i += segmentSize) {
-      const segmentPoints = points.slice(i, i + segmentSize + 1);
-      const path = createSmoothPath(segmentPoints);
-      const color = points[i].color;
-      segments.push({ path, color });
-    }
-    
-    return segments;
-  };
 
   return (
     <div className="w-full h-screen relative overflow-hidden bg-gradient-to-b from-slate-950 via-blue-950 to-slate-950">
@@ -186,9 +175,26 @@ export function FloatingDNACore() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
+          {/* Create gradient stops for each zone based on fill percentage */}
+          <linearGradient id="dnaFlowGradient" x1="0" y1="-240" x2="0" y2="240" gradientUnits="userSpaceOnUse">
+            {dnaZones.map((zone, i) => {
+              const zoneStart = (i / 6) * 100;
+              const zoneEnd = ((i + 1) / 6) * 100;
+              const fillPercent = zone.value / 100;
+              const colorStart = zoneStart + (1 - fillPercent) * (zoneEnd - zoneStart);
+              
+              return [
+                <stop key={`${zone.key}-unfilled`} offset={`${zoneStart}%`} stopColor="rgba(220,230,240,0.7)" />,
+                <stop key={`${zone.key}-transition`} offset={`${colorStart}%`} stopColor="rgba(220,230,240,0.7)" />,
+                <stop key={`${zone.key}-filled`} offset={`${colorStart}%`} stopColor={zone.color} />,
+                <stop key={`${zone.key}-end`} offset={`${zoneEnd}%`} stopColor={zone.color} />
+              ];
+            }).flat()}
+          </linearGradient>
+
           {/* Glow filters */}
           <filter id="softGlow">
-            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -205,7 +211,7 @@ export function FloatingDNACore() {
           </filter>
         </defs>
 
-        {/* DNA Double Helix with Color Zones */}
+        {/* DNA Double Helix with Flowing Gradient */}
         <g 
           transform="translate(400, 300)"
           onMouseEnter={() => setIsPaused(true)}
@@ -222,63 +228,51 @@ export function FloatingDNACore() {
               ease: "easeInOut"
             }}
           >
-            {/* Strand 1 Outer - colored segments */}
-            {createColoredSegments(strand1Outer).map((segment, i) => (
-              <path
-                key={`s1-outer-${i}`}
-                d={segment.path}
-                stroke={segment.color}
-                strokeWidth="5"
-                fill="none"
-                opacity={0.95}
-                filter="url(#strongGlow)"
-                strokeLinecap="round"
-              />
-            ))}
+            {/* Strand 1 Outer - continuous with gradient */}
+            <path
+              d={createSmoothPath(strand1Outer)}
+              stroke="url(#dnaFlowGradient)"
+              strokeWidth="5"
+              fill="none"
+              opacity={0.95}
+              filter="url(#strongGlow)"
+              strokeLinecap="round"
+            />
 
-            {/* Strand 1 Inner - colored segments */}
-            {createColoredSegments(strand1Inner).map((segment, i) => (
-              <path
-                key={`s1-inner-${i}`}
-                d={segment.path}
-                stroke={segment.color}
-                strokeWidth="5"
-                fill="none"
-                opacity={0.95}
-                filter="url(#strongGlow)"
-                strokeLinecap="round"
-              />
-            ))}
+            {/* Strand 1 Inner - continuous with gradient */}
+            <path
+              d={createSmoothPath(strand1Inner)}
+              stroke="url(#dnaFlowGradient)"
+              strokeWidth="5"
+              fill="none"
+              opacity={0.95}
+              filter="url(#strongGlow)"
+              strokeLinecap="round"
+            />
 
-            {/* Strand 2 Outer - colored segments */}
-            {createColoredSegments(strand2Outer).map((segment, i) => (
-              <path
-                key={`s2-outer-${i}`}
-                d={segment.path}
-                stroke={segment.color}
-                strokeWidth="5"
-                fill="none"
-                opacity={0.95}
-                filter="url(#strongGlow)"
-                strokeLinecap="round"
-              />
-            ))}
+            {/* Strand 2 Outer - continuous with gradient */}
+            <path
+              d={createSmoothPath(strand2Outer)}
+              stroke="url(#dnaFlowGradient)"
+              strokeWidth="5"
+              fill="none"
+              opacity={0.95}
+              filter="url(#strongGlow)"
+              strokeLinecap="round"
+            />
 
-            {/* Strand 2 Inner - colored segments */}
-            {createColoredSegments(strand2Inner).map((segment, i) => (
-              <path
-                key={`s2-inner-${i}`}
-                d={segment.path}
-                stroke={segment.color}
-                strokeWidth="5"
-                fill="none"
-                opacity={0.95}
-                filter="url(#strongGlow)"
-                strokeLinecap="round"
-              />
-            ))}
+            {/* Strand 2 Inner - continuous with gradient */}
+            <path
+              d={createSmoothPath(strand2Inner)}
+              stroke="url(#dnaFlowGradient)"
+              strokeWidth="5"
+              fill="none"
+              opacity={0.95}
+              filter="url(#strongGlow)"
+              strokeLinecap="round"
+            />
 
-            {/* Base pair rungs - colored based on Y position */}
+            {/* Ladder rungs connecting inner strands */}
             {Array.from({ length: 25 }).map((_, i) => {
               const yPosition = (i / 24 - 0.5) * 480;
               
@@ -293,7 +287,8 @@ export function FloatingDNACore() {
               const avgZ = (point1.z + point2.z) / 2;
               const depthFactor = (avgZ + 60) / 120;
               const strokeWidth = 3 + depthFactor * 1;
-              const rungColor = getColorAtY(yPosition);
+              const opacity = 0.85 + depthFactor * 0.15;
+              const rungColor = getFlowingColorAtY(yPosition);
 
               return (
                 <motion.line
@@ -304,11 +299,11 @@ export function FloatingDNACore() {
                   y2={point2.y}
                   stroke={rungColor}
                   strokeWidth={strokeWidth}
-                  opacity={0.9}
+                  opacity={opacity}
                   filter="url(#softGlow)"
                   strokeLinecap="round"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.9 }}
+                  initial={{ opacity: 0, pathLength: 0 }}
+                  animate={{ opacity, pathLength: 1 }}
                   transition={{ duration: 0.6, delay: i * 0.02 }}
                 />
               );
