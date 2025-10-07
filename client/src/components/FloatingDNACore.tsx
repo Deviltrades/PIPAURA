@@ -474,8 +474,9 @@ export function FloatingDNACore() {
         {dnaZones.map((metric, index) => {
           // Compress vertical spacing by 15%
           const compressedYPosition = metric.yPosition * 0.85;
-          // Adjust vertical position - mobile needs different alignment than desktop
-          const topPosition = isMobile ? metric.yPosition - 35 : compressedYPosition - 35;
+          // Mobile needs more compression to align with DNA zones
+          const mobileCompressedPosition = metric.yPosition * 0.70;
+          const topPosition = isMobile ? mobileCompressedPosition - 35 : compressedYPosition - 35;
           
           return (
             <motion.div
