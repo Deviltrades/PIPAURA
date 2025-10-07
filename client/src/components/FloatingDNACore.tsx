@@ -88,20 +88,19 @@ export function FloatingDNACore() {
     // Map y from -250 to 250 to 0 to 1
     const normalizedY = (y + 250) / 500;
     
-    // Define color stops: cyan -> blue -> purple -> magenta
-    if (normalizedY < 0.25) {
-      // Top section: cyan
-      return '#00DCFF';
-    } else if (normalizedY < 0.5) {
-      // Upper-middle: blue to purple transition
-      const t = (normalizedY - 0.25) / 0.25;
-      return `hsl(${190 + t * 80}, 100%, 50%)`; // Cyan to purple hue
-    } else if (normalizedY < 0.75) {
-      // Lower-middle: purple
-      return '#9370DB';
+    // Define color stops to match reference: bright cyan -> blue -> purple -> bright magenta
+    if (normalizedY < 0.33) {
+      // Top section: bright cyan to blue
+      const t = normalizedY / 0.33;
+      return `hsl(${190 - t * 10}, 100%, ${55 - t * 5}%)`; // Cyan to blue
+    } else if (normalizedY < 0.66) {
+      // Middle: blue to purple transition
+      const t = (normalizedY - 0.33) / 0.33;
+      return `hsl(${180 - t * 90}, 100%, 50%)`; // Blue to purple hue
     } else {
-      // Bottom section: magenta/pink
-      return '#DA70D6';
+      // Bottom section: purple to bright magenta
+      const t = (normalizedY - 0.66) / 0.34;
+      return `hsl(${270 + t * 40}, 100%, ${50 + t * 15}%)`; // Purple to magenta
     }
   };
 
