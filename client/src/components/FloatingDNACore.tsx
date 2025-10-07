@@ -205,21 +205,22 @@ export function FloatingDNACore() {
         </defs>
 
         {/* DNA Double Helix - Spinning */}
-        <motion.g
-          transform="translate(400, 300)"
-          animate={shouldSpin ? { rotate: 360 } : { rotate: 0 }}
-          transition={shouldSpin ? {
-            duration: spinSpeed,
-            ease: "linear",
-            repeat: Infinity
-          } : {}}
-          style={{ 
-            transformOrigin: "0px 0px",
-            willChange: "transform"
-          }}
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-        >
+        <g transform="translate(400, 300)">
+          <motion.g
+            animate={shouldSpin ? { rotate: 360 } : { rotate: 0 }}
+            transition={shouldSpin ? {
+              duration: spinSpeed,
+              ease: "linear",
+              repeat: Infinity
+            } : {}}
+            style={{ 
+              transformOrigin: "center",
+              transformBox: "fill-box",
+              willChange: "transform"
+            }}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+          >
           {/* Breathing pulse */}
           <motion.g
             animate={{
@@ -309,7 +310,8 @@ export function FloatingDNACore() {
             transition={{ duration: 2, ease: "easeInOut", delay: 0.2 }}
           />
           </motion.g>
-        </motion.g>
+          </motion.g>
+        </g>
 
         {/* Orbiting Metrics */}
         {orbitingMetrics.map((metric, index) => {
