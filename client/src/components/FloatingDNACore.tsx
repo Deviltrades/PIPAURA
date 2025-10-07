@@ -219,9 +219,9 @@ export function FloatingDNACore() {
           </filter>
         </defs>
 
-        {/* DNA Double Helix with Flowing Gradient - Shifted Right */}
+        {/* DNA Double Helix with Flowing Gradient */}
         <g 
-          transform="translate(520, 300)"
+          transform="translate(400, 300)"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
@@ -315,38 +315,38 @@ export function FloatingDNACore() {
 
       </svg>
 
-      {/* Metrics Box - Top Left */}
+      {/* Metrics Box - Top Left - Compact */}
       <motion.div
-        className="absolute top-8 left-8 bg-slate-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-6"
+        className="absolute top-8 left-8 bg-slate-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-3"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.5 }}
       >
-        <div className="space-y-3">
+        <div className="space-y-1.5">
           {dnaZones.map((metric, index) => (
             <motion.div
               key={metric.key}
-              className="flex items-center gap-3"
+              className="flex items-center gap-2"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
             >
               {/* Colored dot */}
               <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: metric.color, boxShadow: `0 0 8px ${metric.color}` }}
+                className="w-2 h-2 rounded-full flex-shrink-0"
+                style={{ backgroundColor: metric.color, boxShadow: `0 0 6px ${metric.color}` }}
                 data-testid={`metric-dot-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
               />
               {/* Metric name and value */}
-              <div className="flex items-baseline gap-3 min-w-[200px]">
+              <div className="flex items-baseline gap-2 min-w-[140px]">
                 <span 
-                  className="text-white text-sm font-semibold flex-1"
+                  className="text-white text-xs font-semibold flex-1"
                   data-testid={`metric-label-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
                 >
                   {metric.name}
                 </span>
                 <span
-                  className="text-lg font-bold"
+                  className="text-sm font-bold"
                   style={{ color: metric.color }}
                   data-testid={`metric-value-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
                 >
