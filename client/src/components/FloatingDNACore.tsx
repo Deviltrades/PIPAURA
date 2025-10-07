@@ -147,11 +147,11 @@ export function FloatingDNACore() {
     return points;
   };
 
-  // Create 4 strands: outer and inner edges for each side
-  const strand1Outer = generateDNAPoints(0, 80);
-  const strand1Inner = generateDNAPoints(0, 60);
-  const strand2Outer = generateDNAPoints(180, 80);
-  const strand2Inner = generateDNAPoints(180, 60);
+  // Create 4 strands: outer and inner edges for each side - ENLARGED
+  const strand1Outer = generateDNAPoints(0, 110);
+  const strand1Inner = generateDNAPoints(0, 85);
+  const strand2Outer = generateDNAPoints(180, 110);
+  const strand2Inner = generateDNAPoints(180, 85);
 
   // Create smooth path from points
   const createSmoothPath = (points: { x: number; y: number }[]) => {
