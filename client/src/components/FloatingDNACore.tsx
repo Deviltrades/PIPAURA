@@ -313,23 +313,23 @@ export function FloatingDNACore() {
               />
             ))}
 
-            {/* Base pair rungs - MANY CRISP HORIZONTAL ladder bars */}
+            {/* Base pair rungs - MANY CRISP HORIZONTAL ladder bars connecting INNER strands */}
             {Array.from({ length: 25 }).map((_, i) => {
               // Create evenly spaced rungs from top to bottom
               const yPosition = (i / 24 - 0.5) * 480; // -240 to 240
               
-              // Find closest points on each strand at this Y position
-              const point1 = strand1Outer.reduce((closest, point) => 
+              // Find closest points on INNER strands at this Y position
+              const point1 = strand1Inner.reduce((closest, point) => 
                 Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
-              , strand1Outer[0]);
+              , strand1Inner[0]);
               
-              const point2 = strand2Outer.reduce((closest, point) => 
+              const point2 = strand2Inner.reduce((closest, point) => 
                 Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
-              , strand2Outer[0]);
+              , strand2Inner[0]);
               
               // Calculate depth for this rung
               const avgZ = (point1.z + point2.z) / 2;
-              const depthFactor = (avgZ + 80) / 160;
+              const depthFactor = (avgZ + 60) / 120;
               const opacity = 0.85 + depthFactor * 0.15;
               const strokeWidth = 3 + depthFactor * 1;
 
