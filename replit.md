@@ -12,6 +12,14 @@ Settings access: Settings icon next to theme toggle with dedicated logout tab.
 
 ## Recent Changes
 
+### Floating DNA Core Visualization (Added 2025-10-07)
+Implemented a stunning 3D-like "Trader DNA Core" intelligence visualization on the analytics page:
+- **Animated double-helix structure**: Color-coded from red to green based on overall Edge Integrity score
+- **Six orbiting metrics**: Win Rate, Avg R:R, Risk Consistency, Emotional Control, Discipline, Session Focus
+- **Dynamic glowing beams**: Connect each metric to helix rungs with opacity scaled by metric value
+- **Real-time updates**: Auto-refreshes every 5 seconds with latest trade data
+- **Neon glow theme**: Dark background with cyan/teal Pipaura aesthetic using Framer Motion animations
+
 ### Express.js to Supabase Migration (Completed 2025-10-07)
 Successfully completed comprehensive migration from Express.js server to pure Supabase architecture for cleaner frontend-only deployment:
 
