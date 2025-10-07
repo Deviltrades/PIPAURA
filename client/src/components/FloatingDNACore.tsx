@@ -25,7 +25,20 @@ export function FloatingDNACore() {
 
   const [isPaused, setIsPaused] = useState(false);
   const [rotationPhase, setRotationPhase] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Animate rotation phase for helix spinning
   useEffect(() => {
@@ -457,7 +470,7 @@ export function FloatingDNACore() {
       </motion.div>
 
       {/* Right side percentage displays - next to DNA helix aligned with zones - Mobile Responsive */}
-      <div className="absolute top-1/2 left-1/2 md:left-1/2">
+      <div className="absolute top-1/2 left-1/2">
         {dnaZones.map((metric, index) => {
           // Compress vertical spacing by 15%
           const compressedYPosition = metric.yPosition * 0.85;
@@ -467,8 +480,8 @@ export function FloatingDNACore() {
               key={`right-${metric.key}`}
               className="absolute bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-2 py-1 md:px-3 md:py-1.5 text-center"
               style={{
-                top: `${compressedYPosition}px`,
-                left: '90px',
+                top: `${compressedYPosition - 35}px`,
+                left: isMobile ? '90px' : '160px',
                 transform: 'translateY(-50%)'
               }}
               initial={{ opacity: 0, x: 20 }}
