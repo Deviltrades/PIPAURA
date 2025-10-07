@@ -280,9 +280,9 @@ export function FloatingDNACore() {
               strokeLinecap="round"
             />
 
-            {/* Horizontal ladder rungs - color matches zone */}
-            {Array.from({ length: 20 }).map((_, i) => {
-              const yPosition = (i / 19 - 0.5) * 460; // Spread across DNA height
+            {/* Horizontal ladder rungs - HIGHLY VISIBLE with zone colors */}
+            {Array.from({ length: 18 }).map((_, i) => {
+              const yPosition = (i / 17 - 0.5) * 450;
               
               // Find closest points on inner strands
               const point1 = strand1Inner.reduce((closest, point) => 
@@ -293,30 +293,41 @@ export function FloatingDNACore() {
                 Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
               , strand2Inner[0]);
               
-              // Get zone color for this rung position
+              // Always use vibrant zone color
               const rungColor = getZoneColorAtY(yPosition);
-              
-              // Depth-based effects
-              const avgZ = (point1.z + point2.z) / 2;
-              const isInFront = avgZ < 0;
-              const depthOpacity = isInFront ? 0.9 : 0.6;
 
               return (
-                <motion.line
-                  key={`rung-${i}`}
-                  x1={point1.x}
-                  y1={point1.y}
-                  x2={point2.x}
-                  y2={point2.y}
-                  stroke={rungColor}
-                  strokeWidth={4}
-                  opacity={depthOpacity}
-                  filter="url(#softGlow)"
-                  strokeLinecap="round"
-                  initial={{ opacity: 0, pathLength: 0 }}
-                  animate={{ opacity: depthOpacity, pathLength: 1 }}
-                  transition={{ duration: 0.5, delay: i * 0.03 }}
-                />
+                <g key={`rung-${i}`}>
+                  {/* Bright white base for visibility */}
+                  <motion.line
+                    x1={point1.x}
+                    y1={point1.y}
+                    x2={point2.x}
+                    y2={point2.y}
+                    stroke="white"
+                    strokeWidth={6}
+                    opacity={0.8}
+                    strokeLinecap="round"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.8 }}
+                    transition={{ duration: 0.5, delay: i * 0.03 }}
+                  />
+                  {/* Color overlay */}
+                  <motion.line
+                    x1={point1.x}
+                    y1={point1.y}
+                    x2={point2.x}
+                    y2={point2.y}
+                    stroke={rungColor}
+                    strokeWidth={4}
+                    opacity={0.95}
+                    filter="url(#strongGlow)"
+                    strokeLinecap="round"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.95 }}
+                    transition={{ duration: 0.5, delay: i * 0.03 }}
+                  />
+                </g>
               );
             })}
           </motion.g>
