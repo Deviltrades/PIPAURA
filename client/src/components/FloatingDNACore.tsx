@@ -358,18 +358,18 @@ export function FloatingDNACore() {
         </div>
       </motion.div>
 
-      {/* Edge Integrity Score Display */}
+      {/* Edge Integrity Score Display - In Black Box */}
       <motion.div
-        className="absolute top-8 left-1/2 transform -translate-x-1/2 text-center"
-        initial={{ opacity: 0, y: -20 }}
+        className="absolute bottom-32 left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-6 text-center min-w-[180px]"
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 1.5 }}
       >
-        <div className="text-sm font-semibold text-cyan-400 mb-1" data-testid="label-edge-integrity">
+        <div className="text-xs font-semibold text-cyan-400 mb-2" data-testid="label-edge-integrity">
           EDGE INTEGRITY SCORE
         </div>
         <div 
-          className="text-6xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent"
+          className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent"
           data-testid="value-edge-integrity"
         >
           {metrics.edgeIntegrity.toFixed(1)}%
