@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion, useAnimation } from "framer-motion";
+import { motion } from "framer-motion";
 import { getTrades, getAnalytics } from "@/lib/supabase-service";
 import { useQuery } from "@tanstack/react-query";
 
@@ -31,10 +31,10 @@ export function FloatingDNACore() {
     edgeIntegrity: 0,
   });
 
-  const controls = useAnimation();
   const [isPaused, setIsPaused] = useState(false);
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const spinSpeed = 14; // seconds per revolution
+  const shouldSpin = !prefersReducedMotion && !isPaused;
 
   // Fetch trades and analytics data
   const { data: trades } = useQuery({
@@ -54,41 +54,6 @@ export function FloatingDNACore() {
     }
   }, [trades, analytics]);
 
-  // DNA spinning animation
-  useEffect(() => {
-    if (prefersReducedMotion || isPaused) {
-      controls.stop();
-      return;
-    }
-
-    controls.start({
-      rotate: 360,
-      transition: {
-        duration: spinSpeed,
-        ease: "linear",
-        repeat: Infinity
-      }
-    });
-
-    // Pause when tab is hidden
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        controls.stop();
-      } else if (!isPaused) {
-        controls.start({
-          rotate: 360,
-          transition: {
-            duration: spinSpeed,
-            ease: "linear",
-            repeat: Infinity
-          }
-        });
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [controls, isPaused, prefersReducedMotion, spinSpeed]);
 
   const calculateMetrics = (tradesData: any[], analyticsData: any) => {
     const closedTrades = tradesData.filter(t => t.status === 'CLOSED' && t.pnl !== null);
@@ -242,7 +207,12 @@ export function FloatingDNACore() {
         {/* DNA Double Helix - Spinning */}
         <motion.g
           transform="translate(400, 300)"
-          animate={controls}
+          animate={shouldSpin ? { rotate: 360 } : { rotate: 0 }}
+          transition={shouldSpin ? {
+            duration: spinSpeed,
+            ease: "linear",
+            repeat: Infinity
+          } : {}}
           style={{ 
             transformOrigin: "0px 0px",
             willChange: "transform"
