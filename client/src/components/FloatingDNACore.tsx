@@ -382,7 +382,7 @@ export function FloatingDNACore() {
 
       {/* Edge Integrity Score Display - Below Metrics Box - Mobile Responsive */}
       <motion.div
-        className="absolute bottom-[80px] left-2 md:top-[220px] md:left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-3 text-center min-w-[120px]"
+        className="absolute bottom-[80px] left-2 md:top-[220px] md:left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-4 py-2 md:px-5 md:py-2.5 text-center"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 1.5 }}
@@ -391,10 +391,10 @@ export function FloatingDNACore() {
         <Dialog>
           <DialogTrigger asChild>
             <button 
-              className="absolute top-1 right-1 md:top-2 md:right-2 text-cyan-400/60 hover:text-cyan-400 transition-colors"
+              className="absolute top-1 right-1 text-cyan-400/60 hover:text-cyan-400 transition-colors"
               data-testid="button-info-dna"
             >
-              <Info className="w-3 h-3 md:w-4 md:h-4" />
+              <Info className="w-3 h-3 md:w-3.5 md:h-3.5" />
             </button>
           </DialogTrigger>
           <DialogContent className="max-w-[95vw] md:max-w-2xl max-h-[80vh] overflow-y-auto bg-slate-950/95 border-cyan-500/30 text-white p-4 md:p-6">
@@ -458,11 +458,11 @@ export function FloatingDNACore() {
           </DialogContent>
         </Dialog>
 
-        <div className="text-[9px] md:text-[10px] font-semibold text-cyan-400 mb-1" data-testid="label-edge-integrity">
+        <div className="text-[9px] md:text-xs font-semibold text-cyan-400 mb-0.5 md:mb-1" data-testid="label-edge-integrity">
           EDGE INTEGRITY SCORE
         </div>
         <div 
-          className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent"
+          className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent leading-none"
           data-testid="value-edge-integrity"
         >
           {metrics.edgeIntegrity.toFixed(1)}%
