@@ -188,32 +188,94 @@ export default function Analytics() {
           <CardContent className="p-6">
             {monthlyOrbitData.length > 0 ? (
               <div className="relative">
-                <ResponsiveContainer width="100%" height={300}>
-                  <RadarChart data={monthlyOrbitData}>
+                {/* Custom Circular Orbit Visualization */}
+                <div className="w-full h-[300px] flex items-center justify-center">
+                  <svg viewBox="0 0 400 400" className="w-full h-full max-w-[400px]">
                     <defs>
-                      <linearGradient id="orbitGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.6} />
-                        <stop offset="100%" stopColor="#0891b2" stopOpacity={0.2} />
-                      </linearGradient>
+                      <radialGradient id="centerGlow" cx="50%" cy="50%">
+                        <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.4" />
+                        <stop offset="50%" stopColor="#06b6d4" stopOpacity="0.1" />
+                        <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+                      </radialGradient>
                     </defs>
-                    <PolarGrid 
-                      stroke="#1a2f4a" 
-                      strokeWidth={1}
-                    />
-                    <PolarAngleAxis 
-                      dataKey="month" 
-                      tick={{ fill: '#6b7280', fontSize: 12 }}
-                    />
-                    <Radar 
-                      name="Monthly P&L" 
-                      dataKey="value" 
-                      stroke="#06b6d4" 
-                      fill="url(#orbitGradient)" 
-                      fillOpacity={0.6}
-                      strokeWidth={2}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
+                    
+                    {/* Background glow */}
+                    <circle cx="200" cy="200" r="150" fill="url(#centerGlow)" />
+                    
+                    {/* Concentric circles (orbits) */}
+                    <circle cx="200" cy="200" r="140" fill="none" stroke="#1a2f4a" strokeWidth="1" opacity="0.5" />
+                    <circle cx="200" cy="200" r="110" fill="none" stroke="#1a2f4a" strokeWidth="1" opacity="0.5" />
+                    <circle cx="200" cy="200" r="80" fill="none" stroke="#1a2f4a" strokeWidth="1" opacity="0.5" />
+                    
+                    {/* Radial lines */}
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const angle = (i * 30 - 90) * (Math.PI / 180);
+                      const x1 = 200 + 60 * Math.cos(angle);
+                      const y1 = 200 + 60 * Math.sin(angle);
+                      const x2 = 200 + 140 * Math.cos(angle);
+                      const y2 = 200 + 140 * Math.sin(angle);
+                      return (
+                        <line
+                          key={`line-${i}`}
+                          x1={x1}
+                          y1={y1}
+                          x2={x2}
+                          y2={y2}
+                          stroke="#1a2f4a"
+                          strokeWidth="1"
+                          opacity="0.3"
+                        />
+                      );
+                    })}
+                    
+                    {/* Month labels around the perimeter */}
+                    {monthlyOrbitData.slice(0, 12).map((data, i) => {
+                      const angle = (i * 30 - 90) * (Math.PI / 180);
+                      const radius = 160;
+                      const x = 200 + radius * Math.cos(angle);
+                      const y = 200 + radius * Math.sin(angle);
+                      
+                      return (
+                        <text
+                          key={`month-${i}`}
+                          x={x}
+                          y={y}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          className="text-[11px] fill-gray-500"
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                        >
+                          {data.month.toUpperCase()}
+                        </text>
+                      );
+                    })}
+                    
+                    {/* Center circle - Best month */}
+                    <circle cx="200" cy="200" r="65" fill="none" stroke="#06b6d4" strokeWidth="2" opacity="0.8" />
+                    <circle cx="200" cy="200" r="50" fill="none" stroke="#06b6d4" strokeWidth="2" opacity="0.6" />
+                    
+                    {/* Center text */}
+                    <text
+                      x="200"
+                      y="190"
+                      textAnchor="middle"
+                      className="text-[18px] fill-white font-normal"
+                      fontFamily="system-ui, -apple-system, sans-serif"
+                    >
+                      {stats.bestMonthName.split(' ')[0]}
+                    </text>
+                    <text
+                      x="200"
+                      y="215"
+                      textAnchor="middle"
+                      className="text-[20px] fill-cyan-400 font-bold"
+                      fontFamily="system-ui, -apple-system, sans-serif"
+                    >
+                      {stats.bestMonth > 0 ? '+' : ''}{((stats.bestMonth / (stats.totalPnL || 1)) * 100).toFixed(1)}%
+                    </text>
+                  </svg>
+                </div>
+                
                 <div className="mt-6 text-center">
                   <span className="text-gray-400 text-sm lg:text-base">Best Month: </span>
                   <span className="text-white font-bold text-base lg:text-lg">
