@@ -18,14 +18,44 @@ export async function getUserProfile() {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  const { data, error } = await supabase
+  console.log('[getUserProfile] Fetching profile for user:', user.email, 'ID:', user.id);
+
+  // First, try to find by supabase_user_id
+  let { data, error } = await supabase
     .from('user_profiles')
     .select('*')
     .eq('supabase_user_id', user.id)
     .single();
 
-  // If profile doesn't exist, create it
+  console.log('[getUserProfile] Query by supabase_user_id result:', { data, error });
+
+  // If not found by supabase_user_id, try to find by email (migration fallback)
   if (error && error.code === 'PGRST116') {
+    console.log('[getUserProfile] Not found by supabase_user_id, trying email fallback');
+    const { data: emailData, error: emailError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('email', user.email!)
+      .single();
+
+    console.log('[getUserProfile] Query by email result:', { emailData, emailError });
+
+    // If found by email, update it with supabase_user_id
+    if (emailData && !emailError) {
+      console.log('[getUserProfile] Found by email, updating with supabase_user_id');
+      const { data: updatedProfile, error: updateError } = await supabase
+        .from('user_profiles')
+        .update({ supabase_user_id: user.id })
+        .eq('id', emailData.id)
+        .select()
+        .single();
+
+      console.log('[getUserProfile] Update result:', { updatedProfile, updateError });
+      if (updateError) throw updateError;
+      return updatedProfile as UserProfile;
+    }
+
+    // If profile doesn't exist at all, create it
     const { data: newProfile, error: createError } = await supabase
       .from('user_profiles')
       .insert([{
