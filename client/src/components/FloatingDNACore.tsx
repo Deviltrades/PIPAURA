@@ -438,9 +438,38 @@ export function FloatingDNACore() {
           const textY = 300 + helixY;
           
           const textAnchor = isLeft ? "end" : "start";
+          
+          // Dot position next to text
+          const dotX = isLeft ? textX - 10 : textX + 10;
 
           return (
             <g key={metric.name}>
+              {/* Dot on DNA helix */}
+              <motion.circle
+                cx={400 + helixX}
+                cy={300 + helixY}
+                r={6}
+                fill={metric.color}
+                filter="url(#strongGlow)"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                data-testid={`metric-dot-helix-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
+              />
+              
+              {/* Dot next to text label */}
+              <motion.circle
+                cx={dotX}
+                cy={textY + 3}
+                r={5}
+                fill={metric.color}
+                filter="url(#softGlow)"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 0.9 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                data-testid={`metric-dot-label-${metric.name.toLowerCase().replace(/[: ]/g, '-')}`}
+              />
+              
               {/* Metric label and value - positioned on side */}
               <motion.text
                 x={textX}
