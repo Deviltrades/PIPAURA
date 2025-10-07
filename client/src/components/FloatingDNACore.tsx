@@ -280,10 +280,11 @@ export function FloatingDNACore() {
               strokeLinecap="round"
             />
 
-            {/* Ladder rungs - VIBRANT COLOR CODED by zone */}
-            {Array.from({ length: 25 }).map((_, i) => {
-              const yPosition = (i / 24 - 0.5) * 480;
+            {/* Horizontal ladder rungs - color matches zone */}
+            {Array.from({ length: 20 }).map((_, i) => {
+              const yPosition = (i / 19 - 0.5) * 460; // Spread across DNA height
               
+              // Find closest points on inner strands
               const point1 = strand1Inner.reduce((closest, point) => 
                 Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
               , strand1Inner[0]);
@@ -292,10 +293,13 @@ export function FloatingDNACore() {
                 Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
               , strand2Inner[0]);
               
-              const avgZ = (point1.z + point2.z) / 2;
-              const depthFactor = (avgZ + 60) / 120;
-              const strokeWidth = 5 + depthFactor * 2;
+              // Get zone color for this rung position
               const rungColor = getZoneColorAtY(yPosition);
+              
+              // Depth-based effects
+              const avgZ = (point1.z + point2.z) / 2;
+              const isInFront = avgZ < 0;
+              const depthOpacity = isInFront ? 0.9 : 0.6;
 
               return (
                 <motion.line
@@ -305,13 +309,13 @@ export function FloatingDNACore() {
                   x2={point2.x}
                   y2={point2.y}
                   stroke={rungColor}
-                  strokeWidth={strokeWidth}
-                  opacity={1}
-                  filter="url(#strongGlow)"
+                  strokeWidth={4}
+                  opacity={depthOpacity}
+                  filter="url(#softGlow)"
                   strokeLinecap="round"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: i * 0.02 }}
+                  initial={{ opacity: 0, pathLength: 0 }}
+                  animate={{ opacity: depthOpacity, pathLength: 1 }}
+                  transition={{ duration: 0.5, delay: i * 0.03 }}
                 />
               );
             })}
