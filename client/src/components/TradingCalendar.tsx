@@ -548,6 +548,24 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     }
   };
 
+  const handleMonthChange = (value: string) => {
+    const newMonth = parseInt(value);
+    setViewMonth(new Date(viewMonth.getFullYear(), newMonth, 1));
+  };
+
+  const handleYearChange = (value: string) => {
+    const newYear = parseInt(value);
+    setViewMonth(new Date(newYear, viewMonth.getMonth(), 1));
+  };
+
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
+
   if (isLoading) {
     return (
       <Card className={className}>
@@ -578,9 +596,39 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
               Clear View
             </Button>
             
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-              {format(viewMonth, "MMMM yyyy")}
-            </h2>
+            <div className="flex items-center gap-2">
+              <Select 
+                value={viewMonth.getMonth().toString()} 
+                onValueChange={handleMonthChange}
+              >
+                <SelectTrigger className="w-[120px] h-9" data-testid="select-month">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {monthNames.map((name, index) => (
+                    <SelectItem key={index} value={index.toString()}>
+                      {name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select 
+                value={viewMonth.getFullYear().toString()} 
+                onValueChange={handleYearChange}
+              >
+                <SelectTrigger className="w-[90px] h-9" data-testid="select-year">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             {!clearView && (
               <>
                 <Select value={displayMode} onValueChange={(value: "percentage" | "dollar") => setDisplayMode(value)}>
