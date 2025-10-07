@@ -379,12 +379,15 @@ export function FloatingDNACore() {
       {/* Right side percentage displays - next to DNA helix aligned with zones */}
       <div className="absolute top-1/2 left-1/2">
         {dnaZones.map((metric, index) => {
+          // Compress vertical spacing by 15%
+          const compressedYPosition = metric.yPosition * 0.85;
+          
           return (
             <motion.div
               key={`right-${metric.key}`}
               className="absolute bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-3 py-1.5 text-center"
               style={{
-                top: `${metric.yPosition - 35}px`,
+                top: `${compressedYPosition - 35}px`,
                 left: '160px',
                 transform: 'translateY(-50%)'
               }}
