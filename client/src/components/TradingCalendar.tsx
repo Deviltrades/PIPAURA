@@ -573,12 +573,12 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   const layout = showWeekends ? {
     cols: 7,
     dayLabels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-    cellClass: 'h-20 sm:h-24',
+    cellClass: 'h-24 sm:h-28 md:h-32',
     cellStyle: {}
   } : {
     cols: 5,
     dayLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    cellClass: 'h-20 sm:h-24',
+    cellClass: 'h-24 sm:h-28 md:h-32',
     cellStyle: {}
   };
 
@@ -851,42 +851,41 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
         {/* Monthly Summary Bar */}
         {showMonthlySummary && (
-          <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-white text-sm font-medium">Monthly stats:</span>
+          <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between overflow-x-auto">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="text-white text-xs sm:text-sm font-medium">Monthly:</span>
               </div>
               
               {(() => {
                 const monthlyStats = getMonthlySummary();
                 return (
-                  <div className="flex items-center gap-4 text-white">
+                  <div className="flex items-center gap-2 sm:gap-4 text-white">
                     {/* Total Net P&L */}
                     {monthlyStatsConfig.totalPnL && (
-                      <div className={`px-3 py-2 rounded-md text-sm font-semibold ${
+                      <div className={`px-2 sm:px-3 py-1 sm:py-2 rounded-md text-xs sm:text-sm font-semibold whitespace-nowrap ${
                         monthlyStats.totalPnL >= 0 ? 'bg-green-600' : 'bg-red-600'
                       }`}>
-                        {monthlyStats.totalPnL >= 0 ? '+' : ''}${monthlyStats.totalPnL.toLocaleString('en-US', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
-                        })}
+                        {monthlyStats.totalPnL >= 0 ? '+' : ''}${Math.abs(monthlyStats.totalPnL) >= 1000 
+                          ? `${(monthlyStats.totalPnL / 1000).toFixed(1)}k` 
+                          : monthlyStats.totalPnL.toFixed(0)}
                       </div>
                     )}
                     
                     {/* Total Days Traded */}
                     {monthlyStatsConfig.daysTraded && (
-                      <div className="text-sm">
+                      <div className="text-xs sm:text-sm whitespace-nowrap">
                         <span className="font-semibold">{monthlyStats.daysTraded}</span> days
                       </div>
                     )}
                     
                     {/* Risk/Reward Ratio */}
                     {monthlyStatsConfig.riskReward && (
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-                          <span className="text-xs">R</span>
+                      <div className="flex items-center gap-1 sm:gap-2 whitespace-nowrap">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-600 rounded-full flex items-center justify-center">
+                          <span className="text-[10px] sm:text-xs">R</span>
                         </div>
-                        <span className="text-sm">
+                        <span className="text-xs sm:text-sm">
                           {monthlyStats.riskRewardRatio > 0 ? monthlyStats.riskRewardRatio.toFixed(2) : '0.00'}
                         </span>
                       </div>
@@ -894,15 +893,15 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
                     {/* Total Trades */}
                     {monthlyStatsConfig.totalTrades && (
-                      <div className="text-sm">
+                      <div className="text-xs sm:text-sm whitespace-nowrap">
                         <span className="font-semibold">{monthlyStats.totalTrades}</span> trades
                       </div>
                     )}
 
                     {/* Win Rate */}
                     {monthlyStatsConfig.winRate && (
-                      <div className="text-sm">
-                        <span className="font-semibold">{monthlyStats.winRate.toFixed(1)}%</span> win rate
+                      <div className="text-xs sm:text-sm whitespace-nowrap">
+                        <span className="font-semibold">{monthlyStats.winRate.toFixed(1)}%</span> WR
                       </div>
                     )}
                   </div>
@@ -1010,13 +1009,13 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
           const ratingColor = score < 30 ? 'text-red-400' : score < 60 ? 'text-orange-400' : 'text-green-400';
           
           return (
-            <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-4 py-3">
+            <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-3 sm:px-4 py-2 sm:py-3">
               {/* Main Bar Row */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-white text-sm font-medium">Consistency:</span>
-                  <div className="relative">
-                    <div className="relative w-40 sm:w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                  <span className="text-white text-xs sm:text-sm font-medium flex-shrink-0">Consistency:</span>
+                  <div className="relative flex-1">
+                    <div className="relative w-full h-2 bg-gray-700 rounded-full overflow-hidden">
                       <div 
                         className="absolute left-0 top-0 h-full rounded-full transition-all duration-500 ease-out" 
                         style={{ width: `${score}%`, backgroundColor: barColor }}
@@ -1024,25 +1023,28 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                       />
                     </div>
                     {/* Scale Legend - Centered below the progress bar */}
-                    <div className="flex items-center justify-center gap-4 mt-2 text-xs text-gray-300">
+                    <div className="flex items-center justify-center gap-2 sm:gap-4 mt-2 text-[10px] sm:text-xs text-gray-300">
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                        <span>0 - 30%</span>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full"></div>
+                        <span className="hidden sm:inline">0 - 30%</span>
+                        <span className="sm:hidden">Low</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                        <span>30 - 60%</span>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-orange-500 rounded-full"></div>
+                        <span className="hidden sm:inline">30 - 60%</span>
+                        <span className="sm:hidden">Mid</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span>60 - 100%</span>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full"></div>
+                        <span className="hidden sm:inline">60 - 100%</span>
+                        <span className="sm:hidden">High</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-white text-sm font-semibold">{score}%</span>
-                  <span className={`text-xs font-medium ${ratingColor}`}>{rating}</span>
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                  <span className="text-white text-xs sm:text-sm font-semibold">{score}%</span>
+                  <span className={`text-[10px] sm:text-xs font-medium ${ratingColor} hidden sm:inline`}>{rating}</span>
                 </div>
               </div>
             </div>
@@ -1148,7 +1150,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                       width: 0,
                       height: 0,
                       borderStyle: 'solid',
-                      borderWidth: '0 34px 34px 0',
+                      borderWidth: '0 24px 24px 0',
                       borderColor: 'transparent #1e3a8a transparent transparent'
                     }}
                   />
@@ -1156,18 +1158,18 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 
                 {/* Success/Failure Icon - Inside Triangle */}
                 {dayTrades.length > 0 && (
-                  <div className="absolute top-1 right-1">
+                  <div className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
                     {dailyPnL > 0 ? (
-                      <Check className="h-4 w-4 text-white" />
+                      <Check className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     ) : (
-                      <X className="h-4 w-4 text-white" />
+                      <X className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     )}
                   </div>
                 )}
                 
                 {/* Date - Top Left */}
-                <div className="absolute top-1 left-1.5">
-                  <span className={`text-sm font-semibold ${
+                <div className="absolute top-0.5 left-1 sm:top-1 sm:left-1.5">
+                  <span className={`text-xs sm:text-sm font-semibold ${
                     dayTrades.length > 0 ? 'text-black' : 'text-white'
                   }`}>
                     {format(day, 'd')}
@@ -1192,21 +1194,23 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                 
                 {/* Trading Day Content */}
                 {dayTrades.length > 0 ? (
-                  <div className="absolute inset-x-2 top-8 bottom-2 flex flex-col justify-center">
+                  <div className="absolute inset-x-1 sm:inset-x-2 top-7 sm:top-8 bottom-1 sm:bottom-2 flex flex-col justify-center">
                     {/* Display Value - Percentage or Dollar */}
                     <div className="text-center">
-                      <div className="text-base font-bold text-black">
+                      <div className="text-sm sm:text-base md:text-lg font-bold text-black leading-tight">
                         {displayMode === "percentage" 
                           ? `${dailyPnL > 0 ? '+' : ''}${dailyReturn?.toFixed(2)}%`
-                          : `${dailyPnL > 0 ? '+' : ''}$${dailyPnL.toFixed(2)}`
+                          : `${dailyPnL > 0 ? '+' : ''}$${Math.abs(dailyPnL) >= 1000 
+                              ? `${(dailyPnL / 1000).toFixed(1)}k` 
+                              : dailyPnL.toFixed(0)}`
                         }
                       </div>
-                      <div className="text-xs text-black/80 font-medium">
+                      <div className="text-[10px] sm:text-xs text-black/80 font-medium">
                         {displayMode === "percentage" ? "%" : "USD"}
                       </div>
                     </div>
                     {/* Trade Count */}
-                    <div className="text-xs text-black/90 text-center mt-1">
+                    <div className="text-[10px] sm:text-xs text-black/90 text-center mt-0.5 sm:mt-1">
                       Trades: {dayTrades.length}
                     </div>
                   </div>
@@ -1224,7 +1228,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                       </div>
                       {/* Zero Trades Text */}
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-[10px] text-white/60 font-bold text-center">
+                        <div className="text-[9px] sm:text-[10px] text-white/60 font-bold text-center px-1">
                           Zero Trades
                         </div>
                       </div>
@@ -1239,22 +1243,22 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
           {/* Weekly Totals Section */}
           {showWeeklyTotals && (
-            <div className="w-20 flex-shrink-0">
+            <div className="w-16 sm:w-20 flex-shrink-0">
               {/* Header */}
               <div className="h-8 sm:h-10 flex items-center justify-center mb-2">
-                <span className="text-xs sm:text-sm font-medium text-muted-foreground">Total</span>
+                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">Total</span>
               </div>
               
               {/* Weekly Summary Boxes */}
-              <div className="space-y-1">
+              <div className="space-y-0.5 sm:space-y-1">
                 {getWeeklyTotals().map((week, index) => (
                   <div 
                     key={index}
-                    className="bg-gray-600 rounded-lg p-3 text-white"
-                    style={{ height: showWeekends ? '94px' : '94px' }}
+                    className="bg-gray-600 rounded-lg p-1.5 sm:p-3 text-white"
+                    style={{ height: showWeekends ? '96px' : '96px' }}
                   >
-                    <div className="text-xs font-medium mb-1">Week {week.weekNumber}</div>
-                    <div className={`text-sm font-bold ${
+                    <div className="text-[9px] sm:text-xs font-medium mb-0.5 sm:mb-1">W{week.weekNumber}</div>
+                    <div className={`text-xs sm:text-sm font-bold ${
                       week.pnl >= 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
                       {week.pnl >= 0 ? '+' : ''}${Math.abs(week.pnl) >= 1000 
