@@ -32,9 +32,29 @@ export function FloatingDNACore() {
   });
 
   const [isPaused, setIsPaused] = useState(false);
+  const [rotationPhase, setRotationPhase] = useState(0);
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const spinSpeed = 14; // seconds per revolution
-  const shouldSpin = !prefersReducedMotion && !isPaused;
+
+  // Animate rotation phase for helix spinning
+  useEffect(() => {
+    if (prefersReducedMotion || isPaused) return;
+
+    let animationFrameId: number;
+    let lastTime = Date.now();
+
+    const animate = () => {
+      const currentTime = Date.now();
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+
+      setRotationPhase((prev) => (prev + (deltaTime / 14000) * 360) % 360);
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isPaused, prefersReducedMotion]);
 
   // Fetch trades and analytics data
   const { data: trades } = useQuery({
@@ -205,22 +225,11 @@ export function FloatingDNACore() {
         </defs>
 
         {/* DNA Double Helix - Spinning */}
-        <g transform="translate(400, 300)">
-          <motion.g
-            animate={shouldSpin ? { rotate: 360 } : { rotate: 0 }}
-            transition={shouldSpin ? {
-              duration: spinSpeed,
-              ease: "linear",
-              repeat: Infinity
-            } : {}}
-            style={{ 
-              transformOrigin: "center",
-              transformBox: "fill-box",
-              willChange: "transform"
-            }}
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-          >
+        <g 
+          transform="translate(400, 300)"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
           {/* Breathing pulse */}
           <motion.g
             animate={{
@@ -236,7 +245,7 @@ export function FloatingDNACore() {
           {/* Draw helix strands */}
           {Array.from({ length: 12 }).map((_, i) => {
             const y = (i - 5.5) * 40;
-            const phase1 = (i * 30) % 360;
+            const phase1 = ((i * 30) + rotationPhase) % 360;
             const phase2 = (phase1 + 180) % 360;
             const x1 = Math.sin((phase1 * Math.PI) / 180) * 60;
             const x2 = Math.sin((phase2 * Math.PI) / 180) * 60;
@@ -286,30 +295,45 @@ export function FloatingDNACore() {
           })}
 
           {/* Helix connecting curves */}
-          <motion.path
-            d={`M ${Math.sin(0) * 60} -220 Q ${Math.sin(45 * Math.PI / 180) * 60} -180, ${Math.sin(90 * Math.PI / 180) * 60} -140 T ${Math.sin(180 * Math.PI / 180) * 60} -60 T ${Math.sin(270 * Math.PI / 180) * 60} 20 T ${Math.sin(360 * Math.PI / 180) * 60} 100 T ${Math.sin(450 * Math.PI / 180) * 60} 180 T ${Math.sin(540 * Math.PI / 180) * 60} 260`}
+          <path
+            d={(() => {
+              const points = [];
+              for (let t = 0; t <= 480; t += 40) {
+                const angle = ((t * 0.75) + rotationPhase) * Math.PI / 180;
+                const x = Math.sin(angle) * 60;
+                const y = t - 220;
+                points.push([x, y]);
+              }
+              return `M ${points[0][0]} ${points[0][1]} ${points.slice(1).map((p, i) => 
+                i % 2 === 0 ? `Q ${p[0]} ${p[1]},` : `${p[0]} ${p[1]}`
+              ).join(' ')}`;
+            })()}
             stroke={helixColor}
             strokeWidth="4"
             fill="none"
             opacity={0.9}
             filter="url(#strongGlow)"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 2, ease: "easeInOut" }}
           />
           
-          <motion.path
-            d={`M ${Math.sin(180 * Math.PI / 180) * 60} -220 Q ${Math.sin(225 * Math.PI / 180) * 60} -180, ${Math.sin(270 * Math.PI / 180) * 60} -140 T ${Math.sin(360 * Math.PI / 180) * 60} -60 T ${Math.sin(450 * Math.PI / 180) * 60} 20 T ${Math.sin(540 * Math.PI / 180) * 60} 100 T ${Math.sin(630 * Math.PI / 180) * 60} 180 T ${Math.sin(720 * Math.PI / 180) * 60} 260`}
+          <path
+            d={(() => {
+              const points = [];
+              for (let t = 0; t <= 480; t += 40) {
+                const angle = ((t * 0.75) + rotationPhase + 180) * Math.PI / 180;
+                const x = Math.sin(angle) * 60;
+                const y = t - 220;
+                points.push([x, y]);
+              }
+              return `M ${points[0][0]} ${points[0][1]} ${points.slice(1).map((p, i) => 
+                i % 2 === 0 ? `Q ${p[0]} ${p[1]},` : `${p[0]} ${p[1]}`
+              ).join(' ')}`;
+            })()}
             stroke={helixColor}
             strokeWidth="4"
             fill="none"
             opacity={0.9}
             filter="url(#strongGlow)"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 2, ease: "easeInOut", delay: 0.2 }}
           />
-          </motion.g>
           </motion.g>
         </g>
 
