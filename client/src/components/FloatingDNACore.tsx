@@ -339,7 +339,7 @@ export function FloatingDNACore() {
 
       {/* Metrics Box - Top Left - Compact - Mobile Responsive */}
       <motion.div
-        className="absolute top-2 left-2 md:top-8 md:left-8 bg-slate-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-2 md:p-3"
+        className="absolute top-2 left-2 md:top-8 md:left-8 bg-slate-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-2 md:p-3 scale-[0.85] md:scale-100 origin-top-left"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.5 }}
