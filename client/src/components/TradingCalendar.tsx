@@ -1181,18 +1181,18 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
                     buttonId="add-trade"
                     showUpgrade={false}
                   >
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setAddTradeDate(day);
-                        setIsAddTradeModalOpen(true);
-                      }}
-                      className="absolute top-1 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-4 h-4 bg-gray-600 hover:bg-gray-700 rounded-full flex items-center justify-center z-10"
-                      title="Add trade for this date"
-                      data-testid="button-add-trade"
-                    >
-                      <PlusIcon className="h-2.5 w-2.5 text-white" />
-                    </button>
+                    <Link href="/trades">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                        className="absolute top-1 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-4 h-4 bg-gray-600 hover:bg-gray-700 rounded-full flex items-center justify-center z-10"
+                        title="Add trade for this date"
+                        data-testid="button-add-trade"
+                      >
+                        <PlusIcon className="h-2.5 w-2.5 text-white" />
+                      </button>
+                    </Link>
                   </PlanGate>
                 )}
                 
