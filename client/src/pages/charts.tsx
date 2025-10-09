@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Maximize, Minimize } from "lucide-react";
 
 declare global {
   interface Window {
@@ -13,7 +14,9 @@ declare global {
 export default function Charts() {
   const [symbol, setSymbol] = useState("EURUSD");
   const [interval, setInterval] = useState("60");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chartCardRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<any>(null);
 
   useEffect(() => {
@@ -36,6 +39,31 @@ export default function Charts() {
       initChart();
     }
   }, [symbol, interval]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = async () => {
+    if (!chartCardRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await chartCardRef.current.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error("Error toggling fullscreen:", err);
+    }
+  };
 
   const initChart = () => {
     if (!chartContainerRef.current || !window.TradingView) return;
@@ -126,22 +154,37 @@ export default function Charts() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3">
-          <Card>
+          <Card ref={chartCardRef}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg" data-testid="text-chart-title">
                   {symbolMap[symbol]} • {intervalMap[interval]}
                 </CardTitle>
-                <Badge variant="default" className="bg-green-500" data-testid="badge-tradingview">
-                  Live • TradingView
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="default" className="bg-green-500" data-testid="badge-tradingview">
+                    Live • TradingView
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={toggleFullscreen}
+                    data-testid="button-fullscreen"
+                    className="h-7 w-7 p-0"
+                  >
+                    {isFullscreen ? (
+                      <Minimize className="h-4 w-4" />
+                    ) : (
+                      <Maximize className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
               <div 
                 ref={chartContainerRef}
                 id="tradingview_chart" 
-                className="h-[600px] rounded-lg overflow-hidden"
+                className={isFullscreen ? "h-[calc(100vh-120px)] rounded-lg overflow-hidden" : "h-[600px] rounded-lg overflow-hidden"}
                 data-testid="container-tradingview-chart"
               />
             </CardContent>
