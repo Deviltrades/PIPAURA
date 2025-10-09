@@ -298,14 +298,30 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   const shortWinRate = shortTrades.length > 0 ? 
     Math.round((shortTrades.filter(t => (Number(t.pnl) || 0) > 0).length / shortTrades.length) * 100) : 50;
 
-  // Mock trades for display
-  const lastFiveTrades = [
-    { id: "1", instrument: "GBPUSD", tradeType: "BUY" as const, pnl: 150.00, createdAt: "Aug 31, 25", status: "CLOSED" as const },
-    { id: "2", instrument: "INJ", tradeType: "BUY" as const, pnl: 806.61, createdAt: "Feb 09, 24", status: "CLOSED" as const },
-    { id: "3", instrument: "RUNE", tradeType: "SELL" as const, pnl: 953.17, createdAt: "Feb 05, 24", status: "CLOSED" as const },
-    { id: "4", instrument: "AVAX", tradeType: "SELL" as const, pnl: -306.44, createdAt: "Jan 28, 24", status: "CLOSED" as const },
-    { id: "5", instrument: "SOL", tradeType: "BUY" as const, pnl: 1306.00, createdAt: "Jan 27, 24", status: "CLOSED" as const }
-  ];
+  // Get last five actual trades sorted by date
+  const lastFiveTrades = trades
+    ?.sort((a, b) => {
+      const dateA = new Date(a.trade_date || a.created_at);
+      const dateB = new Date(b.trade_date || b.created_at);
+      return dateB.getTime() - dateA.getTime();
+    })
+    .slice(0, 5)
+    .map(trade => {
+      const tradeDate = new Date(trade.trade_date || trade.created_at);
+      const formattedDate = tradeDate.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: '2-digit', 
+        year: '2-digit' 
+      });
+      return {
+        id: trade.id,
+        instrument: trade.pair_symbol,
+        tradeType: trade.trade_type || 'BUY',
+        pnl: Number(trade.profit_loss) || 0,
+        createdAt: formattedDate,
+        status: trade.status
+      };
+    }) || [];
 
   const resetLayout = () => {
     resetLayoutMutation.mutate();
