@@ -50,6 +50,11 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
       .slice(0, 4);
   }, [dailyPnL]);
 
+  // Calculate monthly total
+  const monthlyTotal = useMemo(() => {
+    return Object.values(dailyPnL).reduce((sum, profit) => sum + profit, 0);
+  }, [dailyPnL]);
+
   // Get calendar data for selected month
   const { daysInMonth, firstDayOfMonth } = useMemo(() => {
     const date = new Date(currentYear, selectedMonth, 1);
@@ -144,6 +149,25 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
 
       {/* Top 4 Profitable Days */}
       <div className="pt-4 border-t border-gray-700/50 mt-auto">
+        {/* Monthly Total and Progress Bar */}
+        <div className="mb-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] uppercase opacity-60" style={{ color: textColor }}>
+              Monthly Total
+            </span>
+            <span className={`text-sm font-bold ${monthlyTotal >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              ${monthlyTotal.toFixed(2)}
+            </span>
+          </div>
+          <div className="w-full h-2 bg-gray-700/50 rounded-full overflow-hidden">
+            <div 
+              className={`h-full transition-all ${monthlyTotal >= 0 ? 'bg-green-500' : 'bg-red-500'}`}
+              style={{ 
+                width: `${Math.min(Math.abs(monthlyTotal) / 1000 * 100, 100)}%`
+              }}
+            />
+          </div>
+        </div>
         <div className="text-center text-[10px] uppercase opacity-60 mb-3" style={{ color: textColor }}>
           Best trades of the month
         </div>
