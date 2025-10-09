@@ -50,9 +50,26 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
       .slice(0, 4);
   }, [dailyPnL]);
 
-  // Calculate monthly total
-  const monthlyTotal = useMemo(() => {
-    return Object.values(dailyPnL).reduce((sum, profit) => sum + profit, 0);
+  // Calculate monthly total, highest, and lowest
+  const { monthlyTotal, highestPoint, lowestPoint } = useMemo(() => {
+    let total = 0;
+    let highest = 0;
+    let lowest = 0;
+    let runningTotal = 0;
+
+    // Sort days to calculate running totals
+    const sortedDays = Object.entries(dailyPnL)
+      .map(([day, profit]) => ({ day: parseInt(day), profit }))
+      .sort((a, b) => a.day - b.day);
+
+    sortedDays.forEach(({ profit }) => {
+      runningTotal += profit;
+      total += profit;
+      if (runningTotal > highest) highest = runningTotal;
+      if (runningTotal < lowest) lowest = runningTotal;
+    });
+
+    return { monthlyTotal: total, highestPoint: highest, lowestPoint: lowest };
   }, [dailyPnL]);
 
   // Get calendar data for selected month
@@ -152,20 +169,57 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
         {/* Monthly Total and Progress Bar */}
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] uppercase opacity-60" style={{ color: textColor }}>
-              Monthly Total
+            <span className="text-[9px] text-red-400">
+              Lowest ${lowestPoint.toFixed(2)}
             </span>
-            <span className={`text-sm font-bold ${monthlyTotal >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              ${monthlyTotal.toFixed(2)}
+            <span className="text-[10px] font-bold" style={{ color: textColor }}>
+              Current ${monthlyTotal.toFixed(2)}
+            </span>
+            <span className="text-[9px] text-green-400">
+              Highest ${highestPoint.toFixed(2)}
             </span>
           </div>
-          <div className="w-full h-2 bg-gray-700/50 rounded-full overflow-hidden">
-            <div 
-              className={`h-full transition-all ${monthlyTotal >= 0 ? 'bg-green-500' : 'bg-red-500'}`}
-              style={{ 
-                width: `${Math.min(Math.abs(monthlyTotal) / 1000 * 100, 100)}%`
-              }}
-            />
+          <div className="relative w-full h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(100, 100, 100, 0.3)' }}>
+            {/* Calculate positions */}
+            {(() => {
+              const range = highestPoint - lowestPoint || 1;
+              const zeroPosition = ((0 - lowestPoint) / range) * 100;
+              const currentPosition = ((monthlyTotal - lowestPoint) / range) * 100;
+              
+              return (
+                <>
+                  {/* Red bar (losses from lowest to 0) */}
+                  {lowestPoint < 0 && (
+                    <div 
+                      className="absolute h-full bg-red-500"
+                      style={{ 
+                        left: '0%',
+                        width: `${zeroPosition}%`
+                      }}
+                    />
+                  )}
+                  
+                  {/* Green bar (profits from 0 to current if positive, or 0 to highest) */}
+                  {monthlyTotal >= 0 ? (
+                    <div 
+                      className="absolute h-full bg-green-500"
+                      style={{ 
+                        left: `${zeroPosition}%`,
+                        width: `${currentPosition - zeroPosition}%`
+                      }}
+                    />
+                  ) : null}
+                  
+                  {/* Start of Month marker (black line at 0) */}
+                  <div 
+                    className="absolute h-full w-1 bg-black"
+                    style={{ 
+                      left: `${zeroPosition}%`
+                    }}
+                  />
+                </>
+              );
+            })()}
           </div>
         </div>
         <div className="text-center text-[10px] uppercase opacity-60 mb-3" style={{ color: textColor }}>
