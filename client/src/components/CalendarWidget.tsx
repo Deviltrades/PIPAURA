@@ -39,8 +39,6 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
       }
     });
     
-    console.log(`📅 ${monthNames[selectedMonth]} - Daily P&L:`, pnlByDay);
-    console.log(`📅 ${monthNames[selectedMonth]} - Total trades processed:`, trades.length);
     return pnlByDay;
   }, [trades, selectedMonth, currentYear]);
 
@@ -77,13 +75,22 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
   const getDayStyle = (day: number | null) => {
     if (!day) return { backgroundColor: "transparent", color: textColor };
     const profit = dailyPnL[day];
-    if (profit === undefined) return { backgroundColor: "transparent", color: textColor };
     
-    if (profit > 0) {
-      return { backgroundColor: "#10b981", color: "#ffffff" }; // Green background, white text
-    } else if (profit < 0) {
-      return { backgroundColor: "#ef4444", color: "#ffffff" }; // Red background, white text
+    // Only color days that have trading data
+    if (profit === undefined || profit === 0) {
+      return { backgroundColor: "transparent", color: textColor };
     }
+    
+    // Profitable day - green background
+    if (profit > 0) {
+      return { backgroundColor: "#10b981", color: "#ffffff" };
+    }
+    
+    // Loss day - red background  
+    if (profit < 0) {
+      return { backgroundColor: "#ef4444", color: "#ffffff" };
+    }
+    
     return { backgroundColor: "transparent", color: textColor };
   };
 
