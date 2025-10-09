@@ -201,6 +201,27 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   const avgProfit = analytics?.avgWin || 440.75;
   const fees = 26.81;
 
+  // Calculate time-based profits
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const dailyPnL = trades?.filter(t => {
+    const tradeDate = new Date(t.entry_date || t.created_at);
+    return tradeDate >= todayStart;
+  }).reduce((sum, t) => sum + (Number(t.pnl) || 0), 0) || 0;
+
+  const weeklyPnL = trades?.filter(t => {
+    const tradeDate = new Date(t.entry_date || t.created_at);
+    return tradeDate >= weekStart;
+  }).reduce((sum, t) => sum + (Number(t.pnl) || 0), 0) || 0;
+
+  const monthlyPnL = trades?.filter(t => {
+    const tradeDate = new Date(t.entry_date || t.created_at);
+    return tradeDate >= monthStart;
+  }).reduce((sum, t) => sum + (Number(t.pnl) || 0), 0) || 0;
+
   // Long vs Short performance
   const longTrades = trades?.filter(t => t.tradeType === "BUY") || [];
   const shortTrades = trades?.filter(t => t.tradeType === "SELL") || [];
@@ -401,10 +422,32 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
           {/* Profit Widget */}
           <div key="profit">
             <DraggableWidget title="Profit" themeColor={themeColor} textColor={textColor}>
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4" style={{ color: textColor }} />
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
+                  <div className="font-bold" style={{ color: textColor }}>
+                    ${dailyPnL >= 1000 ? `${(dailyPnL/1000).toFixed(1)}K` : dailyPnL.toFixed(0)}
+                  </div>
+                </div>
+                <div>
+                  <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
+                  <div className="font-bold" style={{ color: textColor }}>
+                    ${weeklyPnL >= 1000 ? `${(weeklyPnL/1000).toFixed(1)}K` : weeklyPnL.toFixed(0)}
+                  </div>
+                </div>
+                <div>
+                  <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
+                  <div className="font-bold" style={{ color: textColor }}>
+                    ${monthlyPnL >= 1000 ? `${(monthlyPnL/1000).toFixed(1)}K` : monthlyPnL.toFixed(0)}
+                  </div>
+                </div>
+                <div>
+                  <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
+                  <div className="font-bold" style={{ color: textColor }}>
+                    ${totalPnL >= 1000 ? `${(totalPnL/1000).toFixed(1)}K` : totalPnL.toFixed(0)}
+                  </div>
+                </div>
               </div>
-              <div className="font-bold text-xl" style={{ color: textColor }}>${(totalPnL/1000).toFixed(1)}K</div>
             </DraggableWidget>
           </div>
 
