@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Responsive, WidthProvider, Layout, Layouts } from "react-grid-layout";
-import { TrendingUp, TrendingDown, BarChart3, Target, DollarSign, Layers, Move, RotateCcw, Save, Grid3X3, Trash2 } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart3, Target, DollarSign, Layers, Move, RotateCcw, Save, Grid3X3, Trash2, Palette } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getUserProfile, updateUserProfile } from "@/lib/supabase-service";
 import DraggableWidget from "./DraggableWidget";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -25,6 +26,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   const [currentTemplate, setCurrentTemplate] = useState("default");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
+  const [themeColor, setThemeColor] = useState("slate");
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
   
   const defaultLayouts = {
     lg: [
@@ -70,6 +73,20 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
     retry: false,
   });
 
+  // Fetch user profile to get theme preference
+  const { data: userProfile } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: getUserProfile,
+    retry: false,
+  });
+
+  // Load theme color from user profile
+  useEffect(() => {
+    if (userProfile?.preferences?.dashboardColor) {
+      setThemeColor(userProfile.preferences.dashboardColor);
+    }
+  }, [userProfile]);
+
   // Save template mutation
   const saveTemplateMutation = useMutation({
     mutationFn: async ({ name, layouts }: { name: string, layouts: Layouts }) => {
@@ -114,6 +131,35 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
       });
     },
   });
+
+  // Save theme color mutation
+  const saveThemeColorMutation = useMutation({
+    mutationFn: async (color: string) => {
+      await updateUserProfile({
+        preferences: { ...userProfile?.preferences, dashboardColor: color }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      toast({
+        title: "Theme Updated",
+        description: "Your dashboard color has been saved successfully.",
+      });
+      setColorPickerOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleColorChange = (color: string) => {
+    setThemeColor(color);
+    saveThemeColorMutation.mutate(color);
+  };
 
   // Load template when switching
   useEffect(() => {
@@ -267,6 +313,51 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
               </DialogContent>
             </Dialog>
 
+            {/* Color Picker Dialog */}
+            <Dialog open={colorPickerOpen} onOpenChange={setColorPickerOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-blue-900/40 border-blue-700 text-white hover:bg-blue-800/50"
+                >
+                  <Palette className="w-4 h-4 mr-2" />
+                  Theme
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-blue-950 border-blue-700 text-white">
+                <DialogHeader>
+                  <DialogTitle>Dashboard Theme Color</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-300">Choose your preferred dashboard color theme</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { name: "Slate/Grey", value: "slate", color: "bg-slate-700" },
+                      { name: "Blue", value: "blue", color: "bg-blue-700" },
+                      { name: "Purple", value: "purple", color: "bg-purple-700" },
+                      { name: "Green", value: "green", color: "bg-emerald-700" },
+                      { name: "Orange", value: "orange", color: "bg-orange-700" },
+                      { name: "Pink", value: "pink", color: "bg-pink-700" },
+                    ].map((colorOption) => (
+                      <button
+                        key={colorOption.value}
+                        onClick={() => handleColorChange(colorOption.value)}
+                        className={`p-4 rounded-lg border-2 transition-all ${
+                          themeColor === colorOption.value
+                            ? "border-white scale-105"
+                            : "border-gray-600 hover:border-gray-400"
+                        }`}
+                      >
+                        <div className={`w-full h-12 ${colorOption.color} rounded mb-2`}></div>
+                        <div className="text-xs text-center">{colorOption.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <Button
               onClick={resetLayout}
               variant="outline"
@@ -313,7 +404,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
         >
           {/* Profit Widget */}
           <div key="profit">
-            <DraggableWidget title="Profit">
+            <DraggableWidget title="Profit" themeColor={themeColor}>
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="w-4 h-4 text-blue-400" />
               </div>
@@ -323,7 +414,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Win Rate Widget */}
           <div key="winrate">
-            <DraggableWidget title="Win Rate">
+            <DraggableWidget title="Win Rate" themeColor={themeColor}>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="text-white font-bold text-3xl">{winRate.toFixed(1)}%</div>
@@ -370,7 +461,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Risk Reward Widget */}
           <div key="riskreward">
-            <DraggableWidget title="Risk Reward">
+            <DraggableWidget title="Risk Reward" themeColor={themeColor}>
               <div className="flex items-center gap-2 mb-2">
                 <BarChart3 className="w-4 h-4 text-blue-400" />
               </div>
@@ -380,7 +471,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Average Widget */}
           <div key="average">
-            <DraggableWidget title="Average">
+            <DraggableWidget title="Average" themeColor={themeColor}>
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-4 h-4 text-blue-400" />
               </div>
@@ -390,7 +481,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Fees Widget */}
           <div key="fees">
-            <DraggableWidget title="Fees">
+            <DraggableWidget title="Fees" themeColor={themeColor}>
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-4 h-4 text-blue-400" />
               </div>
@@ -400,7 +491,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Total Trades Widget */}
           <div key="totaltrades">
-            <DraggableWidget title="Total Trades">
+            <DraggableWidget title="Total Trades" themeColor={themeColor}>
               <div className="flex items-center gap-2 mb-2">
                 <Layers className="w-4 h-4 text-blue-400" />
               </div>
@@ -410,7 +501,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Chart Widget */}
           <div key="chart">
-            <DraggableWidget title="Accumulative & Daily PnL">
+            <DraggableWidget title="Accumulative & Daily PnL" themeColor={themeColor}>
               <div className="relative h-full">
                 {/* Y-axis labels */}
                 <div className="absolute left-0 top-0 text-gray-400 text-xs">$4K</div>
@@ -449,7 +540,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Recent Trades Widget */}
           <div key="trades">
-            <DraggableWidget title="Last Five Trades">
+            <DraggableWidget title="Last Five Trades" themeColor={themeColor}>
               <div className="space-y-3 overflow-y-auto h-full">
                 {lastFiveTrades.map((trade) => (
                   <div key={trade.id} className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
@@ -481,7 +572,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Long vs Short Performance Widget */}
           <div key="longshort">
-            <DraggableWidget title="Long vs Short Performance">
+            <DraggableWidget title="Long vs Short Performance" themeColor={themeColor}>
               <div className="grid grid-cols-2 gap-4 h-full">
                 {/* Longs */}
                 <div className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
