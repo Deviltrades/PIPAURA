@@ -11,6 +11,11 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
   const currentYear = currentDate.getFullYear();
 
+  const monthNames = [
+    "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+    "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+  ];
+
   // Fetch trades
   const { data: trades = [] } = useQuery({
     queryKey: ["trades"],
@@ -52,11 +57,6 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
     const firstDayOfMonth = date.getDay();
     return { daysInMonth, firstDayOfMonth };
   }, [selectedMonth, currentYear]);
-
-  const monthNames = [
-    "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
-    "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
-  ];
 
   const dayNames = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
