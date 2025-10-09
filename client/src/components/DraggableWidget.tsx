@@ -5,9 +5,10 @@ interface DraggableWidgetProps {
   children: ReactNode;
   className?: string;
   themeColor?: string;
+  textColor?: string;
 }
 
-export default function DraggableWidget({ title, children, className = "", themeColor = "slate" }: DraggableWidgetProps) {
+export default function DraggableWidget({ title, children, className = "", themeColor = "slate", textColor = "#ffffff" }: DraggableWidgetProps) {
   const colorStyles = {
     slate: "bg-slate-800/60 border-slate-700/40",
     blue: "bg-blue-900/40 border-blue-800/30",
@@ -18,9 +19,9 @@ export default function DraggableWidget({ title, children, className = "", theme
   };
 
   return (
-    <div className={`${colorStyles[themeColor as keyof typeof colorStyles] || colorStyles.slate} rounded-xl h-full ${className}`}>
+    <div className={`${colorStyles[themeColor as keyof typeof colorStyles] || colorStyles.slate} rounded-xl h-full ${className}`} style={{ color: textColor }}>
       <div className="p-4 h-full flex flex-col">
-        <h3 className="text-white font-medium mb-3 text-sm">{title}</h3>
+        <h3 className="font-medium mb-3 text-sm" style={{ color: textColor }}>{title}</h3>
         <div className="flex-1 overflow-hidden">
           {children}
         </div>

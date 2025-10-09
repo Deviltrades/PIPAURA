@@ -482,20 +482,20 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
         >
           {/* Profit Widget */}
           <div key="profit">
-            <DraggableWidget title="Profit" themeColor={themeColor}>
+            <DraggableWidget title="Profit" themeColor={themeColor} textColor={textColor}>
               <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-blue-400" />
+                <TrendingUp className="w-4 h-4" style={{ color: textColor }} />
               </div>
-              <div className="text-white font-bold text-xl">${(totalPnL/1000).toFixed(1)}K</div>
+              <div className="font-bold text-xl" style={{ color: textColor }}>${(totalPnL/1000).toFixed(1)}K</div>
             </DraggableWidget>
           </div>
 
           {/* Win Rate Widget */}
           <div key="winrate">
-            <DraggableWidget title="Win Rate" themeColor={themeColor}>
+            <DraggableWidget title="Win Rate" themeColor={themeColor} textColor={textColor}>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="text-white font-bold text-3xl">{winRate.toFixed(1)}%</div>
+                  <div className="font-bold text-3xl" style={{ color: textColor }}>{winRate.toFixed(1)}%</div>
                 </div>
                 <div className="relative w-24 h-12">
                   <svg viewBox="0 0 100 50" className="w-full h-full">
@@ -539,47 +539,47 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Risk Reward Widget */}
           <div key="riskreward">
-            <DraggableWidget title="Risk Reward" themeColor={themeColor}>
+            <DraggableWidget title="Risk Reward" themeColor={themeColor} textColor={textColor}>
               <div className="flex items-center gap-2 mb-2">
-                <BarChart3 className="w-4 h-4 text-blue-400" />
+                <BarChart3 className="w-4 h-4" style={{ color: textColor }} />
               </div>
-              <div className="text-white font-bold text-xl">1:5.6</div>
+              <div className="font-bold text-xl" style={{ color: textColor }}>1:5.6</div>
             </DraggableWidget>
           </div>
 
           {/* Average Widget */}
           <div key="average">
-            <DraggableWidget title="Average" themeColor={themeColor}>
+            <DraggableWidget title="Average" themeColor={themeColor} textColor={textColor}>
               <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-4 h-4 text-blue-400" />
+                <DollarSign className="w-4 h-4" style={{ color: textColor }} />
               </div>
-              <div className="text-white font-bold text-xl">${avgProfit.toFixed(0)}</div>
+              <div className="font-bold text-xl" style={{ color: textColor }}>${avgProfit.toFixed(0)}</div>
             </DraggableWidget>
           </div>
 
           {/* Fees Widget */}
           <div key="fees">
-            <DraggableWidget title="Fees" themeColor={themeColor}>
+            <DraggableWidget title="Fees" themeColor={themeColor} textColor={textColor}>
               <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-4 h-4 text-blue-400" />
+                <DollarSign className="w-4 h-4" style={{ color: textColor }} />
               </div>
-              <div className="text-white font-bold text-xl">${fees.toFixed(0)}</div>
+              <div className="font-bold text-xl" style={{ color: textColor }}>${fees.toFixed(0)}</div>
             </DraggableWidget>
           </div>
 
           {/* Total Trades Widget */}
           <div key="totaltrades">
-            <DraggableWidget title="Total Trades" themeColor={themeColor}>
+            <DraggableWidget title="Total Trades" themeColor={themeColor} textColor={textColor}>
               <div className="flex items-center gap-2 mb-2">
-                <Layers className="w-4 h-4 text-blue-400" />
+                <Layers className="w-4 h-4" style={{ color: textColor }} />
               </div>
-              <div className="text-white font-bold text-xl">{totalTrades}</div>
+              <div className="font-bold text-xl" style={{ color: textColor }}>{totalTrades}</div>
             </DraggableWidget>
           </div>
 
           {/* Chart Widget */}
           <div key="chart">
-            <DraggableWidget title="Accumulative & Daily PnL" themeColor={themeColor}>
+            <DraggableWidget title="Accumulative & Daily PnL" themeColor={themeColor} textColor={textColor}>
               <div className="relative h-full">
                 {/* Y-axis labels */}
                 <div className="absolute left-0 top-0 text-gray-400 text-xs">$4K</div>
@@ -618,7 +618,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Recent Trades Widget */}
           <div key="trades">
-            <DraggableWidget title="Last Five Trades" themeColor={themeColor}>
+            <DraggableWidget title="Last Five Trades" themeColor={themeColor} textColor={textColor}>
               <div className="space-y-3 overflow-y-auto h-full">
                 {lastFiveTrades.map((trade) => (
                   <div key={trade.id} className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
@@ -650,7 +650,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Long vs Short Performance Widget */}
           <div key="longshort">
-            <DraggableWidget title="Long vs Short Performance" themeColor={themeColor}>
+            <DraggableWidget title="Long vs Short Performance" themeColor={themeColor} textColor={textColor}>
               <div className="grid grid-cols-2 gap-4 h-full">
                 {/* Longs */}
                 <div className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
