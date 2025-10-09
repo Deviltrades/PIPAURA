@@ -944,7 +944,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
               <div className="space-y-3 overflow-y-auto h-full">
                 {lastFiveTrades.map((trade) => (
                   <div key={trade.id} className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
-                    <div className="flex items-center justify-between">
+                    <div className="grid grid-cols-3 items-center gap-4">
                       <div className="flex items-center gap-2">
                         <div className={`w-4 h-4 rounded flex items-center justify-center text-xs font-bold ${
                           trade.tradeType === "BUY" ? "bg-green-500 text-white" : "bg-red-500 text-white"
@@ -956,7 +956,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                           <div className="text-gray-400 text-xs">{trade.createdAt}</div>
                         </div>
                       </div>
-                      <div className={`font-bold text-sm ${
+                      <div className={`font-bold text-sm text-center ${
                         trade.tradeType === "BUY" ? "text-green-400" : "text-red-400"
                       }`}>
                         {trade.tradeType}
