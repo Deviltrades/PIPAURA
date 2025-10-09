@@ -422,21 +422,21 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
         >
           {/* Profit Widget */}
           <div key="profit">
-            <DraggableWidget title="Profit" themeColor={themeColor} textColor={textColor}>
-              <div className="relative">
-                {/* Toggle Button - Absolute positioned to top right */}
-                <button
-                  onClick={() => setShowAllProfits(!showAllProfits)}
-                  className="absolute -top-8 right-0 px-2 py-1 text-xs rounded transition-colors"
-                  style={{ 
-                    backgroundColor: `${textColor}20`,
-                    color: textColor 
-                  }}
-                  data-testid="button-toggle-profit-view"
-                >
-                  {showAllProfits ? "Show All Time Only" : "Show All Periods"}
-                </button>
+            <div className="relative h-full">
+              {/* Toggle Button - Positioned at top right of widget */}
+              <button
+                onClick={() => setShowAllProfits(!showAllProfits)}
+                className="absolute top-4 right-4 px-2 py-1 text-xs rounded transition-colors z-10"
+                style={{ 
+                  backgroundColor: `${textColor}20`,
+                  color: textColor 
+                }}
+                data-testid="button-toggle-profit-view"
+              >
+                {showAllProfits ? "Show All Time Only" : "Show All Periods"}
+              </button>
 
+              <DraggableWidget title="Profit" themeColor={themeColor} textColor={textColor}>
                 {/* Profit Values */}
                 {showAllProfits ? (
                   <div className="flex gap-6 mt-1">
@@ -475,8 +475,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                     </div>
                   </div>
                 )}
-              </div>
-            </DraggableWidget>
+              </DraggableWidget>
+            </div>
           </div>
 
           {/* Win Rate Widget */}
