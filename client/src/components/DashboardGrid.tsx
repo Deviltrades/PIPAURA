@@ -32,6 +32,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   const [showAllWinRates, setShowAllWinRates] = useState(true);
   const [showAllRiskReward, setShowAllRiskReward] = useState(true);
   const [showAllAverage, setShowAllAverage] = useState(true);
+  const [showAllFees, setShowAllFees] = useState(true);
+  const [showAllTotalTrades, setShowAllTotalTrades] = useState(true);
   
   const defaultLayouts = {
     lg: [
@@ -270,6 +272,18 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   const weeklyAvg = weeklyTrades.length > 0 ? weeklyPnL / weeklyTrades.length : 0;
   const monthlyAvg = monthlyTrades.length > 0 ? monthlyPnL / monthlyTrades.length : 0;
   const allTimeAvg = analytics?.averageTrade || 441;
+
+  // Calculate time-based fees (placeholder - would need actual fee data)
+  const dailyFees = dailyTrades.length * 2; // Example: $2 per trade
+  const weeklyFees = weeklyTrades.length * 2;
+  const monthlyFees = monthlyTrades.length * 2;
+  const allTimeFees = (trades?.length || 0) * 2;
+
+  // Calculate time-based trade counts
+  const dailyTradeCount = dailyTrades.length;
+  const weeklyTradeCount = weeklyTrades.length;
+  const monthlyTradeCount = monthlyTrades.length;
+  const allTimeTradeCount = analytics?.totalTrades || 0;
 
   // Long vs Short performance
   const longTrades = trades?.filter(t => t.tradeType === "BUY") || [];
@@ -742,22 +756,120 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Fees Widget */}
           <div key="fees">
-            <DraggableWidget title="Fees" themeColor={themeColor} textColor={textColor}>
-              <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-4 h-4" style={{ color: textColor }} />
-              </div>
-              <div className="font-bold text-xl" style={{ color: textColor }}>${fees.toFixed(0)}</div>
-            </DraggableWidget>
+            <div className="relative h-full">
+              {/* Toggle Button - Positioned at top right of widget */}
+              <button
+                onClick={() => setShowAllFees(!showAllFees)}
+                className="absolute top-4 right-4 px-2 py-1 text-xs rounded transition-colors z-10"
+                style={{ 
+                  backgroundColor: `${textColor}20`,
+                  color: textColor 
+                }}
+                data-testid="button-toggle-fees-view"
+              >
+                {showAllFees ? "Show All Time Only" : "Show All Periods"}
+              </button>
+
+              <DraggableWidget title="Swap Fees & Commissions" themeColor={themeColor} textColor={textColor}>
+                {/* Fees Values */}
+                {showAllFees ? (
+                  <div className="flex gap-6 mt-1">
+                    <div>
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
+                      <div className="font-bold text-xl" style={{ color: textColor }}>
+                        ${dailyFees >= 1000 ? `${(dailyFees/1000).toFixed(1)}K` : dailyFees.toFixed(0)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
+                      <div className="font-bold text-xl" style={{ color: textColor }}>
+                        ${weeklyFees >= 1000 ? `${(weeklyFees/1000).toFixed(1)}K` : weeklyFees.toFixed(0)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
+                      <div className="font-bold text-xl" style={{ color: textColor }}>
+                        ${monthlyFees >= 1000 ? `${(monthlyFees/1000).toFixed(1)}K` : monthlyFees.toFixed(0)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
+                      <div className="font-bold text-xl" style={{ color: textColor }}>
+                        ${allTimeFees >= 1000 ? `${(allTimeFees/1000).toFixed(1)}K` : allTimeFees.toFixed(0)}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center h-full mt-1">
+                    <div>
+                      <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>All Time</div>
+                      <div className="font-bold text-3xl" style={{ color: textColor }}>
+                        ${allTimeFees >= 1000 ? `${(allTimeFees/1000).toFixed(1)}K` : allTimeFees.toFixed(0)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </DraggableWidget>
+            </div>
           </div>
 
           {/* Total Trades Widget */}
           <div key="totaltrades">
-            <DraggableWidget title="Total Trades" themeColor={themeColor} textColor={textColor}>
-              <div className="flex items-center gap-2 mb-2">
-                <Layers className="w-4 h-4" style={{ color: textColor }} />
-              </div>
-              <div className="font-bold text-xl" style={{ color: textColor }}>{totalTrades}</div>
-            </DraggableWidget>
+            <div className="relative h-full">
+              {/* Toggle Button - Positioned at top right of widget */}
+              <button
+                onClick={() => setShowAllTotalTrades(!showAllTotalTrades)}
+                className="absolute top-4 right-4 px-2 py-1 text-xs rounded transition-colors z-10"
+                style={{ 
+                  backgroundColor: `${textColor}20`,
+                  color: textColor 
+                }}
+                data-testid="button-toggle-totaltrades-view"
+              >
+                {showAllTotalTrades ? "Show All Time Only" : "Show All Periods"}
+              </button>
+
+              <DraggableWidget title="Total Trades" themeColor={themeColor} textColor={textColor}>
+                {/* Total Trades Values */}
+                {showAllTotalTrades ? (
+                  <div className="flex gap-6 mt-1">
+                    <div>
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
+                      <div className="font-bold text-xl" style={{ color: textColor }}>
+                        {dailyTradeCount}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
+                      <div className="font-bold text-xl" style={{ color: textColor }}>
+                        {weeklyTradeCount}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
+                      <div className="font-bold text-xl" style={{ color: textColor }}>
+                        {monthlyTradeCount}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
+                      <div className="font-bold text-xl" style={{ color: textColor }}>
+                        {allTimeTradeCount}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center h-full mt-1">
+                    <div>
+                      <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>All Time</div>
+                      <div className="font-bold text-3xl" style={{ color: textColor }}>
+                        {allTimeTradeCount}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </DraggableWidget>
+            </div>
           </div>
 
           {/* Chart Widget */}
