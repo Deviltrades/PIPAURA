@@ -149,7 +149,7 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
         </div>
         <div className="flex items-start justify-around">
           {topProfitableDays.map((item, index) => (
-            <div key={index} className="flex flex-col items-center gap-2">
+            <div key={index} className="flex flex-col items-center gap-3">
               <div
                 className="w-12 h-12 flex items-center justify-center text-base font-bold rotate-45"
                 style={{
@@ -166,7 +166,7 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
             </div>
           ))}
           {topProfitableDays.length < 4 && Array.from({ length: 4 - topProfitableDays.length }).map((_, index) => (
-            <div key={`empty-${index}`} className="flex flex-col items-center gap-2">
+            <div key={`empty-${index}`} className="flex flex-col items-center gap-3">
               <div
                 className="w-12 h-12 flex items-center justify-center text-base font-bold opacity-30 rotate-45"
                 style={{
