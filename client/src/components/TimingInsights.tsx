@@ -84,11 +84,11 @@ export default function TimingInsights({ trades, textColor = "#ffffff" }: Timing
 
   const { hourlyData, bestHour, worstHour } = hourlyAnalysis;
 
-  // Generate all 24 hours for chart (including empty ones)
+  // Generate all 24 hours for chart (including empty ones) - MUST be before any early returns
   const chartData = useMemo(() => {
     const data = [];
     for (let hour = 0; hour < 24; hour++) {
-      const hourData = hourlyData.find(d => d.hour === hour);
+      const hourData = hourlyData?.find(d => d.hour === hour);
       data.push({
         hour,
         displayHour: `${hour.toString().padStart(2, '0')}:00`,
@@ -99,6 +99,19 @@ export default function TimingInsights({ trades, textColor = "#ffffff" }: Timing
     }
     return data;
   }, [hourlyData]);
+
+  // If no trade data with valid timestamps, show message
+  if (!hourlyData || hourlyData.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center text-gray-400">
+          <Clock className="w-12 h-12 mx-auto mb-2 opacity-50" />
+          <p>No timing data available yet.</p>
+          <p className="text-sm mt-1">Trade data will appear once trades have timestamps.</p>
+        </div>
+      </div>
+    );
+  }
 
   const formatCurrency = (value: number) => {
     if (Math.abs(value) >= 1000) {
