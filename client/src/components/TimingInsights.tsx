@@ -129,7 +129,14 @@ export default function TimingInsights({ trades, textColor = "#ffffff" }: Timing
   const getInsight = () => {
     if (!bestHour || !worstHour) return null;
     
-    const performanceRatio = bestHour.avgPnL / Math.abs(worstHour.avgPnL);
+    const worstAbsPnL = Math.abs(worstHour.avgPnL);
+    
+    // Handle edge case where worst hour is break-even or nearly zero
+    if (worstAbsPnL < 0.01) {
+      return `Best results at ${bestHour.displayHour}. Most hours show consistent performance.`;
+    }
+    
+    const performanceRatio = bestHour.avgPnL / worstAbsPnL;
     if (performanceRatio > 3) {
       return `You perform ${performanceRatio.toFixed(1)}× better at ${bestHour.displayHour}. Avoid trading at ${worstHour.displayHour}.`;
     } else if (performanceRatio > 2) {
