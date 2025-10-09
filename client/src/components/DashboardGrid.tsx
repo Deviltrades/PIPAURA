@@ -324,10 +324,60 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
           {/* Win Rate Widget */}
           <div key="winrate">
             <DraggableWidget title="Win Rate">
-              <div className="flex items-center gap-2 mb-2">
-                <Target className="w-4 h-4 text-purple-400" />
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="text-white font-bold text-3xl">{winRate}%</div>
+                </div>
+                <div className="relative w-24 h-12">
+                  <svg viewBox="0 0 100 50" className="w-full h-full">
+                    <defs>
+                      {/* Rainbow gradient for the arc */}
+                      <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#ef4444" />
+                        <stop offset="50%" stopColor="#eab308" />
+                        <stop offset="100%" stopColor="#10b981" />
+                      </linearGradient>
+                    </defs>
+                    
+                    {/* Background arc */}
+                    <path
+                      d="M 10 45 A 40 40 0 0 1 90 45"
+                      fill="none"
+                      stroke="rgb(30 41 59)"
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                    />
+                    
+                    {/* Colored progress arc */}
+                    <path
+                      d="M 10 45 A 40 40 0 0 1 90 45"
+                      fill="none"
+                      stroke="url(#rainbow-gradient)"
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(winRate / 100) * 126} 126`}
+                      className="transition-all duration-500"
+                    />
+                    
+                    {/* Indicator dot */}
+                    <circle
+                      cx={50 + 40 * Math.cos((Math.PI * (1 - winRate / 100)))}
+                      cy={45 - 40 * Math.sin((Math.PI * (1 - winRate / 100)))}
+                      r="4"
+                      fill={
+                        winRate < 40 ? "#ef4444" : 
+                        winRate < 70 ? "#eab308" : 
+                        "#10b981"
+                      }
+                      className="transition-all duration-500"
+                    />
+                  </svg>
+                  
+                  {/* Min/Max labels */}
+                  <div className="absolute bottom-0 left-0 text-gray-500 text-xs">0</div>
+                  <div className="absolute bottom-0 right-0 text-gray-500 text-xs">100</div>
+                </div>
               </div>
-              <div className="text-white font-bold text-xl">{winRate}%</div>
             </DraggableWidget>
           </div>
 
