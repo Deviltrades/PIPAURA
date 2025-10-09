@@ -1,0 +1,91 @@
+I want to add a new widget in my trading dashboard called “Trade Timing Insights.”
+It should analyze all my trades and show what times of day I tend to perform best and worst.
+The widget must match the current dashboard’s dark theme and visual style (deep navy background, cyan/green gradients, rounded cards, subtle glow).
+
+Functionality Requirements:
+
+Data Input
+
+Use existing trade logs (from Supabase or local JSON — wherever trades are stored).
+
+Each trade record has an open_time, close_time, and pnl (profit/loss) value.
+
+Extract the hour from the open_time in local timezone.
+
+Data Processing
+
+Group all trades by hour (00–23).
+
+For each hour, calculate:
+
+total_trades
+
+average_pnl
+
+win_rate (percentage of profitable trades)
+
+Identify:
+
+best_hour → highest average PnL
+
+worst_hour → lowest average PnL
+
+Display Options (two parts):
+A. Summary Cards (top)
+
+Example text:
+
+🟢 Best Trading Hour: 09:00–11:00 | Avg +$2.1K | Win 81%
+🔴 Worst Trading Hour: 14:00–16:00 | Avg -$700 | Win 34%
+
+
+Styled like the other info cards (rounded, subtle glow, blue background).
+
+Auto-updates as new trades come in.
+
+B. Hourly Profit Chart (below)
+
+Horizontal chart showing hours on X-axis (0–23) and average PnL on Y-axis.
+
+Positive hours → glowing cyan/green.
+
+Negative hours → glowing red.
+
+Tooltip on hover: 09:00 | +$2,100 avg | 12 trades | 81% win.
+
+Chart should be responsive and use the same library as the existing PnL chart (Recharts or Chart.js).
+
+Integration
+
+Place this widget below or next to the “Long vs Short Performance” section in the dashboard grid.
+
+Title: Trade Timing Insights
+
+Add an optional short insight line below the chart, e.g.:
+
+“You perform 4× better between 8–11 AM. Avoid trades after 2 PM.”
+
+Style Notes
+
+Match all other widgets’ styling:
+
+Rounded corners
+
+#0A1633 or #0F1E44 background
+
+Gradient text or glow accents (cyan → purple)
+
+Font size consistent with “Profit / Win Rate” cards.
+
+Bonus (if easy to add):
+
+Toggle to switch between local time and UTC for global users.
+
+Hover highlighting over chart bars that correspond to best/worst hours.
+
+Deliverables:
+
+✅ Fully functional widget integrated in dashboard
+✅ Responsive design (desktop first)
+✅ Fetches live trade data from Supabase
+✅ Summary cards + visual chart rendered cleanly
