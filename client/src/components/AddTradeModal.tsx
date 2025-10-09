@@ -44,6 +44,8 @@ const addTradeSchema = z.object({
   tradeType: z.enum(["BUY", "SELL"]),
   positionSize: z.string().min(1, "Position size is required"),
   entryPrice: z.string().min(1, "Entry price is required"),
+  entryTime: z.string().optional(),
+  exitTime: z.string().optional(),
   stopLoss: z.string().min(1, "Stop loss is required"),
   takeProfit: z.string().min(1, "Take profit is required"),
   notes: z.string().optional(),
@@ -97,6 +99,8 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
       tradeType: "BUY",
       positionSize: "1.0",
       entryPrice: "",
+      entryTime: "",
+      exitTime: "",
       stopLoss: "",
       takeProfit: "",
       notes: "",
@@ -113,6 +117,18 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
       const localDateString = selectedDate.getFullYear() + '-' + 
         String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + 
         String(selectedDate.getDate()).padStart(2, '0');
+      
+      // Combine date and time for entry_date
+      let entryDateTime = localDateString;
+      if (data.entryTime) {
+        entryDateTime = `${localDateString} ${data.entryTime}:00`;
+      }
+      
+      // Combine date and time for exit_date (if exit time is provided)
+      let exitDateTime = undefined;
+      if (data.exitTime) {
+        exitDateTime = `${localDateString} ${data.exitTime}:00`;
+      }
       
       // Calculate P&L based on user input
       let calculatedPnL = 0;
@@ -133,7 +149,8 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
         status: "CLOSED" as const,
         notes: data.notes || '',
         attachments: uploadedImages,
-        entry_date: localDateString,
+        entry_date: entryDateTime,
+        exit_date: exitDateTime,
       };
       
       return await createTrade(tradeData);
@@ -351,6 +368,46 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                         type="text"
                         placeholder="1.08450"
                         className="bg-background border-input"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Entry Time */}
+              <FormField
+                control={form.control}
+                name="entryTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Entry Time (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="time"
+                        className="bg-background border-input"
+                        data-testid="input-entry-time"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Exit Time */}
+              <FormField
+                control={form.control}
+                name="exitTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Exit Time (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="time"
+                        className="bg-background border-input"
+                        data-testid="input-exit-time"
                         {...field}
                       />
                     </FormControl>

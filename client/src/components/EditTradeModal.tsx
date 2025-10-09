@@ -44,7 +44,9 @@ const editTradeSchema = z.object({
   tradeType: z.enum(["BUY", "SELL"]),
   positionSize: z.string().min(1, "Position size is required"),
   entryPrice: z.string().min(1, "Entry price is required"),
+  entryTime: z.string().optional(),
   exitPrice: z.string().optional(),
+  exitTime: z.string().optional(),
   stopLoss: z.string().optional(),
   takeProfit: z.string().optional(),
   notes: z.string().optional(),
@@ -94,6 +96,16 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
   const currentPnL = typeof trade.pnl === 'string' ? parseFloat(trade.pnl) : (trade.pnl || 0);
   const hasPnLValue = Math.abs(currentPnL) > 0;
 
+  // Extract time from entry_date and exit_date if available
+  const extractTime = (dateString: string | null | undefined): string => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
   const form = useForm<EditTradeFormData>({
     resolver: zodResolver(editTradeSchema),
     defaultValues: {
@@ -102,7 +114,9 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
       tradeType: (trade.trade_type as "BUY" | "SELL") || "BUY",
       positionSize: String(trade.position_size || "1.0"),
       entryPrice: String(trade.entry_price || ""),
+      entryTime: extractTime(trade.entry_date),
       exitPrice: String(trade.exit_price || ""),
+      exitTime: extractTime(trade.exit_date),
       stopLoss: String(trade.stop_loss || ""),
       takeProfit: String(trade.take_profit || ""),
       notes: trade.notes || "",
@@ -135,6 +149,26 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
         calculatedPnL = pnl;
       }
 
+      // Update entry_date with new time if provided
+      let entryDateTime = trade.entry_date;
+      if (data.entryTime && trade.entry_date) {
+        const entryDate = new Date(trade.entry_date);
+        const dateString = entryDate.getFullYear() + '-' + 
+          String(entryDate.getMonth() + 1).padStart(2, '0') + '-' + 
+          String(entryDate.getDate()).padStart(2, '0');
+        entryDateTime = `${dateString} ${data.entryTime}:00`;
+      }
+
+      // Update exit_date with new time if provided
+      let exitDateTime = trade.exit_date;
+      if (data.exitTime && trade.entry_date) {
+        const entryDate = new Date(trade.entry_date);
+        const dateString = entryDate.getFullYear() + '-' + 
+          String(entryDate.getMonth() + 1).padStart(2, '0') + '-' + 
+          String(entryDate.getDate()).padStart(2, '0');
+        exitDateTime = `${dateString} ${data.exitTime}:00`;
+      }
+
       const tradeData = {
         instrument: data.instrument,
         instrument_type: data.instrumentType as 'FOREX' | 'INDICES' | 'CRYPTO',
@@ -148,7 +182,8 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
         status: "CLOSED" as const,
         notes: data.notes || '',
         attachments: uploadedImages,
-        entry_date: trade.entry_date, // Keep original entry date
+        entry_date: entryDateTime,
+        exit_date: exitDateTime,
       };
       
       return await updateTrade(trade.id, tradeData);
@@ -382,6 +417,47 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
                           placeholder="125.000"
                           className="bg-background border-input"
                           data-testid="input-exit-price"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Entry Time and Exit Time */}
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="entryTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Entry Time (Optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="time"
+                          className="bg-background border-input"
+                          data-testid="input-entry-time-edit"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="exitTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Exit Time (Optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="time"
+                          className="bg-background border-input"
+                          data-testid="input-exit-time-edit"
                           {...field}
                         />
                       </FormControl>
