@@ -330,45 +330,32 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                 </div>
                 <div className="relative w-24 h-12">
                   <svg viewBox="0 0 100 50" className="w-full h-full">
-                    <defs>
-                      {/* Rainbow gradient for the arc */}
-                      <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#ef4444" />
-                        <stop offset="50%" stopColor="#eab308" />
-                        <stop offset="100%" stopColor="#10b981" />
-                      </linearGradient>
-                    </defs>
-                    
-                    {/* Background arc */}
+                    {/* Red arc (losing trades - full background) */}
                     <path
                       d="M 10 45 A 40 40 0 0 1 90 45"
                       fill="none"
-                      stroke="rgb(30 41 59)"
-                      strokeWidth="6"
+                      stroke="#ef4444"
+                      strokeWidth="8"
                       strokeLinecap="round"
                     />
                     
-                    {/* Colored progress arc */}
+                    {/* Green arc (winning trades - overlays on top based on win rate) */}
                     <path
                       d="M 10 45 A 40 40 0 0 1 90 45"
                       fill="none"
-                      stroke="url(#rainbow-gradient)"
-                      strokeWidth="6"
+                      stroke="#10b981"
+                      strokeWidth="8"
                       strokeLinecap="round"
                       strokeDasharray={`${(winRate / 100) * 126} 126`}
                       className="transition-all duration-500"
                     />
                     
-                    {/* Indicator dot */}
+                    {/* Indicator dot at the transition point */}
                     <circle
                       cx={50 + 40 * Math.cos((Math.PI * (1 - winRate / 100)))}
                       cy={45 - 40 * Math.sin((Math.PI * (1 - winRate / 100)))}
-                      r="4"
-                      fill={
-                        winRate < 40 ? "#ef4444" : 
-                        winRate < 70 ? "#eab308" : 
-                        "#10b981"
-                      }
+                      r="5"
+                      fill="white"
                       className="transition-all duration-500"
                     />
                   </svg>
