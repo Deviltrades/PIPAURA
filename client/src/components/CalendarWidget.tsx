@@ -143,40 +143,45 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
       </div>
 
       {/* Top 4 Profitable Days */}
-      <div className="flex items-center justify-around pt-4 border-t border-gray-700/50 mt-auto">
-        {topProfitableDays.map((item, index) => (
-          <div key={index} className="flex flex-col items-center gap-1">
-            <div
-              className="w-12 h-12 flex items-center justify-center text-base font-bold rotate-45"
-              style={{
-                background: `linear-gradient(135deg, #8b5cf6, #ec4899)`,
-                color: "#ffffff"
-              }}
-              data-testid={`top-day-${item.day}`}
-            >
-              <span className="-rotate-45">{item.day}</span>
+      <div className="pt-4 border-t border-gray-700/50 mt-auto">
+        <div className="text-center text-[10px] uppercase opacity-60 mb-3" style={{ color: textColor }}>
+          Best trades of the month
+        </div>
+        <div className="flex items-start justify-around">
+          {topProfitableDays.map((item, index) => (
+            <div key={index} className="flex flex-col items-center gap-2">
+              <div
+                className="w-12 h-12 flex items-center justify-center text-base font-bold rotate-45"
+                style={{
+                  background: `linear-gradient(135deg, #8b5cf6, #ec4899)`,
+                  color: "#ffffff"
+                }}
+                data-testid={`top-day-${item.day}`}
+              >
+                <span className="-rotate-45">{item.day}</span>
+              </div>
+              <div className="text-[8px] uppercase opacity-50 text-center leading-tight" style={{ color: textColor }}>
+                ${item.profit.toFixed(0)}<br/>PROFIT
+              </div>
             </div>
-            <div className="text-[8px] uppercase opacity-50 text-center leading-tight" style={{ color: textColor }}>
-              ${item.profit.toFixed(0)}<br/>PROFIT
+          ))}
+          {topProfitableDays.length < 4 && Array.from({ length: 4 - topProfitableDays.length }).map((_, index) => (
+            <div key={`empty-${index}`} className="flex flex-col items-center gap-2">
+              <div
+                className="w-12 h-12 flex items-center justify-center text-base font-bold opacity-30 rotate-45"
+                style={{
+                  background: `linear-gradient(135deg, #8b5cf6, #ec4899)`,
+                  color: "#ffffff"
+                }}
+              >
+                <span className="-rotate-45">-</span>
+              </div>
+              <div className="text-[8px] uppercase opacity-30 text-center leading-tight" style={{ color: textColor }}>
+                N/A
+              </div>
             </div>
-          </div>
-        ))}
-        {topProfitableDays.length < 4 && Array.from({ length: 4 - topProfitableDays.length }).map((_, index) => (
-          <div key={`empty-${index}`} className="flex flex-col items-center gap-1">
-            <div
-              className="w-12 h-12 flex items-center justify-center text-base font-bold opacity-30 rotate-45"
-              style={{
-                background: `linear-gradient(135deg, #8b5cf6, #ec4899)`,
-                color: "#ffffff"
-              }}
-            >
-              <span className="-rotate-45">-</span>
-            </div>
-            <div className="text-[8px] uppercase opacity-30 text-center leading-tight" style={{ color: textColor }}>
-              N/A
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
