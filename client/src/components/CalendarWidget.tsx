@@ -22,7 +22,11 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
     const pnlByDay: { [key: string]: number } = {};
     
     trades.forEach((trade: any) => {
-      const tradeDate = new Date(trade.created_at);
+      // Use entry_date if available, fall back to created_at
+      const tradeDateStr = trade.entry_date || trade.created_at;
+      if (!tradeDateStr) return;
+      
+      const tradeDate = new Date(tradeDateStr);
       if (tradeDate.getMonth() === selectedMonth && tradeDate.getFullYear() === currentYear) {
         const day = tradeDate.getDate();
         const profit = parseFloat(trade.pnl || 0);
