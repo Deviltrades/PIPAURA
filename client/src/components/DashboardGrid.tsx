@@ -24,9 +24,6 @@ interface DashboardGridProps {
 export default function DashboardGrid({ analytics, trades }: DashboardGridProps) {
   const { toast } = useToast();
   const [editMode, setEditMode] = useState(false);
-  const [currentTemplate, setCurrentTemplate] = useState("default");
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [templateName, setTemplateName] = useState("");
   const [themeColor, setThemeColor] = useState("slate");
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [bgColor, setBgColor] = useState("#0f172a");
@@ -73,20 +70,14 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
   const [layouts, setLayouts] = useState(defaultLayouts);
 
-  // Fetch user's dashboard templates
-  const { data: userTemplates } = useQuery({
-    queryKey: ["/api/user/dashboard-templates"],
-    retry: false,
-  });
-
-  // Fetch user profile to get theme preference
+  // Fetch user profile to get theme preference and layouts
   const { data: userProfile } = useQuery({
     queryKey: ["user-profile"],
     queryFn: getUserProfile,
     retry: false,
   });
 
-  // Load theme color from user profile
+  // Load theme color and layouts from user profile
   useEffect(() => {
     if (userProfile?.preferences?.dashboardColor) {
       setThemeColor(userProfile.preferences.dashboardColor);
@@ -97,21 +88,27 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
     if (userProfile?.preferences?.dashboardTextColor) {
       setTextColor(userProfile.preferences.dashboardTextColor);
     }
+    if (userProfile?.preferences?.dashboardLayouts) {
+      setLayouts(userProfile.preferences.dashboardLayouts);
+    }
   }, [userProfile]);
 
-  // Save template mutation
-  const saveTemplateMutation = useMutation({
-    mutationFn: async ({ name, layouts }: { name: string, layouts: Layouts }) => {
-      await apiRequest("POST", "/api/user/dashboard-templates", { name, layouts });
+  // Save dashboard layout mutation
+  const saveLayoutMutation = useMutation({
+    mutationFn: async (newLayouts: Layouts) => {
+      await updateUserProfile({
+        preferences: { 
+          ...userProfile?.preferences, 
+          dashboardLayouts: newLayouts 
+        }
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard-templates"] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
       toast({
-        title: "Template Saved",
-        description: "Your dashboard template has been saved successfully.",
+        title: "Dashboard Saved",
+        description: "Your dashboard layout has been saved successfully.",
       });
-      setSaveDialogOpen(false);
-      setTemplateName("");
     },
     onError: (error: Error) => {
       toast({
@@ -122,22 +119,27 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
     },
   });
 
-  // Delete template mutation
-  const deleteTemplateMutation = useMutation({
-    mutationFn: async (name: string) => {
-      await apiRequest("DELETE", `/api/user/dashboard-templates/${encodeURIComponent(name)}`);
+  // Reset to default layout mutation
+  const resetLayoutMutation = useMutation({
+    mutationFn: async () => {
+      await updateUserProfile({
+        preferences: { 
+          ...userProfile?.preferences, 
+          dashboardLayouts: null 
+        }
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard-templates"] });
-      setCurrentTemplate("default");
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      setLayouts(defaultLayouts);
       toast({
-        title: "Template Deleted",
-        description: "Your dashboard template has been deleted successfully.",
+        title: "Dashboard Reset",
+        description: "Your dashboard has been reset to default layout.",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Delete Failed",
+        title: "Reset Failed",
         description: error.message,
         variant: "destructive",
       });
@@ -191,17 +193,6 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
     });
   };
 
-  // Load template when switching
-  useEffect(() => {
-    if (userTemplates && currentTemplate !== "default") {
-      const template = userTemplates[currentTemplate];
-      if (template) {
-        setLayouts(template);
-      }
-    } else if (currentTemplate === "default") {
-      setLayouts(defaultLayouts);
-    }
-  }, [currentTemplate, userTemplates]);
 
   // Calculate real stats from actual trades
   const totalPnL = analytics?.totalPnL || 0;
@@ -232,30 +223,11 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   ];
 
   const resetLayout = () => {
-    setLayouts(defaultLayouts);
-    setCurrentTemplate("default");
+    resetLayoutMutation.mutate();
   };
 
-  const handleSaveTemplate = () => {
-    if (!templateName.trim()) {
-      toast({
-        title: "Template name required",
-        description: "Please enter a name for your template.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (Object.keys(userTemplates || {}).length >= 5 && !userTemplates?.[templateName]) {
-      toast({
-        title: "Template limit reached",
-        description: "You can only save up to 5 templates. Please delete one first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    saveTemplateMutation.mutate({ name: templateName, layouts });
+  const handleSaveLayout = () => {
+    saveLayoutMutation.mutate(layouts);
   };
 
   return (
@@ -265,83 +237,18 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold" style={{ color: textColor }}>Trading Dashboard</h1>
           <div className="flex gap-3 items-center">
-            {/* Template Selector */}
-            <Select value={currentTemplate} onValueChange={setCurrentTemplate}>
-              <SelectTrigger className="w-48 bg-blue-900/40 border-blue-700 text-white">
-                <Grid3X3 className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Select template" />
-              </SelectTrigger>
-              <SelectContent className="bg-blue-950 border-blue-700">
-                <SelectItem value="default">Default Layout</SelectItem>
-                {userTemplates && Object.keys(userTemplates).map((templateName) => (
-                  <SelectItem key={templateName} value={templateName}>
-                    <div className="flex items-center justify-between w-full">
-                      <span>{templateName}</span>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          deleteTemplateMutation.mutate(templateName);
-                        }}
-                        className="ml-2 p-1 hover:bg-red-600/20 rounded"
-                      >
-                        <Trash2 className="w-3 h-3 text-red-400" />
-                      </button>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Save Template Button */}
-            <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-blue-900/40 border-blue-700 text-white hover:bg-blue-800/50"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Template
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-blue-950 border-blue-700 text-white">
-                <DialogHeader>
-                  <DialogTitle>Save Dashboard Template</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="template-name" className="text-sm font-medium">
-                      Template Name
-                    </label>
-                    <Input
-                      id="template-name"
-                      value={templateName}
-                      onChange={(e) => setTemplateName(e.target.value)}
-                      placeholder="Enter template name..."
-                      className="bg-blue-900/40 border-blue-700 text-white"
-                      maxLength={50}
-                    />
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setSaveDialogOpen(false)}
-                      className="border-blue-700 text-white hover:bg-blue-800/50"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleSaveTemplate}
-                      disabled={saveTemplateMutation.isPending}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {saveTemplateMutation.isPending ? "Saving..." : "Save"}
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            {/* Save Layout Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSaveLayout}
+              disabled={saveLayoutMutation.isPending}
+              className="bg-blue-900/40 border-blue-700 text-white hover:bg-blue-800/50"
+              data-testid="button-save-layout"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {saveLayoutMutation.isPending ? "Saving..." : "Save Layout"}
+            </Button>
 
             {/* Color Picker Dialog */}
             <Dialog open={colorPickerOpen} onOpenChange={setColorPickerOpen}>
@@ -475,7 +382,14 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
         <ResponsiveGridLayout
           className="layout"
           layouts={layouts}
-          onLayoutChange={(layout, newLayouts) => setLayouts(newLayouts)}
+          onLayoutChange={(layout, newLayouts) => {
+            // Only save the breakpoints we care about
+            setLayouts({
+              lg: newLayouts.lg || layouts.lg,
+              md: newLayouts.md || layouts.md,
+              sm: newLayouts.sm || layouts.sm,
+            });
+          }}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
           cols={{ lg: 12, md: 6, sm: 4, xs: 2, xxs: 2 }}
           rowHeight={60}
