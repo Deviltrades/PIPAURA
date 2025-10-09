@@ -361,8 +361,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                   </svg>
                   
                   {/* Min/Max labels */}
-                  <div className="absolute bottom-0 left-0 text-gray-500 text-xs">0</div>
-                  <div className="absolute bottom-0 right-0 text-gray-500 text-xs">100</div>
+                  <div className="absolute -bottom-4 left-0 text-gray-500 text-xs">0</div>
+                  <div className="absolute -bottom-4 right-0 text-gray-500 text-xs">100</div>
                 </div>
               </div>
             </DraggableWidget>
