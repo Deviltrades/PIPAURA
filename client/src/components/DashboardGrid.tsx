@@ -29,6 +29,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   const [bgColor, setBgColor] = useState("#0f172a");
   const [textColor, setTextColor] = useState("#ffffff");
   const [showAllProfits, setShowAllProfits] = useState(true);
+  const [showAllWinRates, setShowAllWinRates] = useState(true);
   
   const defaultLayouts = {
     lg: [
@@ -222,6 +223,31 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
     const tradeDate = new Date(t.entry_date || t.created_at);
     return tradeDate >= monthStart;
   }).reduce((sum, t) => sum + (Number(t.pnl) || 0), 0) || 0;
+
+  // Calculate time-based win rates
+  const dailyTrades = trades?.filter(t => {
+    const tradeDate = new Date(t.entry_date || t.created_at);
+    return tradeDate >= todayStart;
+  }) || [];
+  const dailyWinRate = dailyTrades.length > 0 
+    ? (dailyTrades.filter(t => (Number(t.pnl) || 0) > 0).length / dailyTrades.length) * 100 
+    : 0;
+
+  const weeklyTrades = trades?.filter(t => {
+    const tradeDate = new Date(t.entry_date || t.created_at);
+    return tradeDate >= weekStart;
+  }) || [];
+  const weeklyWinRate = weeklyTrades.length > 0 
+    ? (weeklyTrades.filter(t => (Number(t.pnl) || 0) > 0).length / weeklyTrades.length) * 100 
+    : 0;
+
+  const monthlyTrades = trades?.filter(t => {
+    const tradeDate = new Date(t.entry_date || t.created_at);
+    return tradeDate >= monthStart;
+  }) || [];
+  const monthlyWinRate = monthlyTrades.length > 0 
+    ? (monthlyTrades.filter(t => (Number(t.pnl) || 0) > 0).length / monthlyTrades.length) * 100 
+    : 0;
 
   // Long vs Short performance
   const longTrades = trades?.filter(t => t.tradeType === "BUY") || [];
@@ -481,49 +507,61 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
           {/* Win Rate Widget */}
           <div key="winrate">
-            <DraggableWidget title="Win Rate" themeColor={themeColor} textColor={textColor}>
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="font-bold text-3xl" style={{ color: textColor }}>{winRate.toFixed(1)}%</div>
-                </div>
-                <div className="relative w-24 h-12">
-                  <svg viewBox="0 0 100 50" className="w-full h-full">
-                    {/* Red arc (losing trades - full background) */}
-                    <path
-                      d="M 10 45 A 40 40 0 0 1 90 45"
-                      fill="none"
-                      stroke="#ef4444"
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                    />
-                    
-                    {/* Green arc (winning trades - overlays on top based on win rate) */}
-                    <path
-                      d="M 10 45 A 40 40 0 0 1 90 45"
-                      fill="none"
-                      stroke="#10b981"
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                      strokeDasharray={`${(winRate / 100) * 126} 126`}
-                      className="transition-all duration-500"
-                    />
-                    
-                    {/* Indicator dot at the transition point */}
-                    <circle
-                      cx={50 + 40 * Math.cos((Math.PI * (1 - winRate / 100)))}
-                      cy={45 - 40 * Math.sin((Math.PI * (1 - winRate / 100)))}
-                      r="5"
-                      fill="white"
-                      className="transition-all duration-500"
-                    />
-                  </svg>
-                  
-                  {/* Min/Max labels */}
-                  <div className="absolute -bottom-4 left-0 text-gray-500 text-xs">0</div>
-                  <div className="absolute -bottom-4 right-0 text-gray-500 text-xs">100</div>
-                </div>
-              </div>
-            </DraggableWidget>
+            <div className="relative h-full">
+              {/* Toggle Button - Positioned at top right of widget */}
+              <button
+                onClick={() => setShowAllWinRates(!showAllWinRates)}
+                className="absolute top-4 right-4 px-2 py-1 text-xs rounded transition-colors z-10"
+                style={{ 
+                  backgroundColor: `${textColor}20`,
+                  color: textColor 
+                }}
+                data-testid="button-toggle-winrate-view"
+              >
+                {showAllWinRates ? "Show All Time Only" : "Show All Periods"}
+              </button>
+
+              <DraggableWidget title="Win Rate" themeColor={themeColor} textColor={textColor}>
+                {/* Win Rate Values */}
+                {showAllWinRates ? (
+                  <div className="flex gap-6 mt-1">
+                    <div>
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
+                      <div className="font-bold text-xl" style={{ color: textColor }}>
+                        {dailyWinRate.toFixed(1)}%
+                      </div>
+                    </div>
+                    <div>
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
+                      <div className="font-bold text-xl" style={{ color: textColor }}>
+                        {weeklyWinRate.toFixed(1)}%
+                      </div>
+                    </div>
+                    <div>
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
+                      <div className="font-bold text-xl" style={{ color: textColor }}>
+                        {monthlyWinRate.toFixed(1)}%
+                      </div>
+                    </div>
+                    <div>
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
+                      <div className="font-bold text-xl" style={{ color: textColor }}>
+                        {winRate.toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center h-full mt-1">
+                    <div>
+                      <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>All Time</div>
+                      <div className="font-bold text-3xl" style={{ color: textColor }}>
+                        {winRate.toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </DraggableWidget>
+            </div>
           </div>
 
           {/* Risk Reward Widget */}
