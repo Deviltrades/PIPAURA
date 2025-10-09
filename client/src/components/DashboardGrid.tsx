@@ -287,8 +287,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   const allTimeTradeCount = analytics?.totalTrades || 0;
 
   // Long vs Short performance
-  const longTrades = trades?.filter(t => t.tradeType === "BUY") || [];
-  const shortTrades = trades?.filter(t => t.tradeType === "SELL") || [];
+  const longTrades = trades?.filter(t => (t.trade_type || t.tradeType) === "BUY") || [];
+  const shortTrades = trades?.filter(t => (t.trade_type || t.tradeType) === "SELL") || [];
   
   const longPnL = longTrades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
   const shortPnL = shortTrades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
@@ -301,13 +301,13 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   // Get last five actual trades sorted by date
   const lastFiveTrades = trades
     ?.sort((a, b) => {
-      const dateA = new Date(a.trade_date || a.created_at);
-      const dateB = new Date(b.trade_date || b.created_at);
+      const dateA = new Date(a.entry_date || a.created_at);
+      const dateB = new Date(b.entry_date || b.created_at);
       return dateB.getTime() - dateA.getTime();
     })
     .slice(0, 5)
     .map(trade => {
-      const tradeDate = new Date(trade.trade_date || trade.created_at);
+      const tradeDate = new Date(trade.entry_date || trade.created_at);
       const formattedDate = tradeDate.toLocaleDateString('en-US', { 
         month: 'short', 
         day: '2-digit', 
@@ -315,9 +315,9 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
       });
       return {
         id: trade.id,
-        instrument: trade.pair_symbol,
-        tradeType: trade.trade_type || 'BUY',
-        pnl: Number(trade.profit_loss) || 0,
+        instrument: trade.instrument,
+        tradeType: trade.trade_type || trade.tradeType || 'BUY',
+        pnl: Number(trade.pnl) || 0,
         createdAt: formattedDate,
         status: trade.status
       };
