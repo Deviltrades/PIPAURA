@@ -28,9 +28,15 @@ export default function Charts() {
 
     return () => {
       if (widgetRef.current) {
-        widgetRef.current.remove();
+        try {
+          widgetRef.current.remove();
+        } catch (err) {
+          console.log("TradingView widget cleanup (safe to ignore)");
+        }
       }
-      document.head.removeChild(script);
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
     };
   }, []);
 
