@@ -28,6 +28,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [bgColor, setBgColor] = useState("#0f172a");
   const [textColor, setTextColor] = useState("#ffffff");
+  const [showAllProfits, setShowAllProfits] = useState(true);
   
   const defaultLayouts = {
     lg: [
@@ -422,31 +423,60 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
           {/* Profit Widget */}
           <div key="profit">
             <DraggableWidget title="Profit" themeColor={themeColor} textColor={textColor}>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
-                  <div className="font-bold" style={{ color: textColor }}>
-                    ${dailyPnL >= 1000 ? `${(dailyPnL/1000).toFixed(1)}K` : dailyPnL.toFixed(0)}
-                  </div>
+              <div className="flex flex-col gap-3">
+                {/* Toggle Button */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setShowAllProfits(!showAllProfits)}
+                    className="px-2 py-1 text-xs rounded transition-colors"
+                    style={{ 
+                      backgroundColor: `${textColor}20`,
+                      color: textColor 
+                    }}
+                    data-testid="button-toggle-profit-view"
+                  >
+                    {showAllProfits ? "Show All Time Only" : "Show All Periods"}
+                  </button>
                 </div>
-                <div>
-                  <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
-                  <div className="font-bold" style={{ color: textColor }}>
-                    ${weeklyPnL >= 1000 ? `${(weeklyPnL/1000).toFixed(1)}K` : weeklyPnL.toFixed(0)}
+
+                {/* Profit Values */}
+                {showAllProfits ? (
+                  <div className="flex gap-3 justify-between text-sm">
+                    <div className="flex-1 text-center">
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
+                      <div className="font-bold" style={{ color: textColor }}>
+                        ${dailyPnL >= 1000 ? `${(dailyPnL/1000).toFixed(1)}K` : dailyPnL.toFixed(0)}
+                      </div>
+                    </div>
+                    <div className="flex-1 text-center">
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
+                      <div className="font-bold" style={{ color: textColor }}>
+                        ${weeklyPnL >= 1000 ? `${(weeklyPnL/1000).toFixed(1)}K` : weeklyPnL.toFixed(0)}
+                      </div>
+                    </div>
+                    <div className="flex-1 text-center">
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
+                      <div className="font-bold" style={{ color: textColor }}>
+                        ${monthlyPnL >= 1000 ? `${(monthlyPnL/1000).toFixed(1)}K` : monthlyPnL.toFixed(0)}
+                      </div>
+                    </div>
+                    <div className="flex-1 text-center">
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
+                      <div className="font-bold" style={{ color: textColor }}>
+                        ${totalPnL >= 1000 ? `${(totalPnL/1000).toFixed(1)}K` : totalPnL.toFixed(0)}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
-                  <div className="font-bold" style={{ color: textColor }}>
-                    ${monthlyPnL >= 1000 ? `${(monthlyPnL/1000).toFixed(1)}K` : monthlyPnL.toFixed(0)}
+                ) : (
+                  <div className="flex justify-center">
+                    <div className="text-center">
+                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
+                      <div className="font-bold text-2xl" style={{ color: textColor }}>
+                        ${totalPnL >= 1000 ? `${(totalPnL/1000).toFixed(1)}K` : totalPnL.toFixed(0)}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
-                  <div className="font-bold" style={{ color: textColor }}>
-                    ${totalPnL >= 1000 ? `${(totalPnL/1000).toFixed(1)}K` : totalPnL.toFixed(0)}
-                  </div>
-                </div>
+                )}
               </div>
             </DraggableWidget>
           </div>
