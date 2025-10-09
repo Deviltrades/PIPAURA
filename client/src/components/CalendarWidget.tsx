@@ -39,6 +39,8 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
       }
     });
     
+    console.log(`📅 ${monthNames[selectedMonth]} - Daily P&L:`, pnlByDay);
+    console.log(`📅 ${monthNames[selectedMonth]} - Total trades processed:`, trades.length);
     return pnlByDay;
   }, [trades, selectedMonth, currentYear]);
 
