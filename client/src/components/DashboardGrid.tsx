@@ -551,12 +551,48 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center h-full mt-1">
-                    <div>
+                  <div className="flex items-center justify-between mt-1">
+                    <div className="flex-1">
                       <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>All Time</div>
                       <div className="font-bold text-3xl" style={{ color: textColor }}>
                         {winRate.toFixed(1)}%
                       </div>
+                    </div>
+                    <div className="relative w-24 h-12">
+                      <svg viewBox="0 0 100 50" className="w-full h-full">
+                        {/* Red arc (losing trades - full background) */}
+                        <path
+                          d="M 10 45 A 40 40 0 0 1 90 45"
+                          fill="none"
+                          stroke="#ef4444"
+                          strokeWidth="8"
+                          strokeLinecap="round"
+                        />
+                        
+                        {/* Green arc (winning trades - overlays on top based on win rate) */}
+                        <path
+                          d="M 10 45 A 40 40 0 0 1 90 45"
+                          fill="none"
+                          stroke="#10b981"
+                          strokeWidth="8"
+                          strokeLinecap="round"
+                          strokeDasharray={`${(winRate / 100) * 126} 126`}
+                          className="transition-all duration-500"
+                        />
+                        
+                        {/* Indicator dot at the transition point */}
+                        <circle
+                          cx={50 + 40 * Math.cos((Math.PI * (1 - winRate / 100)))}
+                          cy={45 - 40 * Math.sin((Math.PI * (1 - winRate / 100)))}
+                          r="5"
+                          fill="white"
+                          className="transition-all duration-500"
+                        />
+                      </svg>
+                      
+                      {/* Min/Max labels */}
+                      <div className="absolute -bottom-4 left-0 text-gray-500 text-xs">0</div>
+                      <div className="absolute -bottom-4 right-0 text-gray-500 text-xs">100</div>
                     </div>
                   </div>
                 )}
