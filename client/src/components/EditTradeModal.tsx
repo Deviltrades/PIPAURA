@@ -161,12 +161,16 @@ export function EditTradeModal({ isOpen, onClose, trade }: EditTradeModalProps) 
 
       // Update exit_date with new time if provided
       let exitDateTime = trade.exit_date;
-      if (data.exitTime && trade.entry_date) {
-        const entryDate = new Date(trade.entry_date);
-        const dateString = entryDate.getFullYear() + '-' + 
-          String(entryDate.getMonth() + 1).padStart(2, '0') + '-' + 
-          String(entryDate.getDate()).padStart(2, '0');
-        exitDateTime = `${dateString} ${data.exitTime}:00`;
+      if (data.exitTime) {
+        // Use exit_date for the date portion, fall back to entry_date if exit_date is missing
+        const exitDateSource = trade.exit_date || trade.entry_date;
+        if (exitDateSource) {
+          const exitDate = new Date(exitDateSource);
+          const dateString = exitDate.getFullYear() + '-' + 
+            String(exitDate.getMonth() + 1).padStart(2, '0') + '-' + 
+            String(exitDate.getDate()).padStart(2, '0');
+          exitDateTime = `${dateString} ${data.exitTime}:00`;
+        }
       }
 
       const tradeData = {
