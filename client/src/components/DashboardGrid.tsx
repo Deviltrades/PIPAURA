@@ -981,45 +981,45 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
               <div className="grid grid-cols-2 gap-4 h-full">
                 {/* Longs */}
                 <div className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
-                  <div className="text-center mb-2">
-                    <div className="text-gray-400 text-sm">{longTrades.length} LONGS</div>
+                  <div className="text-center mb-3">
+                    <div className="text-gray-400 text-lg">{longTrades.length} LONGS</div>
                   </div>
-                  <div className="relative w-16 h-16 mx-auto mb-2">
-                    <svg className="w-16 h-16 transform -rotate-90">
-                      <circle cx="32" cy="32" r="24" stroke="rgb(30 41 59)" strokeWidth="6" fill="none" />
+                  <div className="relative w-24 h-24 mx-auto mb-3">
+                    <svg className="w-24 h-24 transform -rotate-90">
+                      <circle cx="48" cy="48" r="36" stroke="rgb(30 41 59)" strokeWidth="8" fill="none" />
                       <circle
-                        cx="32" cy="32" r="24" stroke="rgb(34 197 94)" strokeWidth="6" fill="none"
-                        strokeDasharray={`${longWinRate * 1.5} 150`} className="transition-all duration-300"
+                        cx="48" cy="48" r="36" stroke="rgb(34 197 94)" strokeWidth="8" fill="none"
+                        strokeDasharray={`${longWinRate * 2.26} 226`} className="transition-all duration-300"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-white font-bold text-sm">{longWinRate}%</div>
+                      <div className="text-white font-bold text-xl">{longWinRate}%</div>
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-green-400 font-bold text-sm">${longPnL.toFixed(2)}</div>
+                    <div className="text-green-400 font-bold text-lg">${longPnL.toFixed(2)}</div>
                   </div>
                 </div>
 
                 {/* Shorts */}
                 <div className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
-                  <div className="text-center mb-2">
-                    <div className="text-gray-400 text-sm">{shortTrades.length} SHORTS</div>
+                  <div className="text-center mb-3">
+                    <div className="text-gray-400 text-lg">{shortTrades.length} SHORTS</div>
                   </div>
-                  <div className="relative w-16 h-16 mx-auto mb-2">
-                    <svg className="w-16 h-16 transform -rotate-90">
-                      <circle cx="32" cy="32" r="24" stroke="rgb(30 41 59)" strokeWidth="6" fill="none" />
+                  <div className="relative w-24 h-24 mx-auto mb-3">
+                    <svg className="w-24 h-24 transform -rotate-90">
+                      <circle cx="48" cy="48" r="36" stroke="rgb(30 41 59)" strokeWidth="8" fill="none" />
                       <circle
-                        cx="32" cy="32" r="24" stroke="rgb(239 68 68)" strokeWidth="6" fill="none"
-                        strokeDasharray={`${shortWinRate * 1.5} 150`} className="transition-all duration-300"
+                        cx="48" cy="48" r="36" stroke="rgb(239 68 68)" strokeWidth="8" fill="none"
+                        strokeDasharray={`${shortWinRate * 2.26} 226`} className="transition-all duration-300"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-white font-bold text-sm">{shortWinRate}%</div>
+                      <div className="text-white font-bold text-xl">{shortWinRate}%</div>
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-red-400 font-bold text-sm">${shortPnL.toFixed(2)}</div>
+                    <div className="text-red-400 font-bold text-lg">${shortPnL.toFixed(2)}</div>
                   </div>
                 </div>
               </div>
