@@ -441,26 +441,26 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
 
                 {/* Profit Values */}
                 {showAllProfits ? (
-                  <div className="flex gap-3 justify-between">
-                    <div className="flex-1 text-center">
+                  <div className="flex gap-6">
+                    <div>
                       <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
                       <div className="font-bold text-lg" style={{ color: textColor }}>
                         ${dailyPnL >= 1000 ? `${(dailyPnL/1000).toFixed(1)}K` : dailyPnL.toFixed(0)}
                       </div>
                     </div>
-                    <div className="flex-1 text-center">
+                    <div>
                       <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
                       <div className="font-bold text-lg" style={{ color: textColor }}>
                         ${weeklyPnL >= 1000 ? `${(weeklyPnL/1000).toFixed(1)}K` : weeklyPnL.toFixed(0)}
                       </div>
                     </div>
-                    <div className="flex-1 text-center">
+                    <div>
                       <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
                       <div className="font-bold text-lg" style={{ color: textColor }}>
                         ${monthlyPnL >= 1000 ? `${(monthlyPnL/1000).toFixed(1)}K` : monthlyPnL.toFixed(0)}
                       </div>
                     </div>
-                    <div className="flex-1 text-center">
+                    <div>
                       <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
                       <div className="font-bold text-lg" style={{ color: textColor }}>
                         ${totalPnL >= 1000 ? `${(totalPnL/1000).toFixed(1)}K` : totalPnL.toFixed(0)}
@@ -468,8 +468,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                     </div>
                   </div>
                 ) : (
-                  <div className="flex justify-center items-center h-full">
-                    <div className="text-center -mt-2">
+                  <div className="flex items-center h-full">
+                    <div className="-mt-2">
                       <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>All Time</div>
                       <div className="font-bold text-3xl" style={{ color: textColor }}>
                         ${totalPnL >= 1000 ? `${(totalPnL/1000).toFixed(1)}K` : totalPnL.toFixed(0)}
