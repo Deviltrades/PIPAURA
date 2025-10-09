@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { getUserProfile, updateUserProfile } from "@/lib/supabase-service";
 import DraggableWidget from "./DraggableWidget";
+import CalendarWidget from "./CalendarWidget";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
@@ -41,6 +42,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
       { i: "totaltrades", x: 10, y: 0, w: 2, h: 2 },
       { i: "chart", x: 0, y: 2, w: 8, h: 6 },
       { i: "trades", x: 8, y: 2, w: 4, h: 6 },
+      { i: "calendar", x: 6, y: 8, w: 3, h: 5 },
       { i: "longshort", x: 0, y: 8, w: 6, h: 4 },
     ],
     md: [
@@ -52,7 +54,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
       { i: "totaltrades", x: 4, y: 2, w: 2, h: 2 },
       { i: "chart", x: 0, y: 4, w: 6, h: 6 },
       { i: "trades", x: 0, y: 10, w: 6, h: 6 },
-      { i: "longshort", x: 0, y: 16, w: 6, h: 4 },
+      { i: "calendar", x: 0, y: 16, w: 3, h: 5 },
+      { i: "longshort", x: 3, y: 16, w: 3, h: 4 },
     ],
     sm: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
@@ -63,7 +66,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
       { i: "totaltrades", x: 2, y: 4, w: 2, h: 2 },
       { i: "chart", x: 0, y: 6, w: 4, h: 6 },
       { i: "trades", x: 0, y: 12, w: 4, h: 6 },
-      { i: "longshort", x: 0, y: 18, w: 4, h: 4 },
+      { i: "calendar", x: 0, y: 18, w: 4, h: 5 },
+      { i: "longshort", x: 0, y: 23, w: 4, h: 4 },
     ]
   };
 
@@ -696,6 +700,13 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                   </div>
                 </div>
               </div>
+            </DraggableWidget>
+          </div>
+
+          {/* Calendar Widget */}
+          <div key="calendar">
+            <DraggableWidget title="Trading Calendar" themeColor={themeColor} textColor={textColor}>
+              <CalendarWidget textColor={textColor} />
             </DraggableWidget>
           </div>
         </ResponsiveGridLayout>
