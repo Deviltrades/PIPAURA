@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { getTrades } from "@/lib/supabase-service";
 
 interface CalendarWidgetProps {
   textColor?: string;
@@ -11,43 +11,27 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
   const currentYear = currentDate.getFullYear();
 
-  // Fetch journal entries for the year
-  const { data: journalEntries = [] } = useQuery({
-    queryKey: ["journal-entries", currentYear],
-    queryFn: async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) return [];
-
-      const startDate = `${currentYear}-01-01`;
-      const endDate = `${currentYear}-12-31`;
-
-      const { data, error } = await supabase
-        .from("journal_entries")
-        .select("*")
-        .eq("user_id", userData.user.id)
-        .gte("trade_date", startDate)
-        .lte("trade_date", endDate);
-
-      if (error) throw error;
-      return data || [];
-    },
+  // Fetch trades
+  const { data: trades = [] } = useQuery({
+    queryKey: ["trades"],
+    queryFn: getTrades,
   });
 
   // Calculate daily P&L for the selected month
   const dailyPnL = useMemo(() => {
     const pnlByDay: { [key: string]: number } = {};
     
-    journalEntries.forEach((entry: any) => {
-      const entryDate = new Date(entry.trade_date);
-      if (entryDate.getMonth() === selectedMonth && entryDate.getFullYear() === currentYear) {
-        const day = entryDate.getDate();
-        const profit = parseFloat(entry.profit_loss || 0);
+    trades.forEach((trade: any) => {
+      const tradeDate = new Date(trade.created_at);
+      if (tradeDate.getMonth() === selectedMonth && tradeDate.getFullYear() === currentYear) {
+        const day = tradeDate.getDate();
+        const profit = parseFloat(trade.pnl || 0);
         pnlByDay[day] = (pnlByDay[day] || 0) + profit;
       }
     });
     
     return pnlByDay;
-  }, [journalEntries, selectedMonth, currentYear]);
+  }, [trades, selectedMonth, currentYear]);
 
   // Get top 4 profitable days
   const topProfitableDays = useMemo(() => {
