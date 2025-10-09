@@ -122,7 +122,7 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
       {/* Day Names */}
       <div className="grid grid-cols-7 gap-2 mb-3">
         {dayNames.map((day) => (
-          <div key={day} className="text-center text-xs font-medium opacity-70" style={{ color: textColor }}>
+          <div key={day} className="flex items-center justify-center text-xs font-medium opacity-70 w-9" style={{ color: textColor }}>
             {day}
           </div>
         ))}
