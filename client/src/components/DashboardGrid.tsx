@@ -956,6 +956,11 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                           <div className="text-gray-400 text-xs">{trade.createdAt}</div>
                         </div>
                       </div>
+                      <div className={`font-bold text-sm ${
+                        trade.tradeType === "BUY" ? "text-green-400" : "text-red-400"
+                      }`}>
+                        {trade.tradeType}
+                      </div>
                       <div className="text-right">
                         <div className={`font-bold text-sm ${
                           (Number(trade.pnl) || 0) >= 0 ? "text-green-400" : "text-red-400"
