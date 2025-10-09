@@ -97,14 +97,14 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
   return (
     <div className="h-full flex flex-col" style={{ color: textColor }}>
       {/* Month Selector Dots */}
-      <div className="flex items-center justify-center gap-2 mb-4">
+      <div className="flex items-center justify-center gap-1 mb-3">
         {Array.from({ length: 12 }).map((_, index) => (
           <button
             key={index}
             onClick={() => setSelectedMonth(index)}
-            className={`w-2 h-2 rounded-full transition-all ${
+            className={`w-1.5 h-1.5 rounded-full transition-all ${
               selectedMonth === index 
-                ? "w-20 h-6 rounded-full flex items-center justify-center text-xs font-medium"
+                ? "w-16 h-5 rounded-full flex items-center justify-center text-[10px] font-medium"
                 : ""
             }`}
             style={{
@@ -120,20 +120,20 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
       </div>
 
       {/* Day Names */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      <div className="grid grid-cols-7 gap-0.5 mb-1">
         {dayNames.map((day) => (
-          <div key={day} className="text-center text-xs opacity-60" style={{ color: textColor }}>
+          <div key={day} className="text-center text-[8px] opacity-60" style={{ color: textColor }}>
             {day}
           </div>
         ))}
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1 mb-4 flex-1">
+      <div className="grid grid-cols-7 gap-0.5 mb-3">
         {calendarDays.map((day, index) => (
           <div
             key={index}
-            className="flex items-center justify-center text-sm font-medium aspect-square rounded-md transition-all"
+            className="flex items-center justify-center text-[10px] font-medium w-7 h-7 rounded transition-all"
             style={getDayStyle(day)}
             data-testid={day ? `calendar-day-${day}` : undefined}
           >
@@ -143,11 +143,11 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
       </div>
 
       {/* Top 4 Profitable Days */}
-      <div className="flex items-center justify-around pt-3 border-t border-gray-700/50">
+      <div className="flex items-center justify-around pt-2 border-t border-gray-700/50 mt-auto">
         {topProfitableDays.map((item, index) => (
           <div key={index} className="flex flex-col items-center">
             <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mb-1"
+              className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold mb-0.5"
               style={{
                 background: `linear-gradient(135deg, #8b5cf6, #ec4899)`,
                 color: "#ffffff"
@@ -156,7 +156,7 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
             >
               {item.day}
             </div>
-            <div className="text-xs opacity-60 text-center" style={{ color: textColor }}>
+            <div className="text-[9px] opacity-60 text-center" style={{ color: textColor }}>
               ${item.profit.toFixed(0)}
             </div>
           </div>
@@ -164,7 +164,7 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
         {topProfitableDays.length < 4 && Array.from({ length: 4 - topProfitableDays.length }).map((_, index) => (
           <div key={`empty-${index}`} className="flex flex-col items-center">
             <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mb-1 opacity-30"
+              className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold mb-0.5 opacity-30"
               style={{
                 background: `linear-gradient(135deg, #8b5cf6, #ec4899)`,
                 color: "#ffffff"
@@ -172,7 +172,7 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
             >
               -
             </div>
-            <div className="text-xs opacity-30" style={{ color: textColor }}>
+            <div className="text-[9px] opacity-30" style={{ color: textColor }}>
               N/A
             </div>
           </div>
