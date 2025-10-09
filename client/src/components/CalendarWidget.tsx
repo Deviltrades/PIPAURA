@@ -16,6 +16,21 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
     "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
   ];
 
+  const monthAbbreviations = [
+    "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+  ];
+
+  const getOrdinalSuffix = (day: number) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  };
+
   // Fetch trades
   const { data: trades = [] } = useQuery({
     queryKey: ["trades"],
@@ -236,7 +251,10 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
                 }}
                 data-testid={`top-day-${item.day}`}
               >
-                <span className="-rotate-45">{item.day}</span>
+                <span className="-rotate-45 flex flex-col items-center leading-none">
+                  <span className="text-xs">{item.day}{getOrdinalSuffix(item.day)}</span>
+                  <span className="text-[8px] opacity-70">{monthAbbreviations[selectedMonth]}</span>
+                </span>
               </div>
               <div className="text-[8px] uppercase opacity-50 text-center leading-tight" style={{ color: textColor }}>
                 ${item.profit.toFixed(0)}<br/>PROFIT
