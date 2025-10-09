@@ -326,7 +326,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
             <DraggableWidget title="Win Rate">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="text-white font-bold text-3xl">{winRate}%</div>
+                  <div className="text-white font-bold text-3xl">{winRate.toFixed(1)}%</div>
                 </div>
                 <div className="relative w-24 h-12">
                   <svg viewBox="0 0 100 50" className="w-full h-full">
