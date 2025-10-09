@@ -48,8 +48,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
       { i: "chart", x: 0, y: 2, w: 8, h: 6 },
       { i: "trades", x: 8, y: 2, w: 4, h: 6 },
       { i: "longshort", x: 0, y: 8, w: 6, h: 4 },
-      { i: "timing", x: 6, y: 8, w: 6, h: 5 },
-      { i: "calendar", x: 0, y: 13, w: 12, h: 7 },
+      { i: "timing", x: 6, y: 8, w: 6, h: 7 },
+      { i: "calendar", x: 0, y: 15, w: 12, h: 7 },
     ],
     md: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
@@ -61,8 +61,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
       { i: "chart", x: 0, y: 4, w: 6, h: 6 },
       { i: "trades", x: 0, y: 10, w: 6, h: 6 },
       { i: "longshort", x: 0, y: 16, w: 3, h: 4 },
-      { i: "timing", x: 3, y: 16, w: 3, h: 5 },
-      { i: "calendar", x: 0, y: 21, w: 6, h: 7 },
+      { i: "timing", x: 3, y: 16, w: 3, h: 7 },
+      { i: "calendar", x: 0, y: 23, w: 6, h: 7 },
     ],
     sm: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
@@ -74,8 +74,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
       { i: "chart", x: 0, y: 6, w: 4, h: 6 },
       { i: "trades", x: 0, y: 12, w: 4, h: 6 },
       { i: "longshort", x: 0, y: 18, w: 4, h: 4 },
-      { i: "timing", x: 0, y: 22, w: 4, h: 5 },
-      { i: "calendar", x: 0, y: 27, w: 4, h: 7 },
+      { i: "timing", x: 0, y: 22, w: 4, h: 7 },
+      { i: "calendar", x: 0, y: 29, w: 4, h: 7 },
     ]
   };
 
