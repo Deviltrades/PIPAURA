@@ -26,6 +26,7 @@ interface HourlyData {
 
 export default function TimingInsights({ trades, textColor = "#ffffff" }: TimingInsightsProps) {
   const hourlyAnalysis = useMemo(() => {
+    
     // Initialize hourly data for 24 hours
     const hourlyMap: Record<number, { trades: Trade[]; pnls: number[] }> = {};
     for (let i = 0; i < 24; i++) {
