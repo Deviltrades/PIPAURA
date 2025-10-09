@@ -68,11 +68,17 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
     calendarDays.push(day);
   }
 
-  const getDayColor = (day: number | null) => {
-    if (!day) return "transparent";
+  const getDayStyle = (day: number | null) => {
+    if (!day) return { backgroundColor: "transparent", color: textColor };
     const profit = dailyPnL[day];
-    if (profit === undefined) return textColor;
-    return profit > 0 ? "#10b981" : profit < 0 ? "#ef4444" : textColor;
+    if (profit === undefined) return { backgroundColor: "transparent", color: textColor };
+    
+    if (profit > 0) {
+      return { backgroundColor: "#10b981", color: "#ffffff" }; // Green background, white text
+    } else if (profit < 0) {
+      return { backgroundColor: "#ef4444", color: "#ffffff" }; // Red background, white text
+    }
+    return { backgroundColor: "transparent", color: textColor };
   };
 
   return (
@@ -114,8 +120,8 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
         {calendarDays.map((day, index) => (
           <div
             key={index}
-            className="flex items-center justify-center text-sm font-medium aspect-square"
-            style={{ color: getDayColor(day) }}
+            className="flex items-center justify-center text-sm font-medium aspect-square rounded-md transition-all"
+            style={getDayStyle(day)}
             data-testid={day ? `calendar-day-${day}` : undefined}
           >
             {day || ""}
