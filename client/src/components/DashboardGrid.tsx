@@ -11,6 +11,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { getUserProfile, updateUserProfile } from "@/lib/supabase-service";
 import DraggableWidget from "./DraggableWidget";
 import CalendarWidget from "./CalendarWidget";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
@@ -875,39 +876,49 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
           {/* Chart Widget */}
           <div key="chart">
             <DraggableWidget title="Accumulative & Daily PnL" themeColor={themeColor} textColor={textColor}>
-              <div className="relative h-full">
-                {/* Y-axis labels */}
-                <div className="absolute left-0 top-0 text-gray-400 text-xs">$4K</div>
-                <div className="absolute left-0 top-1/2 text-gray-400 text-xs">$2K</div>
-                <div className="absolute left-0 bottom-1/2 text-gray-400 text-xs">$0</div>
-                <div className="absolute left-0 bottom-0 text-gray-400 text-xs">-$2K</div>
-                
-                {/* Chart area */}
-                <div className="ml-8 h-full relative">
-                  <svg viewBox="0 0 300 150" className="w-full h-full">
-                    <defs>
-                      <linearGradient id="profit-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="rgb(37 99 235)" stopOpacity="0.8"/>
-                        <stop offset="100%" stopColor="rgb(37 99 235)" stopOpacity="0.1"/>
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M 0 120 Q 50 100 100 80 T 200 40 T 300 20"
-                      stroke="rgb(37 99 235)"
-                      strokeWidth="3"
-                      fill="none"
-                    />
-                    <path
-                      d="M 0 120 Q 50 100 100 80 T 200 40 T 300 20 L 300 150 L 0 150 Z"
-                      fill="url(#profit-gradient)"
-                    />
-                  </svg>
-                </div>
-                
-                {/* X-axis labels */}
-                <div className="absolute bottom-0 left-8 text-gray-400 text-xs">Jan 23, 24</div>
-                <div className="absolute bottom-0 right-0 text-gray-400 text-xs">Aug 31, 25</div>
-              </div>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={analytics?.equityCurve || []}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
+                >
+                  <defs>
+                    <linearGradient id="colorEquity" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="rgb(37 99 235)" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="rgb(37 99 235)" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="date" 
+                    stroke={textColor}
+                    style={{ fontSize: '10px', fill: textColor }}
+                    tick={{ fill: textColor, opacity: 0.7 }}
+                  />
+                  <YAxis 
+                    stroke={textColor}
+                    style={{ fontSize: '10px', fill: textColor }}
+                    tick={{ fill: textColor, opacity: 0.7 }}
+                    tickFormatter={(value) => `$${value >= 1000 ? `${(value/1000).toFixed(1)}K` : value}`}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+                      border: '1px solid rgba(59, 130, 246, 0.5)',
+                      borderRadius: '8px',
+                      color: textColor
+                    }}
+                    formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'P&L']}
+                    labelStyle={{ color: textColor }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="equity" 
+                    stroke="rgb(37 99 235)" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorEquity)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </DraggableWidget>
           </div>
 
