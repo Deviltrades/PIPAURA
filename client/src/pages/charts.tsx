@@ -1,19 +1,103 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect, useRef } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
+declare global {
+  interface Window {
+    TradingView: any;
+  }
+}
+
 export default function Charts() {
+  const [symbol, setSymbol] = useState("EURUSD");
+  const [interval, setInterval] = useState("60");
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const widgetRef = useRef<any>(null);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://s3.tradingview.com/tv.js";
+    script.async = true;
+    script.onload = () => initChart();
+    document.head.appendChild(script);
+
+    return () => {
+      if (widgetRef.current) {
+        widgetRef.current.remove();
+      }
+      document.head.removeChild(script);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (window.TradingView && chartContainerRef.current) {
+      initChart();
+    }
+  }, [symbol, interval]);
+
+  const initChart = () => {
+    if (!chartContainerRef.current || !window.TradingView) return;
+
+    if (widgetRef.current) {
+      widgetRef.current.remove();
+    }
+
+    chartContainerRef.current.innerHTML = "";
+
+    const tradingViewSymbol = symbol === "BTCUSD" || symbol === "ETHUSD" 
+      ? `BINANCE:${symbol}T` 
+      : `FX_IDC:${symbol}`;
+
+    widgetRef.current = new window.TradingView.widget({
+      autosize: true,
+      symbol: tradingViewSymbol,
+      interval: interval,
+      timezone: "Etc/UTC",
+      theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+      style: "1",
+      locale: "en",
+      toolbar_bg: "#f1f3f6",
+      enable_publishing: false,
+      withdateranges: true,
+      hide_side_toolbar: false,
+      allow_symbol_change: true,
+      container_id: "tradingview_chart",
+      studies: [
+        "MASimple@tv-basicstudies",
+        "RSI@tv-basicstudies"
+      ],
+    });
+  };
+
+  const symbolMap: Record<string, string> = {
+    EURUSD: "EUR/USD",
+    GBPUSD: "GBP/USD",
+    USDJPY: "USD/JPY",
+    BTCUSD: "BTC/USD",
+    ETHUSD: "ETH/USD",
+  };
+
+  const intervalMap: Record<string, string> = {
+    "1": "1 Min",
+    "5": "5 Min",
+    "15": "15 Min",
+    "60": "1 Hour",
+    "240": "4 Hour",
+    "D": "Daily",
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Trading Charts</h1>
-          <p className="text-muted-foreground">Professional charting and technical analysis</p>
+          <h1 className="text-3xl font-bold tracking-tight" data-testid="text-charts-title">Trading Charts</h1>
+          <p className="text-muted-foreground">Professional charting powered by TradingView</p>
         </div>
         <div className="flex gap-2">
-          <Select defaultValue="EURUSD">
-            <SelectTrigger className="w-40">
+          <Select value={symbol} onValueChange={setSymbol}>
+            <SelectTrigger className="w-40" data-testid="select-symbol">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -24,196 +108,231 @@ export default function Charts() {
               <SelectItem value="ETHUSD">ETH/USD</SelectItem>
             </SelectContent>
           </Select>
-          <Select defaultValue="H1">
-            <SelectTrigger className="w-32">
+          <Select value={interval} onValueChange={setInterval}>
+            <SelectTrigger className="w-32" data-testid="select-interval">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="M1">1 Min</SelectItem>
-              <SelectItem value="M5">5 Min</SelectItem>
-              <SelectItem value="M15">15 Min</SelectItem>
-              <SelectItem value="H1">1 Hour</SelectItem>
-              <SelectItem value="H4">4 Hour</SelectItem>
-              <SelectItem value="D1">Daily</SelectItem>
+              <SelectItem value="1">1 Min</SelectItem>
+              <SelectItem value="5">5 Min</SelectItem>
+              <SelectItem value="15">15 Min</SelectItem>
+              <SelectItem value="60">1 Hour</SelectItem>
+              <SelectItem value="240">4 Hour</SelectItem>
+              <SelectItem value="D">Daily</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Main Chart Area */}
         <div className="lg:col-span-3">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">EUR/USD • H1</CardTitle>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">1.0975</Badge>
-                  <Badge variant="default" className="text-green-600 bg-green-50">+0.23%</Badge>
-                </div>
+                <CardTitle className="text-lg" data-testid="text-chart-title">
+                  {symbolMap[symbol]} • {intervalMap[interval]}
+                </CardTitle>
+                <Badge variant="default" className="bg-green-500" data-testid="badge-tradingview">
+                  Live • TradingView
+                </Badge>
               </div>
             </CardHeader>
             <CardContent>
-              {/* Placeholder for TradingView widget or custom chart */}
-              <div className="h-96 bg-muted rounded-lg flex items-center justify-center">
-                <div className="text-center text-muted-foreground">
-                  <p className="text-lg font-medium">Professional Chart Widget</p>
-                  <p className="text-sm mt-1">TradingView integration would go here</p>
-                  <Button className="mt-4">
-                    Connect TradingView
-                  </Button>
-                </div>
-              </div>
+              <div 
+                ref={chartContainerRef}
+                id="tradingview_chart" 
+                className="h-[600px] rounded-lg overflow-hidden"
+                data-testid="container-tradingview-chart"
+              />
             </CardContent>
           </Card>
         </div>
 
-        {/* Chart Tools Sidebar */}
         <div className="lg:col-span-1 space-y-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Technical Indicators</CardTitle>
+              <CardTitle className="text-lg">Chart Features</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm">Moving Averages</span>
-                <Badge variant="secondary">ON</Badge>
+                <Badge variant="default">Active</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">RSI</span>
-                <Badge variant="secondary">ON</Badge>
+                <span className="text-sm">RSI Indicator</span>
+                <Badge variant="default">Active</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">MACD</span>
-                <Badge variant="outline">OFF</Badge>
+                <span className="text-sm">Drawing Tools</span>
+                <Badge variant="secondary">Available</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">Bollinger Bands</span>
-                <Badge variant="outline">OFF</Badge>
+                <span className="text-sm">Volume Profile</span>
+                <Badge variant="secondary">Available</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">Fibonacci</span>
-                <Badge variant="outline">OFF</Badge>
+                <span className="text-sm">Symbol Search</span>
+                <Badge variant="secondary">Available</Badge>
               </div>
-              <Button size="sm" variant="outline" className="w-full">
-                Customize
-              </Button>
+              <p className="text-xs text-muted-foreground pt-2">
+                Use the toolbar on the chart to add more indicators, drawing tools, and customize your view.
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Drawing Tools</CardTitle>
+              <CardTitle className="text-lg">Quick Symbols</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button size="sm" variant="outline" className="w-full justify-start">
-                Trend Line
+              <Button 
+                size="sm" 
+                variant={symbol === "EURUSD" ? "default" : "outline"} 
+                className="w-full justify-start"
+                onClick={() => setSymbol("EURUSD")}
+                data-testid="button-symbol-eurusd"
+              >
+                EUR/USD
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start">
-                Support/Resistance
+              <Button 
+                size="sm" 
+                variant={symbol === "GBPUSD" ? "default" : "outline"} 
+                className="w-full justify-start"
+                onClick={() => setSymbol("GBPUSD")}
+                data-testid="button-symbol-gbpusd"
+              >
+                GBP/USD
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start">
-                Rectangle
+              <Button 
+                size="sm" 
+                variant={symbol === "USDJPY" ? "default" : "outline"} 
+                className="w-full justify-start"
+                onClick={() => setSymbol("USDJPY")}
+                data-testid="button-symbol-usdjpy"
+              >
+                USD/JPY
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start">
-                Fibonacci Retracement
+              <Button 
+                size="sm" 
+                variant={symbol === "BTCUSD" ? "default" : "outline"} 
+                className="w-full justify-start"
+                onClick={() => setSymbol("BTCUSD")}
+                data-testid="button-symbol-btcusd"
+              >
+                BTC/USD
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start">
-                Text Note
+              <Button 
+                size="sm" 
+                variant={symbol === "ETHUSD" ? "default" : "outline"} 
+                className="w-full justify-start"
+                onClick={() => setSymbol("ETHUSD")}
+                data-testid="button-symbol-ethusd"
+              >
+                ETH/USD
               </Button>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Market Data</CardTitle>
+              <CardTitle className="text-lg">Timeframes</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-sm space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Open:</span>
-                  <span>1.0945</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">High:</span>
-                  <span>1.0982</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Low:</span>
-                  <span>1.0935</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Close:</span>
-                  <span>1.0975</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Volume:</span>
-                  <span>2.4M</span>
-                </div>
-              </div>
+            <CardContent className="grid grid-cols-2 gap-2">
+              <Button 
+                size="sm" 
+                variant={interval === "1" ? "default" : "outline"}
+                onClick={() => setInterval("1")}
+                data-testid="button-interval-1m"
+              >
+                1M
+              </Button>
+              <Button 
+                size="sm" 
+                variant={interval === "5" ? "default" : "outline"}
+                onClick={() => setInterval("5")}
+                data-testid="button-interval-5m"
+              >
+                5M
+              </Button>
+              <Button 
+                size="sm" 
+                variant={interval === "15" ? "default" : "outline"}
+                onClick={() => setInterval("15")}
+                data-testid="button-interval-15m"
+              >
+                15M
+              </Button>
+              <Button 
+                size="sm" 
+                variant={interval === "60" ? "default" : "outline"}
+                onClick={() => setInterval("60")}
+                data-testid="button-interval-1h"
+              >
+                1H
+              </Button>
+              <Button 
+                size="sm" 
+                variant={interval === "240" ? "default" : "outline"}
+                onClick={() => setInterval("240")}
+                data-testid="button-interval-4h"
+              >
+                4H
+              </Button>
+              <Button 
+                size="sm" 
+                variant={interval === "D" ? "default" : "outline"}
+                onClick={() => setInterval("D")}
+                data-testid="button-interval-1d"
+              >
+                1D
+              </Button>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
+              <CardTitle className="text-lg">Trading Tools</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button size="sm" className="w-full">
+              <Button size="sm" className="w-full" data-testid="button-new-trade">
                 New Trade
               </Button>
-              <Button size="sm" variant="outline" className="w-full">
-                Price Alert
+              <Button size="sm" variant="outline" className="w-full" data-testid="button-price-alert">
+                Set Price Alert
               </Button>
-              <Button size="sm" variant="outline" className="w-full">
-                Save Layout
+              <Button size="sm" variant="outline" className="w-full" data-testid="button-save-layout">
+                Save Chart Layout
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Watchlist</CardTitle>
+            <CardTitle className="text-lg">About TradingView Charts</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {["EURUSD", "GBPUSD", "USDJPY", "BTCUSD", "ETHUSD"].map((pair) => (
-                <div key={pair} className="flex items-center justify-between p-2 hover:bg-muted rounded cursor-pointer">
-                  <span className="font-medium">{pair}</span>
-                  <div className="text-right">
-                    <div className="text-sm font-semibold">1.0975</div>
-                    <div className="text-xs text-green-600">+0.23%</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Market Hours</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span>London</span>
-                <Badge variant="default">Open</Badge>
+          <CardContent className="space-y-3 text-sm">
+            <p className="text-muted-foreground">
+              TradingView provides professional-grade charting with real-time data, advanced technical indicators, and powerful drawing tools.
+            </p>
+            <div className="space-y-2">
+              <div className="flex items-start gap-2">
+                <Badge variant="outline" className="mt-0.5">✓</Badge>
+                <span>100+ Technical Indicators (RSI, MACD, Bollinger Bands, etc.)</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span>New York</span>
-                <Badge variant="default">Open</Badge>
+              <div className="flex items-start gap-2">
+                <Badge variant="outline" className="mt-0.5">✓</Badge>
+                <span>Advanced Drawing Tools (Trendlines, Fibonacci, Patterns)</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span>Tokyo</span>
-                <Badge variant="secondary">Closed</Badge>
+              <div className="flex items-start gap-2">
+                <Badge variant="outline" className="mt-0.5">✓</Badge>
+                <span>Real-time Market Data for Forex, Crypto, Stocks</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span>Sydney</span>
-                <Badge variant="secondary">Closed</Badge>
+              <div className="flex items-start gap-2">
+                <Badge variant="outline" className="mt-0.5">✓</Badge>
+                <span>Customizable Layouts and Chart Templates</span>
               </div>
             </div>
           </CardContent>
@@ -221,21 +340,21 @@ export default function Charts() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">News Feed</CardTitle>
+            <CardTitle className="text-lg">Quick Tips</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-sm">
-              <div className="border-l-4 border-l-red-500 pl-3">
-                <div className="font-medium">ECB Rate Decision</div>
-                <div className="text-muted-foreground">13:45 GMT</div>
-              </div>
-              <div className="border-l-4 border-l-yellow-500 pl-3">
-                <div className="font-medium">US GDP Data</div>
-                <div className="text-muted-foreground">15:30 GMT</div>
-              </div>
+          <CardContent className="space-y-3 text-sm">
+            <div className="space-y-2">
               <div className="border-l-4 border-l-blue-500 pl-3">
-                <div className="font-medium">Fed Speaker</div>
-                <div className="text-muted-foreground">17:00 GMT</div>
+                <div className="font-medium">Change Symbol</div>
+                <div className="text-muted-foreground">Click the symbol name in the chart or use quick symbol buttons</div>
+              </div>
+              <div className="border-l-4 border-l-green-500 pl-3">
+                <div className="font-medium">Add Indicators</div>
+                <div className="text-muted-foreground">Click the indicators button in the chart toolbar</div>
+              </div>
+              <div className="border-l-4 border-l-purple-500 pl-3">
+                <div className="font-medium">Drawing Tools</div>
+                <div className="text-muted-foreground">Use the left toolbar to access trendlines, shapes, and patterns</div>
               </div>
             </div>
           </CardContent>
