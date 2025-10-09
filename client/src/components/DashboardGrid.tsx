@@ -183,7 +183,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 p-4 lg:p-8 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-gray-950 p-4 lg:p-8 text-white">
       <div className="max-w-7xl mx-auto">
         {/* Header Controls */}
         <div className="flex justify-between items-center mb-6">
@@ -191,11 +191,11 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
           <div className="flex gap-3 items-center">
             {/* Template Selector */}
             <Select value={currentTemplate} onValueChange={setCurrentTemplate}>
-              <SelectTrigger className="w-48 bg-purple-900/40 border-purple-700 text-white">
+              <SelectTrigger className="w-48 bg-blue-900/40 border-blue-700 text-white">
                 <Grid3X3 className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
-              <SelectContent className="bg-purple-950 border-purple-700">
+              <SelectContent className="bg-blue-950 border-blue-700">
                 <SelectItem value="default">Default Layout</SelectItem>
                 {userTemplates && Object.keys(userTemplates).map((templateName) => (
                   <SelectItem key={templateName} value={templateName}>
@@ -223,13 +223,13 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                 <Button
                   variant="outline"
                   size="sm"
-                  className="bg-purple-900/40 border-purple-700 text-white hover:bg-purple-800/50"
+                  className="bg-blue-900/40 border-blue-700 text-white hover:bg-blue-800/50"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Save Template
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-purple-950 border-purple-700 text-white">
+              <DialogContent className="bg-blue-950 border-blue-700 text-white">
                 <DialogHeader>
                   <DialogTitle>Save Dashboard Template</DialogTitle>
                 </DialogHeader>
@@ -243,7 +243,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                       value={templateName}
                       onChange={(e) => setTemplateName(e.target.value)}
                       placeholder="Enter template name..."
-                      className="bg-purple-900/40 border-purple-700 text-white"
+                      className="bg-blue-900/40 border-blue-700 text-white"
                       maxLength={50}
                     />
                   </div>
@@ -251,14 +251,14 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                     <Button
                       variant="outline"
                       onClick={() => setSaveDialogOpen(false)}
-                      className="border-purple-700 text-white hover:bg-purple-800/50"
+                      className="border-blue-700 text-white hover:bg-blue-800/50"
                     >
                       Cancel
                     </Button>
                     <Button
                       onClick={handleSaveTemplate}
                       disabled={saveTemplateMutation.isPending}
-                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       {saveTemplateMutation.isPending ? "Saving..." : "Save"}
                     </Button>
@@ -271,7 +271,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
               onClick={resetLayout}
               variant="outline"
               size="sm"
-              className="bg-purple-900/40 border-purple-700 text-white hover:bg-purple-800/50"
+              className="bg-blue-900/40 border-blue-700 text-white hover:bg-blue-800/50"
             >
               <RotateCcw className="w-4 h-4 mr-2" />
               Reset Layout
@@ -281,8 +281,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
               variant={editMode ? "default" : "outline"}
               size="sm"
               className={editMode 
-                ? "bg-purple-600 hover:bg-purple-700 text-white" 
-                : "bg-purple-900/40 border-purple-700 text-white hover:bg-purple-800/50"
+                ? "bg-blue-600 hover:bg-blue-700 text-white" 
+                : "bg-blue-900/40 border-blue-700 text-white hover:bg-blue-800/50"
               }
             >
               <Move className="w-4 h-4 mr-2" />
@@ -292,8 +292,8 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
         </div>
 
         {editMode && (
-          <div className="mb-4 p-3 bg-purple-900/30 rounded-lg border border-purple-700">
-            <p className="text-purple-200 text-sm">
+          <div className="mb-4 p-3 bg-blue-900/30 rounded-lg border border-blue-700">
+            <p className="text-blue-200 text-sm">
               <strong>Edit Mode:</strong> Drag widgets to move them around or drag the corner to resize. Click "Exit Edit" when finished.
             </p>
           </div>
@@ -315,7 +315,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
           <div key="profit">
             <DraggableWidget title="Profit">
               <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-purple-400" />
+                <TrendingUp className="w-4 h-4 text-blue-400" />
               </div>
               <div className="text-white font-bold text-xl">${(totalPnL/1000).toFixed(1)}K</div>
             </DraggableWidget>
@@ -372,7 +372,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
           <div key="riskreward">
             <DraggableWidget title="Risk Reward">
               <div className="flex items-center gap-2 mb-2">
-                <BarChart3 className="w-4 h-4 text-purple-400" />
+                <BarChart3 className="w-4 h-4 text-blue-400" />
               </div>
               <div className="text-white font-bold text-xl">1:5.6</div>
             </DraggableWidget>
@@ -382,7 +382,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
           <div key="average">
             <DraggableWidget title="Average">
               <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-4 h-4 text-purple-400" />
+                <DollarSign className="w-4 h-4 text-blue-400" />
               </div>
               <div className="text-white font-bold text-xl">${avgProfit.toFixed(0)}</div>
             </DraggableWidget>
@@ -392,7 +392,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
           <div key="fees">
             <DraggableWidget title="Fees">
               <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-4 h-4 text-purple-400" />
+                <DollarSign className="w-4 h-4 text-blue-400" />
               </div>
               <div className="text-white font-bold text-xl">${fees.toFixed(0)}</div>
             </DraggableWidget>
@@ -402,7 +402,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
           <div key="totaltrades">
             <DraggableWidget title="Total Trades">
               <div className="flex items-center gap-2 mb-2">
-                <Layers className="w-4 h-4 text-purple-400" />
+                <Layers className="w-4 h-4 text-blue-400" />
               </div>
               <div className="text-white font-bold text-xl">{totalTrades}</div>
             </DraggableWidget>
@@ -423,13 +423,13 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                   <svg viewBox="0 0 300 150" className="w-full h-full">
                     <defs>
                       <linearGradient id="profit-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="rgb(147 51 234)" stopOpacity="0.8"/>
-                        <stop offset="100%" stopColor="rgb(147 51 234)" stopOpacity="0.1"/>
+                        <stop offset="0%" stopColor="rgb(37 99 235)" stopOpacity="0.8"/>
+                        <stop offset="100%" stopColor="rgb(37 99 235)" stopOpacity="0.1"/>
                       </linearGradient>
                     </defs>
                     <path
                       d="M 0 120 Q 50 100 100 80 T 200 40 T 300 20"
-                      stroke="rgb(147 51 234)"
+                      stroke="rgb(37 99 235)"
                       strokeWidth="3"
                       fill="none"
                     />
@@ -452,7 +452,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
             <DraggableWidget title="Last Five Trades">
               <div className="space-y-3 overflow-y-auto h-full">
                 {lastFiveTrades.map((trade) => (
-                  <div key={trade.id} className="bg-purple-800/20 rounded-lg p-3 border border-purple-700/30">
+                  <div key={trade.id} className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className={`w-4 h-4 rounded flex items-center justify-center text-xs font-bold ${
@@ -484,7 +484,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
             <DraggableWidget title="Long vs Short Performance">
               <div className="grid grid-cols-2 gap-4 h-full">
                 {/* Longs */}
-                <div className="bg-purple-800/20 rounded-lg p-3 border border-purple-700/30">
+                <div className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
                   <div className="text-center mb-2">
                     <div className="text-gray-400 text-sm">{longTrades.length} LONGS</div>
                   </div>
@@ -506,7 +506,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
                 </div>
 
                 {/* Shorts */}
-                <div className="bg-purple-800/20 rounded-lg p-3 border border-purple-700/30">
+                <div className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
                   <div className="text-center mb-2">
                     <div className="text-gray-400 text-sm">{shortTrades.length} SHORTS</div>
                   </div>
