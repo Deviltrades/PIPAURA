@@ -29,7 +29,7 @@ W_COMMODITY = 2
 W_MARKET = 2
 
 # Env
-SB_URL = os.getenv("SUPABASE_URL")
+SB_URL = os.getenv("SUPABASE_URL") or os.getenv("VITE_SUPABASE_URL")
 SB_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 TE_KEY = os.getenv("TRADING_ECONOMICS_API_KEY")
 
