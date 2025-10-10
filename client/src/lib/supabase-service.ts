@@ -29,7 +29,7 @@ export async function getCurrencyScores() {
     .from('currency_scores')
     .select('*')
     .order('window_end', { ascending: false })
-    .limit(8);
+    .limit(10);
 
   if (error) throw error;
   return data;
