@@ -2,6 +2,7 @@ import os, datetime as dt, requests
 from dateutil.relativedelta import relativedelta
 from supabase import create_client
 from fetch_fundamentals_free import combine_fundamental_scores
+import yfinance as yf
 
 # ----------------- CONFIG -----------------
 # Full universe: 8 fiat currencies + 2 precious metals
@@ -110,13 +111,10 @@ def fetch_tradingeconomics_calendar():
 
 def get_polygon_price(ticker, days=7):
     """
-    Fetch daily closing prices for FX, indices, or metals using Polygon.io
-    Example tickers:
-      FX: 'C:EURUSD', 'C:XAUUSD'
-      Index: 'I:SPX', 'I:DXY'
+    Fetch daily closing prices using Polygon.io
+    Returns (latest_close, oldest_close) or None if unavailable
     """
     if not POLYGON_API_KEY:
-        print(f"⚠️ POLYGON_API_KEY not set, skipping {ticker}")
         return None
     
     end_date = dt.datetime.utcnow()
@@ -129,45 +127,78 @@ def get_polygon_price(ticker, days=7):
     try:
         r = requests.get(url, timeout=10)
         data = r.json()
-        if "results" not in data or not data["results"]:
-            print(f"⚠️ No data for {ticker}")
-            return None
+        if "results" in data and data["results"] and len(data["results"]) >= 2:
+            closes = [bar["c"] for bar in data["results"]]
+            return closes[-1], closes[0]
+    except:
+        pass
+    return None
 
-        closes = [bar["c"] for bar in data["results"]]
-        return closes[-1], closes[0]  # latest close, oldest close
-    except Exception as e:
-        print(f"⚠️ Error fetching {ticker}: {e}")
-        return None
+def get_yahoo_price(ticker, days=7):
+    """
+    Fetch daily closing prices using Yahoo Finance
+    Returns (latest_close, oldest_close) or None if unavailable
+    """
+    try:
+        start_date = dt.datetime.utcnow() - dt.timedelta(days=days)
+        end_date = dt.datetime.utcnow()
+        df = yf.download(ticker, start=start_date.date(), end=end_date.date(), progress=False, interval="1d", auto_adjust=True)
+        if df is not None and not df.empty and len(df) >= 2:
+            # With auto_adjust=True, use "Close" column
+            p0 = float(df["Close"].iloc[0])
+            p1 = float(df["Close"].iloc[-1])
+            return p1, p0
+    except:
+        pass
+    return None
 
-def get_percent_change(ticker):
-    """Return % change over last 7 days"""
-    prices = get_polygon_price(ticker)
-    if not prices:
-        return 0.0
-    latest, oldest = prices
-    return round(((latest - oldest) / oldest) * 100, 2)
+def get_percent_change_hybrid(polygon_ticker, yahoo_ticker):
+    """
+    Try Polygon first, fallback to Yahoo Finance
+    Returns (pct_change, source_used)
+    """
+    # Try Polygon first
+    prices = get_polygon_price(polygon_ticker)
+    if prices:
+        latest, oldest = prices
+        pct = round(((latest - oldest) / oldest) * 100, 2)
+        return pct, "Polygon"
+    
+    # Fallback to Yahoo Finance
+    prices = get_yahoo_price(yahoo_ticker)
+    if prices:
+        latest, oldest = prices
+        pct = round(((latest - oldest) / oldest) * 100, 2)
+        return pct, "Yahoo"
+    
+    return 0.0, "None"
 
 def fetch_markets():
-    """Weekly % changes for DXY, WTI, GOLD, COPPER, SPX, UST10Y, VIX using Polygon.io"""
-    print("\n📊 Fetching market data from Polygon.io...")
+    """
+    Hybrid market data fetcher: tries Polygon.io first, falls back to Yahoo Finance
+    Ensures all 7 critical metrics are populated
+    """
+    print("\n📊 Fetching market data (Polygon → Yahoo fallback)...")
     
-    # Polygon.io ticker mapping
-    polygon_tickers = {
-        "DXY": "I:DXY",        # Dollar Index
-        "WTI": "C:CLUSD",      # WTI Crude Oil
-        "GOLD": "C:XAUUSD",    # Gold
-        "COPPER": "C:XCUUSD",  # Copper (HG futures)
-        "SPX": "I:SPX",        # S&P 500
-        "UST10Y": "I:US10Y",   # 10-Year Treasury Yield
-        "VIX": "I:VIX",        # VIX Volatility Index
+    # Ticker mappings: {key: (polygon_ticker, yahoo_ticker)}
+    ticker_map = {
+        "DXY": ("I:DXY", "DX-Y.NYB"),
+        "WTI": ("C:CLUSD", "CL=F"),
+        "GOLD": ("C:XAUUSD", "GC=F"),
+        "COPPER": ("C:XCUUSD", "HG=F"),
+        "SPX": ("I:SPX", "^GSPC"),
+        "UST10Y": ("I:US10Y", "^TNX"),
+        "VIX": ("I:VIX", "^VIX"),
     }
     
     out = {}
-    for key, polygon_ticker in polygon_tickers.items():
-        pct_change = get_percent_change(polygon_ticker)
+    for key, (polygon_ticker, yahoo_ticker) in ticker_map.items():
+        pct_change, source = get_percent_change_hybrid(polygon_ticker, yahoo_ticker)
         out[key] = pct_change
         if pct_change != 0:
-            print(f"  ✅ {key}: {pct_change:+.2f}%")
+            print(f"  ✅ {key}: {pct_change:+.2f}% ({source})")
+        else:
+            print(f"  ⚠️ {key}: No data from either provider")
     
     return out
 
