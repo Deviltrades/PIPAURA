@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -10,12 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { createTrade, updateTrade, uploadFile } from "@/lib/supabase-service";
+import { createTrade, updateTrade, uploadFile, getTradeAccounts } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { SignedImageDisplay } from "@/components/SignedImageDisplay";
 
 const tradeFormSchema = z.object({
+  account_id: z.string().min(1, "Trading account is required"),
   instrument: z.string().min(1, "Instrument is required"),
   instrumentType: z.enum(["FOREX", "INDICES", "CRYPTO"]),
   tradeType: z.enum(["BUY", "SELL"]),
@@ -58,9 +59,16 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Fetch user's trading accounts
+  const { data: accounts } = useQuery({
+    queryKey: ['/api/trade-accounts'],
+    queryFn: getTradeAccounts,
+  });
+
   const form = useForm<TradeFormData>({
     resolver: zodResolver(tradeFormSchema),
     defaultValues: {
+      account_id: trade?.account_id || "",
       instrument: trade?.instrument || "",
       instrumentType: trade?.instrumentType || "FOREX",
       tradeType: trade?.tradeType || "BUY",
@@ -95,6 +103,7 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
       }
 
       const payload = {
+        account_id: data.account_id,
         instrument: data.instrument,
         instrument_type: data.instrumentType as 'FOREX' | 'INDICES' | 'CRYPTO',
         trade_type: data.tradeType as 'BUY' | 'SELL',
@@ -218,6 +227,40 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit((data) => createTradeMutation.mutate(data))} className="space-y-4">
+            {/* Trading Account Selection */}
+            <FormField
+              control={form.control}
+              name="account_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Trading Account *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-account">
+                        <SelectValue placeholder="Select trading account" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {!accounts || accounts.length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground">
+                          No accounts available. Please add an account first.
+                        </div>
+                      ) : (
+                        accounts
+                          .filter(acc => acc.is_active)
+                          .map((account) => (
+                            <SelectItem key={account.id} value={account.id} data-testid={`option-account-${account.id}`}>
+                              {account.account_name} ({account.broker_name})
+                            </SelectItem>
+                          ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
