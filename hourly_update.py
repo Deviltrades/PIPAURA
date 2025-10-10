@@ -9,6 +9,7 @@ import os, datetime as dt, requests
 from dateutil.relativedelta import relativedelta
 from supabase import create_client
 import yfinance as yf
+from ff_integration import get_economic_scores
 
 # ----------------- CONFIG -----------------
 CURRENCIES = [
@@ -310,6 +311,15 @@ def run():
             "total_score": total,
             "notes": cbnotes + conotes + mnotes
         }
+
+    # Merge Forex Factory economic scores
+    economic_scores = get_economic_scores()
+    for currency, eco_score in economic_scores.items():
+        if currency in per_ccy:
+            per_ccy[currency]["total_score"] += eco_score
+            per_ccy[currency]["data_score"] = eco_score
+            if eco_score != 0:
+                per_ccy[currency]["notes"].append(f"Economic data: {eco_score:+d}")
 
     # Insert currency scores
     insert_currency_scores([{

@@ -2,6 +2,7 @@ import os, datetime as dt, requests
 from dateutil.relativedelta import relativedelta
 from supabase import create_client
 from fetch_fundamentals_free import combine_fundamental_scores
+from ff_integration import get_economic_scores
 import yfinance as yf
 
 # ----------------- CONFIG -----------------
@@ -396,6 +397,15 @@ def run():
             "total_score": total,
             "notes": dnotes + cbnotes + conotes + mnotes + macro_notes
         }
+
+    # Merge Forex Factory economic scores (from event-driven feed)
+    ff_economic_scores = get_economic_scores()
+    for currency, eco_score in ff_economic_scores.items():
+        if currency in per_ccy:
+            per_ccy[currency]["total_score"] += eco_score
+            per_ccy[currency]["data_score"] += eco_score
+            if eco_score != 0:
+                per_ccy[currency]["notes"].append(f"FF economic events: {eco_score:+d}")
 
     insert_currency_scores([{
         "window_start": r["window_start"],
