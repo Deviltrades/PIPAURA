@@ -94,6 +94,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [instrumentSearchOpen, setInstrumentSearchOpen] = useState(false);
+  const [instrumentSearchValue, setInstrumentSearchValue] = useState("");
 
   // Fetch user's trading accounts
   const { data: accounts } = useQuery({
@@ -350,11 +351,39 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-[400px] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search instrument..." />
-                          <CommandEmpty>No instrument found.</CommandEmpty>
+                        <Command shouldFilter={false}>
+                          <CommandInput 
+                            placeholder="Search or type custom instrument..." 
+                            value={instrumentSearchValue}
+                            onValueChange={setInstrumentSearchValue}
+                          />
+                          <CommandEmpty>No instruments found.</CommandEmpty>
                           <CommandGroup className="max-h-[300px] overflow-auto">
-                            {currentInstruments.map((instrument: string) => (
+                            {/* Custom create option - show when user has typed and it doesn't exactly match any instrument */}
+                            {instrumentSearchValue && 
+                             !currentInstruments.some((i: string) => i.toLowerCase() === instrumentSearchValue.toLowerCase()) && (
+                              <CommandItem
+                                key="create-custom"
+                                value={`create-${instrumentSearchValue}`}
+                                onSelect={() => {
+                                  form.setValue("instrument", instrumentSearchValue);
+                                  setInstrumentSearchOpen(false);
+                                  setInstrumentSearchValue("");
+                                }}
+                                className="cursor-pointer border-b"
+                                data-testid="option-create-custom"
+                              >
+                                <Check className="mr-2 h-4 w-4 opacity-0" />
+                                Create: <span className="font-semibold ml-1">{instrumentSearchValue}</span>
+                              </CommandItem>
+                            )}
+                            {/* Filtered instrument list */}
+                            {currentInstruments
+                              .filter((instrument: string) => 
+                                instrumentSearchValue === "" || 
+                                instrument.toLowerCase().includes(instrumentSearchValue.toLowerCase())
+                              )
+                              .map((instrument: string) => (
                               <CommandItem
                                 key={instrument}
                                 value={instrument}
@@ -365,6 +394,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                                   ) || value;
                                   form.setValue("instrument", selected);
                                   setInstrumentSearchOpen(false);
+                                  setInstrumentSearchValue("");
                                 }}
                                 data-testid={`option-instrument-${instrument.replace(/[^a-zA-Z0-9]/g, '-')}`}
                               >
