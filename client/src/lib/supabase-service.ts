@@ -589,14 +589,37 @@ export async function getTradeAccounts(): Promise<TradeAccount[]> {
 
   if (!profile) throw new Error('User profile not found');
 
-  const { data, error } = await supabase
+  const { data: accounts, error } = await supabase
     .from('trade_accounts')
     .select('*')
     .eq('user_id', profile.id)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+  if (!accounts) return [];
+
+  // Calculate current balance for each account based on closed trades
+  const accountsWithBalance = await Promise.all(
+    accounts.map(async (account) => {
+      // Get sum of P&L from all closed trades for this account
+      const { data: trades } = await supabase
+        .from('trades')
+        .select('pnl')
+        .eq('account_id', account.id)
+        .eq('status', 'CLOSED');
+
+      const totalPnL = trades?.reduce((sum, trade) => {
+        return sum + (parseFloat(trade.pnl?.toString() || '0'));
+      }, 0) || 0;
+
+      return {
+        ...account,
+        current_balance: parseFloat(account.starting_balance.toString()) + totalPnL
+      };
+    })
+  );
+
+  return accountsWithBalance;
 }
 
 export async function createTradeAccount(account: CreateTradeAccount): Promise<TradeAccount> {
