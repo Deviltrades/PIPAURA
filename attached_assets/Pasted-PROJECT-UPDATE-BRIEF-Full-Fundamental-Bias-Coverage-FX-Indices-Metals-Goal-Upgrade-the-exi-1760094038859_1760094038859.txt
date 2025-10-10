@@ -1,0 +1,271 @@
+PROJECT UPDATE BRIEF – Full Fundamental Bias Coverage (FX + Indices + Metals)
+
+Goal:
+Upgrade the existing Fundamental Bias Automation to include all major pairs, crosses, indices, and precious metals (Gold + Silver).
+The automation logic, scoring weights, cron job, and Supabase connection remain unchanged — we’re simply expanding its coverage and adding two new assets with custom scoring rules.
+
+🔧 1️⃣ What’s Already Working
+
+✅ main.py automation runs weekly and writes bias data to Supabase
+✅ currency_scores and fundamental_bias tables exist and work
+✅ Vercel frontend reads and displays 11 pairs
+✅ Scheduler is configured (0 0 * * 0)
+
+🧱 2️⃣ What Needs to Be Added / Changed
+A. Expand currency and pair lists
+
+In main.py (top of file), replace the existing lists with:
+
+# --- Full universe ---
+
+CURRENCIES = [
+    "USD","EUR","GBP","JPY","CAD","AUD","NZD","CHF",
+    "XAU","XAG"   # added: Gold and Silver
+]
+
+PAIRS = [
+  # Majors
+  ("EUR","USD"), ("GBP","USD"), ("USD","JPY"), ("USD","CHF"),
+  ("USD","CAD"), ("AUD","USD"), ("NZD","USD"),
+
+  # EUR crosses
+  ("EUR","GBP"), ("EUR","JPY"), ("EUR","CHF"),
+  ("EUR","AUD"), ("EUR","CAD"), ("EUR","NZD"),
+
+  # GBP crosses
+  ("GBP","JPY"), ("GBP","CHF"), ("GBP","AUD"),
+  ("GBP","CAD"), ("GBP","NZD"),
+
+  # AUD crosses
+  ("AUD","JPY"), ("AUD","CHF"), ("AUD","NZD"), ("AUD","CAD"),
+
+  # NZD crosses
+  ("NZD","JPY"), ("NZD","CHF"), ("NZD","CAD"),
+
+  # CAD & CHF crosses
+  ("CAD","JPY"), ("CAD","CHF"), ("CHF","JPY"),
+
+  # Metals
+  ("XAU","USD"),  # Gold
+  ("XAG","USD"),  # Silver
+]
+
+
+That expands coverage to 38 FX pairs total (majors + crosses + metals).
+
+B. Add Indices Support
+
+Right below your pair definitions, insert this new section:
+
+# --- Major global indices to score ---
+INDICES = [
+  ("US500","USD","S&P 500"),
+  ("US100","USD","Nasdaq 100"),
+  ("US30","USD","Dow Jones"),
+  ("UK100","GBP","FTSE 100"),
+  ("GER40","EUR","DAX 40"),
+  ("FRA40","EUR","CAC 40"),
+  ("EU50","EUR","EuroStoxx 50"),
+  ("JP225","JPY","Nikkei 225"),
+  ("HK50","HKD","Hang Seng"),
+  ("AUS200","AUD","ASX 200"),
+]
+
+C. Create a new Supabase table for indices
+
+Run this SQL in Supabase → SQL Editor → New Query → Run:
+
+create table if not exists index_bias (
+  id uuid primary key default gen_random_uuid(),
+  instrument text not null,                 -- e.g. 'US500'
+  score int not null,
+  bias_text text not null,
+  summary text not null,
+  confidence int not null default 50,
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_index_bias_instr on index_bias (instrument);
+
+
+Give:
+
+Replit (service role) → full write access
+
+Vercel (anon key) → read-only access
+
+D. Add new helper function for indices
+
+Add this code after your currency scoring section, before the Supabase writes:
+
+def index_bias_label(score:int)->str:
+    if score >= 3:  return "Fundamentally Strong"
+    if score <= -3: return "Fundamentally Weak"
+    return "Neutral"
+
+def score_indices(per_ccy, markets):
+    """
+    Generates bias for global stock indices using risk sentiment, yields,
+    and home-currency influence.
+    """
+    out = []
+    spx = markets.get("SPX", 0.0)
+    vix = markets.get("VIX", 0.0)
+    ust = markets.get("UST10Y", 0.0)
+    wti = markets.get("WTI", 0.0)
+    copper = markets.get("COPPER", 0.0)
+    gold = markets.get("GOLD", 0.0)
+
+    for code, ccy, _ in INDICES:
+        s, notes = 0, []
+
+        # 1) Risk-on/off
+        if spx >= 1.0: s += 2; notes.append("Risk-on (SPX↑)")
+        if spx <= -1.0: s -= 2; notes.append("Risk-off (SPX↓)")
+        if vix <= -10: s += 1; notes.append("Vol↓")
+        if vix >= 10:  s -= 1; notes.append("Vol↑")
+
+        # 2) Yields
+        if ust >= 0.05: s -= 2; notes.append("Yields↑ headwind")
+        if ust <= -0.05: s += 2; notes.append("Yields↓ tailwind")
+
+        # 3) Home-currency impact
+        ccy_score = per_ccy.get(ccy,{}).get("total_score",0)
+        if ccy_score >= 5:  s -= 1; notes.append(f"{ccy} strong (export headwind)")
+        if ccy_score <= -5: s += 1; notes.append(f"{ccy} weak (export tailwind)")
+
+        # 4) Commodity tilt for FTSE & ASX
+        if code == "UK100":
+            if wti >= 1.0: s += 1; notes.append("Oil↑ energy boost")
+            if wti <= -1.0: s -= 1; notes.append("Oil↓ drag")
+        if code == "AUS200":
+            if copper >= 1.0: s += 1; notes.append("Copper↑ materials boost")
+            if copper <= -1.0: s -= 1; notes.append("Copper↓ drag")
+            if gold >= 1.0:   s += 1; notes.append("Gold↑ miners help")
+            if gold <= -1.0:  s -= 1; notes.append("Gold↓ drag")
+
+        label = index_bias_label(s)
+        mag = min(abs(s), 6)
+        confidence = int(50 + (mag/6)*50) if s != 0 else 50
+        summary = "; ".join(notes[:3]) or "Weekly macro blend"
+
+        out.append({
+            "instrument": code,
+            "score": s,
+            "bias_text": label,
+            "summary": summary[:220],
+            "confidence": confidence,
+            "updated_at": dt.datetime.utcnow().isoformat()
+        })
+    return out
+
+E. Add a write helper for indices
+
+Below your existing upsert_pair_bias() function, add:
+
+def upsert_index_bias(rows):
+    for row in rows:
+        sb.table("index_bias").upsert(row, on_conflict="instrument").execute()
+
+F. Include indices in the main run
+
+In your run() function (after you write FX pair results), append:
+
+index_rows = score_indices(per_ccy, mkt)
+upsert_index_bias(index_rows)
+
+G. Extend commodity logic for Gold & Silver
+
+Find your score_commodities() function and append this at the bottom:
+
+    # Precious metals
+    if ccy == "XAU":  # Gold
+        if market_moves.get("UST10Y", 0) <= -0.05:
+            s += 2; notes.append("Yields↓ → Gold+")
+        if market_moves.get("UST10Y", 0) >= 0.05:
+            s -= 2; notes.append("Yields↑ → Gold-")
+        if market_moves.get("DXY", 0) <= -1.0:
+            s += 2; notes.append("DXY↓ → Gold+")
+        if market_moves.get("DXY", 0) >= 1.0:
+            s -= 2; notes.append("DXY↑ → Gold-")
+
+    if ccy == "XAG":  # Silver
+        if market_moves.get("DXY", 0) <= -1.0:
+            s += 1; notes.append("DXY↓ → Silver+")
+        if market_moves.get("DXY", 0) >= 1.0:
+            s -= 1; notes.append("DXY↑ → Silver-")
+        if market_moves.get("COPPER", 0) >= 1.0:
+            s += 1; notes.append("Copper↑ → Silver+ (industrial)")
+        if market_moves.get("COPPER", 0) <= -1.0:
+            s -= 1; notes.append("Copper↓ → Silver-")
+
+H. Update fetch_markets() to include VIX
+
+In the dictionary of tickers inside fetch_markets(), add this line:
+
+"VIX": "^VIX",
+
+🧠 3️⃣ What Replit Should Test After Changes
+
+Run python main.py once manually.
+
+Confirm Supabase now has:
+
+currency_scores → includes XAU and XAG
+
+fundamental_bias → includes all 38 pairs (XAU/USD, XAG/USD too)
+
+index_bias → 10 index rows with bias and summary
+
+Verify updated_at timestamps are current.
+
+Ensure frontend (Vercel) displays:
+
+FX pairs (with new metals)
+
+Indices section (using index_bias table)
+
+⏱️ 4️⃣ Schedule / Automation
+
+Cron job remains:
+
+0 0 * * 0   # Sunday 00:00 UTC
+
+
+(Optional): Add mid-week update:
+
+0 0 * * 3   # Wednesday 00:00 UTC
+
+✅ 5️⃣ Deliverables Checklist for Replit
+
+ Updated CURRENCIES, PAIRS, and new INDICES lists
+
+ Added index_bias table in Supabase
+
+ Inserted score_indices() + upsert_index_bias()
+
+ Extended score_commodities() for XAU and XAG
+
+ Added VIX to fetch_markets()
+
+ Verified data appears in Supabase after manual run
+
+ Confirmed cron job configured and functional
+
+🧭 Final Expected Outcome
+
+Your Supabase will now produce and store:
+
+FX pairs (majors + crosses + metals) → fundamental_bias
+
+Indices (10 major markets) → index_bias
+
+And your journal’s dashboard will display:
+
+EUR/USD = Fundamentally Weak
+USD/JPY = Fundamentally Strong
+XAU/USD = Fundamentally Weak
+XAG/USD = Neutral
+US500 = Fundamentally Strong
+
+All automatically refreshed weekly.
