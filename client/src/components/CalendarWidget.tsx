@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getTrades } from "@/lib/supabase-service";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CalendarWidgetProps {
   textColor?: string;
@@ -131,29 +132,59 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
     return { backgroundColor: "transparent", color: textColor };
   };
 
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      setSelectedMonth(selectedMonth === 0 ? 11 : selectedMonth - 1);
+    } else {
+      setSelectedMonth(selectedMonth === 11 ? 0 : selectedMonth + 1);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col" style={{ color: textColor }}>
       {/* Month Selector Dots */}
-      <div className="flex items-center justify-center gap-1.5 mb-4">
-        {Array.from({ length: 12 }).map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setSelectedMonth(index)}
-            className={`w-2 h-2 rounded-full transition-all ${
-              selectedMonth === index 
-                ? "w-20 h-6 rounded-full flex items-center justify-center text-xs font-medium"
-                : ""
-            }`}
-            style={{
-              backgroundColor: selectedMonth === index ? "#8b5cf6" : textColor,
-              opacity: selectedMonth === index ? 1 : 0.5,
-              color: selectedMonth === index ? "#ffffff" : "transparent"
-            }}
-            data-testid={`button-month-${index}`}
-          >
-            {selectedMonth === index && monthNames[index]}
-          </button>
-        ))}
+      <div className="flex items-center justify-center gap-2 mb-4">
+        <button
+          onClick={() => navigateMonth('prev')}
+          className="p-1 rounded hover:bg-white/10 transition-colors"
+          style={{ color: textColor }}
+          data-testid="button-prev-month"
+          aria-label="Previous month"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        
+        <div className="flex items-center gap-1.5">
+          {Array.from({ length: 12 }).map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedMonth(index)}
+              className={`w-2 h-2 rounded-full transition-all ${
+                selectedMonth === index 
+                  ? "w-20 h-6 rounded-full flex items-center justify-center text-xs font-medium"
+                  : ""
+              }`}
+              style={{
+                backgroundColor: selectedMonth === index ? "#8b5cf6" : textColor,
+                opacity: selectedMonth === index ? 1 : 0.5,
+                color: selectedMonth === index ? "#ffffff" : "transparent"
+              }}
+              data-testid={`button-month-${index}`}
+            >
+              {selectedMonth === index && monthNames[index]}
+            </button>
+          ))}
+        </div>
+        
+        <button
+          onClick={() => navigateMonth('next')}
+          className="p-1 rounded hover:bg-white/10 transition-colors"
+          style={{ color: textColor }}
+          data-testid="button-next-month"
+          aria-label="Next month"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Day Names */}
