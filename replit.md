@@ -12,6 +12,30 @@ Settings access: Settings icon next to theme toggle with dedicated logout tab.
 
 ## Recent Changes
 
+### Weekly Fundamental Bias Automation (Added 2025-10-10)
+Implemented comprehensive automated fundamental analysis system with backend Python automation and frontend integration:
+
+**Backend Automation:**
+- ✅ Python script (`main.py`) automates weekly fundamental analysis scoring for 8 major currencies
+- ✅ Data sources: TradingEconomics API (optional), Yahoo Finance for market data (DXY, WTI, GOLD, COPPER, SPX, UST10Y)
+- ✅ Scoring model: Economic data surprises, Central Bank tone, Commodity correlations, Market flows
+- ✅ Generates bias for 11 major FX pairs (EUR/USD, GBP/USD, USD/JPY, etc.)
+- ✅ Automated weekly execution via Replit Scheduled Jobs (Sunday 00:00 UTC)
+- ✅ Stores results in Supabase: `currency_scores` and `fundamental_bias` tables
+
+**Frontend Integration:**
+- ✅ "Fundamental Strength" tab in Fundamentals page displays real-time data
+- ✅ FX Pair Fundamental Bias: Color-coded badges (green ≥7, red ≤-7, gray neutral), trend icons, summary, confidence, last updated
+- ✅ Currency Strength Scores: Shows breakdown by data score, CB tone, market flows with visual progress bars
+- ✅ React Query integration for live data updates
+- ✅ Loading and empty states with helpful messages
+
+**Technical Implementation:**
+- ✅ Direct Supabase integration using service role key for automation
+- ✅ RLS policies: Public read access to fundamental_bias, service role write access
+- ✅ getFundamentalBias() and getCurrencyScores() service functions
+- ✅ Comprehensive setup documentation in `FUNDAMENTAL_BIAS_SETUP.md`
+
 ### Floating DNA Core Visualization (Added 2025-10-07)
 Implemented a stunning 3D-like "Trader DNA Core" intelligence visualization on the analytics page:
 - **Animated double-helix structure**: Color-coded from red to green based on overall Edge Integrity score
