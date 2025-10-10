@@ -1,4 +1,4 @@
-import os, datetime as dt, requests, yfinance as yf
+import os, datetime as dt, requests
 from dateutil.relativedelta import relativedelta
 from supabase import create_client
 from fetch_fundamentals_free import combine_fundamental_scores
@@ -74,6 +74,7 @@ W_MARKET = 2
 SB_URL = os.getenv("SUPABASE_URL") or os.getenv("VITE_SUPABASE_URL")
 SB_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 TE_KEY = os.getenv("TRADING_ECONOMICS_API_KEY")
+POLYGON_API_KEY = os.getenv("POLYGON_API_KEY")
 
 sb = create_client(SB_URL, SB_KEY)
 
@@ -107,28 +108,67 @@ def fetch_tradingeconomics_calendar():
         pass
     return out
 
+def get_polygon_price(ticker, days=7):
+    """
+    Fetch daily closing prices for FX, indices, or metals using Polygon.io
+    Example tickers:
+      FX: 'C:EURUSD', 'C:XAUUSD'
+      Index: 'I:SPX', 'I:DXY'
+    """
+    if not POLYGON_API_KEY:
+        print(f"⚠️ POLYGON_API_KEY not set, skipping {ticker}")
+        return None
+    
+    end_date = dt.datetime.utcnow()
+    start_date = end_date - dt.timedelta(days=days)
+    url = (
+        f"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/"
+        f"{start_date.date()}/{end_date.date()}?adjusted=true&sort=asc&apiKey={POLYGON_API_KEY}"
+    )
+
+    try:
+        r = requests.get(url, timeout=10)
+        data = r.json()
+        if "results" not in data or not data["results"]:
+            print(f"⚠️ No data for {ticker}")
+            return None
+
+        closes = [bar["c"] for bar in data["results"]]
+        return closes[-1], closes[0]  # latest close, oldest close
+    except Exception as e:
+        print(f"⚠️ Error fetching {ticker}: {e}")
+        return None
+
+def get_percent_change(ticker):
+    """Return % change over last 7 days"""
+    prices = get_polygon_price(ticker)
+    if not prices:
+        return 0.0
+    latest, oldest = prices
+    return round(((latest - oldest) / oldest) * 100, 2)
+
 def fetch_markets():
-    """Weekly % changes for DXY, WTI, GOLD, COPPER, SPX, UST10Y (TNX), VIX."""
-    start, end = week_window()
-    tickers = {
-        "DXY": "DX-Y.NYB",
-        "WTI": "CL=F",
-        "GOLD": "GC=F",
-        "COPPER": "HG=F",
-        "SPX": "^GSPC",
-        "UST10Y": "^TNX",
-        "VIX": "^VIX",
+    """Weekly % changes for DXY, WTI, GOLD, COPPER, SPX, UST10Y, VIX using Polygon.io"""
+    print("\n📊 Fetching market data from Polygon.io...")
+    
+    # Polygon.io ticker mapping
+    polygon_tickers = {
+        "DXY": "I:DXY",        # Dollar Index
+        "WTI": "C:CLUSD",      # WTI Crude Oil
+        "GOLD": "C:XAUUSD",    # Gold
+        "COPPER": "C:XCUUSD",  # Copper (HG futures)
+        "SPX": "I:SPX",        # S&P 500
+        "UST10Y": "I:US10Y",   # 10-Year Treasury Yield
+        "VIX": "I:VIX",        # VIX Volatility Index
     }
+    
     out = {}
-    for k, t in tickers.items():
-        try:
-            df = yf.download(t, start=start.date(), end=end.date(), progress=False, interval="1d")
-            if df is None or df.empty:
-                out[k] = 0.0; continue
-            p0 = float(df["Adj Close"].iloc[0]); p1 = float(df["Adj Close"].iloc[-1])
-            out[k] = ((p1 - p0)/p0)*100.0
-        except Exception:
-            out[k] = 0.0
+    for key, polygon_ticker in polygon_tickers.items():
+        pct_change = get_percent_change(polygon_ticker)
+        out[key] = pct_change
+        if pct_change != 0:
+            print(f"  ✅ {key}: {pct_change:+.2f}%")
+    
     return out
 
 # ----------------- SCORING -----------------
