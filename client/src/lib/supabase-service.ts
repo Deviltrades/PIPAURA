@@ -712,6 +712,59 @@ export async function toggleAccountStatus(id: string, isActive: boolean): Promis
   return data;
 }
 
+export async function migrateLegacyTrades(): Promise<{ migrated: boolean; accountId?: string; tradeCount?: number }> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  // Check if user has trades without an account
+  const { count } = await supabase
+    .from('trades')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', profile.id)
+    .is('account_id', null);
+
+  if (!count || count === 0) {
+    return { migrated: false };
+  }
+
+  // Create legacy account
+  const { data: legacyAccount, error: accountError } = await supabase
+    .from('trade_accounts')
+    .insert([{
+      user_id: profile.id,
+      account_type: 'live_personal',
+      market_type: 'forex',
+      broker_name: 'Legacy',
+      account_name: 'Legacy Account (Pre-Migration)',
+      starting_balance: 0,
+      current_balance: 0,
+      is_active: true
+    }])
+    .select()
+    .single();
+
+  if (accountError) throw accountError;
+
+  // Link all orphaned trades to legacy account
+  const { error: updateError } = await supabase
+    .from('trades')
+    .update({ account_id: legacyAccount.id })
+    .eq('user_id', profile.id)
+    .is('account_id', null);
+
+  if (updateError) throw updateError;
+
+  return { migrated: true, accountId: legacyAccount.id, tradeCount: count };
+}
+
 export async function getAccountAnalytics(accountId: string) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');

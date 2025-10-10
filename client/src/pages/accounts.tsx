@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Plus, TrendingUp, Trash2, DollarSign, BarChart3, Eye } from "lucide-react";
-import { getTradeAccounts, createTradeAccount, deleteTradeAccount, toggleAccountStatus, getAccountAnalytics } from "@/lib/supabase-service";
+import { getTradeAccounts, createTradeAccount, deleteTradeAccount, toggleAccountStatus, getAccountAnalytics, migrateLegacyTrades } from "@/lib/supabase-service";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
@@ -101,6 +101,26 @@ export default function Accounts() {
       });
     },
   });
+
+  // Auto-migrate legacy trades on first load
+  useEffect(() => {
+    const runMigration = async () => {
+      try {
+        const result = await migrateLegacyTrades();
+        if (result.migrated) {
+          queryClient.invalidateQueries({ queryKey: ['/api/trade-accounts'] });
+          toast({
+            title: "Migration Complete! 🎉",
+            description: `Linked ${result.tradeCount} existing trade(s) to "Legacy Account"`,
+            duration: 5000,
+          });
+        }
+      } catch (error) {
+        console.error('Migration error:', error);
+      }
+    };
+    runMigration();
+  }, []);
 
   const onSubmit = (data: z.infer<typeof createAccountSchema>) => {
     createMutation.mutate({
