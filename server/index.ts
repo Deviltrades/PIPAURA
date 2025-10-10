@@ -1,51 +1,51 @@
 #!/usr/bin/env node
 import { spawn } from 'child_process';
 
-console.log('🚀 Starting TJ - Traders Brotherhood (Pure Frontend + Supabase)');
-console.log('📦 Express server removed - now using pure Vite + Supabase architecture');
+console.log('🚀 Starting TJ - Traders Brotherhood');
+console.log('📦 Frontend: Vite + Supabase | API: Cron endpoints');
 console.log(`🌐 Allowing host: ${process.env.REPLIT_DOMAINS}`);
 
-// Start Vite dev server with custom config that includes allowedHosts
+// Start Vite dev server on internal port 5173
 const allowedHost = process.env.REPLIT_DOMAINS || 'localhost';
 const vite = spawn('npx', [
   'vite', 
   '--config', 'vite.replit.config.ts',
   '--host', '0.0.0.0', 
-  '--port', '5000',
+  '--port', '5173',  // Internal port
   '--force'
 ], {
   stdio: 'inherit',
   env: { 
     ...process.env, 
-    NODE_ENV: 'production',  // Disable restrictive plugins
+    NODE_ENV: 'production',
     VITE_REPLIT_HOST: allowedHost
   }
 });
 
-// Start Cron API server for external cron services (cron-job.org)
-const cronApi = spawn('tsx', ['server/cron-api.ts'], {
+// Start proxy server with Cron API on port 5000 (public port)
+const proxy = spawn('tsx', ['server/proxy-with-cron.ts'], {
   stdio: 'inherit',
   env: process.env
 });
 
 vite.on('close', (code) => {
   console.log(`Vite process exited with code ${code}`);
-  cronApi.kill();
+  proxy.kill();
   process.exit(code);
 });
 
-cronApi.on('close', (code) => {
-  console.log(`Cron API process exited with code ${code}`);
+proxy.on('close', (code) => {
+  console.log(`Proxy process exited with code ${code}`);
   vite.kill();
   process.exit(code);
 });
 
 process.on('SIGINT', () => {
   vite.kill('SIGINT');
-  cronApi.kill('SIGINT');
+  proxy.kill('SIGINT');
 });
 
 process.on('SIGTERM', () => {
   vite.kill('SIGTERM');
-  cronApi.kill('SIGTERM');
+  proxy.kill('SIGTERM');
 });
