@@ -20,8 +20,12 @@ Implemented comprehensive automated fundamental analysis system with backend Pyt
 - ✅ **38 FX Pairs**: All majors (EUR/USD, GBP/USD, etc.) + all crosses (EUR/GBP, GBP/JPY, etc.) + metals (XAU/USD, XAG/USD)
 - ✅ **10 Global Indices**: US500, US100, US30, UK100, GER40, FRA40, EU50, JP225, HK50, AUS200
 - ✅ **10 Currencies scored**: USD, EUR, GBP, JPY, CAD, AUD, NZD, CHF, XAU, XAG
-- ✅ Data sources: TradingEconomics API (optional), Yahoo Finance for market data (DXY, WTI, GOLD, COPPER, SPX, UST10Y, VIX)
-- ✅ Scoring model: Economic data surprises, Central Bank tone, Commodity correlations, Market flows, Risk sentiment
+- ✅ **Multi-source data integration**:
+  - Yahoo Finance (always active): DXY, WTI, GOLD, COPPER, SPX, UST10Y, VIX
+  - TradingEconomics API (optional): Economic calendar events
+  - EconDB API (optional): CPI, GDP, Interest Rate indicators
+  - ForexFactory RSS (optional): Real-time event surprises
+- ✅ Scoring model: Economic data surprises, Central Bank tone, Commodity correlations, Market flows, Risk sentiment, Macro indicators
 - ✅ Automated weekly execution via Replit Scheduled Jobs (Sunday 00:00 UTC)
 - ✅ Stores results in Supabase: `currency_scores`, `fundamental_bias`, and `index_bias` tables
 
@@ -37,6 +41,8 @@ Implemented comprehensive automated fundamental analysis system with backend Pyt
 - ✅ Direct Supabase integration using service role key for automation
 - ✅ RLS policies: Public read access, service role write access for all tables
 - ✅ Service functions: getFundamentalBias(), getCurrencyScores(), getIndexBias()
+- ✅ Modular architecture: `main.py` orchestrates, `fetch_fundamentals_free.py` handles EconDB/ForexFactory integration
+- ✅ Graceful degradation: System works with any combination of data sources
 - ✅ Comprehensive setup documentation in `FUNDAMENTAL_BIAS_SETUP.md`
 
 ### Floating DNA Core Visualization (Added 2025-10-07)

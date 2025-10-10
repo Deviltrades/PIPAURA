@@ -150,19 +150,31 @@ You can run `python main.py` manually whenever you want to update the fundamenta
 
 ### Data Sources
 
-1. **TradingEconomics API** (optional):
-   - Economic calendar data (GDP, CPI, NFP, etc.)
-   - Actual vs Forecast surprises
-   - *Note: Works without API key, but scoring will be limited*
+The system now integrates **multiple data sources** for comprehensive fundamental analysis:
 
-2. **Yahoo Finance** (free):
+1. **Yahoo Finance** (free, always active ✅):
    - Market data: DXY, WTI, GOLD, COPPER, SPX, UST10Y, VIX
    - Weekly % changes
-   - Always available ✅
+   - No API key required
+
+2. **TradingEconomics API** (optional):
+   - Economic calendar data (GDP, CPI, NFP, etc.)
+   - Actual vs Forecast surprises
+   - Requires API key (see Optional Setup below)
+
+3. **EconDB API** (optional, enhanced macro data):
+   - CPI, GDP, Interest Rate indicators per currency
+   - Percentage change scoring
+   - Requires API key (contact econdb.com)
+
+4. **ForexFactory RSS** (optional, real-time events):
+   - Economic calendar events this week
+   - Impact-weighted surprise scoring
+   - Free RSS feed (when available)
 
 ### Scoring Model
 
-Each currency gets weighted scores:
+Each currency gets weighted scores from multiple sources:
 
 | Factor | Rule | Weight |
 |--------|------|--------|
@@ -170,6 +182,18 @@ Each currency gets weighted scores:
 | **Central Bank Tone** | Hawkish = +3 ; Dovish = −3 | ±3 |
 | **Commodity Links** | CAD ↔ WTI ; AUD ↔ Copper/Gold ; NZD ↔ Risk | ±2 |
 | **Market Flows** | DXY↑ & Yields↑ → USD + ; Risk-off → JPY/CHF + | ±2 |
+| **EconDB Macro** | CPI/GDP/Rate change > +0.5% → +2 ; < -0.5% → -2 | ±2 |
+| **ForexFactory Events** | Actual > Forecast → +impact ; < Forecast → -impact | ±1–3 |
+
+**Impact Weights (ForexFactory):**
+- Low Impact Event: ±1 point
+- Medium Impact Event: ±2 points  
+- High Impact Event: ±3 points
+
+**Final Score Calculation:**
+```
+Total Score = Yahoo Finance + TradingEconomics + EconDB + ForexFactory + CB Tone
+```
 
 ### Pair Bias Calculation
 
@@ -206,18 +230,29 @@ Each index scored on:
 - **≤ -3** → 🔴 Fundamentally Weak
 - **else** → ⚪ Neutral
 
-## 🔑 Optional: Add TradingEconomics API Key
+## 🔑 Optional API Keys
 
-To enable economic calendar data scoring:
+The system works out-of-the-box with Yahoo Finance. Add these optional keys for enhanced data:
+
+### TradingEconomics API (Recommended)
+Enables economic calendar data scoring:
 
 1. Get API key from: https://tradingeconomics.com/api
 2. In Replit, go to **Tools** → **Secrets**
-3. Add new secret:
+3. Add secret:
    - **Key**: `TRADING_ECONOMICS_API_KEY`
    - **Value**: `your_api_key_here`
-4. The script will automatically use it next run ✅
 
-*Without this key, the automation still works using market data only.*
+### EconDB API (Optional)
+Adds macro indicator tracking (CPI, GDP, rates):
+
+1. Request API access from: https://www.econdb.com
+2. In Replit, go to **Tools** → **Secrets**
+3. Add secret:
+   - **Key**: `ECONDB_API_KEY`
+   - **Value**: `your_api_key_here`
+
+**Note:** The automation works without these keys using free Yahoo Finance data. Optional keys enhance scoring accuracy.
 
 ## 🛠️ Troubleshooting
 
@@ -243,14 +278,25 @@ To enable economic calendar data scoring:
 2. Verify all Python packages are installed: `pip list | grep -E "requests|yfinance|supabase"`
 3. Check error messages - they usually indicate the exact issue
 
+### Issue: EconDB or ForexFactory showing 0 scores
+
+**Explanation**: These are optional data sources that require API access:
+- **EconDB**: Requires API key - Add `ECONDB_API_KEY` to secrets (contact econdb.com for access)
+- **ForexFactory**: RSS feed may be temporarily unavailable or URL changed
+
+**Impact**: System still works perfectly with Yahoo Finance + TradingEconomics. These are enhancement sources only.
+
+**Current Status**: ✅ Yahoo Finance (always active), ⏳ Optional sources (require setup)
+
 ## 📋 Files Reference
 
 ### Created Files
 
-- **`main.py`** - Main automation script (weekly fundamental scoring)
+- **`main.py`** - Main automation script (weekly fundamental scoring with all data sources)
+- **`fetch_fundamentals_free.py`** - NEW: EconDB + ForexFactory data integration module
 - **`setup_supabase_tables.py`** - Helper script for table setup
 - **`create_tables.sql`** - SQL for manual table creation
-- **`FUNDAMENTAL_BIAS_SETUP.md`** - This guide
+- **`FUNDAMENTAL_BIAS_SETUP.md`** - This comprehensive setup guide
 
 ### Modified Files
 
