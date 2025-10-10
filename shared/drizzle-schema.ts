@@ -12,7 +12,7 @@ import {
 import { sql } from "drizzle-orm";
 
 // Enums for trades
-export const instrumentTypeEnum = pgEnum('instrument_type', ['FOREX', 'INDICES', 'CRYPTO']);
+export const instrumentTypeEnum = pgEnum('instrument_type', ['FOREX', 'INDICES', 'CRYPTO', 'FUTURES', 'STOCKS']);
 export const tradeTypeEnum = pgEnum('trade_type', ['BUY', 'SELL']);
 export const tradeStatusEnum = pgEnum('trade_status', ['OPEN', 'CLOSED', 'CANCELLED']);
 export const accountTypeEnum = pgEnum('account_type', ['live', 'prop']);

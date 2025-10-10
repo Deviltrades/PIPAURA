@@ -8,17 +8,32 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { createTrade, updateTrade, uploadFile, getTradeAccounts } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { SignedImageDisplay } from "@/components/SignedImageDisplay";
+import { getInstrumentsByType } from "@shared/instruments";
+import { cn } from "@/lib/utils";
 
 const tradeFormSchema = z.object({
   account_id: z.string().min(1, "Trading account is required"),
   instrument: z.string().min(1, "Instrument is required"),
-  instrumentType: z.enum(["FOREX", "INDICES", "CRYPTO"]),
+  instrumentType: z.enum(["FOREX", "INDICES", "CRYPTO", "FUTURES", "STOCKS"]),
   tradeType: z.enum(["BUY", "SELL"]),
   positionSize: z.string().min(1, "Position size is required"),
   entryPrice: z.string().min(1, "Entry price is required"),
@@ -49,15 +64,13 @@ interface TradeFormProps {
   trade?: any;
 }
 
-const forexPairs = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "NZD/USD", "EUR/GBP", "EUR/JPY"];
-const indices = ["S&P 500", "NASDAQ", "FTSE 100", "DAX", "Nikkei 225", "CAC 40"];
-const cryptos = ["BTC/USD", "ETH/USD", "ADA/USD", "XRP/USD", "SOL/USD", "DOT/USD"];
-
 export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [instrumentSearchOpen, setInstrumentSearchOpen] = useState(false);
+  const [selectedInstrumentType, setSelectedInstrumentType] = useState<string>("FOREX");
 
   // Fetch user's trading accounts
   const { data: accounts } = useQuery({
@@ -91,6 +104,15 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
     setAttachments(trade?.attachments || []);
   }, [trade?.id]); // Only reset when editing a different trade
 
+  // Watch instrument type changes to update currentInstruments
+  const instrumentType = form.watch("instrumentType");
+  useEffect(() => {
+    setSelectedInstrumentType(instrumentType);
+  }, [instrumentType]);
+
+  // Get instruments for the selected type
+  const currentInstruments = getInstrumentsByType(selectedInstrumentType);
+
   const createTradeMutation = useMutation({
     mutationFn: async (data: TradeFormData) => {
       // Calculate P&L based on toggle
@@ -105,7 +127,7 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
       const payload = {
         account_id: data.account_id,
         instrument: data.instrument,
-        instrument_type: data.instrumentType as 'FOREX' | 'INDICES' | 'CRYPTO',
+        instrument_type: data.instrumentType as 'FOREX' | 'INDICES' | 'CRYPTO' | 'FUTURES' | 'STOCKS',
         trade_type: data.tradeType as 'BUY' | 'SELL',
         position_size: parseFloat(data.positionSize),
         entry_price: parseFloat(data.entryPrice),
@@ -203,21 +225,6 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
     setAttachments(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
-  const getInstrumentOptions = (type: string) => {
-    switch (type) {
-      case "FOREX":
-        return forexPairs;
-      case "INDICES":
-        return indices;
-      case "CRYPTO":
-        return cryptos;
-      default:
-        return [];
-    }
-  };
-
-  const instrumentType = form.watch("instrumentType");
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -278,6 +285,8 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
                         <SelectItem value="FOREX">Forex</SelectItem>
                         <SelectItem value="INDICES">Indices</SelectItem>
                         <SelectItem value="CRYPTO">Crypto</SelectItem>
+                        <SelectItem value="FUTURES">Futures</SelectItem>
+                        <SelectItem value="STOCKS">Stocks</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -289,22 +298,56 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
                 control={form.control}
                 name="instrument"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Instrument</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select instrument" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {getInstrumentOptions(instrumentType).map((instrument) => (
-                          <SelectItem key={instrument} value={instrument}>
-                            {instrument}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={instrumentSearchOpen} onOpenChange={setInstrumentSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                            data-testid="button-select-instrument"
+                          >
+                            {field.value || "Type to search..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search instrument..." />
+                          <CommandEmpty>No instrument found.</CommandEmpty>
+                          <CommandGroup className="max-h-[300px] overflow-auto">
+                            {currentInstruments.map((instrument: string) => (
+                              <CommandItem
+                                key={instrument}
+                                value={instrument}
+                                onSelect={(value) => {
+                                  const selected = currentInstruments.find(
+                                    (i: string) => i.toLowerCase() === value.toLowerCase()
+                                  ) || value;
+                                  form.setValue("instrument", selected);
+                                  setInstrumentSearchOpen(false);
+                                }}
+                                data-testid={`option-instrument-${instrument.replace(/[^a-zA-Z0-9]/g, '-')}`}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    field.value === instrument ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {instrument}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}

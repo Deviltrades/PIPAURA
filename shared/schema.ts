@@ -303,7 +303,7 @@ export interface Trade {
   id: string;
   user_id: string;
   instrument: string;
-  instrument_type: 'FOREX' | 'INDICES' | 'CRYPTO';
+  instrument_type: 'FOREX' | 'INDICES' | 'CRYPTO' | 'FUTURES' | 'STOCKS';
   trade_type: 'BUY' | 'SELL';
   position_size: number;
   entry_price: number;
@@ -322,7 +322,7 @@ export interface Trade {
 
 export interface CreateTrade {
   instrument: string;
-  instrument_type: 'FOREX' | 'INDICES' | 'CRYPTO';
+  instrument_type: 'FOREX' | 'INDICES' | 'CRYPTO' | 'FUTURES' | 'STOCKS';
   trade_type: 'BUY' | 'SELL';
   position_size: number;
   entry_price: number;
@@ -339,7 +339,7 @@ export interface CreateTrade {
 
 export interface UpdateTrade {
   instrument?: string;
-  instrument_type?: 'FOREX' | 'INDICES' | 'CRYPTO';
+  instrument_type?: 'FOREX' | 'INDICES' | 'CRYPTO' | 'FUTURES' | 'STOCKS';
   trade_type?: 'BUY' | 'SELL';
   position_size?: number;
   entry_price?: number;
@@ -357,7 +357,7 @@ export interface UpdateTrade {
 // Zod schemas for Trade validation
 export const createTradeSchema = z.object({
   instrument: z.string().min(1, "Instrument is required"),
-  instrument_type: z.enum(['FOREX', 'INDICES', 'CRYPTO']),
+  instrument_type: z.enum(['FOREX', 'INDICES', 'CRYPTO', 'FUTURES', 'STOCKS']),
   trade_type: z.enum(['BUY', 'SELL']),
   position_size: z.number().positive("Position size must be positive"),
   entry_price: z.number().positive("Entry price must be positive"),
@@ -374,7 +374,7 @@ export const createTradeSchema = z.object({
 
 export const updateTradeSchema = z.object({
   instrument: z.string().min(1).optional(),
-  instrument_type: z.enum(['FOREX', 'INDICES', 'CRYPTO']).optional(),
+  instrument_type: z.enum(['FOREX', 'INDICES', 'CRYPTO', 'FUTURES', 'STOCKS']).optional(),
   trade_type: z.enum(['BUY', 'SELL']).optional(),
   position_size: z.number().positive().optional(),
   entry_price: z.number().positive().optional(),

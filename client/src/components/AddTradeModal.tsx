@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { format } from "date-fns";
-import { X, Upload, Image as ImageIcon, Trash2 } from "lucide-react";
+import { X, Upload, Image as ImageIcon, Trash2, Check, ChevronsUpDown } from "lucide-react";
 
 import {
   Dialog,
@@ -28,6 +28,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -38,10 +50,12 @@ import { PlanGate, FeatureGate } from "@/components/PlanGate";
 import { useToast } from "@/hooks/use-toast";
 import { createTrade, uploadFile, getTradeAccounts } from "@/lib/supabase-service";
 import { useQuery } from "@tanstack/react-query";
+import { getInstrumentsByType } from "@shared/instruments";
+import { cn } from "@/lib/utils";
 
 const addTradeSchema = z.object({
   account_id: z.string().min(1, "Trading account is required"),
-  instrumentType: z.enum(["FOREX", "INDICES", "CRYPTO"]),
+  instrumentType: z.enum(["FOREX", "INDICES", "CRYPTO", "FUTURES", "STOCKS"]),
   instrument: z.string().min(1, "Instrument is required"),
   tradeType: z.enum(["BUY", "SELL"]),
   positionSize: z.string().min(1, "Position size is required"),
@@ -73,25 +87,13 @@ interface AddTradeModalProps {
   selectedDate: Date;
 }
 
-const FOREX_INSTRUMENTS = [
-  "EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD", "USD/CAD", "NZD/USD",
-  "EUR/GBP", "EUR/JPY", "GBP/JPY", "AUD/JPY", "CHF/JPY", "CAD/JPY", "NZD/JPY"
-];
-
-const INDICES_INSTRUMENTS = [
-  "S&P 500", "NASDAQ", "DOW JONES", "FTSE 100", "DAX", "CAC 40", "NIKKEI", "HANG SENG"
-];
-
-const CRYPTO_INSTRUMENTS = [
-  "BTC/USD", "ETH/USD", "ADA/USD", "SOL/USD", "DOT/USD", "LINK/USD", "UNI/USD", "AVAX/USD"
-];
-
 export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedInstrumentType, setSelectedInstrumentType] = useState<string>("FOREX");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [instrumentSearchOpen, setInstrumentSearchOpen] = useState(false);
 
   // Fetch user's trading accounts
   const { data: accounts } = useQuery({
@@ -149,7 +151,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
       const tradeData = {
         account_id: data.account_id,
         instrument: data.instrument,
-        instrument_type: data.instrumentType as 'FOREX' | 'INDICES' | 'CRYPTO',
+        instrument_type: data.instrumentType as 'FOREX' | 'INDICES' | 'CRYPTO' | 'FUTURES' | 'STOCKS',
         trade_type: data.tradeType as 'BUY' | 'SELL',
         position_size: parseFloat(data.positionSize),
         entry_price: parseFloat(data.entryPrice),
@@ -186,18 +188,8 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
     },
   });
 
-  const getInstrumentsForType = (type: string) => {
-    switch (type) {
-      case "FOREX":
-        return FOREX_INSTRUMENTS;
-      case "INDICES":
-        return INDICES_INSTRUMENTS;
-      case "CRYPTO":
-        return CRYPTO_INSTRUMENTS;
-      default:
-        return [];
-    }
-  };
+  // Get instruments for the selected type using the shared function
+  const currentInstruments = getInstrumentsByType(selectedInstrumentType);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -324,6 +316,8 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                         <SelectItem value="FOREX">Forex</SelectItem>
                         <SelectItem value="INDICES">Indices</SelectItem>
                         <SelectItem value="CRYPTO">Crypto</SelectItem>
+                        <SelectItem value="FUTURES">Futures</SelectItem>
+                        <SelectItem value="STOCKS">Stocks</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -331,27 +325,62 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                 )}
               />
 
-              {/* Instrument */}
+              {/* Instrument - Searchable */}
               <FormField
                 control={form.control}
                 name="instrument"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Instrument</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-background border-input">
-                          <SelectValue placeholder="Select instrument" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {getInstrumentsForType(selectedInstrumentType).map((instrument) => (
-                          <SelectItem key={instrument} value={instrument}>
-                            {instrument}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={instrumentSearchOpen} onOpenChange={setInstrumentSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between bg-background border-input",
+                              !field.value && "text-muted-foreground"
+                            )}
+                            data-testid="button-select-instrument"
+                          >
+                            {field.value || "Type to search..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search instrument..." />
+                          <CommandEmpty>No instrument found.</CommandEmpty>
+                          <CommandGroup className="max-h-[300px] overflow-auto">
+                            {currentInstruments.map((instrument: string) => (
+                              <CommandItem
+                                key={instrument}
+                                value={instrument}
+                                onSelect={(value) => {
+                                  // Find the original instrument (case-insensitive match)
+                                  const selected = currentInstruments.find(
+                                    (i: string) => i.toLowerCase() === value.toLowerCase()
+                                  ) || value;
+                                  form.setValue("instrument", selected);
+                                  setInstrumentSearchOpen(false);
+                                }}
+                                data-testid={`option-instrument-${instrument.replace(/[^a-zA-Z0-9]/g, '-')}`}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    field.value === instrument ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {instrument}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}

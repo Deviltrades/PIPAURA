@@ -248,7 +248,7 @@ export async function deleteJournalEntry(id: string) {
 // Trade operations
 export interface TradeData {
   instrument: string;
-  instrument_type: 'FOREX' | 'INDICES' | 'CRYPTO';
+  instrument_type: 'FOREX' | 'INDICES' | 'CRYPTO' | 'FUTURES' | 'STOCKS';
   trade_type: 'BUY' | 'SELL';
   position_size: number;
   entry_price: number;
