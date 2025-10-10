@@ -10,6 +10,7 @@ from dateutil.relativedelta import relativedelta
 from supabase import create_client
 import yfinance as yf
 from ff_integration import get_economic_scores
+from update_market_drivers import update_drivers
 
 # ----------------- CONFIG -----------------
 CURRENCIES = [
@@ -364,6 +365,9 @@ def run():
     # Build index biases
     index_rows = score_indices(per_ccy, mkt)
     upsert_index_bias(index_rows)
+
+    # Update market drivers analysis
+    update_drivers()
 
     # One-line completion log
     timestamp = dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
