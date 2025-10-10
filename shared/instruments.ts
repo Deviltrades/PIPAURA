@@ -253,16 +253,28 @@ export const stocks = [
   "ROG – Roche Holding AG"
 ];
 
-// Futures - Placeholder for now (user will provide later)
+// Futures - International stocks and ADRs
 export const futures = [
-  "ES – E-mini S&P 500",
-  "NQ – E-mini NASDAQ-100",
-  "YM – E-mini Dow",
-  "GC – Gold Futures",
-  "CL – Crude Oil Futures",
-  "NG – Natural Gas Futures",
-  "ZB – T-Bond Futures",
-  "ZN – 10-Year T-Note Futures"
+  "BABA – Alibaba Group (HK/US)",
+  "TSM – Taiwan Semiconductor",
+  "NIO – NIO Inc.",
+  "JD – JD.com",
+  "PDD – Pinduoduo",
+  "TM – Toyota Motor Corp",
+  "SONY – Sony Group",
+  "RIO – Rio Tinto plc",
+  "UL – Unilever plc",
+  "SAP – SAP SE",
+  "ASML – ASML Holding NV",
+  "LVMH – LVMH Moët Hennessy Louis Vuitton",
+  "SHEL – Shell plc",
+  "BP – BP plc",
+  "GLEN – Glencore plc",
+  "HSBC – HSBC Holdings",
+  "BARCL – Barclays plc",
+  "NESN – Nestlé SA",
+  "NOVN – Novartis AG",
+  "ROG – Roche Holding AG"
 ];
 
 // Helper function to get instruments by type
