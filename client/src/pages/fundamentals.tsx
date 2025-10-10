@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getFundamentalBias, getCurrencyScores } from "@/lib/supabase-service";
+import { getFundamentalBias, getCurrencyScores, getIndexBias } from "@/lib/supabase-service";
 import { format } from "date-fns";
 
 export default function Fundamentals() {
@@ -16,6 +16,11 @@ export default function Fundamentals() {
   const { data: currencyScores, isLoading: scoresLoading } = useQuery({
     queryKey: ['/api/currency-scores'],
     queryFn: getCurrencyScores,
+  });
+
+  const { data: indexBias, isLoading: indexLoading } = useQuery({
+    queryKey: ['/api/index-bias'],
+    queryFn: getIndexBias,
   });
 
   return (
@@ -478,6 +483,66 @@ export default function Fundamentals() {
               </Card>
             </div>
           </div>
+
+          {/* Indices Section */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Global Indices Fundamental Bias</CardTitle>
+              <CardDescription>Automated fundamental analysis for major stock market indices</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {indexLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading index bias data...</div>
+              ) : indexBias && indexBias.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {indexBias.map((index: any, idx: number) => {
+                    const getBiasColor = (score: number) => {
+                      if (score >= 3) return "text-green-500";
+                      if (score <= -3) return "text-red-500";
+                      return "text-gray-500";
+                    };
+
+                    const getBiasVariant = (score: number): "default" | "destructive" | "secondary" => {
+                      if (score >= 3) return "default";
+                      if (score <= -3) return "destructive";
+                      return "secondary";
+                    };
+
+                    return (
+                      <div key={idx} className="space-y-2 p-4 border rounded-lg" data-testid={`index-bias-${idx}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold">{index.instrument}</span>
+                            {index.score >= 3 ? (
+                              <TrendingUp className="h-4 w-4 text-green-500" />
+                            ) : index.score <= -3 ? (
+                              <TrendingDown className="h-4 w-4 text-red-500" />
+                            ) : (
+                              <Minus className="h-4 w-4 text-gray-500" />
+                            )}
+                          </div>
+                          <Badge variant={getBiasVariant(index.score)}>
+                            {index.bias_text}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{index.summary}</p>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+                          <span className={`font-bold ${getBiasColor(index.score)}`}>
+                            Score: {index.score > 0 ? '+' : ''}{index.score}
+                          </span>
+                          <span>Confidence: {index.confidence}%</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No index bias data available. Run the automation script to generate data.
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
