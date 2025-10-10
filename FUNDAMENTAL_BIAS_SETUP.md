@@ -150,27 +150,48 @@ You can run `python main.py` manually whenever you want to update the fundamenta
 
 ### Data Sources
 
-The system now integrates **multiple data sources** for comprehensive fundamental analysis:
+The system uses a **hybrid multi-source architecture** with intelligent fallback for maximum reliability:
 
-1. **Yahoo Finance** (free, always active ✅):
+1. **Polygon.io** (institutional-grade data, when available):
+   - Forex pairs (C:XAUUSD, C:XAGUSD, etc.)
+   - Indices (I:SPX, I:DXY, I:VIX)
+   - Commodities (C:CLUSD for WTI, C:XCUUSD for Copper)
+   - Requires POLYGON_API_KEY (add to Replit Secrets)
+   - **Fallback**: Auto-switches to Yahoo if data unavailable
+
+2. **Yahoo Finance** (free fallback, always active ✅):
    - Market data: DXY, WTI, GOLD, COPPER, SPX, UST10Y, VIX
-   - Weekly % changes
+   - Automatically used when Polygon data unavailable
    - No API key required
+   - Guarantees all 7 metrics are always populated
 
-2. **TradingEconomics API** (optional):
+3. **TradingEconomics API** (optional):
    - Economic calendar data (GDP, CPI, NFP, etc.)
    - Actual vs Forecast surprises
    - Requires API key (see Optional Setup below)
 
-3. **EconDB API** (optional, enhanced macro data):
+4. **EconDB API** (optional, enhanced macro data):
    - CPI, GDP, Interest Rate indicators per currency
    - Percentage change scoring
    - Requires API key (contact econdb.com)
 
-4. **ForexFactory RSS** (optional, real-time events):
+5. **ForexFactory RSS** (optional, real-time events):
    - Economic calendar events this week
    - Impact-weighted surprise scoring
    - Free RSS feed (when available)
+
+### Hybrid Provider Architecture
+
+The system implements an intelligent fallback mechanism:
+```
+fetch_markets() → Try Polygon.io first → If unavailable → Fallback to Yahoo Finance
+```
+
+**Provider Priority:**
+1. **Polygon.io** (preferred for institutional data quality)
+2. **Yahoo Finance** (guaranteed fallback, always works)
+
+**Result**: All 7 market metrics are **always populated**, using the best available source for each.
 
 ### Scoring Model
 
@@ -232,9 +253,19 @@ Each index scored on:
 
 ## 🔑 Optional API Keys
 
-The system works out-of-the-box with Yahoo Finance. Add these optional keys for enhanced data:
+The system works out-of-the-box with Yahoo Finance fallback. Add these optional keys for enhanced data quality:
 
-### TradingEconomics API (Recommended)
+### Polygon.io API (Recommended for Institutional Data)
+Enables high-quality market data with automatic Yahoo fallback:
+
+1. Get API key from: https://polygon.io (free tier available)
+2. In Replit, go to **Tools** → **Secrets**
+3. Add secret:
+   - **Key**: `POLYGON_API_KEY`
+   - **Value**: `your_polygon_api_key`
+4. System will automatically try Polygon first, fallback to Yahoo ✅
+
+### TradingEconomics API (Economic Calendar)
 Enables economic calendar data scoring:
 
 1. Get API key from: https://tradingeconomics.com/api
@@ -243,7 +274,7 @@ Enables economic calendar data scoring:
    - **Key**: `TRADING_ECONOMICS_API_KEY`
    - **Value**: `your_api_key_here`
 
-### EconDB API (Optional)
+### EconDB API (Macro Indicators)
 Adds macro indicator tracking (CPI, GDP, rates):
 
 1. Request API access from: https://www.econdb.com
@@ -252,7 +283,7 @@ Adds macro indicator tracking (CPI, GDP, rates):
    - **Key**: `ECONDB_API_KEY`
    - **Value**: `your_api_key_here`
 
-**Note:** The automation works without these keys using free Yahoo Finance data. Optional keys enhance scoring accuracy.
+**Note:** The automation works perfectly without any optional keys using free Yahoo Finance data. Each optional key enhances data quality and scoring accuracy.
 
 ## 🛠️ Troubleshooting
 

@@ -20,11 +20,13 @@ Implemented comprehensive automated fundamental analysis system with backend Pyt
 - ✅ **38 FX Pairs**: All majors (EUR/USD, GBP/USD, etc.) + all crosses (EUR/GBP, GBP/JPY, etc.) + metals (XAU/USD, XAG/USD)
 - ✅ **10 Global Indices**: US500, US100, US30, UK100, GER40, FRA40, EU50, JP225, HK50, AUS200
 - ✅ **10 Currencies scored**: USD, EUR, GBP, JPY, CAD, AUD, NZD, CHF, XAU, XAG
-- ✅ **Multi-source data integration**:
-  - Yahoo Finance (always active): DXY, WTI, GOLD, COPPER, SPX, UST10Y, VIX
+- ✅ **Hybrid multi-source data integration** with intelligent fallback:
+  - Polygon.io (institutional-grade, tries first): Forex, indices, commodities
+  - Yahoo Finance (free fallback, always active): DXY, WTI, GOLD, COPPER, SPX, UST10Y, VIX
   - TradingEconomics API (optional): Economic calendar events
   - EconDB API (optional): CPI, GDP, Interest Rate indicators
   - ForexFactory RSS (optional): Real-time event surprises
+  - **Provider chain**: Polygon → Yahoo (guarantees all 7 metrics populated)
 - ✅ Scoring model: Economic data surprises, Central Bank tone, Commodity correlations, Market flows, Risk sentiment, Macro indicators
 - ✅ Automated weekly execution via Replit Scheduled Jobs (Sunday 00:00 UTC)
 - ✅ Stores results in Supabase: `currency_scores`, `fundamental_bias`, and `index_bias` tables
