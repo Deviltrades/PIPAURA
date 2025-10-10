@@ -54,29 +54,72 @@ import { getInstrumentsByType } from "@shared/instruments";
 import { cn } from "@/lib/utils";
 
 const addTradeSchema = z.object({
-  account_id: z.string().min(1, "Trading account is required"),
+  account_id: z.string().optional(),
   instrumentType: z.enum(["FOREX", "INDICES", "CRYPTO", "FUTURES", "STOCKS"]),
   instrument: z.string().min(1, "Instrument is required"),
   tradeType: z.enum(["BUY", "SELL"]),
-  positionSize: z.string().min(1, "Position size is required"),
-  entryPrice: z.string().min(1, "Entry price is required"),
+  positionSize: z.string().optional(),
+  entryPrice: z.string().optional(),
   entryTime: z.string().optional(),
   exitTime: z.string().optional(),
-  stopLoss: z.string().min(1, "Stop loss is required"),
-  takeProfit: z.string().min(1, "Take profit is required"),
+  stopLoss: z.string().optional(),
+  takeProfit: z.string().optional(),
   notes: z.string().optional(),
   attachments: z.array(z.string()).optional(),
   hasPnL: z.boolean().optional(),
   pnlType: z.enum(["profit", "loss"]).optional(),
   pnlAmount: z.string().optional(),
-}).refine((data) => {
-  if (data.hasPnL && (!data.pnlAmount || !data.pnlType)) {
-    return false;
+  entryMode: z.enum(["easy", "advanced"]).default("advanced"),
+}).superRefine((data, ctx) => {
+  // Easy mode validation
+  if (data.entryMode === "easy") {
+    if (!data.hasPnL || !data.pnlAmount || !data.pnlType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "P&L amount and type are required in Easy mode",
+        path: ["pnlAmount"],
+      });
+    }
   }
-  return true;
-}, {
-  message: "P&L type and amount are required when profit/loss is enabled",
-  path: ["pnlAmount"]
+  
+  // Advanced mode validation
+  if (data.entryMode === "advanced") {
+    if (!data.account_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Trading account is required",
+        path: ["account_id"],
+      });
+    }
+    if (!data.positionSize) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Position size is required",
+        path: ["positionSize"],
+      });
+    }
+    if (!data.entryPrice) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Entry price is required",
+        path: ["entryPrice"],
+      });
+    }
+    if (!data.stopLoss) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Stop loss is required",
+        path: ["stopLoss"],
+      });
+    }
+    if (!data.takeProfit) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Take profit is required",
+        path: ["takeProfit"],
+      });
+    }
+  }
 });
 
 type AddTradeFormData = z.infer<typeof addTradeSchema>;
@@ -97,6 +140,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
     ? new Date(trade.entry_date) 
     : selectedDate || new Date();
     
+  const [entryMode, setEntryMode] = useState<"easy" | "advanced">("advanced");
   const [selectedInstrumentType, setSelectedInstrumentType] = useState<string>("FOREX");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -127,6 +171,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
       hasPnL: false,
       pnlType: "profit",
       pnlAmount: "",
+      entryMode: "advanced",
     },
   });
 
@@ -134,7 +179,8 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
   useEffect(() => {
     if (isOpen) {
       if (trade) {
-        // Editing existing trade
+        // Editing existing trade - always use advanced mode
+        setEntryMode("advanced");
         form.reset({
           account_id: trade.account_id || "",
           instrumentType: trade.instrument_type || "FOREX",
@@ -151,6 +197,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
           hasPnL: trade.pnl !== undefined && trade.pnl !== 0,
           pnlType: trade.pnl && trade.pnl < 0 ? "loss" : "profit",
           pnlAmount: trade.pnl ? Math.abs(trade.pnl).toString() : "",
+          entryMode: "advanced", // Always advanced when editing
         });
         setSelectedInstrumentType(trade.instrument_type || "FOREX");
         setUploadedImages(trade.attachments || []);
@@ -169,15 +216,26 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
           takeProfit: "",
           notes: "",
           attachments: [],
-          hasPnL: false,
+          hasPnL: entryMode === "easy", // Auto-enable P&L in easy mode
           pnlType: "profit",
           pnlAmount: "",
+          entryMode: entryMode, // Use current mode for new trades
         });
         setSelectedInstrumentType("FOREX");
         setUploadedImages([]);
       }
     }
-  }, [isOpen, trade, form]);
+  }, [isOpen, trade, form, entryMode]);
+
+  // Auto-enable P&L in easy mode and sync entryMode to form (only for new trades)
+  useEffect(() => {
+    if (!trade) {
+      form.setValue("entryMode", entryMode, { shouldValidate: true });
+      if (entryMode === "easy") {
+        form.setValue("hasPnL", true);
+      }
+    }
+  }, [entryMode, form, trade]);
 
   const addTradeMutation = useMutation({
     mutationFn: async (data: AddTradeFormData) => {
@@ -205,15 +263,25 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
         calculatedPnL = data.pnlType === "loss" ? -amount : amount;
       }
 
+      // Handle easy mode defaults
+      const isEasyMode = data.entryMode === "easy";
+      const activeAccounts = accounts?.filter(acc => acc.is_active) || [];
+      const firstAccount = activeAccounts.length > 0 ? activeAccounts[0].id : "";
+      
+      // Block easy mode submission if no accounts exist
+      if (isEasyMode && !firstAccount) {
+        throw new Error("Please create a trading account before using Easy mode");
+      }
+
       const tradeData = {
-        account_id: data.account_id,
+        account_id: isEasyMode ? firstAccount : data.account_id!,
         instrument: data.instrument,
         instrument_type: data.instrumentType as 'FOREX' | 'INDICES' | 'CRYPTO' | 'FUTURES' | 'STOCKS',
         trade_type: data.tradeType as 'BUY' | 'SELL',
-        position_size: parseFloat(data.positionSize),
-        entry_price: parseFloat(data.entryPrice),
-        stop_loss: parseFloat(data.stopLoss),
-        take_profit: parseFloat(data.takeProfit),
+        position_size: isEasyMode ? 1.0 : parseFloat(data.positionSize!),
+        entry_price: isEasyMode ? 0 : parseFloat(data.entryPrice!),
+        stop_loss: isEasyMode ? 0 : parseFloat(data.stopLoss!),
+        take_profit: isEasyMode ? 0 : parseFloat(data.takeProfit!),
         pnl: calculatedPnL,
         status: "CLOSED" as const,
         notes: data.notes || '',
@@ -241,9 +309,10 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
       onClose();
     },
     onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : "Failed to add trade. Please try again.";
       toast({
         title: "Error",
-        description: "Failed to add trade. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       console.error("Error adding trade:", error);
@@ -304,14 +373,53 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
   const onSubmit = (data: AddTradeFormData) => {
     console.log("Form data:", data);
     console.log("Form errors:", form.formState.errors);
-    addTradeMutation.mutate(data);
+    
+    // Add entryMode to data
+    const submitData = {
+      ...data,
+      entryMode,
+    };
+    
+    addTradeMutation.mutate(submitData);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] bg-background border overflow-y-auto">
         <DialogHeader className="pb-4">
-          <DialogTitle className="text-xl font-semibold">{trade?.id ? 'Edit Trade' : 'Add New Trade'}</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-xl font-semibold">{trade?.id ? 'Edit Trade' : 'Add New Trade'}</DialogTitle>
+            {!trade?.id && (
+              <div className="flex items-center gap-2 bg-muted px-3 py-1 rounded-full">
+                <button
+                  type="button"
+                  onClick={() => setEntryMode("easy")}
+                  className={cn(
+                    "px-3 py-1 text-sm font-medium rounded-full transition-colors",
+                    entryMode === "easy" 
+                      ? "bg-primary text-primary-foreground" 
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  data-testid="button-easy-mode"
+                >
+                  Easy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEntryMode("advanced")}
+                  className={cn(
+                    "px-3 py-1 text-sm font-medium rounded-full transition-colors",
+                    entryMode === "advanced" 
+                      ? "bg-primary text-primary-foreground" 
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  data-testid="button-advanced-mode"
+                >
+                  Advanced
+                </button>
+              </div>
+            )}
+          </div>
           <DialogDescription className="text-sm text-muted-foreground">
             Record a new trade for {tradeDate.toLocaleDateString()}
           </DialogDescription>
@@ -319,39 +427,41 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Trading Account Selection */}
-            <FormField
-              control={form.control}
-              name="account_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Trading Account *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="bg-background border-input" data-testid="select-account">
-                        <SelectValue placeholder="Select trading account" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {!accounts || accounts.length === 0 ? (
-                        <div className="p-2 text-sm text-muted-foreground">
-                          No accounts available. Please add an account first.
-                        </div>
-                      ) : (
-                        accounts
-                          .filter(acc => acc.is_active)
-                          .map((account) => (
-                            <SelectItem key={account.id} value={account.id} data-testid={`option-account-${account.id}`}>
-                              {account.account_name} ({account.broker_name})
-                            </SelectItem>
-                          ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Trading Account Selection - Advanced mode only */}
+            {entryMode === "advanced" && (
+              <FormField
+                control={form.control}
+                name="account_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Trading Account *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="bg-background border-input" data-testid="select-account">
+                          <SelectValue placeholder="Select trading account" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {!accounts || accounts.length === 0 ? (
+                          <div className="p-2 text-sm text-muted-foreground">
+                            No accounts available. Please add an account first.
+                          </div>
+                        ) : (
+                          accounts
+                            .filter(acc => acc.is_active)
+                            .map((account) => (
+                              <SelectItem key={account.id} value={account.id} data-testid={`option-account-${account.id}`}>
+                                {account.account_name} ({account.broker_name})
+                              </SelectItem>
+                            ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               {/* Instrument Type */}
@@ -500,151 +610,164 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
                 )}
               />
 
-              {/* Position Size */}
-              <FormField
-                control={form.control}
-                name="positionSize"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Position Size</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="1.0"
-                        className="bg-background border-input"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Advanced mode only fields */}
+              {entryMode === "advanced" && (
+                <>
+                  {/* Position Size */}
+                  <FormField
+                    control={form.control}
+                    name="positionSize"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Position Size</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="1.0"
+                            className="bg-background border-input"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* Entry Price */}
-              <FormField
-                control={form.control}
-                name="entryPrice"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Entry Price</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="1.08450"
-                        className="bg-background border-input"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  {/* Entry Price */}
+                  <FormField
+                    control={form.control}
+                    name="entryPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Entry Price</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="1.08450"
+                            className="bg-background border-input"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* Entry Time */}
-              <FormField
-                control={form.control}
-                name="entryTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Entry Time (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="time"
-                        className="bg-background border-input"
-                        data-testid="input-entry-time"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  {/* Entry Time */}
+                  <FormField
+                    control={form.control}
+                    name="entryTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Entry Time (Optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="time"
+                            className="bg-background border-input"
+                            data-testid="input-entry-time"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* Exit Time */}
-              <FormField
-                control={form.control}
-                name="exitTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Exit Time (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="time"
-                        className="bg-background border-input"
-                        data-testid="input-exit-time"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  {/* Exit Time */}
+                  <FormField
+                    control={form.control}
+                    name="exitTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Exit Time (Optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="time"
+                            className="bg-background border-input"
+                            data-testid="input-exit-time"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* Stop Loss */}
-              <FormField
-                control={form.control}
-                name="stopLoss"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stop Loss</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="1.08200"
-                        className="bg-background border-input"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  {/* Stop Loss */}
+                  <FormField
+                    control={form.control}
+                    name="stopLoss"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Stop Loss</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="1.08200"
+                            className="bg-background border-input"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* Take Profit */}
-              <FormField
-                control={form.control}
-                name="takeProfit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Take Profit</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="1.08700"
-                        className="bg-background border-input"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  {/* Take Profit */}
+                  <FormField
+                    control={form.control}
+                    name="takeProfit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Take Profit</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="1.08700"
+                            className="bg-background border-input"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
 
             </div>
 
             {/* Profit/Loss Section */}
             <div className="border rounded-lg p-4 space-y-4 bg-muted/20">
-              <FormField
-                control={form.control}
-                name="hasPnL"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center space-x-2">
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel className="text-sm font-medium">
-                        Set Profit/Loss Amount
-                      </FormLabel>
-                    </div>
-                  </FormItem>
-                )}
-              />
+              {entryMode === "advanced" && (
+                <FormField
+                  control={form.control}
+                  name="hasPnL"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center space-x-2">
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="text-sm font-medium">
+                          Set Profit/Loss Amount
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              )}
+              
+              {entryMode === "easy" && (
+                <div className="mb-2">
+                  <p className="text-sm font-medium text-foreground">Profit/Loss *</p>
+                </div>
+              )}
 
-              {form.watch("hasPnL") && (
+              {(entryMode === "easy" || form.watch("hasPnL")) && (
                 <div className="grid grid-cols-2 gap-4">
                   {/* P&L Type */}
                   <FormField
@@ -785,6 +908,15 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
                 </div>
               </FeatureGate>
             </div>
+
+            {/* Warning for Easy Mode */}
+            {entryMode === "easy" && (
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
+                <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                  ⚠️ <strong>Warning:</strong> Trades uploaded using the <strong>(easy)</strong> mode will affect analytics & dashboard data, but the calendar will function as normal.
+                </p>
+              </div>
+            )}
 
             <div className="flex justify-between items-center pt-4">
               <p className="text-sm text-muted-foreground">
