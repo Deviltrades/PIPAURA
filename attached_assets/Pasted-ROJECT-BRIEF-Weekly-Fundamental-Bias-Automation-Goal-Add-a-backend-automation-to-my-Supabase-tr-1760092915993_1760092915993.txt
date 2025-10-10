@@ -1,0 +1,164 @@
+ROJECT BRIEF: “Weekly Fundamental Bias Automation”
+
+Goal:
+Add a backend automation to my Supabase trading-journal project (Pipaura) that automatically generates and updates weekly fundamental bias scores for FX pairs.
+The results must be stored in Supabase and shown to users on my Vercel frontend widget.
+
+🔧 1. System Summary
+
+Workflow overview:
+
+TradingEconomics API  →  
+Yahoo Finance (market data)  →  
+Replit script (automation)  →  
+Supabase tables  →  
+Vercel frontend widget
+
+
+Automation purpose:
+Once per week (Sunday 00:00 UTC), Replit should:
+
+Pull the last 7 days of macro data from TradingEconomics API.
+
+Pull weekly % changes for key market proxies (DXY, WTI, GOLD, COPPER, SPX, UST10Y) via yfinance.
+
+Apply a pre-defined scoring model to each currency.
+
+Compare base vs quote currencies to produce per-pair “fundamental bias” results.
+
+Write all results to Supabase tables.
+
+Vercel frontend will read these results from Supabase (read-only).
+
+🧱 2. Supabase Setup
+Tables to create (SQL):
+create table if not exists currency_scores (
+  id uuid primary key default gen_random_uuid(),
+  window_start timestamptz not null,
+  window_end   timestamptz not null,
+  currency text not null check (char_length(currency)=3),
+  data_score int not null default 0,
+  cb_tone_score int not null default 0,
+  commodity_score int not null default 0,
+  sentiment_score int not null default 0,
+  market_score int not null default 0,
+  total_score int not null default 0,
+  details jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists fundamental_bias (
+  id uuid primary key default gen_random_uuid(),
+  pair text not null,
+  base_currency text not null,
+  quote_currency text not null,
+  base_score int not null,
+  quote_score int not null,
+  total_bias int not null,
+  bias_text text not null,
+  summary text not null,
+  confidence int not null default 50,
+  updated_at timestamptz not null default now()
+);
+
+
+Access rules:
+
+Replit uses the service role key → full write access.
+
+Vercel uses the anon key → read-only to fundamental_bias only.
+
+🔑 3. Environment Variables (Replit → Secrets)
+Variable	Purpose
+SUPABASE_URL	Supabase project URL
+SUPABASE_SERVICE_ROLE_KEY	Server key for write access
+TRADING_ECONOMICS_API_KEY	TE API token
+
+(If the TE key is missing, script should still run using market data only.)
+
+📦 4. Files to Create in Replit
+
+requirements.txt
+
+requests==2.32.3
+yfinance==0.2.44
+python-dateutil==2.9.0.post0
+supabase==2.6.0
+
+
+main.py
+(Use the single-file version provided in the message above — includes all logic, scoring, Supabase writes, and cron-safe orchestration.)
+
+⚙️ 5. Scheduler Configuration
+
+Set a Replit Scheduled Job:
+
+Setting	Value
+Command	python main.py
+Cron	0 0 * * 0 (Sunday 00:00 UTC)
+
+This ensures automatic refresh each week.
+
+🧠 6. Scoring Model Summary
+
+Each currency gets weighted scores:
+
+Factor	Rule	Weight
+Economic Data Surprise	Actual > Forecast → + ; < Forecast → −	±1–3
+Central Bank Tone	Hawkish = +3 ; Dovish = −3	±3
+Commodity Links	CAD ↔ WTI ; AUD ↔ Copper/Gold ; NZD ↔ Risk	±2
+Market Flows	DXY↑ & Yields↑ → USD + ; Risk-off → JPY/CHF +	±2
+
+Then for each pair:
+bias = quote_score – base_score →
+
+≥ +7 → Fundamentally Strong
+
+≤ −7 → Fundamentally Weak
+
+otherwise → Neutral
+
+🧭 7. Expected Output
+
+Supabase will store, e.g.:
+
+fundamental_bias table
+
+pair	bias_text	total_bias	summary	confidence	updated_at
+EUR/USD	🔴 Fundamentally Weak	−10	“USD CPI beat; DXY ↑; EUR soft data”	90	2025-10-12
+USD/CAD	🟢 Fundamentally Strong	+12	“Oil ↓; Fed hawkish; CAD weak”	95	2025-10-12
+🌐 8. Frontend Integration (Vercel)
+
+Frontend fetches read-only from Supabase:
+
+const { data } = await supabase
+  .from('fundamental_bias')
+  .select('pair, total_bias, bias_text, summary, updated_at, confidence')
+  .order('updated_at', { ascending: false });
+
+
+Display color:
+
+Green = ≥ +7
+
+Red = ≤ −7
+
+Gray = Neutral
+
+Show tooltip or mini-card with summary and “Last updated …” line.
+
+✅ 9. Deliverables for Replit
+
+ Add all environment variables
+
+ Create both Supabase tables
+
+ Add requirements.txt
+
+ Add main.py (provided)
+
+ Test run → verify tables populate
+
+ Configure weekly scheduler
+
+ Confirm Supabase read API visible on frontend
