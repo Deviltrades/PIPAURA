@@ -1,6 +1,7 @@
 import os, datetime as dt, requests, yfinance as yf
 from dateutil.relativedelta import relativedelta
 from supabase import create_client
+from fetch_fundamentals_free import combine_fundamental_scores
 
 # ----------------- CONFIG -----------------
 # Full universe: 8 fiat currencies + 2 precious metals
@@ -294,6 +295,10 @@ def run():
 
     cal = fetch_tradingeconomics_calendar()
     mkt = fetch_markets()
+    
+    # Fetch free fundamental data (EconDB + ForexFactory)
+    print("\n🔄 Fetching free fundamental data sources...")
+    macro_scores = combine_fundamental_scores()
 
     per_ccy = {}
     for ccy in CURRENCIES:
@@ -301,7 +306,12 @@ def run():
         cbs, cbnotes = score_cb_tone(CENTRAL_BANK_TONE.get(ccy))
         cos, conotes = score_commodities(ccy, mkt)
         ms, mnotes = score_market_flows(ccy, mkt)
-        total = ds + cbs + cos + ms
+        
+        # Add macro scores from EconDB + ForexFactory
+        macro_score = macro_scores.get(ccy, 0)
+        macro_notes = [f"Macro data: {macro_score:+d}"] if macro_score != 0 else []
+        
+        total = ds + cbs + cos + ms + macro_score
 
         per_ccy[ccy] = {
             "window_start": w_start.isoformat(),
@@ -313,7 +323,7 @@ def run():
             "sentiment_score": 0,
             "market_score": ms,
             "total_score": total,
-            "notes": dnotes + cbnotes + conotes + mnotes
+            "notes": dnotes + cbnotes + conotes + mnotes + macro_notes
         }
 
     insert_currency_scores([{
