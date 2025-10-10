@@ -333,101 +333,94 @@ export default function Fundamentals() {
         </TabsContent>
 
         <TabsContent value="strength" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>FX Pair Fundamental Bias</CardTitle>
-                <CardDescription>Weekly automated fundamental analysis for major currency pairs</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {biasLoading ? (
-                  <div className="text-center py-8 text-muted-foreground">Loading fundamental data...</div>
-                ) : fundamentalBias && fundamentalBias.length > 0 ? (
-                  <div className="space-y-4">
-                    {fundamentalBias.map((bias: any, index: number) => {
-                      const getBiasColor = (totalBias: number) => {
-                        if (totalBias >= 7) return "text-green-500";
-                        if (totalBias <= -7) return "text-red-500";
-                        return "text-gray-500";
-                      };
+          <Card>
+            <CardHeader>
+              <CardTitle>FX Pair Fundamental Bias</CardTitle>
+              <CardDescription>Automated fundamental analysis for 38 major currency pairs</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {biasLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading fundamental data...</div>
+              ) : fundamentalBias && fundamentalBias.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {fundamentalBias.map((bias: any, index: number) => {
+                    const getBiasColor = (totalBias: number) => {
+                      if (totalBias >= 7) return "text-green-500";
+                      if (totalBias <= -7) return "text-red-500";
+                      return "text-gray-500";
+                    };
 
-                      const getBiasVariant = (totalBias: number): "default" | "destructive" | "secondary" => {
-                        if (totalBias >= 7) return "default";
-                        if (totalBias <= -7) return "destructive";
-                        return "secondary";
-                      };
+                    const getBiasVariant = (totalBias: number): "default" | "destructive" | "secondary" => {
+                      if (totalBias >= 7) return "default";
+                      if (totalBias <= -7) return "destructive";
+                      return "secondary";
+                    };
 
-                      return (
-                        <div key={index} className="space-y-2 p-3 border rounded-lg" data-testid={`pair-bias-${index}`}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <span className="font-bold text-lg">{bias.pair}</span>
-                              {bias.total_bias >= 7 ? (
-                                <TrendingUp className="h-5 w-5 text-green-500" />
-                              ) : bias.total_bias <= -7 ? (
-                                <TrendingDown className="h-5 w-5 text-red-500" />
-                              ) : (
-                                <Minus className="h-5 w-5 text-gray-500" />
-                              )}
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <span className={`text-sm font-bold ${getBiasColor(bias.total_bias)}`}>
-                                {bias.total_bias > 0 ? '+' : ''}{bias.total_bias}
-                              </span>
-                              <Badge variant={getBiasVariant(bias.total_bias)}>
-                                {bias.bias_text}
-                              </Badge>
-                            </div>
+                    return (
+                      <div key={index} className="space-y-2 p-4 border rounded-lg" data-testid={`pair-bias-${index}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold">{bias.pair}</span>
+                            {bias.total_bias >= 7 ? (
+                              <TrendingUp className="h-4 w-4 text-green-500" />
+                            ) : bias.total_bias <= -7 ? (
+                              <TrendingDown className="h-4 w-4 text-red-500" />
+                            ) : (
+                              <Minus className="h-4 w-4 text-gray-500" />
+                            )}
                           </div>
-                          <p className="text-sm text-muted-foreground">{bias.summary}</p>
-                          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                            <span>Confidence: {bias.confidence}%</span>
-                            <span>Updated: {format(new Date(bias.updated_at), 'MMM dd, yyyy')}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No fundamental bias data available. Run the automation script to generate data.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Key Fundamental Drivers</CardTitle>
-                  <CardDescription>Current market-moving themes</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {driversLoading ? (
-                    <div className="text-center py-4 text-muted-foreground">Loading market drivers...</div>
-                  ) : marketDrivers && marketDrivers.length > 0 ? (
-                    <div className="space-y-3">
-                      {marketDrivers.map((driver: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-2 border-l-4 border-l-blue-500 pl-3" data-testid={`driver-${index}`}>
-                          <div>
-                            <div className="font-medium text-sm">{driver.driver}</div>
-                            <div className="text-xs text-muted-foreground">{driver.status}</div>
-                          </div>
-                          <Badge variant={driver.impact === "High" ? "destructive" : "secondary"}>
-                            {driver.impact}
+                          <Badge variant={getBiasVariant(bias.total_bias)}>
+                            {bias.bias_text}
                           </Badge>
                         </div>
-                      ))}
+                        <p className="text-sm text-muted-foreground line-clamp-2">{bias.summary}</p>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+                          <span className={`font-bold ${getBiasColor(bias.total_bias)}`}>
+                            Score: {bias.total_bias > 0 ? '+' : ''}{bias.total_bias}
+                          </span>
+                          <span>Confidence: {bias.confidence}%</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No fundamental bias data available. Run the automation script to generate data.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Key Fundamental Drivers</CardTitle>
+              <CardDescription>Current market-moving themes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {driversLoading ? (
+                <div className="text-center py-4 text-muted-foreground">Loading market drivers...</div>
+              ) : marketDrivers && marketDrivers.length > 0 ? (
+                <div className="space-y-3">
+                  {marketDrivers.map((driver: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-2 border-l-4 border-l-blue-500 pl-3" data-testid={`driver-${index}`}>
+                      <div>
+                        <div className="font-medium text-sm">{driver.driver}</div>
+                        <div className="text-xs text-muted-foreground">{driver.status}</div>
+                      </div>
+                      <Badge variant={driver.impact === "High" ? "destructive" : "secondary"}>
+                        {driver.impact}
+                      </Badge>
                     </div>
-                  ) : (
-                    <div className="text-center py-4 text-muted-foreground">
-                      No driver data available. Run the automation to generate data.
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4 text-muted-foreground">
+                  No driver data available. Run the automation to generate data.
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Indices Section */}
           <Card className="mt-6">
