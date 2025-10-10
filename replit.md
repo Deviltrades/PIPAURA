@@ -12,11 +12,19 @@ Settings access: Settings icon next to theme toggle with dedicated logout tab.
 
 ## Recent Changes
 
-### Weekly Fundamental Bias Automation - Full Coverage (Updated 2025-10-10)
-Implemented comprehensive automated fundamental analysis system with backend Python automation and frontend integration covering FX, Metals, and Indices:
+### Automated Fundamental Bias System - Real-Time & Weekly (Updated 2025-10-10)
+Implemented comprehensive automated fundamental analysis system with dual-frequency updates: real-time (30-min/hourly) + weekly deep analysis:
 
-**Backend Automation - Full Coverage:**
-- ✅ Python script (`main.py`) automates weekly fundamental analysis
+**Real-Time Bias Engine (NEW - 30-min/Hourly):**
+- ✅ Python script (`hourly_update.py`) for real-time market-driven bias updates
+- ✅ **Cron Schedule 1**: Every 30 min during trading hours (6-22 UTC, Mon-Fri) via `*/30 6-22 * * 1-5`
+- ✅ **Cron Schedule 2**: Hourly off-session safety net (24/7) via `0 * * * *`
+- ✅ Hybrid Polygon.io → Yahoo Finance fallback for 100% data reliability
+- ✅ Updates: 10 currencies, 38 FX pairs, 10 indices every cycle
+- ✅ One-line completion log: `[UTC timestamp] ✅ Updated: 10 currencies, 38 pairs, 10 indices`
+
+**Weekly Deep Analysis (Existing):**
+- ✅ Python script (`main.py`) automates comprehensive weekly fundamental analysis
 - ✅ **38 FX Pairs**: All majors (EUR/USD, GBP/USD, etc.) + all crosses (EUR/GBP, GBP/JPY, etc.) + metals (XAU/USD, XAG/USD)
 - ✅ **10 Global Indices**: US500, US100, US30, UK100, GER40, FRA40, EU50, JP225, HK50, AUS200
 - ✅ **10 Currencies scored**: USD, EUR, GBP, JPY, CAD, AUD, NZD, CHF, XAU, XAG
