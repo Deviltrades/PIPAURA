@@ -194,11 +194,14 @@ def update_drivers():
     # Update database
     updates = []
     for driver, (status, description) in drivers.items():
+        # Determine impact level based on analysis
+        impact = "High" if "Fed" in driver or "Inflation" in driver else "Medium"
+        
         try:
             sb.table("market_drivers").update({
                 "status": status,
-                "description": description,
-                "last_updated": datetime.utcnow().isoformat()
+                "impact": impact,
+                "updated_at": datetime.utcnow().isoformat()
             }).eq("driver", driver).execute()
             
             updates.append(f"{driver}: {status}")
