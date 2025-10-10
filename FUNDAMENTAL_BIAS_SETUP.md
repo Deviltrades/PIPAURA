@@ -4,9 +4,11 @@
 
 Your Replit project is now fully configured with:
 
-- ✅ Python automation script (`main.py`) - Ready to run
+- ✅ Python automation script (`main.py`) - Ready to run with **full coverage**:
+  - **38 FX Pairs**: All majors + crosses + metals (XAU/USD, XAG/USD)
+  - **10 Global Indices**: US500, US100, US30, UK100, GER40, FRA40, EU50, JP225, HK50, AUS200
 - ✅ All Python dependencies installed (requests, yfinance, python-dateutil, supabase)
-- ✅ Frontend integration complete - Fundamental Strength tab displays real data
+- ✅ Frontend integration complete - Fundamental Strength tab displays all data
 - ✅ Sample data inserted in development database for testing
 - ✅ Environment variables configured
 
@@ -73,10 +75,33 @@ ON fundamental_bias FOR ALL TO public USING (true) WITH CHECK (true);
 DROP POLICY IF EXISTS "Service role access to currency_scores" ON currency_scores;
 CREATE POLICY "Service role access to currency_scores"
 ON currency_scores FOR ALL TO public USING (true) WITH CHECK (true);
+
+-- Index bias table for global stock indices
+CREATE TABLE IF NOT EXISTS index_bias (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  instrument TEXT NOT NULL UNIQUE,
+  score INT NOT NULL,
+  bias_text TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  confidence INT NOT NULL DEFAULT 50,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_index_bias_instr ON index_bias (instrument);
+
+ALTER TABLE index_bias ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read access to index_bias" ON index_bias;
+CREATE POLICY "Public read access to index_bias"
+ON index_bias FOR SELECT TO public USING (true);
+
+DROP POLICY IF EXISTS "Service role write to index_bias" ON index_bias;
+CREATE POLICY "Service role write to index_bias"  
+ON index_bias FOR ALL TO public USING (true) WITH CHECK (true);
 ```
 
 6. Click **Run** (or press `Cmd/Ctrl + Enter`)
-7. You should see "Success. No rows returned" - **Tables are now created!** ✅
+7. You should see "Success. No rows returned" - **All 3 tables are now created!** ✅
 
 ### Step 2: Test the Automation Script
 
@@ -87,9 +112,10 @@ python main.py
 ```
 
 Expected output:
-- Market data downloads from yfinance (DXY, WTI, GOLD, etc.)
-- Currency scores calculated
-- Fundamental bias generated for 11 FX pairs
+- Market data downloads from yfinance (DXY, WTI, GOLD, COPPER, SPX, UST10Y, VIX)
+- Currency scores calculated for 10 currencies (USD, EUR, GBP, JPY, CAD, AUD, NZD, CHF, XAU, XAG)
+- Fundamental bias generated for **38 FX pairs** (all majors + crosses + metals)
+- Index bias generated for **10 global indices** (US500, US100, US30, etc.)
 - Data written to your production Supabase ✅
 
 ### Step 3: Configure Weekly Scheduler (Optional but Recommended)
@@ -115,8 +141,9 @@ You can run `python main.py` manually whenever you want to update the fundamenta
 2. Navigate to **Fundamentals** page
 3. Click the **"Fundamental Strength"** tab
 4. You should see:
-   - **FX Pair Fundamental Bias** (11 major pairs with color-coded badges)
-   - **Currency Strength Scores** (8 major currencies with breakdown)
+   - **FX Pair Fundamental Bias** (38 pairs including metals with color-coded badges)
+   - **Currency Strength Scores** (10 currencies with breakdown: USD, EUR, GBP, JPY, CAD, AUD, NZD, CHF, XAU, XAG)
+   - **Global Indices Fundamental Bias** (10 major indices: US500, US100, US30, UK100, GER40, etc.)
    - **Key Fundamental Drivers**
 
 ## 📊 How It Works
@@ -129,7 +156,7 @@ You can run `python main.py` manually whenever you want to update the fundamenta
    - *Note: Works without API key, but scoring will be limited*
 
 2. **Yahoo Finance** (free):
-   - Market data: DXY, WTI, GOLD, COPPER, SPX, UST10Y
+   - Market data: DXY, WTI, GOLD, COPPER, SPX, UST10Y, VIX
    - Weekly % changes
    - Always available ✅
 
@@ -146,11 +173,38 @@ Each currency gets weighted scores:
 
 ### Pair Bias Calculation
 
-For each pair (e.g., EUR/USD):
+For each FX pair (e.g., EUR/USD):
 - `bias = quote_score - base_score`
 - **≥ +7** → 🟢 Fundamentally Strong (green badge)
 - **≤ -7** → 🔴 Fundamentally Weak (red badge)
 - **else** → ⚪ Neutral (gray badge)
+
+### Metals Scoring
+
+**Gold (XAU):**
+- Yields↓ (≤-0.05%) → +2 (safe haven demand)
+- Yields↑ (≥+0.05%) → -2 (opportunity cost)
+- DXY↓ (≤-1.0%) → +2 (inverse correlation)
+- DXY↑ (≥+1.0%) → -2 (dollar strength)
+
+**Silver (XAG):**
+- DXY movement → ±1 (similar to gold but weaker)
+- Copper↑/↓ → ±1 (industrial metal correlation)
+
+### Indices Scoring
+
+Each index scored on:
+1. **Risk Sentiment**: SPX↑/↓ → ±2; VIX movement → ±1
+2. **Yields**: UST10Y↑ → -2 (headwind); UST10Y↓ → +2 (tailwind)
+3. **Home Currency**: Strong currency → -1 (export headwind)
+4. **Commodity Tilt**:
+   - FTSE (UK100): Oil prices → ±1
+   - ASX (AUS200): Copper, Gold → ±1 each
+
+**Index Bias Thresholds:**
+- **≥ +3** → 🟢 Fundamentally Strong
+- **≤ -3** → 🔴 Fundamentally Weak
+- **else** → ⚪ Neutral
 
 ## 🔑 Optional: Add TradingEconomics API Key
 

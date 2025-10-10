@@ -12,28 +12,31 @@ Settings access: Settings icon next to theme toggle with dedicated logout tab.
 
 ## Recent Changes
 
-### Weekly Fundamental Bias Automation (Added 2025-10-10)
-Implemented comprehensive automated fundamental analysis system with backend Python automation and frontend integration:
+### Weekly Fundamental Bias Automation - Full Coverage (Updated 2025-10-10)
+Implemented comprehensive automated fundamental analysis system with backend Python automation and frontend integration covering FX, Metals, and Indices:
 
-**Backend Automation:**
-- ✅ Python script (`main.py`) automates weekly fundamental analysis scoring for 8 major currencies
-- ✅ Data sources: TradingEconomics API (optional), Yahoo Finance for market data (DXY, WTI, GOLD, COPPER, SPX, UST10Y)
-- ✅ Scoring model: Economic data surprises, Central Bank tone, Commodity correlations, Market flows
-- ✅ Generates bias for 11 major FX pairs (EUR/USD, GBP/USD, USD/JPY, etc.)
+**Backend Automation - Full Coverage:**
+- ✅ Python script (`main.py`) automates weekly fundamental analysis
+- ✅ **38 FX Pairs**: All majors (EUR/USD, GBP/USD, etc.) + all crosses (EUR/GBP, GBP/JPY, etc.) + metals (XAU/USD, XAG/USD)
+- ✅ **10 Global Indices**: US500, US100, US30, UK100, GER40, FRA40, EU50, JP225, HK50, AUS200
+- ✅ **10 Currencies scored**: USD, EUR, GBP, JPY, CAD, AUD, NZD, CHF, XAU, XAG
+- ✅ Data sources: TradingEconomics API (optional), Yahoo Finance for market data (DXY, WTI, GOLD, COPPER, SPX, UST10Y, VIX)
+- ✅ Scoring model: Economic data surprises, Central Bank tone, Commodity correlations, Market flows, Risk sentiment
 - ✅ Automated weekly execution via Replit Scheduled Jobs (Sunday 00:00 UTC)
-- ✅ Stores results in Supabase: `currency_scores` and `fundamental_bias` tables
+- ✅ Stores results in Supabase: `currency_scores`, `fundamental_bias`, and `index_bias` tables
 
 **Frontend Integration:**
-- ✅ "Fundamental Strength" tab in Fundamentals page displays real-time data
-- ✅ FX Pair Fundamental Bias: Color-coded badges (green ≥7, red ≤-7, gray neutral), trend icons, summary, confidence, last updated
-- ✅ Currency Strength Scores: Shows breakdown by data score, CB tone, market flows with visual progress bars
+- ✅ "Fundamental Strength" tab in Fundamentals page displays all real-time data
+- ✅ FX Pair Fundamental Bias: 38 pairs with color-coded badges (green ≥7, red ≤-7, gray neutral), trend icons, summary, confidence
+- ✅ Currency Strength Scores: 10 currencies with breakdown by data score, CB tone, market flows with visual progress bars
+- ✅ Global Indices Fundamental Bias: 10 indices with color-coded badges (green ≥3, red ≤-3, gray neutral), summaries, scores
 - ✅ React Query integration for live data updates
 - ✅ Loading and empty states with helpful messages
 
 **Technical Implementation:**
 - ✅ Direct Supabase integration using service role key for automation
-- ✅ RLS policies: Public read access to fundamental_bias, service role write access
-- ✅ getFundamentalBias() and getCurrencyScores() service functions
+- ✅ RLS policies: Public read access, service role write access for all tables
+- ✅ Service functions: getFundamentalBias(), getCurrencyScores(), getIndexBias()
 - ✅ Comprehensive setup documentation in `FUNDAMENTAL_BIAS_SETUP.md`
 
 ### Floating DNA Core Visualization (Added 2025-10-07)
