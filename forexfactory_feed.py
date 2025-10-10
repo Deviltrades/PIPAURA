@@ -12,7 +12,7 @@ from datetime import datetime
 from supabase import create_client
 
 # Config
-FF_FEED_URL = "https://cdn-nfs.faireconomy.media/ff_calendar_thisweek.xml"
+FF_FEED_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml"
 SB_URL = os.getenv("SUPABASE_URL") or os.getenv("VITE_SUPABASE_URL")
 SB_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
