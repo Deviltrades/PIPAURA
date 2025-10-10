@@ -1,29 +1,35 @@
--- Create market_drivers table for Key Fundamental Drivers analysis
+-- Create market_drivers table for automated fundamental market analysis
+-- Run this in your Supabase SQL Editor: Dashboard → SQL Editor → New Query
+
 CREATE TABLE IF NOT EXISTS market_drivers (
-  driver TEXT PRIMARY KEY,
-  status TEXT NOT NULL,
-  impact TEXT NOT NULL,
-  description TEXT,
-  last_updated TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  driver VARCHAR(100) PRIMARY KEY,
+  status VARCHAR(100) NOT NULL,
+  impact VARCHAR(20) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insert default drivers
-INSERT INTO market_drivers (driver, status, impact, description) VALUES
-  ('Fed Rate Policy', 'Neutral', 'High', 'Federal Reserve monetary policy stance'),
-  ('Global Growth', 'Neutral', 'Medium', 'Global economic growth outlook'),
-  ('Inflation Trends', 'Neutral', 'High', 'Inflation trajectory and expectations'),
-  ('Geopolitical Risk', 'Neutral', 'Medium', 'Global political and conflict risks'),
-  ('Oil Prices', 'Neutral', 'Medium', 'Energy market dynamics')
-ON CONFLICT (driver) DO NOTHING;
+-- Insert default drivers with initial values
+INSERT INTO market_drivers (driver, status, impact, updated_at) VALUES
+  ('Fed Rate Policy', 'Hawkish Pause', 'High', NOW()),
+  ('Global Growth', 'Slowing', 'Medium', NOW()),
+  ('Inflation Trends', 'Cooling', 'High', NOW()),
+  ('Geopolitical Risk', 'Elevated', 'Medium', NOW()),
+  ('Oil Prices', 'Stable', 'Medium', NOW())
+ON CONFLICT (driver) DO UPDATE 
+SET status = EXCLUDED.status, 
+    impact = EXCLUDED.impact,
+    updated_at = EXCLUDED.updated_at;
 
--- Enable RLS
+-- Enable Row Level Security (RLS)
 ALTER TABLE market_drivers ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies
-DROP POLICY IF EXISTS "Public read access to market_drivers" ON market_drivers;
-CREATE POLICY "Public read access to market_drivers"
-ON market_drivers FOR SELECT TO public USING (true);
+-- Public read access (no authentication required)
+CREATE POLICY "market_drivers_read_policy" ON market_drivers
+  FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "Service role write to market_drivers" ON market_drivers;
-CREATE POLICY "Service role write to market_drivers"
-ON market_drivers FOR ALL TO public USING (true) WITH CHECK (true);
+-- Public write access (will be used by automation scripts with service role)
+CREATE POLICY "market_drivers_write_policy" ON market_drivers
+  FOR ALL USING (true);
+
+-- Reload PostgREST schema cache
+NOTIFY pgrst, 'reload schema';

@@ -27,7 +27,7 @@ def analyze_fed_policy():
         
         usd_data = result.data[0]
         total_score = usd_data.get("total_score", 0)
-        cb_tone = usd_data.get("central_bank_tone", 0)
+        cb_tone = usd_data.get("cb_tone_score", 0)
         
         # Analyze Fed stance
         if cb_tone > 10:
@@ -54,9 +54,9 @@ def analyze_global_growth():
         scores = []
         
         for idx in indices:
-            result = sb.table("index_bias").select("bias_score").eq("index_name", idx).execute()
+            result = sb.table("index_bias").select("score").eq("instrument", idx).execute()
             if result.data:
-                scores.append(result.data[0].get("bias_score", 0))
+                scores.append(result.data[0].get("score", 0))
         
         if not scores:
             return "Neutral", "No index data"
@@ -88,9 +88,9 @@ def analyze_inflation():
         scores = []
         
         for curr in currencies:
-            result = sb.table("currency_scores").select("economic_data_score").eq("currency", curr).execute()
+            result = sb.table("currency_scores").select("data_score").eq("currency", curr).execute()
             if result.data:
-                scores.append(result.data[0].get("economic_data_score", 0))
+                scores.append(result.data[0].get("data_score", 0))
         
         # Get Gold score (inflation hedge)
         gold_result = sb.table("currency_scores").select("total_score").eq("currency", "XAU").execute()
