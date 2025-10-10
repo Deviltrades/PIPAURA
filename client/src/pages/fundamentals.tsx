@@ -3,8 +3,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getFundamentalBias, getCurrencyScores } from "@/lib/supabase-service";
+import { format } from "date-fns";
 
 export default function Fundamentals() {
+  const { data: fundamentalBias, isLoading: biasLoading } = useQuery({
+    queryKey: ['/api/fundamental-bias'],
+    queryFn: getFundamentalBias,
+  });
+
+  const { data: currencyScores, isLoading: scoresLoading } = useQuery({
+    queryKey: ['/api/currency-scores'],
+    queryFn: getCurrencyScores,
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -298,56 +311,63 @@ export default function Fundamentals() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Currency Strength Index</CardTitle>
-                <CardDescription>Real-time fundamental strength of major currencies</CardDescription>
+                <CardTitle>FX Pair Fundamental Bias</CardTitle>
+                <CardDescription>Weekly automated fundamental analysis for major currency pairs</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {[
-                    { currency: "USD", strength: 85, trend: "up", factors: "Strong GDP, Hawkish Fed, Rising Employment" },
-                    { currency: "EUR", strength: 65, trend: "neutral", factors: "Stable Inflation, ECB Holding Rates" },
-                    { currency: "GBP", strength: 58, trend: "down", factors: "Economic Slowdown, BoE Concerns" },
-                    { currency: "JPY", strength: 45, trend: "down", factors: "Negative Rates, Weak Economic Data" },
-                    { currency: "CHF", strength: 72, trend: "up", factors: "Safe Haven Demand, Strong Economy" },
-                    { currency: "CAD", strength: 68, trend: "neutral", factors: "Oil Prices Stable, Mixed Data" },
-                    { currency: "AUD", strength: 55, trend: "down", factors: "China Concerns, RBA Dovish" },
-                    { currency: "NZD", strength: 52, trend: "down", factors: "RBNZ Cutting Cycle Started" },
-                  ].map((curr, index) => (
-                    <div key={index} className="space-y-2" data-testid={`currency-strength-${index}`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="font-bold text-lg">{curr.currency}</span>
-                          {curr.trend === "up" ? (
-                            <TrendingUp className="h-5 w-5 text-green-500" />
-                          ) : curr.trend === "down" ? (
-                            <TrendingDown className="h-5 w-5 text-red-500" />
-                          ) : (
-                            <Minus className="h-5 w-5 text-gray-500" />
-                          )}
+                {biasLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">Loading fundamental data...</div>
+                ) : fundamentalBias && fundamentalBias.length > 0 ? (
+                  <div className="space-y-4">
+                    {fundamentalBias.map((bias: any, index: number) => {
+                      const getBiasColor = (totalBias: number) => {
+                        if (totalBias >= 7) return "text-green-500";
+                        if (totalBias <= -7) return "text-red-500";
+                        return "text-gray-500";
+                      };
+
+                      const getBiasVariant = (totalBias: number): "default" | "destructive" | "secondary" => {
+                        if (totalBias >= 7) return "default";
+                        if (totalBias <= -7) return "destructive";
+                        return "secondary";
+                      };
+
+                      return (
+                        <div key={index} className="space-y-2 p-3 border rounded-lg" data-testid={`pair-bias-${index}`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <span className="font-bold text-lg">{bias.pair}</span>
+                              {bias.total_bias >= 7 ? (
+                                <TrendingUp className="h-5 w-5 text-green-500" />
+                              ) : bias.total_bias <= -7 ? (
+                                <TrendingDown className="h-5 w-5 text-red-500" />
+                              ) : (
+                                <Minus className="h-5 w-5 text-gray-500" />
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className={`text-sm font-bold ${getBiasColor(bias.total_bias)}`}>
+                                {bias.total_bias > 0 ? '+' : ''}{bias.total_bias}
+                              </span>
+                              <Badge variant={getBiasVariant(bias.total_bias)}>
+                                {bias.bias_text}
+                              </Badge>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{bias.summary}</p>
+                          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+                            <span>Confidence: {bias.confidence}%</span>
+                            <span>Updated: {format(new Date(bias.updated_at), 'MMM dd, yyyy')}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium">{curr.strength}/100</span>
-                          <Badge 
-                            variant={curr.strength >= 70 ? "default" : curr.strength >= 50 ? "secondary" : "destructive"}
-                          >
-                            {curr.strength >= 70 ? "Strong" : curr.strength >= 50 ? "Neutral" : "Weak"}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="h-3 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className={`h-full transition-all ${
-                            curr.strength >= 70 ? "bg-green-500" : 
-                            curr.strength >= 50 ? "bg-yellow-500" : 
-                            "bg-red-500"
-                          }`}
-                          style={{ width: `${curr.strength}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground">{curr.factors}</p>
-                    </div>
-                  ))}
-                </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No fundamental bias data available. Run the automation script to generate data.
+                  </div>
+                )}
               </CardContent>
             </Card>
 

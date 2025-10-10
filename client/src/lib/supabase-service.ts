@@ -13,6 +13,28 @@ export async function getCurrentUser() {
   return user;
 }
 
+// Fundamental Bias operations
+export async function getFundamentalBias() {
+  const { data, error } = await supabase
+    .from('fundamental_bias')
+    .select('*')
+    .order('updated_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getCurrencyScores() {
+  const { data, error } = await supabase
+    .from('currency_scores')
+    .select('*')
+    .order('window_end', { ascending: false })
+    .limit(8);
+
+  if (error) throw error;
+  return data;
+}
+
 // Helper function to get user profile with plan info
 export async function getUserProfile() {
   const user = await getCurrentUser();
