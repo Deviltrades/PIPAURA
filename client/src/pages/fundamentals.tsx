@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink } from "lucide-react";
+import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus } from "lucide-react";
 
 export default function Fundamentals() {
   return (
@@ -31,6 +31,10 @@ export default function Fundamentals() {
           <TabsTrigger value="analysis" data-testid="tab-analysis">
             <TrendingUp className="h-4 w-4 mr-2" />
             Market Analysis
+          </TabsTrigger>
+          <TabsTrigger value="strength" data-testid="tab-strength">
+            <Gauge className="h-4 w-4 mr-2" />
+            Fundamental Strength
           </TabsTrigger>
         </TabsList>
 
@@ -287,6 +291,146 @@ export default function Fundamentals() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="strength" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Currency Strength Index</CardTitle>
+                <CardDescription>Real-time fundamental strength of major currencies</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {[
+                    { currency: "USD", strength: 85, trend: "up", factors: "Strong GDP, Hawkish Fed, Rising Employment" },
+                    { currency: "EUR", strength: 65, trend: "neutral", factors: "Stable Inflation, ECB Holding Rates" },
+                    { currency: "GBP", strength: 58, trend: "down", factors: "Economic Slowdown, BoE Concerns" },
+                    { currency: "JPY", strength: 45, trend: "down", factors: "Negative Rates, Weak Economic Data" },
+                    { currency: "CHF", strength: 72, trend: "up", factors: "Safe Haven Demand, Strong Economy" },
+                    { currency: "CAD", strength: 68, trend: "neutral", factors: "Oil Prices Stable, Mixed Data" },
+                    { currency: "AUD", strength: 55, trend: "down", factors: "China Concerns, RBA Dovish" },
+                    { currency: "NZD", strength: 52, trend: "down", factors: "RBNZ Cutting Cycle Started" },
+                  ].map((curr, index) => (
+                    <div key={index} className="space-y-2" data-testid={`currency-strength-${index}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-lg">{curr.currency}</span>
+                          {curr.trend === "up" ? (
+                            <TrendingUp className="h-5 w-5 text-green-500" />
+                          ) : curr.trend === "down" ? (
+                            <TrendingDown className="h-5 w-5 text-red-500" />
+                          ) : (
+                            <Minus className="h-5 w-5 text-gray-500" />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-medium">{curr.strength}/100</span>
+                          <Badge 
+                            variant={curr.strength >= 70 ? "default" : curr.strength >= 50 ? "secondary" : "destructive"}
+                          >
+                            {curr.strength >= 70 ? "Strong" : curr.strength >= 50 ? "Neutral" : "Weak"}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="h-3 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all ${
+                            curr.strength >= 70 ? "bg-green-500" : 
+                            curr.strength >= 50 ? "bg-yellow-500" : 
+                            "bg-red-500"
+                          }`}
+                          style={{ width: `${curr.strength}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">{curr.factors}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Economic Health Scores</CardTitle>
+                  <CardDescription>Composite fundamental analysis by region</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { region: "United States", score: 82, gdp: "2.4%", inflation: "3.2%", unemployment: "3.8%", rating: "Strong" },
+                      { region: "Euro Zone", score: 68, gdp: "0.5%", inflation: "2.9%", unemployment: "6.5%", rating: "Moderate" },
+                      { region: "United Kingdom", score: 61, gdp: "0.3%", inflation: "4.6%", unemployment: "4.2%", rating: "Moderate" },
+                      { region: "Japan", score: 48, gdp: "-0.1%", inflation: "0.6%", unemployment: "2.6%", rating: "Weak" },
+                      { region: "Switzerland", score: 75, gdp: "1.2%", inflation: "1.7%", unemployment: "2.1%", rating: "Strong" },
+                    ].map((region, index) => (
+                      <div key={index} className="border rounded-lg p-4 space-y-3" data-testid={`region-health-${index}`}>
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{region.region}</span>
+                          <Badge variant={region.score >= 70 ? "default" : region.score >= 50 ? "secondary" : "destructive"}>
+                            {region.rating}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3 text-sm">
+                          <div>
+                            <div className="text-muted-foreground text-xs">GDP Growth</div>
+                            <div className="font-medium">{region.gdp}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground text-xs">Inflation</div>
+                            <div className="font-medium">{region.inflation}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground text-xs">Unemployment</div>
+                            <div className="font-medium">{region.unemployment}</div>
+                          </div>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${
+                              region.score >= 70 ? "bg-green-500" : 
+                              region.score >= 50 ? "bg-yellow-500" : 
+                              "bg-red-500"
+                            }`}
+                            style={{ width: `${region.score}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Key Fundamental Drivers</CardTitle>
+                  <CardDescription>Current market-moving themes</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { driver: "Fed Rate Policy", impact: "High", status: "Hawkish Pause" },
+                      { driver: "Global Growth", impact: "Medium", status: "Slowing" },
+                      { driver: "Inflation Trends", impact: "High", status: "Cooling" },
+                      { driver: "Geopolitical Risk", impact: "Medium", status: "Elevated" },
+                      { driver: "Oil Prices", impact: "Medium", status: "Stable" },
+                    ].map((driver, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 border-l-4 border-l-blue-500 pl-3">
+                        <div>
+                          <div className="font-medium text-sm">{driver.driver}</div>
+                          <div className="text-xs text-muted-foreground">{driver.status}</div>
+                        </div>
+                        <Badge variant={driver.impact === "High" ? "destructive" : "secondary"}>
+                          {driver.impact}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </TabsContent>
       </Tabs>
