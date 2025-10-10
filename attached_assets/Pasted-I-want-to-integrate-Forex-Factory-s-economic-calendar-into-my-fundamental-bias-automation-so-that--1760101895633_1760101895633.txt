@@ -1,0 +1,86 @@
+I want to integrate Forex Factory’s economic calendar into my fundamental-bias automation so that:
+
+High-impact (red-folder) events trigger an instant bias update when new “Actual” values appear.
+
+Medium/low-impact events refresh every 4 hours to keep the macro background current.
+
+🔧 Build tasks
+
+1️⃣ Create forexfactory_feed.py
+
+Fetch XML feed:
+https://cdn-nfs.faireconomy.media/ff_calendar_thisweek.xml
+
+Parse fields:
+country, title, impact, actual, forecast, previous, date.
+
+Convert impact → weight: High = 3, Medium = 2, Low = 1.
+
+Detect new releases by checking where actual now exists and event not marked “processed.”
+
+2️⃣ Add scoring logic
+
+def score_event(actual, forecast, impact_weight):
+    try:
+        diff = (float(actual) - float(forecast)) / abs(float(forecast))
+    except:
+        return 0
+    return round(diff * impact_weight * 100, 2)
+
+
+Aggregate per currency code (USD, EUR, GBP, JPY, AUD, NZD, CAD, CHF).
+
+Store results in economic_scores(currency, total_score, last_updated) in Supabase.
+
+Merge this score with existing market scores inside main.py.
+
+3️⃣ Scheduling
+
+High-impact (red folder):
+
+Run every 15 min to check for new Actual values.
+
+If any appear → call bias recalculation immediately (python main.py --fastupdate).
+
+Medium/Low impact:
+
+Run every 4 hours (0 */4 * * *).
+
+4️⃣ Safety
+
+If feed unavailable → skip and log “FF feed timeout.”
+
+Never overwrite market data if feed returns 0 rows.
+
+Mark processed events with a timestamp in Supabase (forex_events table) so they aren’t double-counted.
+
+5️⃣ Logging
+
+On each run print:
+[UTC ts] ForexFactory update → 12 events parsed, 4 high impact processed ✅
+
+Deliverables
+
+forexfactory_feed.py with event scoring
+
+forex_events + economic_scores tables in Supabase
+
+Cron jobs:
+
+*/15 * * * * → High-impact check
+
+0 */4 * * * → Full refresh
+
+Integration tested by confirming new Actual values (e.g., NFP) trigger an immediate currency re-score.
+
+Thanks!
+
+⚙️ What this will do
+
+Every 15 min: scans for red-folder releases → instant bias refresh.
+
+Every 4 hours: refreshes all other calendar data.
+
+Keeps Polygon 30-min cycle intact for real-time price flow.
+
+Result → your bias engine becomes event-aware + market-aware, reacting the moment fundamentals hit.
