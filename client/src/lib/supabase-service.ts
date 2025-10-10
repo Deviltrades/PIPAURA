@@ -35,6 +35,16 @@ export async function getCurrencyScores() {
   return data;
 }
 
+export async function getIndexBias() {
+  const { data, error } = await supabase
+    .from('index_bias')
+    .select('*')
+    .order('updated_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
 // Helper function to get user profile with plan info
 export async function getUserProfile() {
   const user = await getCurrentUser();
