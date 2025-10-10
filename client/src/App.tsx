@@ -20,6 +20,7 @@ import Widgets from "@/pages/widgets";
 import Strategy from "@/pages/strategy";
 import Notes from "@/pages/notes";
 import Charts from "@/pages/charts";
+import Fundamentals from "@/pages/fundamentals";
 import Mentor from "@/pages/mentor";
 import Settings from "@/pages/settings";
 import CalendarSettings from "@/pages/CalendarSettings";
@@ -60,6 +61,7 @@ function Router() {
           <Route path="/strategy" component={Strategy} />
           <Route path="/notes" component={Notes} />
           <Route path="/charts" component={Charts} />
+          <Route path="/fundamentals" component={Fundamentals} />
           <Route path="/mentor" component={Mentor} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />

@@ -25,7 +25,8 @@ import {
   Brain,
   Settings as SettingsIcon,
   LogOut,
-  FileText
+  FileText,
+  Newspaper
 } from "lucide-react";
 
 const navigation = [
@@ -40,6 +41,7 @@ const navigation = [
   { name: "Strategy/Playbook", href: "/strategy", icon: MapPin },
   { name: "Notes", href: "/notes", icon: StickyNote },
   { name: "Charts", href: "/charts", icon: LineChart },
+  { name: "Fundamentals", href: "/fundamentals", icon: Newspaper },
   { name: "AI Trading Mentor", href: "/mentor", icon: Brain },
   { name: "Settings", href: "/settings", icon: SettingsIcon },
 ];
