@@ -39,7 +39,17 @@ export async function getIndexBias() {
   const { data, error } = await supabase
     .from('index_bias')
     .select('*')
-    .order('updated_at', { ascending: false });
+    .order('updated_at', { ascending: false});
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getMarketDrivers() {
+  const { data, error } = await supabase
+    .from('market_drivers')
+    .select('*')
+    .order('driver', { ascending: true });
 
   if (error) throw error;
   return data;

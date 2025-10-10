@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getFundamentalBias, getCurrencyScores, getIndexBias } from "@/lib/supabase-service";
+import { getFundamentalBias, getCurrencyScores, getIndexBias, getMarketDrivers } from "@/lib/supabase-service";
 import { format } from "date-fns";
 
 export default function Fundamentals() {
@@ -21,6 +21,11 @@ export default function Fundamentals() {
   const { data: indexBias, isLoading: indexLoading } = useQuery({
     queryKey: ['/api/index-bias'],
     queryFn: getIndexBias,
+  });
+
+  const { data: marketDrivers, isLoading: driversLoading } = useQuery({
+    queryKey: ['/api/market-drivers'],
+    queryFn: getMarketDrivers,
   });
 
   return (
@@ -460,25 +465,27 @@ export default function Fundamentals() {
                   <CardDescription>Current market-moving themes</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {[
-                      { driver: "Fed Rate Policy", impact: "High", status: "Hawkish Pause" },
-                      { driver: "Global Growth", impact: "Medium", status: "Slowing" },
-                      { driver: "Inflation Trends", impact: "High", status: "Cooling" },
-                      { driver: "Geopolitical Risk", impact: "Medium", status: "Elevated" },
-                      { driver: "Oil Prices", impact: "Medium", status: "Stable" },
-                    ].map((driver, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 border-l-4 border-l-blue-500 pl-3">
-                        <div>
-                          <div className="font-medium text-sm">{driver.driver}</div>
-                          <div className="text-xs text-muted-foreground">{driver.status}</div>
+                  {driversLoading ? (
+                    <div className="text-center py-4 text-muted-foreground">Loading market drivers...</div>
+                  ) : marketDrivers && marketDrivers.length > 0 ? (
+                    <div className="space-y-3">
+                      {marketDrivers.map((driver: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between p-2 border-l-4 border-l-blue-500 pl-3" data-testid={`driver-${index}`}>
+                          <div>
+                            <div className="font-medium text-sm">{driver.driver}</div>
+                            <div className="text-xs text-muted-foreground">{driver.status}</div>
+                          </div>
+                          <Badge variant={driver.impact === "High" ? "destructive" : "secondary"}>
+                            {driver.impact}
+                          </Badge>
                         </div>
-                        <Badge variant={driver.impact === "High" ? "destructive" : "secondary"}>
-                          {driver.impact}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-muted-foreground">
+                      No driver data available. Run the automation to generate data.
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
