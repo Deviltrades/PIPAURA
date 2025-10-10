@@ -47,6 +47,32 @@ Implemented comprehensive automated fundamental analysis system with dual-freque
 - ✅ React Query integration for live data updates
 - ✅ Loading and empty states with helpful messages
 
+### Forex Factory Economic Calendar Integration (Added 2025-10-10)
+Implemented event-driven bias updates with Forex Factory economic calendar:
+
+**Real-Time Event Processing:**
+- ✅ Python script (`forexfactory_feed.py`) fetches XML feed and scores events
+- ✅ **High-impact events** (red folder): 15-min checks → instant bias recalc when new "Actual" values appear
+- ✅ **Medium/low-impact events**: 4-hour refresh for macro background
+- ✅ **Event scoring**: `(actual - forecast) / |forecast| * impact_weight * 100`
+- ✅ **Impact weights**: High=3, Medium=2, Low=1
+
+**Cron Schedules:**
+- ✅ **High-impact check**: Every 15 min (`*/15 * * * *`) via `ff_high_impact_check.py`
+- ✅ **Full refresh**: Every 4 hours (`0 */4 * * *`) via `ff_full_refresh.py`
+
+**Database Integration:**
+- ✅ `forex_events` table tracks processed events (prevents duplicates)
+- ✅ `economic_scores` table stores aggregated currency scores
+- ✅ Integrated into `main.py` and `hourly_update.py` via `ff_integration.py`
+- ✅ Scores automatically merge into bias calculations
+
+**Safety Features:**
+- ✅ Feed timeout protection (graceful fallback)
+- ✅ Duplicate event prevention
+- ✅ Zero-row protection (doesn't overwrite existing scores)
+- ✅ Setup guide: `FOREX_FACTORY_SETUP.md`
+
 **Technical Implementation:**
 - ✅ Direct Supabase integration using service role key for automation
 - ✅ RLS policies: Public read access, service role write access for all tables
