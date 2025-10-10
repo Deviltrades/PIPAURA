@@ -18,7 +18,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { TradeAccount } from "@shared/schema";
 
 const createAccountSchema = z.object({
-  account_type: z.enum(['demo', 'proprietary', 'live']),
+  account_type: z.enum(['demo', 'proprietary_firm', 'live_personal', 'live_company']),
   market_type: z.enum(['forex', 'futures', 'stocks', 'crypto']),
   broker_name: z.string().min(1, "Broker name is required"),
   account_name: z.string().min(1, "Account name/number is required"),
@@ -132,8 +132,9 @@ export default function Accounts() {
   const getAccountTypeLabel = (type: string) => {
     switch (type) {
       case 'demo': return 'Demo';
-      case 'proprietary': return 'Proprietary';
-      case 'live': return 'Live';
+      case 'proprietary_firm': return 'Prop Firm';
+      case 'live_personal': return 'Live Personal';
+      case 'live_company': return 'Live Company';
       default: return type;
     }
   };
@@ -148,7 +149,7 @@ export default function Accounts() {
     }
   };
 
-  const accountType = form.watch('account_type') as 'demo' | 'proprietary' | 'live';
+  const accountType = form.watch('account_type') as 'demo' | 'proprietary_firm' | 'live_personal' | 'live_company';
 
   return (
     <div className="space-y-6">
@@ -191,8 +192,9 @@ export default function Accounts() {
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="demo">Demo Account</SelectItem>
-                          <SelectItem value="proprietary">Proprietary Firm Account</SelectItem>
-                          <SelectItem value="live">Live Trading Account</SelectItem>
+                          <SelectItem value="proprietary_firm">Proprietary Firm Account</SelectItem>
+                          <SelectItem value="live_personal">Live Personal Account</SelectItem>
+                          <SelectItem value="live_company">Live Company Account</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -230,13 +232,13 @@ export default function Accounts() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {accountType === 'proprietary' ? 'Prop Firm Name' : 'Broker Name'}
+                        {accountType === 'proprietary_firm' ? 'Prop Firm Name' : 'Broker Name'}
                       </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           placeholder={
-                            accountType === 'proprietary'
+                            accountType === 'proprietary_firm'
                               ? 'e.g., FTMO, MyForexFunds'
                               : 'e.g., IC Markets, Binance'
                           }
@@ -349,9 +351,9 @@ export default function Accounts() {
                   </div>
                   <Badge
                     variant={
-                      account.account_type === 'live'
+                      account.account_type === 'live_personal' || account.account_type === 'live_company'
                         ? 'default'
-                        : account.account_type === 'proprietary'
+                        : account.account_type === 'proprietary_firm'
                         ? 'secondary'
                         : 'outline'
                     }

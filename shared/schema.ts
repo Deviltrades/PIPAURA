@@ -51,7 +51,7 @@ export interface CreateJournalEntry {
 export interface TradeAccount {
   id: string;
   user_id: string;
-  account_type: 'demo' | 'proprietary' | 'live';
+  account_type: 'demo' | 'proprietary_firm' | 'live_personal' | 'live_company';
   market_type: 'forex' | 'futures' | 'stocks' | 'crypto';
   broker_name: string;
   account_name: string;
@@ -63,7 +63,7 @@ export interface TradeAccount {
 }
 
 export interface CreateTradeAccount {
-  account_type: 'demo' | 'proprietary' | 'live';
+  account_type: 'demo' | 'proprietary_firm' | 'live_personal' | 'live_company';
   market_type: 'forex' | 'futures' | 'stocks' | 'crypto';
   broker_name: string;
   account_name: string;
