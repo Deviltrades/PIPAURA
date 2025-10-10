@@ -55,6 +55,63 @@ export async function getMarketDrivers() {
   return data;
 }
 
+// Forex Factory Economic Events
+export async function getTodaysEconomicEvents() {
+  const today = new Date().toISOString().split('T')[0];
+  const { data, error } = await supabase
+    .from('forex_events')
+    .select('*')
+    .gte('event_date', today)
+    .lt('event_date', new Date(Date.now() + 86400000).toISOString().split('T')[0])
+    .order('event_time', { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getHighImpactEventCounts() {
+  const today = new Date();
+  const endOfWeek = new Date(today);
+  endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
+  
+  const nextWeekStart = new Date(endOfWeek);
+  nextWeekStart.setDate(endOfWeek.getDate() + 1);
+  const nextWeekEnd = new Date(nextWeekStart);
+  nextWeekEnd.setDate(nextWeekStart.getDate() + 7);
+  
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+  // Get counts for this week
+  const { count: thisWeekCount } = await supabase
+    .from('forex_events')
+    .select('*', { count: 'exact', head: true })
+    .eq('impact', 'High')
+    .gte('event_date', today.toISOString().split('T')[0])
+    .lte('event_date', endOfWeek.toISOString().split('T')[0]);
+
+  // Get counts for next week
+  const { count: nextWeekCount } = await supabase
+    .from('forex_events')
+    .select('*', { count: 'exact', head: true })
+    .eq('impact', 'High')
+    .gte('event_date', nextWeekStart.toISOString().split('T')[0])
+    .lte('event_date', nextWeekEnd.toISOString().split('T')[0]);
+
+  // Get counts for this month
+  const { count: thisMonthCount } = await supabase
+    .from('forex_events')
+    .select('*', { count: 'exact', head: true })
+    .eq('impact', 'High')
+    .gte('event_date', today.toISOString().split('T')[0])
+    .lte('event_date', endOfMonth.toISOString().split('T')[0]);
+
+  return {
+    thisWeek: thisWeekCount || 0,
+    nextWeek: nextWeekCount || 0,
+    thisMonth: thisMonthCount || 0,
+  };
+}
+
 // Helper function to get user profile with plan info
 export async function getUserProfile() {
   const user = await getCurrentUser();

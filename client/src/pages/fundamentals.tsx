@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getFundamentalBias, getCurrencyScores, getIndexBias, getMarketDrivers } from "@/lib/supabase-service";
+import { getFundamentalBias, getCurrencyScores, getIndexBias, getMarketDrivers, getTodaysEconomicEvents, getHighImpactEventCounts } from "@/lib/supabase-service";
 import { format } from "date-fns";
 
 export default function Fundamentals() {
@@ -26,6 +26,16 @@ export default function Fundamentals() {
   const { data: marketDrivers, isLoading: driversLoading } = useQuery({
     queryKey: ['/api/market-drivers'],
     queryFn: getMarketDrivers,
+  });
+
+  const { data: todaysEvents, isLoading: eventsLoading } = useQuery({
+    queryKey: ['/api/todays-events'],
+    queryFn: getTodaysEconomicEvents,
+  });
+
+  const { data: eventCounts, isLoading: countsLoading } = useQuery({
+    queryKey: ['/api/event-counts'],
+    queryFn: getHighImpactEventCounts,
   });
 
   return (
@@ -70,43 +80,47 @@ export default function Fundamentals() {
                   <CardDescription>Key economic releases and central bank events</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { time: "08:30", event: "US Non-Farm Payrolls", impact: "high", previous: "187K", forecast: "170K", currency: "USD" },
-                      { time: "10:00", event: "US Unemployment Rate", impact: "high", previous: "3.5%", forecast: "3.6%", currency: "USD" },
-                      { time: "12:30", event: "ECB Interest Rate Decision", impact: "high", previous: "4.50%", forecast: "4.50%", currency: "EUR" },
-                      { time: "14:00", event: "UK GDP Growth Rate", impact: "medium", previous: "0.2%", forecast: "0.3%", currency: "GBP" },
-                      { time: "15:30", event: "CAD Employment Change", impact: "medium", previous: "59.9K", forecast: "25.0K", currency: "CAD" },
-                    ].map((event, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                        data-testid={`event-${index}`}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="text-sm font-mono text-muted-foreground w-16">
-                            {event.time}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant={event.currency === "USD" ? "default" : "secondary"}>
-                              {event.currency}
-                            </Badge>
-                            <Badge 
-                              variant={event.impact === "high" ? "destructive" : event.impact === "medium" ? "default" : "secondary"}
-                            >
-                              {event.impact}
-                            </Badge>
-                          </div>
-                          <div>
-                            <div className="font-medium">{event.event}</div>
-                            <div className="text-sm text-muted-foreground">
-                              Previous: {event.previous} | Forecast: {event.forecast}
+                  {eventsLoading ? (
+                    <div className="text-center py-8 text-muted-foreground">Loading today's events...</div>
+                  ) : todaysEvents && todaysEvents.length > 0 ? (
+                    <div className="space-y-4">
+                      {todaysEvents.map((event: any, index: number) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                          data-testid={`event-${index}`}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="text-sm font-mono text-muted-foreground w-16">
+                              {event.event_time}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={event.currency === "USD" ? "default" : "secondary"}>
+                                {event.currency}
+                              </Badge>
+                              <Badge 
+                                variant={event.impact === "High" ? "destructive" : event.impact === "Medium" ? "default" : "secondary"}
+                              >
+                                {event.impact.toLowerCase()}
+                              </Badge>
+                            </div>
+                            <div>
+                              <div className="font-medium">{event.event_title}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {event.previous && `Previous: ${event.previous}`}
+                                {event.previous && event.forecast && ' | '}
+                                {event.forecast && `Forecast: ${event.forecast}`}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No economic events scheduled for today. Check the Forex Factory feed for updates.
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -117,20 +131,26 @@ export default function Fundamentals() {
                   <CardTitle className="text-lg">High Impact Events</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">This Week</span>
-                      <Badge variant="destructive">12</Badge>
+                  {countsLoading ? (
+                    <div className="text-center py-4 text-muted-foreground">Loading counts...</div>
+                  ) : eventCounts ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">This Week</span>
+                        <Badge variant="destructive" data-testid="badge-this-week">{eventCounts.thisWeek}</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Next Week</span>
+                        <Badge variant="default" data-testid="badge-next-week">{eventCounts.nextWeek}</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">This Month</span>
+                        <Badge variant="secondary" data-testid="badge-this-month">{eventCounts.thisMonth}</Badge>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Next Week</span>
-                      <Badge variant="default">8</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">This Month</span>
-                      <Badge variant="secondary">45</Badge>
-                    </div>
-                  </div>
+                  ) : (
+                    <div className="text-center py-4 text-muted-foreground">No data available</div>
+                  )}
                 </CardContent>
               </Card>
 

@@ -61,6 +61,7 @@ def parse_events(xml_content):
             forecast = event.find("forecast")
             previous = event.find("previous")
             date = event.find("date")
+            time = event.find("time")
             
             # Extract text or use empty string
             event_data = {
@@ -71,6 +72,7 @@ def parse_events(xml_content):
                 "forecast": forecast.text if forecast is not None else None,
                 "previous": previous.text if previous is not None else None,
                 "date": date.text if date is not None else "",
+                "time": time.text if time is not None else "",
             }
             
             # Only add if we have minimum required fields
@@ -121,13 +123,20 @@ def get_processed_events():
 def mark_event_processed(event_id, event_data, score):
     """Mark an event as processed in Supabase"""
     try:
+        # Map country to currency
+        currency = COUNTRY_TO_CURRENCY.get(event_data["country"], event_data["country"])
+        
         sb.table("forex_events").insert({
             "event_id": event_id,
             "country": event_data["country"],
+            "currency": currency,
             "title": event_data["title"],
             "impact": event_data["impact"],
             "actual": event_data["actual"],
             "forecast": event_data["forecast"],
+            "previous": event_data.get("previous"),
+            "event_date": event_data.get("date"),
+            "event_time": event_data.get("time"),
             "score": score,
             "processed_at": datetime.utcnow().isoformat(),
         }).execute()
