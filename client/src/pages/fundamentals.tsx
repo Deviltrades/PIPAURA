@@ -374,52 +374,78 @@ export default function Fundamentals() {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Economic Health Scores</CardTitle>
-                  <CardDescription>Composite fundamental analysis by region</CardDescription>
+                  <CardTitle>Currency Strength Scores</CardTitle>
+                  <CardDescription>Fundamental strength breakdown by currency</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { region: "United States", score: 82, gdp: "2.4%", inflation: "3.2%", unemployment: "3.8%", rating: "Strong" },
-                      { region: "Euro Zone", score: 68, gdp: "0.5%", inflation: "2.9%", unemployment: "6.5%", rating: "Moderate" },
-                      { region: "United Kingdom", score: 61, gdp: "0.3%", inflation: "4.6%", unemployment: "4.2%", rating: "Moderate" },
-                      { region: "Japan", score: 48, gdp: "-0.1%", inflation: "0.6%", unemployment: "2.6%", rating: "Weak" },
-                      { region: "Switzerland", score: 75, gdp: "1.2%", inflation: "1.7%", unemployment: "2.1%", rating: "Strong" },
-                    ].map((region, index) => (
-                      <div key={index} className="border rounded-lg p-4 space-y-3" data-testid={`region-health-${index}`}>
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">{region.region}</span>
-                          <Badge variant={region.score >= 70 ? "default" : region.score >= 50 ? "secondary" : "destructive"}>
-                            {region.rating}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-3 gap-3 text-sm">
-                          <div>
-                            <div className="text-muted-foreground text-xs">GDP Growth</div>
-                            <div className="font-medium">{region.gdp}</div>
+                  {scoresLoading ? (
+                    <div className="text-center py-8 text-muted-foreground">Loading currency scores...</div>
+                  ) : currencyScores && currencyScores.length > 0 ? (
+                    <div className="space-y-4">
+                      {currencyScores.map((score: any, index: number) => {
+                        const normalizedScore = Math.min(Math.max((score.total_score + 20) * 2.5, 0), 100);
+                        const getRating = (total: number) => {
+                          if (total >= 7) return "Strong";
+                          if (total <= -7) return "Weak";
+                          return "Neutral";
+                        };
+
+                        return (
+                          <div key={index} className="border rounded-lg p-4 space-y-3" data-testid={`currency-score-${index}`}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-lg">{score.currency}</span>
+                                {score.total_score >= 7 ? (
+                                  <TrendingUp className="h-4 w-4 text-green-500" />
+                                ) : score.total_score <= -7 ? (
+                                  <TrendingDown className="h-4 w-4 text-red-500" />
+                                ) : (
+                                  <Minus className="h-4 w-4 text-gray-500" />
+                                )}
+                              </div>
+                              <Badge variant={score.total_score >= 7 ? "default" : score.total_score <= -7 ? "destructive" : "secondary"}>
+                                {getRating(score.total_score)}
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3 text-xs">
+                              <div>
+                                <div className="text-muted-foreground">Data</div>
+                                <div className="font-medium">{score.data_score > 0 ? '+' : ''}{score.data_score}</div>
+                              </div>
+                              <div>
+                                <div className="text-muted-foreground">CB Tone</div>
+                                <div className="font-medium">{score.cb_tone_score > 0 ? '+' : ''}{score.cb_tone_score}</div>
+                              </div>
+                              <div>
+                                <div className="text-muted-foreground">Market</div>
+                                <div className="font-medium">{score.market_score > 0 ? '+' : ''}{score.market_score}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">Total Score:</span>
+                              <span className={`font-bold ${score.total_score >= 7 ? 'text-green-500' : score.total_score <= -7 ? 'text-red-500' : 'text-gray-500'}`}>
+                                {score.total_score > 0 ? '+' : ''}{score.total_score}
+                              </span>
+                            </div>
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className={`h-full ${
+                                  score.total_score >= 7 ? "bg-green-500" : 
+                                  score.total_score <= -7 ? "bg-red-500" : 
+                                  "bg-yellow-500"
+                                }`}
+                                style={{ width: `${normalizedScore}%` }}
+                              />
+                            </div>
                           </div>
-                          <div>
-                            <div className="text-muted-foreground text-xs">Inflation</div>
-                            <div className="font-medium">{region.inflation}</div>
-                          </div>
-                          <div>
-                            <div className="text-muted-foreground text-xs">Unemployment</div>
-                            <div className="font-medium">{region.unemployment}</div>
-                          </div>
-                        </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className={`h-full ${
-                              region.score >= 70 ? "bg-green-500" : 
-                              region.score >= 50 ? "bg-yellow-500" : 
-                              "bg-red-500"
-                            }`}
-                            style={{ width: `${region.score}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No currency score data available. Run the automation script to generate data.
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
