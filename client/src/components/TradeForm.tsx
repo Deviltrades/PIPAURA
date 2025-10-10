@@ -151,6 +151,7 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["trades"] });
       queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/trade-accounts'] });
       toast({
         title: "Success",
         description: trade?.id ? "Trade updated successfully" : "Trade created successfully",

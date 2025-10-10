@@ -175,6 +175,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
       });
       queryClient.invalidateQueries({ queryKey: ["trades"] });
       queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/trade-accounts'] });
       form.reset();
       setUploadedImages([]); // Clear uploaded images
       onClose();
