@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -48,7 +48,7 @@ import { Label } from "@/components/ui/label";
 import { SignedImageDisplay } from "@/components/SignedImageDisplay";
 import { PlanGate, FeatureGate } from "@/components/PlanGate";
 import { useToast } from "@/hooks/use-toast";
-import { createTrade, uploadFile, getTradeAccounts } from "@/lib/supabase-service";
+import { createTrade, updateTrade, uploadFile, getTradeAccounts } from "@/lib/supabase-service";
 import { useQuery } from "@tanstack/react-query";
 import { getInstrumentsByType } from "@shared/instruments";
 import { cn } from "@/lib/utils";
@@ -84,12 +84,19 @@ type AddTradeFormData = z.infer<typeof addTradeSchema>;
 interface AddTradeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedDate: Date;
+  selectedDate?: Date;
+  trade?: any;
 }
 
-export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalProps) {
+export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTradeModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Derive trade date: use trade's original date when editing, otherwise use selectedDate or today
+  const tradeDate = trade?.entry_date 
+    ? new Date(trade.entry_date) 
+    : selectedDate || new Date();
+    
   const [selectedInstrumentType, setSelectedInstrumentType] = useState<string>("FOREX");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -123,12 +130,61 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
     },
   });
 
+  // Reset form and state when modal opens or trade changes
+  useEffect(() => {
+    if (isOpen) {
+      if (trade) {
+        // Editing existing trade
+        form.reset({
+          account_id: trade.account_id || "",
+          instrumentType: trade.instrument_type || "FOREX",
+          instrument: trade.instrument || "",
+          tradeType: trade.trade_type || "BUY",
+          positionSize: trade.position_size?.toString() || "1.0",
+          entryPrice: trade.entry_price?.toString() || "",
+          entryTime: trade.entry_date ? new Date(trade.entry_date).toTimeString().slice(0, 5) : "",
+          exitTime: trade.exit_date ? new Date(trade.exit_date).toTimeString().slice(0, 5) : "",
+          stopLoss: trade.stop_loss?.toString() || "",
+          takeProfit: trade.take_profit?.toString() || "",
+          notes: trade.notes || "",
+          attachments: trade.attachments || [],
+          hasPnL: trade.pnl !== undefined && trade.pnl !== 0,
+          pnlType: trade.pnl && trade.pnl < 0 ? "loss" : "profit",
+          pnlAmount: trade.pnl ? Math.abs(trade.pnl).toString() : "",
+        });
+        setSelectedInstrumentType(trade.instrument_type || "FOREX");
+        setUploadedImages(trade.attachments || []);
+      } else {
+        // Adding new trade
+        form.reset({
+          account_id: "",
+          instrumentType: "FOREX",
+          instrument: "",
+          tradeType: "BUY",
+          positionSize: "1.0",
+          entryPrice: "",
+          entryTime: "",
+          exitTime: "",
+          stopLoss: "",
+          takeProfit: "",
+          notes: "",
+          attachments: [],
+          hasPnL: false,
+          pnlType: "profit",
+          pnlAmount: "",
+        });
+        setSelectedInstrumentType("FOREX");
+        setUploadedImages([]);
+      }
+    }
+  }, [isOpen, trade, form]);
+
   const addTradeMutation = useMutation({
     mutationFn: async (data: AddTradeFormData) => {
       // Format date as YYYY-MM-DD to avoid timezone issues
-      const localDateString = selectedDate.getFullYear() + '-' + 
-        String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(selectedDate.getDate()).padStart(2, '0');
+      const localDateString = tradeDate.getFullYear() + '-' + 
+        String(tradeDate.getMonth() + 1).padStart(2, '0') + '-' + 
+        String(tradeDate.getDate()).padStart(2, '0');
       
       // Combine date and time for entry_date
       let entryDateTime = localDateString;
@@ -166,12 +222,16 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
         exit_date: exitDateTime,
       };
       
-      return await createTrade(tradeData);
+      if (trade?.id) {
+        return await updateTrade(trade.id, tradeData);
+      } else {
+        return await createTrade(tradeData);
+      }
     },
     onSuccess: () => {
       toast({
         title: "Success",
-        description: "Trade added successfully",
+        description: trade?.id ? "Trade updated successfully" : "Trade added successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["trades"] });
       queryClient.invalidateQueries({ queryKey: ["analytics"] });
@@ -251,9 +311,9 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] bg-background border overflow-y-auto">
         <DialogHeader className="pb-4">
-          <DialogTitle className="text-xl font-semibold">Add New Trade</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">{trade?.id ? 'Edit Trade' : 'Add New Trade'}</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Record a new trade for {selectedDate.toLocaleDateString()}
+            Record a new trade for {tradeDate.toLocaleDateString()}
           </DialogDescription>
         </DialogHeader>
 
@@ -728,7 +788,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
 
             <div className="flex justify-between items-center pt-4">
               <p className="text-sm text-muted-foreground">
-                Date: {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                Date: {format(tradeDate, "EEEE, MMMM d, yyyy")}
               </p>
               <div className="flex gap-3">
                 <Button
@@ -745,7 +805,9 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
                     disabled={addTradeMutation.isPending}
                     data-testid="button-submit"
                   >
-                    {addTradeMutation.isPending ? "Adding..." : "Add Trade"}
+                    {addTradeMutation.isPending 
+                      ? (trade?.id ? "Updating..." : "Adding...") 
+                      : (trade?.id ? "Update Trade" : "Add Trade")}
                   </Button>
                 </PlanGate>
               </div>

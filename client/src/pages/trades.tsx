@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2 } from "lucide-react";
-import TradeForm from "@/components/TradeForm";
+import { AddTradeModal } from "@/components/AddTradeModal";
 import { formatCurrency } from "@/lib/utils";
 import { getTrades, deleteTrade } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
@@ -201,9 +201,9 @@ export default function Trades() {
         )}
       </div>
 
-      <TradeForm
-        open={isFormOpen}
-        onOpenChange={handleFormClose}
+      <AddTradeModal
+        isOpen={isFormOpen}
+        onClose={handleFormClose}
         trade={editingTrade}
       />
     </div>
