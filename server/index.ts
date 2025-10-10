@@ -22,15 +22,30 @@ const vite = spawn('npx', [
   }
 });
 
+// Start Cron API server for external cron services (cron-job.org)
+const cronApi = spawn('tsx', ['server/cron-api.ts'], {
+  stdio: 'inherit',
+  env: process.env
+});
+
 vite.on('close', (code) => {
   console.log(`Vite process exited with code ${code}`);
+  cronApi.kill();
+  process.exit(code);
+});
+
+cronApi.on('close', (code) => {
+  console.log(`Cron API process exited with code ${code}`);
+  vite.kill();
   process.exit(code);
 });
 
 process.on('SIGINT', () => {
   vite.kill('SIGINT');
+  cronApi.kill('SIGINT');
 });
 
 process.on('SIGTERM', () => {
   vite.kill('SIGTERM');
+  cronApi.kill('SIGTERM');
 });

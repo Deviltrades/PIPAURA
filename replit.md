@@ -73,6 +73,11 @@ Implemented event-driven bias updates with Forex Factory economic calendar:
 - ✅ Zero-row protection (doesn't overwrite existing scores)
 - ✅ Setup guide: `FOREX_FACTORY_SETUP.md`
 
+**Automation via cron-job.org (Free):**
+- ✅ Cron API Server on port 3001 with API key authentication
+- ✅ 4 webhook endpoints for external scheduling (bypasses Replit deployment costs)
+- ✅ Setup guide: `CRON_JOB_ORG_SETUP.md`
+
 **Technical Implementation:**
 - ✅ Direct Supabase integration using service role key for automation
 - ✅ RLS policies: Public read access, service role write access for all tables
