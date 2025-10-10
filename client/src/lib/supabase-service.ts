@@ -3,7 +3,9 @@ import type {
   JournalEntry, 
   UserProfile, 
   CalendarSettings,
-  SidebarSettings 
+  SidebarSettings,
+  TradeAccount,
+  CreateTradeAccount
 } from '@shared/schema';
 
 // Helper function to get current user
@@ -568,4 +570,173 @@ export async function deleteDashboardTemplate(id: string) {
     .eq('user_id', user.id);
 
   if (error) throw error;
+}
+
+// =============================================
+// Trade Accounts Operations
+// =============================================
+
+export async function getTradeAccounts(): Promise<TradeAccount[]> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  // Get user profile to link accounts
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const { data, error } = await supabase
+    .from('trade_accounts')
+    .select('*')
+    .eq('user_id', profile.id)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createTradeAccount(account: CreateTradeAccount): Promise<TradeAccount> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  // Get user profile to link account
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const { data, error } = await supabase
+    .from('trade_accounts')
+    .insert([{
+      ...account,
+      user_id: profile.id,
+      current_balance: account.starting_balance,
+      is_active: true
+    }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function updateTradeAccount(id: string, updates: Partial<CreateTradeAccount>): Promise<TradeAccount> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const { data, error } = await supabase
+    .from('trade_accounts')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id)
+    .eq('user_id', profile.id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteTradeAccount(id: string): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const { error } = await supabase
+    .from('trade_accounts')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', profile.id);
+
+  if (error) throw error;
+}
+
+export async function toggleAccountStatus(id: string, isActive: boolean): Promise<TradeAccount> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const { data, error } = await supabase
+    .from('trade_accounts')
+    .update({ 
+      is_active: isActive,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id)
+    .eq('user_id', profile.id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getAccountAnalytics(accountId: string) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  // Get trades for this account
+  const { data: trades, error } = await supabase
+    .from('trades')
+    .select('*')
+    .eq('account_id', accountId)
+    .eq('user_id', profile.id);
+
+  if (error) throw error;
+
+  // Calculate analytics
+  const closedTrades = trades?.filter(t => t.status === 'CLOSED') || [];
+  const totalTrades = closedTrades.length;
+  const winningTrades = closedTrades.filter(t => parseFloat(t.pnl || '0') > 0);
+  const losingTrades = closedTrades.filter(t => parseFloat(t.pnl || '0') < 0);
+  
+  const totalPnL = closedTrades.reduce((sum, t) => sum + parseFloat(t.pnl || '0'), 0);
+  const winRate = totalTrades > 0 ? (winningTrades.length / totalTrades) * 100 : 0;
+
+  return {
+    totalTrades,
+    winningTrades: winningTrades.length,
+    losingTrades: losingTrades.length,
+    totalPnL,
+    winRate: winRate.toFixed(2)
+  };
 }

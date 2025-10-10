@@ -20,11 +20,29 @@ export const planTypeEnum = pgEnum('plan_type', ['demo', 'basic', 'premium']);
 export const sessionEnum = pgEnum('session', ['LONDON', 'NYC', 'TOKYO', 'SYDNEY']);
 export const tagCategoryEnum = pgEnum('tag_category', ['timeframe', 'strategy', 'session', 'custom']);
 export const journalStatusEnum = pgEnum('journal_status', ['OPEN', 'CLOSED', 'CANCELLED']);
+export const tradeAccountTypeEnum = pgEnum('account_type_enum', ['demo', 'proprietary', 'live']);
+export const marketTypeEnum = pgEnum('market_type_enum', ['forex', 'futures', 'stocks', 'crypto']);
+
+// Trade Accounts table
+export const tradeAccounts = pgTable('trade_accounts', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').notNull(),
+  account_type: tradeAccountTypeEnum('account_type').notNull(),
+  market_type: marketTypeEnum('market_type').notNull(),
+  broker_name: text('broker_name').notNull(),
+  account_name: text('account_name').notNull(),
+  starting_balance: decimal('starting_balance', { precision: 12, scale: 2 }).notNull(),
+  current_balance: decimal('current_balance', { precision: 12, scale: 2 }),
+  is_active: integer('is_active').default(1),
+  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+  updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)
+});
 
 // Trades table
 export const trades = pgTable('trades', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   user_id: uuid('user_id').notNull(),
+  account_id: uuid('account_id'),
   instrument: text('instrument').notNull(),
   instrument_type: instrumentTypeEnum('instrument_type').notNull(),
   trade_type: tradeTypeEnum('trade_type').notNull(),

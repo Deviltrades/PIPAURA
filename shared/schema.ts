@@ -47,6 +47,29 @@ export interface CreateJournalEntry {
   session?: 'LONDON' | 'NYC' | 'TOKYO' | 'SYDNEY';
 }
 
+// Trading Account interfaces
+export interface TradeAccount {
+  id: string;
+  user_id: string;
+  account_type: 'demo' | 'proprietary' | 'live';
+  market_type: 'forex' | 'futures' | 'stocks' | 'crypto';
+  broker_name: string;
+  account_name: string;
+  starting_balance: number;
+  current_balance?: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateTradeAccount {
+  account_type: 'demo' | 'proprietary' | 'live';
+  market_type: 'forex' | 'futures' | 'stocks' | 'crypto';
+  broker_name: string;
+  account_name: string;
+  starting_balance: number;
+}
+
 // Enhanced User Profile interface with role-based access control
 export interface UserProfile {
   id: string;
