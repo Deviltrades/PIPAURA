@@ -1,0 +1,101 @@
+Step 1 — Database Structure (trade_accounts table)
+
+Ask Replit to create this SQL in Supabase (or run it yourself):
+
+CREATE TABLE IF NOT EXISTS trade_accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES user_profiles(id) ON DELETE CASCADE,
+  account_type TEXT CHECK (account_type IN ('demo', 'proprietary', 'live')) NOT NULL,
+  market_type TEXT CHECK (market_type IN ('forex', 'futures', 'stocks', 'crypto')) NOT NULL,
+  broker_name TEXT NOT NULL,
+  account_name TEXT NOT NULL, -- e.g., #12345678 or custom name
+  starting_balance NUMERIC(12,2) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE trade_accounts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "User can view own accounts"
+ON trade_accounts FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "User can insert own accounts"
+ON trade_accounts FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+
+This lets each logged-in user manage their own accounts safely.
+
+⚙️ Step 2 — Frontend (Add Account Form)
+
+When user clicks “Add Trading Account”, show this modal or form:
+
+Field	Type	Example	Required
+Account Type	Dropdown	Demo / Proprietary / Live	✅
+Market Type	Dropdown	Forex / Futures / Stocks / Crypto	✅
+Broker / Prop Name	Text	FTMO, IC Markets, Binance, etc.	✅
+Account Name / Number	Text	#12345678	✅
+Starting Balance	Numeric Input	10,000	✅
+
+💡 Logic:
+
+If user chooses “Proprietary Account,” show a placeholder like “e.g., FTMO, MyForexFunds”
+
+If “Live Account,” placeholder “e.g., IC Markets, Pepperstone”
+
+Auto-detect currency symbol if you support multi-currency (optional)
+
+On submit, insert to Supabase → trade_accounts
+
+⚙️ Step 3 — Linking Trades to Accounts
+
+When adding a trade, force the user to select which account it belongs to.
+
+Add account_id UUID REFERENCES trade_accounts(id) to your trades table.
+
+This ensures each trade is always tied to the correct account.
+
+⚙️ Step 4 — Analytics Behavior
+
+Once the accounts are in place:
+
+Default view: show All Accounts Combined → aggregate PnL, win rate, drawdown, etc.
+
+Filter options: dropdown → select “All / Demo / Proprietary / Live / [Specific Name]”
+
+Example logic:
+
+SELECT * FROM trades WHERE account_id IN (user_selected_accounts)
+
+
+Supabase can handle these relations natively (via foreign key joins).
+
+⚙️ Step 5 — Suggested UI Layout
+
+Simple, clean card-based view:
+
+Trading Accounts Page
+
++----------------------------------+
+| FTMO (Proprietary, Forex)        |
+| Account #: #124587               |
+| Starting Balance: $10,000        |
+| Created: Oct 10, 2025            |
+| [View Analytics] [Delete]        |
++----------------------------------+
+
++----------------------------------+
+| Binance (Live, Crypto)           |
+| Account #: #BX1234               |
+| Starting Balance: $2,500         |
+| Created: Oct 10, 2025            |
+| [View Analytics] [Delete]        |
++----------------------------------+
+
+[ + Add New Account ]
+
+⚙️ Step 6 — Tell Replit This:
+
+“Please add a new trade_accounts table in Supabase with user_id linkage.
+Create an Add Account form in the frontend where the user selects account type (demo, proprietary, live), market type (forex, futures, stocks, crypto), enters broker/prop name, account number/name, and starting balance.
+The user cannot add trades unless they have at least one account created.
+Each trade must reference the selected account_id.
+The analytics dashboard should allow filtering by all accounts combined or individual accounts.”
