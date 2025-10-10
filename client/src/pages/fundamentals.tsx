@@ -4,18 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getFundamentalBias, getCurrencyScores, getIndexBias, getMarketDrivers, getTodaysEconomicEvents, getHighImpactEventCounts } from "@/lib/supabase-service";
+import { getFundamentalBias, getIndexBias, getMarketDrivers, getTodaysEconomicEvents, getHighImpactEventCounts } from "@/lib/supabase-service";
 import { format } from "date-fns";
 
 export default function Fundamentals() {
   const { data: fundamentalBias, isLoading: biasLoading } = useQuery({
     queryKey: ['/api/fundamental-bias'],
     queryFn: getFundamentalBias,
-  });
-
-  const { data: currencyScores, isLoading: scoresLoading } = useQuery({
-    queryKey: ['/api/currency-scores'],
-    queryFn: getCurrencyScores,
   });
 
   const { data: indexBias, isLoading: indexLoading } = useQuery({
@@ -402,83 +397,6 @@ export default function Fundamentals() {
             </Card>
 
             <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Currency Strength Scores</CardTitle>
-                  <CardDescription>Fundamental strength breakdown by currency</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {scoresLoading ? (
-                    <div className="text-center py-8 text-muted-foreground">Loading currency scores...</div>
-                  ) : currencyScores && currencyScores.length > 0 ? (
-                    <div className="space-y-4">
-                      {currencyScores.map((score: any, index: number) => {
-                        const normalizedScore = Math.min(Math.max((score.total_score + 20) * 2.5, 0), 100);
-                        const getRating = (total: number) => {
-                          if (total >= 7) return "Strong";
-                          if (total <= -7) return "Weak";
-                          return "Neutral";
-                        };
-
-                        return (
-                          <div key={index} className="border rounded-lg p-4 space-y-3" data-testid={`currency-score-${index}`}>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-lg">{score.currency}</span>
-                                {score.total_score >= 7 ? (
-                                  <TrendingUp className="h-4 w-4 text-green-500" />
-                                ) : score.total_score <= -7 ? (
-                                  <TrendingDown className="h-4 w-4 text-red-500" />
-                                ) : (
-                                  <Minus className="h-4 w-4 text-gray-500" />
-                                )}
-                              </div>
-                              <Badge variant={score.total_score >= 7 ? "default" : score.total_score <= -7 ? "destructive" : "secondary"}>
-                                {getRating(score.total_score)}
-                              </Badge>
-                            </div>
-                            <div className="grid grid-cols-3 gap-3 text-xs">
-                              <div>
-                                <div className="text-muted-foreground">Data</div>
-                                <div className="font-medium">{score.data_score > 0 ? '+' : ''}{score.data_score}</div>
-                              </div>
-                              <div>
-                                <div className="text-muted-foreground">CB Tone</div>
-                                <div className="font-medium">{score.cb_tone_score > 0 ? '+' : ''}{score.cb_tone_score}</div>
-                              </div>
-                              <div>
-                                <div className="text-muted-foreground">Market</div>
-                                <div className="font-medium">{score.market_score > 0 ? '+' : ''}{score.market_score}</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">Total Score:</span>
-                              <span className={`font-bold ${score.total_score >= 7 ? 'text-green-500' : score.total_score <= -7 ? 'text-red-500' : 'text-gray-500'}`}>
-                                {score.total_score > 0 ? '+' : ''}{score.total_score}
-                              </span>
-                            </div>
-                            <div className="h-2 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className={`h-full ${
-                                  score.total_score >= 7 ? "bg-green-500" : 
-                                  score.total_score <= -7 ? "bg-red-500" : 
-                                  "bg-yellow-500"
-                                }`}
-                                style={{ width: `${normalizedScore}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No currency score data available. Run the automation script to generate data.
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle>Key Fundamental Drivers</CardTitle>
