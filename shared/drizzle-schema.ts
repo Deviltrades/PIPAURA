@@ -33,7 +33,7 @@ export const tradeAccounts = pgTable('trade_accounts', {
   account_name: text('account_name').notNull(),
   starting_balance: decimal('starting_balance', { precision: 12, scale: 2 }).notNull(),
   current_balance: decimal('current_balance', { precision: 12, scale: 2 }),
-  is_active: integer('is_active').default(1),
+  is_active: integer('is_active').default(1).notNull(),
   created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)
 });

@@ -36,9 +36,11 @@ import { Label } from "@/components/ui/label";
 import { SignedImageDisplay } from "@/components/SignedImageDisplay";
 import { PlanGate, FeatureGate } from "@/components/PlanGate";
 import { useToast } from "@/hooks/use-toast";
-import { createTrade, uploadFile } from "@/lib/supabase-service";
+import { createTrade, uploadFile, getTradeAccounts } from "@/lib/supabase-service";
+import { useQuery } from "@tanstack/react-query";
 
 const addTradeSchema = z.object({
+  account_id: z.string().min(1, "Trading account is required"),
   instrumentType: z.enum(["FOREX", "INDICES", "CRYPTO"]),
   instrument: z.string().min(1, "Instrument is required"),
   tradeType: z.enum(["BUY", "SELL"]),
@@ -91,9 +93,16 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Fetch user's trading accounts
+  const { data: accounts } = useQuery({
+    queryKey: ['/api/trade-accounts'],
+    queryFn: getTradeAccounts,
+  });
+
   const form = useForm<AddTradeFormData>({
     resolver: zodResolver(addTradeSchema),
     defaultValues: {
+      account_id: "",
       instrumentType: "FOREX",
       instrument: "",
       tradeType: "BUY",
@@ -138,6 +147,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
       }
 
       const tradeData = {
+        account_id: data.account_id,
         instrument: data.instrument,
         instrument_type: data.instrumentType as 'FOREX' | 'INDICES' | 'CRYPTO',
         trade_type: data.tradeType as 'BUY' | 'SELL',
@@ -255,6 +265,40 @@ export function AddTradeModal({ isOpen, onClose, selectedDate }: AddTradeModalPr
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Trading Account Selection */}
+            <FormField
+              control={form.control}
+              name="account_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Trading Account *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-background border-input" data-testid="select-account">
+                        <SelectValue placeholder="Select trading account" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {!accounts || accounts.length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground">
+                          No accounts available. Please add an account first.
+                        </div>
+                      ) : (
+                        accounts
+                          .filter(acc => acc.is_active)
+                          .map((account) => (
+                            <SelectItem key={account.id} value={account.id} data-testid={`option-account-${account.id}`}>
+                              {account.account_name} ({account.broker_name})
+                            </SelectItem>
+                          ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-2 gap-4">
               {/* Instrument Type */}
               <FormField

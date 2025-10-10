@@ -666,6 +666,16 @@ export async function deleteTradeAccount(id: string): Promise<void> {
 
   if (!profile) throw new Error('User profile not found');
 
+  // Check if account has trades
+  const { count } = await supabase
+    .from('trades')
+    .select('*', { count: 'exact', head: true })
+    .eq('account_id', id);
+
+  if (count && count > 0) {
+    throw new Error(`Cannot delete account with ${count} existing trade(s). Please delete or reassign trades first.`);
+  }
+
   const { error } = await supabase
     .from('trade_accounts')
     .delete()

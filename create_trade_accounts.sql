@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS trade_accounts (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Add account_id to trades table
+-- Add account_id to trades table (NOT NULL to enforce every trade must have an account)
 ALTER TABLE trades 
-ADD COLUMN IF NOT EXISTS account_id UUID REFERENCES trade_accounts(id) ON DELETE SET NULL;
+ADD COLUMN IF NOT EXISTS account_id UUID NOT NULL REFERENCES trade_accounts(id) ON DELETE RESTRICT;
 
 -- Create index for faster queries
 CREATE INDEX IF NOT EXISTS idx_trades_account_id ON trades (account_id);
