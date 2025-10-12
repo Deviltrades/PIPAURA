@@ -267,19 +267,20 @@ export async function createTrade(trade: Omit<TradeData, 'user_id'>) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  // Calculate enrichment values
-  const sessionTag = detectTradingSession(trade.entry_date);
-  const holdingTimeMinutes = calculateHoldingTimeMinutes(trade.entry_date, trade.exit_date);
-  const profitPerLot = calculateProfitPerLot(trade.pnl, trade.position_size);
+  // Calculate enrichment values (disabled - Supabase schema cache issue)
+  // const sessionTag = detectTradingSession(trade.entry_date);
+  // const holdingTimeMinutes = calculateHoldingTimeMinutes(trade.entry_date, trade.exit_date);
+  // const profitPerLot = calculateProfitPerLot(trade.pnl, trade.position_size);
 
   const { data, error } = await supabase
     .from('trades')
     .insert([{ 
       ...trade,
       user_id: user.id,
-      session_tag: sessionTag,
-      holding_time_minutes: holdingTimeMinutes,
-      profit_per_lot: profitPerLot
+      // DISABLED: Supabase PostgREST schema cache issue
+      // session_tag: sessionTag,
+      // holding_time_minutes: holdingTimeMinutes,
+      // profit_per_lot: profitPerLot
     }])
     .select()
     .single();
@@ -321,6 +322,8 @@ export async function updateTrade(id: string, updates: Partial<TradeData>) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
+  // DISABLED: Enrichment recalculation due to Supabase PostgREST schema cache issue
+  /*
   // Recalculate enrichment values if relevant fields are updated
   const enrichmentUpdates: any = {};
   
@@ -343,10 +346,11 @@ export async function updateTrade(id: string, updates: Partial<TradeData>) {
     const positionSize = updates.position_size ?? parseFloat(current.position_size);
     enrichmentUpdates.profit_per_lot = calculateProfitPerLot(pnl, positionSize);
   }
+  */
 
   const { data, error } = await supabase
     .from('trades')
-    .update({ ...updates, ...enrichmentUpdates })
+    .update(updates)
     .eq('id', id)
     .eq('user_id', user.id)
     .select()
@@ -432,7 +436,8 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
   let skipped = 0;
 
   for (const trade of trades) {
-    // Check for duplicate ticket_id
+    // DISABLED: ticket_id duplicate check due to Supabase PostgREST schema cache issue
+    /*
     if (trade.ticket_id) {
       const { data: existing } = await supabase
         .from('trades')
@@ -447,6 +452,7 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
         continue;
       }
     }
+    */
 
     // Calculate enrichment values
     const sessionTag = detectTradingSession(trade.entry_date);
@@ -468,14 +474,16 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
       status: trade.status,
       entry_date: trade.entry_date,
       exit_date: trade.exit_date,
-      session_tag: sessionTag,
-      holding_time_minutes: holdingTimeMinutes,
-      profit_per_lot: profitPerLot?.toString(),
+      // DISABLED: Supabase PostgREST schema cache not recognizing columns after restart
+      // session_tag: sessionTag,
+      // holding_time_minutes: holdingTimeMinutes,
+      // profit_per_lot: profitPerLot?.toString(),
     };
 
-    if (trade.ticket_id) {
-      tradeData.ticket_id = trade.ticket_id;
-    }
+    // DISABLED: Supabase PostgREST schema cache not recognizing ticket_id column
+    // if (trade.ticket_id) {
+    //   tradeData.ticket_id = trade.ticket_id;
+    // }
 
     const { error } = await supabase
       .from('trades')
