@@ -259,32 +259,18 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
     selectedDirection,
   ]);
 
-  // Fetch all trades
+  // Fetch all trades with account filtering
   const { data: trades = [], isLoading } = useQuery<Trade[]>({
-    queryKey: ["trades"],
-    queryFn: getTrades,
+    queryKey: ["trades", selectedAccount],
+    queryFn: () => getTrades(selectedAccount),
     retry: false,
   });
 
   // Get user profile for calendar settings
   const { profile } = useUserProfile();
 
-  // Apply filters to trades
+  // Apply filters to trades (account filtering is now done at database level)
   const filteredTrades = trades ? trades.filter(trade => {
-    // Account filter
-    if (selectedAccount !== "all") {
-      // For now, we'll use a simple mapping since we don't have account field in trades
-      // This can be enhanced when account field is added to the trade schema
-      const accountMap: Record<string, boolean> = {
-        "main": true,
-        "demo": false,
-        "prop": trade.instrument?.includes("USD") || false
-      };
-      if (selectedAccount === "main" && !accountMap.main) return false;
-      if (selectedAccount === "demo" && !accountMap.demo) return false;
-      if (selectedAccount === "prop" && !accountMap.prop) return false;
-    }
-
     // Symbol filter
     if (selectedSymbol !== "all") {
       if (selectedSymbol === "forex" && trade.instrument_type !== "FOREX") return false;
