@@ -21,16 +21,20 @@ interface Trade {
   status: "OPEN" | "CLOSED";
 }
 
-export default function TradingAnalytics() {
+interface TradingAnalyticsProps {
+  selectedAccount: string;
+}
+
+export default function TradingAnalytics({ selectedAccount }: TradingAnalyticsProps) {
   const { data: analytics } = useQuery<AnalyticsData>({
-    queryKey: ["analytics"],
-    queryFn: getAnalytics,
+    queryKey: ["analytics", selectedAccount],
+    queryFn: () => getAnalytics(selectedAccount),
     retry: false,
   });
 
   const { data: trades } = useQuery<Trade[]>({
-    queryKey: ["trades"],
-    queryFn: getTrades,
+    queryKey: ["trades", selectedAccount],
+    queryFn: () => getTrades(selectedAccount),
     retry: false,
   });
 
