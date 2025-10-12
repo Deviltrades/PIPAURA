@@ -436,9 +436,7 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
   let skipped = 0;
 
   for (const trade of trades) {
-    // Temporarily disabled: ticket_id duplicate check due to Supabase schema cache issue
-    // Will re-enable once PostgREST recognizes the ticket_id column
-    /*
+    // Check for duplicate ticket_id
     if (trade.ticket_id) {
       const { data: existing } = await supabase
         .from('trades')
@@ -453,7 +451,6 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
         continue;
       }
     }
-    */
 
     // Calculate enrichment values
     const sessionTag = detectTradingSession(trade.entry_date);
@@ -475,17 +472,14 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
       status: trade.status,
       entry_date: trade.entry_date,
       exit_date: trade.exit_date,
-      // TEMPORARILY EXCLUDED: enrichment fields until Supabase PostgREST schema cache is refreshed
-      // session_tag: sessionTag,
-      // holding_time_minutes: holdingTimeMinutes,
-      // profit_per_lot: profitPerLot?.toString(),
+      session_tag: sessionTag,
+      holding_time_minutes: holdingTimeMinutes,
+      profit_per_lot: profitPerLot?.toString(),
     };
 
-    // TEMPORARILY EXCLUDED: ticket_id until Supabase PostgREST schema cache is refreshed
-    // Uncomment once schema cache recognizes the ticket_id column
-    // if (trade.ticket_id) {
-    //   tradeData.ticket_id = trade.ticket_id;
-    // }
+    if (trade.ticket_id) {
+      tradeData.ticket_id = trade.ticket_id;
+    }
 
     const { error } = await supabase
       .from('trades')
