@@ -284,10 +284,22 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         ]);
         
         if (!instrument || instrument.trim() === '') {
+          // Check if this is a non-trade row (balance adjustment, deposit, etc.)
+          // These rows might have Type but no Symbol
+          const rowType = row['Type'] || row['type'] || '';
+          const position = row['Position'] || row['position'] || '';
+          const profit = row['Profit'] || row['profit'] || '';
+          
           // Debug: log the problematic row for first few errors
           if (parseErrors.length < 3) {
-            console.log(`Row ${index + 1} data:`, row);
+            console.log(`Row ${index + 1} - Type: "${rowType}", Position: "${position}", Profit: "${profit}"`);
           }
+          
+          // Skip rows that look like balance adjustments (have profit but no symbol)
+          if (rowType && profit && (!instrument || instrument.trim() === '')) {
+            return; // Skip silently - likely a balance adjustment or credit/debit
+          }
+          
           parseErrors.push(`Row ${index + 1}: Missing pair/instrument`);
           return;
         }
