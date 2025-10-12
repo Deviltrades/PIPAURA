@@ -60,7 +60,7 @@ export default function Layout({ children }: LayoutProps) {
       </div>
 
       {/* Main Content */}
-      <div className="lg:ml-64 min-h-screen pt-16 lg:pt-0">
+      <div className="lg:ml-20 min-h-screen pt-16 lg:pt-0">
         {children}
       </div>
     </div>
