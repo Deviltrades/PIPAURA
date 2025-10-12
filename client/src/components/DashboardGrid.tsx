@@ -12,6 +12,7 @@ import { getUserProfile, updateUserProfile } from "@/lib/supabase-service";
 import DraggableWidget from "./DraggableWidget";
 import CalendarWidget from "./CalendarWidget";
 import TimingInsights from "./TimingInsights";
+import { AccountSelector } from "@/components/AccountSelector";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -25,6 +26,7 @@ interface DashboardGridProps {
 
 export default function DashboardGrid({ analytics, trades }: DashboardGridProps) {
   const { toast } = useToast();
+  const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [editMode, setEditMode] = useState(false);
   const [themeColor, setThemeColor] = useState("slate");
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
@@ -339,8 +341,11 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
     <div className="min-h-screen p-4 lg:p-8" style={{ backgroundColor: bgColor, color: textColor }}>
       <div className="max-w-7xl mx-auto">
         {/* Header Controls */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: textColor }}>Trading Dashboard</h1>
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h1 className="text-2xl font-bold mb-2" style={{ color: textColor }}>Trading Dashboard</h1>
+            <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
+          </div>
           <div className="flex gap-3 items-center">
             {/* Save Layout Button */}
             <Button
