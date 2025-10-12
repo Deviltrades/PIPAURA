@@ -295,8 +295,15 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         
         // Skip balance adjustments, deposits, withdrawals (Type = "balance", "deposit", "credit", etc.)
         const typeLower = typeColumnValue?.toLowerCase().trim() || '';
+        
+        // Debug: log what we're checking
+        if (index + 1 >= 104 && index + 1 <= 110) {
+          console.log(`Row ${index + 1}: typeColumnValue="${typeColumnValue}", typeLower="${typeLower}"`);
+        }
+        
         if (typeLower === 'balance' || typeLower === 'deposit' || typeLower === 'withdrawal' || 
             typeLower === 'credit' || typeLower === 'debit' || typeLower === 'bonus') {
+          console.log(`Skipping row ${index + 1} - Type: ${typeLower}`);
           return; // Skip non-trade entries silently
         }
         
