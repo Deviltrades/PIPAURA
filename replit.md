@@ -48,9 +48,12 @@ The analytics page features a "Trader DNA Core" visualization: an animated 3D-li
 ### Instrument Type Expansion
 The application supports five asset classes (FOREX, INDICES, CRYPTO, FUTURES, STOCKS) with advanced searchable dropdowns and custom instrument creation. Users can create any custom instrument not in predefined lists, with smart detection to prevent duplicates.
 
-### CSV Trade Upload System
-A robust CSV import system supports MT4/MT5/TradeZella formats with:
-- **Auto-Delimiter Detection**: Automatically detects comma, semicolon, or tab delimiters.
+### Multi-Format Trade Upload System
+A comprehensive trade import system supporting CSV, Excel (.xls/.xlsx), and HTML formats from MT4/MT5/TradeZella platforms:
+- **Multi-Format Support**: Automatic file type detection and parsing for CSV, Excel spreadsheets, and HTML table exports.
+- **Excel Parser**: Uses SheetJS (xlsx) library to read .xls and .xlsx files with full header detection.
+- **HTML Parser**: Browser-native DOMParser extracts trade data from HTML table exports.
+- **Auto-Delimiter Detection**: CSV files automatically detect comma, semicolon, or tab delimiters.
 - **Flexible Column Mapping**: Supports multiple column name variations (e.g., "Ticket", "Order", "Deal #", "Trade ID").
 - **Broker Compatibility**: Handles capitalized headers from MT4/MT5 exports and various broker formats.
 - **Account Association**: Links all imported trades to selected trading account.
@@ -84,6 +87,7 @@ An automated post-upload enrichment system is fully built but disabled due to pe
 
 ### File Upload System
 - **Uppy**: Advanced file upload library for dashboard UI, progress tracking, and drag-and-drop.
+- **SheetJS (xlsx)**: Excel file parsing library for .xls and .xlsx format support.
 
 ### UI and Visualization
 - **Recharts**: Charting library for performance analytics and trading statistics.
