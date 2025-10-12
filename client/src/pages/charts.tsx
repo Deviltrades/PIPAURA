@@ -123,11 +123,11 @@ export default function Charts() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight" data-testid="text-charts-title">Trading Charts</h1>
-          <p className="text-muted-foreground">Professional charting powered by TradingView</p>
+          <h1 className="text-3xl font-bold text-white" data-testid="text-charts-title">Trading Charts</h1>
+          <p className="text-gray-300">Professional charting powered by TradingView</p>
         </div>
         <div className="flex gap-2">
           <Select value={symbol} onValueChange={setSymbol}>
