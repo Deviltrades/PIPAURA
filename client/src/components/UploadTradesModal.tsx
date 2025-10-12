@@ -353,6 +353,20 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         const closeDate = getFieldValue(row, [
           'Close Time', 'close_time', 'CloseTime', 'close_date', 'Close Date', 'Exit Time', 'exit_time', 'Time_1', 'time_1'
         ]);
+        
+        // Validate dates - skip if they look like numbers instead of dates
+        const isValidDate = (dateStr: string | undefined) => {
+          if (!dateStr) return true; // Empty is OK
+          // If it's a number (like "-0.04"), it's not a valid date
+          if (!isNaN(Number(dateStr))) return false;
+          // If it doesn't contain date/time indicators, it's not a valid date
+          if (!dateStr.includes('-') && !dateStr.includes('/') && !dateStr.includes(':') && !dateStr.includes(' ')) return false;
+          return true;
+        };
+        
+        if (!isValidDate(openDate) || !isValidDate(closeDate)) {
+          return; // Skip rows with invalid date values silently
+        }
 
         const ticketId = getFieldValue(row, [
           'Ticket', 'ticket', 'ticket_id', 'Order', 'order', 'ID', 'id', 'Trade ID', 'trade_id', 'Deal #', 'deal', 'Position', 'position'
