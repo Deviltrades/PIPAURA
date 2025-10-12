@@ -3,8 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Upload } from "lucide-react";
 import { AddTradeModal } from "@/components/AddTradeModal";
+import { UploadTradesModal } from "@/components/UploadTradesModal";
 import { formatCurrency } from "@/lib/utils";
 import { getTrades, deleteTrade } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +13,7 @@ import { useLocation } from "wouter";
 
 export default function Trades() {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -88,13 +90,25 @@ export default function Trades() {
           <h1 className="text-3xl font-bold text-white">Trade Journal</h1>
           <p className="text-gray-300">Manage and track all your trading positions</p>
         </div>
-        <Button 
-          onClick={() => setIsFormOpen(true)}
-          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Trade
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setIsUploadModalOpen(true)}
+            variant="outline"
+            className="border-purple-500/50 text-white hover:bg-purple-600/20"
+            data-testid="button-upload-trades"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Upload CSV
+          </Button>
+          <Button 
+            onClick={() => setIsFormOpen(true)}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0"
+            data-testid="button-add-trade"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Trade
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -205,6 +219,11 @@ export default function Trades() {
         isOpen={isFormOpen}
         onClose={handleFormClose}
         trade={editingTrade}
+      />
+
+      <UploadTradesModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
       />
     </div>
   );
