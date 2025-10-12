@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Maximize, Minimize } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Maximize, Minimize, Plus, X, Edit2 } from "lucide-react";
 
 declare global {
   interface Window {
@@ -11,13 +13,52 @@ declare global {
   }
 }
 
+const MAJOR_PAIRS = [
+  { symbol: "EURUSD", label: "EUR/USD" },
+  { symbol: "GBPUSD", label: "GBP/USD" },
+  { symbol: "USDJPY", label: "USD/JPY" },
+  { symbol: "USDCHF", label: "USD/CHF" },
+  { symbol: "AUDUSD", label: "AUD/USD" },
+  { symbol: "USDCAD", label: "USD/CAD" },
+  { symbol: "NZDUSD", label: "NZD/USD" },
+  { symbol: "EURGBP", label: "EUR/GBP" },
+  { symbol: "EURJPY", label: "EUR/JPY" },
+  { symbol: "GBPJPY", label: "GBP/JPY" },
+  { symbol: "AUDJPY", label: "AUD/JPY" },
+  { symbol: "BTCUSD", label: "BTC/USD" },
+  { symbol: "ETHUSD", label: "ETH/USD" },
+];
+
 export default function Charts() {
   const [symbol, setSymbol] = useState("EURUSD");
   const [interval, setInterval] = useState("60");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [customSymbols, setCustomSymbols] = useState<Array<{ symbol: string; label: string }>>([]);
+  const [newSymbol, setNewSymbol] = useState("");
+  const [newLabel, setNewLabel] = useState("");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartCardRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<any>(null);
+
+  // Load custom symbols from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("custom-chart-symbols");
+    if (saved) {
+      try {
+        setCustomSymbols(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load custom symbols");
+      }
+    }
+  }, []);
+
+  // Save custom symbols to localStorage
+  useEffect(() => {
+    if (customSymbols.length > 0) {
+      localStorage.setItem("custom-chart-symbols", JSON.stringify(customSymbols));
+    }
+  }, [customSymbols]);
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -80,9 +121,14 @@ export default function Charts() {
 
     chartContainerRef.current.innerHTML = "";
 
-    const tradingViewSymbol = symbol === "BTCUSD" || symbol === "ETHUSD" 
-      ? `BINANCE:${symbol}T` 
-      : `FX_IDC:${symbol}`;
+    // Determine TradingView symbol format
+    let tradingViewSymbol = `FX_IDC:${symbol}`;
+    if (symbol === "BTCUSD" || symbol === "ETHUSD") {
+      tradingViewSymbol = `BINANCE:${symbol}T`;
+    } else if (symbol.includes(":")) {
+      // Custom symbol already has exchange prefix
+      tradingViewSymbol = symbol;
+    }
 
     widgetRef.current = new window.TradingView.widget({
       autosize: true,
@@ -105,12 +151,32 @@ export default function Charts() {
     });
   };
 
-  const symbolMap: Record<string, string> = {
-    EURUSD: "EUR/USD",
-    GBPUSD: "GBP/USD",
-    USDJPY: "USD/JPY",
-    BTCUSD: "BTC/USD",
-    ETHUSD: "ETH/USD",
+  const allSymbols = [...MAJOR_PAIRS, ...customSymbols];
+  const symbolMap: Record<string, string> = {};
+  allSymbols.forEach(s => {
+    symbolMap[s.symbol] = s.label;
+  });
+
+  const addCustomSymbol = () => {
+    if (!newSymbol.trim() || !newLabel.trim()) return;
+    
+    const symbolExists = allSymbols.some(s => s.symbol.toUpperCase() === newSymbol.toUpperCase());
+    if (symbolExists) {
+      alert("This symbol already exists!");
+      return;
+    }
+
+    setCustomSymbols([...customSymbols, { symbol: newSymbol.toUpperCase(), label: newLabel }]);
+    setNewSymbol("");
+    setNewLabel("");
+    setIsAddDialogOpen(false);
+  };
+
+  const removeCustomSymbol = (symbolToRemove: string) => {
+    setCustomSymbols(customSymbols.filter(s => s.symbol !== symbolToRemove));
+    if (symbol === symbolToRemove) {
+      setSymbol("EURUSD");
+    }
   };
 
   const intervalMap: Record<string, string> = {
@@ -135,11 +201,11 @@ export default function Charts() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="EURUSD">EUR/USD</SelectItem>
-              <SelectItem value="GBPUSD">GBP/USD</SelectItem>
-              <SelectItem value="USDJPY">USD/JPY</SelectItem>
-              <SelectItem value="BTCUSD">BTC/USD</SelectItem>
-              <SelectItem value="ETHUSD">ETH/USD</SelectItem>
+              {allSymbols.map((s) => (
+                <SelectItem key={s.symbol} value={s.symbol}>
+                  {s.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={interval} onValueChange={setInterval}>
@@ -199,55 +265,91 @@ export default function Charts() {
 
         <div className="lg:col-span-1 space-y-4">
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Quick Symbols</CardTitle>
+              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="h-7 w-7 p-0" data-testid="button-add-symbol">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Custom Symbol</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div>
+                      <label className="text-sm font-medium">Symbol (e.g., NASDAQ:AAPL)</label>
+                      <Input
+                        value={newSymbol}
+                        onChange={(e) => setNewSymbol(e.target.value)}
+                        placeholder="NASDAQ:AAPL"
+                        className="mt-1"
+                        data-testid="input-symbol"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Display Label</label>
+                      <Input
+                        value={newLabel}
+                        onChange={(e) => setNewLabel(e.target.value)}
+                        placeholder="Apple Inc."
+                        className="mt-1"
+                        data-testid="input-label"
+                      />
+                    </div>
+                    <Button onClick={addCustomSymbol} className="w-full" data-testid="button-save-symbol">
+                      Add Symbol
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <Button 
-                size="sm" 
-                variant={symbol === "EURUSD" ? "default" : "outline"} 
-                className="w-full justify-start"
-                onClick={() => setSymbol("EURUSD")}
-                data-testid="button-symbol-eurusd"
-              >
-                EUR/USD
-              </Button>
-              <Button 
-                size="sm" 
-                variant={symbol === "GBPUSD" ? "default" : "outline"} 
-                className="w-full justify-start"
-                onClick={() => setSymbol("GBPUSD")}
-                data-testid="button-symbol-gbpusd"
-              >
-                GBP/USD
-              </Button>
-              <Button 
-                size="sm" 
-                variant={symbol === "USDJPY" ? "default" : "outline"} 
-                className="w-full justify-start"
-                onClick={() => setSymbol("USDJPY")}
-                data-testid="button-symbol-usdjpy"
-              >
-                USD/JPY
-              </Button>
-              <Button 
-                size="sm" 
-                variant={symbol === "BTCUSD" ? "default" : "outline"} 
-                className="w-full justify-start"
-                onClick={() => setSymbol("BTCUSD")}
-                data-testid="button-symbol-btcusd"
-              >
-                BTC/USD
-              </Button>
-              <Button 
-                size="sm" 
-                variant={symbol === "ETHUSD" ? "default" : "outline"} 
-                className="w-full justify-start"
-                onClick={() => setSymbol("ETHUSD")}
-                data-testid="button-symbol-ethusd"
-              >
-                ETH/USD
-              </Button>
+            <CardContent className="space-y-2 max-h-[600px] overflow-y-auto">
+              {/* Major Pairs */}
+              {MAJOR_PAIRS.map((pair) => (
+                <Button 
+                  key={pair.symbol}
+                  size="sm" 
+                  variant={symbol === pair.symbol ? "default" : "outline"} 
+                  className="w-full justify-start"
+                  onClick={() => setSymbol(pair.symbol)}
+                  data-testid={`button-symbol-${pair.symbol.toLowerCase()}`}
+                >
+                  {pair.label}
+                </Button>
+              ))}
+
+              {/* Custom Symbols with delete button */}
+              {customSymbols.length > 0 && (
+                <>
+                  <div className="pt-2 border-t">
+                    <p className="text-xs text-muted-foreground mb-2">Custom Symbols</p>
+                  </div>
+                  {customSymbols.map((pair) => (
+                    <div key={pair.symbol} className="flex gap-1">
+                      <Button 
+                        size="sm" 
+                        variant={symbol === pair.symbol ? "default" : "outline"} 
+                        className="flex-1 justify-start"
+                        onClick={() => setSymbol(pair.symbol)}
+                        data-testid={`button-symbol-${pair.symbol.toLowerCase()}`}
+                      >
+                        {pair.label}
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
+                        onClick={() => removeCustomSymbol(pair.symbol)}
+                        data-testid={`button-remove-${pair.symbol.toLowerCase()}`}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
