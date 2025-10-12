@@ -267,19 +267,20 @@ export async function createTrade(trade: Omit<TradeData, 'user_id'>) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  // Calculate enrichment values
-  const sessionTag = detectTradingSession(trade.entry_date);
-  const holdingTimeMinutes = calculateHoldingTimeMinutes(trade.entry_date, trade.exit_date);
-  const profitPerLot = calculateProfitPerLot(trade.pnl, trade.position_size);
+  // Calculate enrichment values (temporarily disabled in insert)
+  // const sessionTag = detectTradingSession(trade.entry_date);
+  // const holdingTimeMinutes = calculateHoldingTimeMinutes(trade.entry_date, trade.exit_date);
+  // const profitPerLot = calculateProfitPerLot(trade.pnl, trade.position_size);
 
   const { data, error } = await supabase
     .from('trades')
     .insert([{ 
       ...trade,
       user_id: user.id,
-      session_tag: sessionTag,
-      holding_time_minutes: holdingTimeMinutes,
-      profit_per_lot: profitPerLot
+      // TEMPORARILY EXCLUDED: enrichment fields until Supabase schema cache is refreshed
+      // session_tag: sessionTag,
+      // holding_time_minutes: holdingTimeMinutes,
+      // profit_per_lot: profitPerLot
     }])
     .select()
     .single();
@@ -321,6 +322,8 @@ export async function updateTrade(id: string, updates: Partial<TradeData>) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
+  // TEMPORARILY DISABLED: Enrichment recalculation until Supabase schema cache is refreshed
+  /*
   // Recalculate enrichment values if relevant fields are updated
   const enrichmentUpdates: any = {};
   
@@ -343,10 +346,11 @@ export async function updateTrade(id: string, updates: Partial<TradeData>) {
     const positionSize = updates.position_size ?? parseFloat(current.position_size);
     enrichmentUpdates.profit_per_lot = calculateProfitPerLot(pnl, positionSize);
   }
+  */
 
   const { data, error } = await supabase
     .from('trades')
-    .update({ ...updates, ...enrichmentUpdates })
+    .update(updates)
     .eq('id', id)
     .eq('user_id', user.id)
     .select()
@@ -471,9 +475,10 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
       status: trade.status,
       entry_date: trade.entry_date,
       exit_date: trade.exit_date,
-      session_tag: sessionTag,
-      holding_time_minutes: holdingTimeMinutes,
-      profit_per_lot: profitPerLot?.toString(),
+      // TEMPORARILY EXCLUDED: enrichment fields until Supabase PostgREST schema cache is refreshed
+      // session_tag: sessionTag,
+      // holding_time_minutes: holdingTimeMinutes,
+      // profit_per_lot: profitPerLot?.toString(),
     };
 
     // TEMPORARILY EXCLUDED: ticket_id until Supabase PostgREST schema cache is refreshed
