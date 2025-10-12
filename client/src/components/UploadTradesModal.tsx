@@ -124,8 +124,32 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
           const firstSheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[firstSheetName];
           
-          // Convert to JSON with headers
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          // Convert to array of arrays to inspect structure
+          const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+          
+          // Find the header row (first row with multiple non-empty values)
+          let headerRowIndex = -1;
+          for (let i = 0; i < Math.min(10, rawData.length); i++) {
+            const row = rawData[i];
+            const nonEmptyCells = row.filter(cell => cell !== null && cell !== undefined && cell !== '').length;
+            if (nonEmptyCells >= 3) { // At least 3 columns
+              headerRowIndex = i;
+              break;
+            }
+          }
+          
+          if (headerRowIndex === -1) {
+            reject(new Error('Could not find header row in Excel file'));
+            return;
+          }
+          
+          // Convert to JSON using the identified header row
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+            range: headerRowIndex,
+            defval: ''
+          });
+          
+          console.log("Excel headers found at row", headerRowIndex + 1, ":", Object.keys(jsonData[0] || {}));
           resolve(jsonData);
         } catch (error) {
           reject(error);
