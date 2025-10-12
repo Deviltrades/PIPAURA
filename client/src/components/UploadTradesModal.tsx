@@ -665,7 +665,7 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
             Upload Trades
           </DialogTitle>
           <DialogDescription>
-            Upload trades from MT4/MT5/TradeZella exports (CSV, Excel, or HTML) to your trading account
+            Upload trades from MT4/MT5 exports (CSV, Excel, or HTML) to your trading account
           </DialogDescription>
         </DialogHeader>
 

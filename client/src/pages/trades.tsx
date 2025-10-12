@@ -102,7 +102,7 @@ export default function Trades() {
             data-testid="button-upload-trades"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Upload CSV
+            Upload CSV | HTML | EXCEL
           </Button>
           <Button 
             onClick={() => setIsFormOpen(true)}
