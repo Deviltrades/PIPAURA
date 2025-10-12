@@ -9,10 +9,10 @@ export default function Mentor() {
   const [message, setMessage] = useState("");
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">AI Trading Mentor</h1>
-        <p className="text-muted-foreground">Get personalized trading advice and analysis</p>
+    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-white">AI Trading Mentor</h1>
+        <p className="text-gray-300">Get personalized trading advice and analysis</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
