@@ -14,6 +14,10 @@ declare global {
 }
 
 const MAJOR_PAIRS = [
+  { symbol: "OANDA:XAUUSD", label: "XAU/USD (Gold)" },
+  { symbol: "BTCUSD", label: "BTC/USD" },
+  { symbol: "ETHUSD", label: "ETH/USD" },
+  { symbol: "NASDAQ:NDX", label: "US100 (NASDAQ)" },
   { symbol: "EURUSD", label: "EUR/USD" },
   { symbol: "GBPUSD", label: "GBP/USD" },
   { symbol: "USDJPY", label: "USD/JPY" },
@@ -25,9 +29,6 @@ const MAJOR_PAIRS = [
   { symbol: "EURJPY", label: "EUR/JPY" },
   { symbol: "GBPJPY", label: "GBP/JPY" },
   { symbol: "AUDJPY", label: "AUD/JPY" },
-  { symbol: "OANDA:XAUUSD", label: "XAU/USD (Gold)" },
-  { symbol: "BTCUSD", label: "BTC/USD" },
-  { symbol: "ETHUSD", label: "ETH/USD" },
 ];
 
 export default function Charts() {
