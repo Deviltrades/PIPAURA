@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { AccountSelector } from "@/components/AccountSelector";
 import { useState } from "react";
 
 const mockNotes = [
@@ -33,15 +34,17 @@ const mockNotes = [
 ];
 
 export default function Notes() {
+  const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [newNote, setNewNote] = useState({ title: "", content: "", category: "" });
   const [showNewNote, setShowNewNote] = useState(false);
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Trading Notes</h1>
-          <p className="text-muted-foreground">Document your trading thoughts and analysis</p>
+          <p className="text-muted-foreground mb-3">Document your trading thoughts and analysis</p>
+          <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
         </div>
         <Button onClick={() => setShowNewNote(!showNewNote)}>
           {showNewNote ? "Cancel" : "New Note"}

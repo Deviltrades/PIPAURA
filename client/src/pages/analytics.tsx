@@ -9,6 +9,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Info } from "lucide-react";
+import { AccountSelector } from "@/components/AccountSelector";
 import { 
   LineChart, 
   Line, 
@@ -23,6 +24,7 @@ import { getAnalytics } from "@/lib/supabase-service";
 import { FloatingDNACore } from "@/components/FloatingDNACore";
 
 export default function Analytics() {
+  const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [hoveredMonthIndex, setHoveredMonthIndex] = useState<number | null>(null);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const { data: analytics, isLoading } = useQuery({
@@ -91,9 +93,10 @@ export default function Analytics() {
   return (
     <div className="min-h-screen bg-[#0a1628] p-4 lg:p-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">Trading Analytics</h1>
-        <p className="text-gray-400 text-sm lg:text-base">Detailed performance analysis and metrics</p>
+        <p className="text-gray-400 text-sm lg:text-base mb-3">Detailed performance analysis and metrics</p>
+        <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
       </div>
 
       {/* Top Metrics Row */}

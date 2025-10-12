@@ -2,13 +2,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { AccountSelector } from "@/components/AccountSelector";
+import { useState } from "react";
 
 export default function Widgets() {
+  const [selectedAccount, setSelectedAccount] = useState<string>("all");
+  
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Trading Widgets</h1>
-        <p className="text-muted-foreground">Customizable widgets for your trading dashboard</p>
+        <p className="text-muted-foreground mb-3">Customizable widgets for your trading dashboard</p>
+        <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

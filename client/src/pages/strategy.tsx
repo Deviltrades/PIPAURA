@@ -2,13 +2,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AccountSelector } from "@/components/AccountSelector";
+import { useState } from "react";
 
 export default function Strategy() {
+  const [selectedAccount, setSelectedAccount] = useState<string>("all");
+  
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Strategy & Playbook</h1>
-        <p className="text-muted-foreground">Document and track your trading strategies</p>
+        <p className="text-muted-foreground mb-3">Document and track your trading strategies</p>
+        <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
       </div>
 
       <Tabs defaultValue="strategies" className="space-y-4">
