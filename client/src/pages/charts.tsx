@@ -273,11 +273,14 @@ export default function Charts() {
                     <Plus className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent aria-describedby="add-symbol-description">
                   <DialogHeader>
                     <DialogTitle>Add Custom Symbol</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4 pt-4">
+                  <p id="add-symbol-description" className="text-sm text-muted-foreground">
+                    Add any custom symbol from TradingView (stocks, crypto, indices, etc.)
+                  </p>
+                  <div className="space-y-4 pt-2">
                     <div>
                       <label className="text-sm font-medium">Symbol (e.g., NASDAQ:AAPL)</label>
                       <Input
