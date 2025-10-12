@@ -34,7 +34,6 @@ import {
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Journal", href: "/journal", icon: FileText },
   { name: "Trades", href: "/trades", icon: BookOpen },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Calendar", href: "/calendar", icon: Calendar },
