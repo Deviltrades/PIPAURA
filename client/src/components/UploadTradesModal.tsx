@@ -358,22 +358,54 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         ]);
 
         const closeDate = getFieldValue(row, [
-          'Close Time', 'close_time', 'CloseTime', 'close_date', 'Close Date', 'Exit Time', 'exit_time', 'Time_1', 'time_1'
+          'Close Time', 'close_time', 'Close_time', 'CloseTime', 'close_date', 'Close Date', 'TimeClosed', 'Close', 'Exit Time', 'exit_time', 'Time_1', 'time_1'
         ]);
         
-        // Validate dates - skip if they look like numbers instead of dates
-        const isValidDate = (dateStr: string | undefined) => {
-          if (!dateStr) return true; // Empty is OK
+        // Flexible date parser that supports multiple formats
+        const parseFlexibleDate = (dateStr: string | undefined): string | undefined => {
+          if (!dateStr || dateStr.trim() === '') return undefined;
+          
           // If it's a number (like "-0.04"), it's not a valid date
-          if (!isNaN(Number(dateStr))) return false;
+          if (!isNaN(Number(dateStr))) return undefined;
+          
           // If it doesn't contain date/time indicators, it's not a valid date
-          if (!dateStr.includes('-') && !dateStr.includes('/') && !dateStr.includes(':') && !dateStr.includes(' ')) return false;
-          return true;
+          if (!dateStr.includes('-') && !dateStr.includes('/') && !dateStr.includes('.') && !dateStr.includes(':') && !dateStr.includes(' ')) {
+            return undefined;
+          }
+          
+          const trimmed = dateStr.trim();
+          
+          // Try format: YYYY.MM.DD HH:MM or YYYY.MM.DD HH:MM:SS
+          if (trimmed.includes('.')) {
+            const dotFormatRegex = /^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})(?::(\d{2}))?$/;
+            const match = trimmed.match(dotFormatRegex);
+            if (match) {
+              const [_, year, month, day, hour, minute, second] = match;
+              return `${year}-${month}-${day}T${hour}:${minute}:${second || '00'}`;
+            }
+          }
+          
+          // Try format: DD/MM/YYYY HH:MM or DD/MM/YYYY HH:MM:SS
+          if (trimmed.includes('/')) {
+            const slashFormatRegex = /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?$/;
+            const match = trimmed.match(slashFormatRegex);
+            if (match) {
+              const [_, day, month, year, hour, minute, second] = match;
+              return `${year}-${month}-${day}T${hour}:${minute}:${second || '00'}`;
+            }
+          }
+          
+          // Try ISO format or other standard formats (already works)
+          return trimmed;
         };
         
-        if (!isValidDate(openDate) || !isValidDate(closeDate)) {
+        const parsedOpenDate = parseFlexibleDate(openDate);
+        const parsedCloseDate = parseFlexibleDate(closeDate);
+        
+        // Skip if open date is invalid
+        if (!parsedOpenDate) {
           skippedInvalidDate++;
-          return; // Skip rows with invalid date values silently
+          return;
         }
 
         const ticketId = getFieldValue(row, [
@@ -389,7 +421,7 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         ]);
 
         const exitPrice = getFieldValue(row, [
-          'Close Price', 'close_price', 'ClosePrice', 'Exit Price', 'exit_price', 'ExitPrice', 'Price_1', 'price_1'
+          'Close Price', 'close_price', 'Close_price', 'ClosePrice', 'Close', 'Exit Price', 'exit_price', 'ExitPrice', 'Price_1', 'price_1'
         ]);
 
         const stopLoss = getFieldValue(row, [
@@ -404,6 +436,9 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
           'Profit', 'profit', 'P/L', 'pnl', 'PnL', 'P&L', 'Net Profit', 'net_profit'
         ]);
 
+        // Determine if trade is closed: if we have a valid close time, it's closed
+        const isClosed = Boolean(parsedCloseDate);
+
         const trade: MappedTrade = {
           ticket_id: ticketId,
           instrument: instrument,
@@ -414,9 +449,9 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
           stop_loss: stopLoss ? parseFloat(stopLoss) : undefined,
           take_profit: takeProfit ? parseFloat(takeProfit) : undefined,
           pnl: profit ? parseFloat(profit) : undefined,
-          entry_date: openDate,
-          exit_date: closeDate,
-          status: closeDate ? "CLOSED" : "OPEN",
+          entry_date: parsedOpenDate,
+          exit_date: parsedCloseDate,
+          status: isClosed ? "CLOSED" : "OPEN",
         };
 
         mappedTrades.push(trade);
