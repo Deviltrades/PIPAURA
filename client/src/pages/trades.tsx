@@ -32,8 +32,8 @@ export default function Trades() {
   }, []);
 
   const { data: trades = [], isLoading } = useQuery({
-    queryKey: ["trades"],
-    queryFn: getTrades,
+    queryKey: ["trades", selectedAccount],
+    queryFn: () => getTrades(selectedAccount),
     retry: false,
   }) as { data: any[], isLoading: boolean };
 
