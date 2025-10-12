@@ -338,6 +338,77 @@ export async function deleteTrade(id: string) {
   if (error) throw error;
 }
 
+interface UploadTrade {
+  ticket_id?: string;
+  instrument: string;
+  instrument_type: string;
+  trade_type: "BUY" | "SELL";
+  position_size: number;
+  entry_price: number;
+  exit_price?: number;
+  stop_loss?: number;
+  take_profit?: number;
+  pnl?: number;
+  entry_date?: string;
+  exit_date?: string;
+  status: "OPEN" | "CLOSED";
+  account_id: string;
+}
+
+export async function uploadTrades(trades: UploadTrade[], accountId: string) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  let uploaded = 0;
+  let skipped = 0;
+
+  for (const trade of trades) {
+    if (trade.ticket_id) {
+      const { data: existing } = await supabase
+        .from('trades')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('account_id', accountId)
+        .eq('ticket_id', trade.ticket_id)
+        .single();
+
+      if (existing) {
+        skipped++;
+        continue;
+      }
+    }
+
+    const { error } = await supabase
+      .from('trades')
+      .insert([{
+        user_id: user.id,
+        account_id: trade.account_id,
+        ticket_id: trade.ticket_id,
+        instrument: trade.instrument,
+        instrument_type: trade.instrument_type,
+        trade_type: trade.trade_type,
+        position_size: trade.position_size.toString(),
+        entry_price: trade.entry_price.toString(),
+        exit_price: trade.exit_price?.toString(),
+        stop_loss: trade.stop_loss?.toString(),
+        take_profit: trade.take_profit?.toString(),
+        pnl: trade.pnl?.toString(),
+        status: trade.status,
+        entry_date: trade.entry_date,
+        exit_date: trade.exit_date,
+      }]);
+
+    if (error) {
+      console.error('Error inserting trade:', error);
+      continue;
+    }
+
+    uploaded++;
+  }
+
+  return { uploaded, skipped };
+}
+
 // Analytics operations
 export async function getAnalytics() {
   const user = await getCurrentUser();
