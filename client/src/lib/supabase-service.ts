@@ -355,6 +355,43 @@ interface UploadTrade {
   account_id: string;
 }
 
+// Trade Enrichment Functions
+
+function detectTradingSession(entryDate: string | undefined): string | null {
+  if (!entryDate) return null;
+  
+  const date = new Date(entryDate);
+  const utcHour = date.getUTCHours();
+  
+  if (utcHour >= 23 || utcHour < 8) {
+    return "Asia";
+  } else if (utcHour >= 7 && utcHour < 15) {
+    return "London";
+  } else if (utcHour >= 12 && utcHour < 21) {
+    return "New York";
+  }
+  
+  return null;
+}
+
+function calculateHoldingTimeMinutes(entryDate: string | undefined, exitDate: string | undefined): number | null {
+  if (!entryDate || !exitDate) return null;
+  
+  const entry = new Date(entryDate);
+  const exit = new Date(exitDate);
+  
+  const diffMs = exit.getTime() - entry.getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
+  
+  return diffMinutes >= 0 ? diffMinutes : null;
+}
+
+function calculateProfitPerLot(pnl: number | undefined, positionSize: number): number | null {
+  if (pnl === undefined || pnl === null || positionSize === 0) return null;
+  
+  return pnl / positionSize;
+}
+
 export async function uploadTrades(trades: UploadTrade[], accountId: string) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
@@ -382,6 +419,11 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
     }
     */
 
+    // Calculate enrichment values
+    const sessionTag = detectTradingSession(trade.entry_date);
+    const holdingTimeMinutes = calculateHoldingTimeMinutes(trade.entry_date, trade.exit_date);
+    const profitPerLot = calculateProfitPerLot(trade.pnl, trade.position_size);
+
     const tradeData: any = {
       user_id: user.id,
       account_id: trade.account_id,
@@ -397,6 +439,9 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
       status: trade.status,
       entry_date: trade.entry_date,
       exit_date: trade.exit_date,
+      session_tag: sessionTag,
+      holding_time_minutes: holdingTimeMinutes,
+      profit_per_lot: profitPerLot?.toString(),
     };
 
     // TEMPORARILY EXCLUDED: ticket_id until Supabase PostgREST schema cache is refreshed
