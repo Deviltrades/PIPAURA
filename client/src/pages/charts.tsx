@@ -306,23 +306,6 @@ export default function Charts() {
               </Button>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Trading Tools</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button size="sm" className="w-full" data-testid="button-new-trade">
-                New Trade
-              </Button>
-              <Button size="sm" variant="outline" className="w-full" data-testid="button-price-alert">
-                Set Price Alert
-              </Button>
-              <Button size="sm" variant="outline" className="w-full" data-testid="button-save-layout">
-                Save Chart Layout
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </div>
 
