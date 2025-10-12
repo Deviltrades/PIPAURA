@@ -268,9 +268,10 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
 
     parsedData.forEach((row, index) => {
       try {
-        // Check if row is completely empty (all important fields are empty)
-        const hasAnyData = Object.values(row).some(value => 
-          value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== '__EMPTY'
+        // Check if row has any meaningful data (excluding __EMPTY columns)
+        const meaningfulColumns = Object.entries(row).filter(([key]) => !key.startsWith('__EMPTY'));
+        const hasAnyData = meaningfulColumns.some(([_, value]) => 
+          value !== null && value !== undefined && String(value).trim() !== ''
         );
         
         if (!hasAnyData) {
