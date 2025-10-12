@@ -303,7 +303,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         </Button>
       </div>
       
-      <nav className="mt-8 flex-1 overflow-y-auto">
+      <nav className="mt-8 flex-1 overflow-y-auto sidebar-scrollbar">
         <div className="space-y-1">
           {navigation.map((item) => {
             const Icon = item.icon;
