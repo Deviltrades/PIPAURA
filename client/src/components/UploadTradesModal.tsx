@@ -20,6 +20,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Upload, CheckCircle, AlertCircle, FileText } from "lucide-react";
 import Papa from "papaparse";
+import * as XLSX from "xlsx";
 import { useToast } from "@/hooks/use-toast";
 import { getTradeAccounts, uploadTrades } from "@/lib/supabase-service";
 import type { TradeAccount } from "@shared/schema";
@@ -110,102 +111,228 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
     return undefined;
   };
 
+  const parseExcel = async (file: File): Promise<any[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          // Get first sheet
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          
+          // Convert to JSON with headers
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          resolve(jsonData);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  const parseHTML = async (file: File): Promise<any[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const htmlString = e.target?.result as string;
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(htmlString, 'text/html');
+          
+          // Find the first table
+          const table = doc.querySelector('table');
+          if (!table) {
+            reject(new Error('No table found in HTML file'));
+            return;
+          }
+          
+          const rows = Array.from(table.querySelectorAll('tr'));
+          if (rows.length < 2) {
+            reject(new Error('Table has no data rows'));
+            return;
+          }
+          
+          // Extract headers from first row
+          const headerCells = Array.from(rows[0].querySelectorAll('th, td'));
+          const headers = headerCells.map(cell => cell.textContent?.trim() || '');
+          
+          // Extract data rows
+          const data = rows.slice(1).map(row => {
+            const cells = Array.from(row.querySelectorAll('td'));
+            const rowData: any = {};
+            headers.forEach((header, i) => {
+              rowData[header] = cells[i]?.textContent?.trim() || '';
+            });
+            return rowData;
+          });
+          
+          resolve(data);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(file);
+    });
+  };
+
+  const detectFileType = (file: File): 'csv' | 'excel' | 'html' | 'unknown' => {
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    
+    if (extension === 'csv') return 'csv';
+    if (extension === 'xls' || extension === 'xlsx') return 'excel';
+    if (extension === 'html' || extension === 'htm') return 'html';
+    
+    // Check MIME type as fallback
+    if (file.type.includes('csv') || file.type.includes('comma-separated')) return 'csv';
+    if (file.type.includes('spreadsheet') || file.type.includes('excel')) return 'excel';
+    if (file.type.includes('html')) return 'html';
+    
+    return 'unknown';
+  };
+
+  const parseFile = async (file: File) => {
+    const fileType = detectFileType(file);
+    let parsedData: any[] = [];
+    
+    try {
+      if (fileType === 'excel') {
+        parsedData = await parseExcel(file);
+        console.log("Excel file parsed:", parsedData.length, "rows");
+      } else if (fileType === 'html') {
+        parsedData = await parseHTML(file);
+        console.log("HTML table parsed:", parsedData.length, "rows");
+      } else if (fileType === 'csv') {
+        // Use existing CSV parser
+        return parseCSV(file);
+      } else {
+        toast({
+          title: "Unsupported File Type",
+          description: "Please upload a CSV, Excel (.xls/.xlsx), or HTML file",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Process the parsed data (same logic as CSV)
+      processParsedData(parsedData);
+    } catch (error) {
+      toast({
+        title: "File Parse Error",
+        description: error instanceof Error ? error.message : "Failed to parse file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const processParsedData = (parsedData: any[]) => {
+    const mappedTrades: MappedTrade[] = [];
+    const parseErrors: string[] = [];
+
+    if (parsedData.length > 0) {
+      console.log("Headers detected:", Object.keys(parsedData[0]));
+    }
+
+    parsedData.forEach((row, index) => {
+      try {
+        const instrument = getFieldValue(row, [
+          'Pair', 'pair', 'Symbol', 'symbol', 'Item', 'item', 'Instrument', 'instrument', 'PAIR', 'SYMBOL'
+        ]);
+        
+        if (!instrument) {
+          parseErrors.push(`Row ${index + 1}: Missing pair/instrument`);
+          return;
+        }
+
+        const tradeTypeRaw = getFieldValue(row, [
+          'Type', 'type', 'TYPE', 'Direction', 'direction', 'Side', 'side'
+        ]);
+        
+        const tradeType = tradeTypeRaw?.toUpperCase();
+        if (tradeType !== "BUY" && tradeType !== "SELL") {
+          parseErrors.push(`Row ${index + 1}: Invalid trade type "${tradeTypeRaw}"`);
+          return;
+        }
+
+        const openDate = getFieldValue(row, [
+          'Open Time', 'open_time', 'OpenTime', 'open_date', 'Open Date', 'Entry Time', 'entry_time', 'Date', 'date'
+        ]);
+
+        const closeDate = getFieldValue(row, [
+          'Close Time', 'close_time', 'CloseTime', 'close_date', 'Close Date', 'Exit Time', 'exit_time'
+        ]);
+
+        const ticketId = getFieldValue(row, [
+          'Ticket', 'ticket', 'ticket_id', 'Order', 'order', 'ID', 'id', 'Trade ID', 'trade_id', 'Deal #', 'deal'
+        ]);
+
+        const lotSize = getFieldValue(row, [
+          'Size', 'size', 'Lot Size', 'lot_size', 'LotSize', 'Volume', 'volume', 'Lots', 'lots', 'Position Size', 'position_size'
+        ]);
+
+        const entryPrice = getFieldValue(row, [
+          'Price', 'price', 'Entry Price', 'entry_price', 'EntryPrice', 'Open Price', 'open_price', 'OpenPrice'
+        ]);
+
+        const exitPrice = getFieldValue(row, [
+          'Close Price', 'close_price', 'ClosePrice', 'Exit Price', 'exit_price', 'ExitPrice'
+        ]);
+
+        const stopLoss = getFieldValue(row, [
+          'SL', 'sl', 'S/L', 'Stop Loss', 'stop_loss', 'StopLoss'
+        ]);
+
+        const takeProfit = getFieldValue(row, [
+          'TP', 'tp', 'T/P', 'Take Profit', 'take_profit', 'TakeProfit'
+        ]);
+
+        const profit = getFieldValue(row, [
+          'Profit', 'profit', 'P/L', 'pnl', 'PnL', 'P&L', 'Net Profit', 'net_profit'
+        ]);
+
+        const trade: MappedTrade = {
+          ticket_id: ticketId,
+          instrument: instrument,
+          trade_type: tradeType as "BUY" | "SELL",
+          position_size: parseFloat(lotSize || "1.0"),
+          entry_price: parseFloat(entryPrice || "0"),
+          exit_price: exitPrice ? parseFloat(exitPrice) : undefined,
+          stop_loss: stopLoss ? parseFloat(stopLoss) : undefined,
+          take_profit: takeProfit ? parseFloat(takeProfit) : undefined,
+          pnl: profit ? parseFloat(profit) : undefined,
+          entry_date: openDate,
+          exit_date: closeDate,
+          status: closeDate ? "CLOSED" : "OPEN",
+        };
+
+        mappedTrades.push(trade);
+      } catch (error) {
+        parseErrors.push(`Row ${index + 1}: ${error instanceof Error ? error.message : "Parse error"}`);
+      }
+    });
+
+    setParsedTrades(mappedTrades);
+    setPreviewTrades(mappedTrades.slice(0, 5));
+    setErrors(parseErrors);
+    setShowPreview(true);
+  };
+
   const parseCSV = (file: File) => {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
       delimiter: "",
       complete: (results) => {
-        const parsedData = results.data as any[];
-        const mappedTrades: MappedTrade[] = [];
-        const parseErrors: string[] = [];
-
-        if (parsedData.length > 0) {
-          console.log("CSV Headers detected:", Object.keys(parsedData[0]));
-        }
-
-        parsedData.forEach((row, index) => {
-          try {
-            const instrument = getFieldValue(row, [
-              'Pair', 'pair', 'Symbol', 'symbol', 'Item', 'item', 'Instrument', 'instrument', 'PAIR', 'SYMBOL'
-            ]);
-            
-            if (!instrument) {
-              parseErrors.push(`Row ${index + 1}: Missing pair/instrument`);
-              return;
-            }
-
-            const tradeTypeRaw = getFieldValue(row, [
-              'Type', 'type', 'TYPE', 'Direction', 'direction', 'Side', 'side'
-            ]);
-            
-            const tradeType = tradeTypeRaw?.toUpperCase();
-            if (tradeType !== "BUY" && tradeType !== "SELL") {
-              parseErrors.push(`Row ${index + 1}: Invalid trade type "${tradeTypeRaw}"`);
-              return;
-            }
-
-            const openDate = getFieldValue(row, [
-              'Open Time', 'open_time', 'OpenTime', 'open_date', 'Open Date', 'Entry Time', 'entry_time', 'Date', 'date'
-            ]);
-
-            const closeDate = getFieldValue(row, [
-              'Close Time', 'close_time', 'CloseTime', 'close_date', 'Close Date', 'Exit Time', 'exit_time'
-            ]);
-
-            const ticketId = getFieldValue(row, [
-              'Ticket', 'ticket', 'ticket_id', 'Order', 'order', 'ID', 'id', 'Trade ID', 'trade_id'
-            ]);
-
-            const lotSize = getFieldValue(row, [
-              'Size', 'size', 'Lot Size', 'lot_size', 'LotSize', 'Volume', 'volume', 'Lots', 'lots', 'Position Size', 'position_size'
-            ]);
-
-            const entryPrice = getFieldValue(row, [
-              'Price', 'price', 'Entry Price', 'entry_price', 'EntryPrice', 'Open Price', 'open_price', 'OpenPrice'
-            ]);
-
-            const exitPrice = getFieldValue(row, [
-              'Close Price', 'close_price', 'ClosePrice', 'Exit Price', 'exit_price', 'ExitPrice'
-            ]);
-
-            const stopLoss = getFieldValue(row, [
-              'SL', 'sl', 'S/L', 'Stop Loss', 'stop_loss', 'StopLoss'
-            ]);
-
-            const takeProfit = getFieldValue(row, [
-              'TP', 'tp', 'T/P', 'Take Profit', 'take_profit', 'TakeProfit'
-            ]);
-
-            const profit = getFieldValue(row, [
-              'Profit', 'profit', 'P/L', 'pnl', 'PnL', 'P&L', 'Net Profit', 'net_profit'
-            ]);
-
-            const trade: MappedTrade = {
-              ticket_id: ticketId,
-              instrument: instrument,
-              trade_type: tradeType as "BUY" | "SELL",
-              position_size: parseFloat(lotSize || "1.0"),
-              entry_price: parseFloat(entryPrice || "0"),
-              exit_price: exitPrice ? parseFloat(exitPrice) : undefined,
-              stop_loss: stopLoss ? parseFloat(stopLoss) : undefined,
-              take_profit: takeProfit ? parseFloat(takeProfit) : undefined,
-              pnl: profit ? parseFloat(profit) : undefined,
-              entry_date: openDate,
-              exit_date: closeDate,
-              status: closeDate ? "CLOSED" : "OPEN",
-            };
-
-            mappedTrades.push(trade);
-          } catch (error) {
-            parseErrors.push(`Row ${index + 1}: ${error instanceof Error ? error.message : "Parse error"}`);
-          }
-        });
-
-        setParsedTrades(mappedTrades);
-        setPreviewTrades(mappedTrades.slice(0, 5));
-        setErrors(parseErrors);
-        setShowPreview(true);
+        processParsedData(results.data as any[]);
       },
       error: (error) => {
         toast({
@@ -220,10 +347,11 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
+      const fileType = detectFileType(file);
+      if (fileType === 'unknown') {
         toast({
-          title: "Invalid File",
-          description: "Please upload a CSV file",
+          title: "Unsupported File Type",
+          description: "Please upload a CSV, Excel (.xls/.xlsx), or HTML file",
           variant: "destructive",
         });
         return;
@@ -239,7 +367,7 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
     if (!csvFile) {
       toast({
         title: "No File Selected",
-        description: "Please select a CSV file to upload",
+        description: "Please select a file to upload",
         variant: "destructive",
       });
       return;
@@ -254,7 +382,7 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
       return;
     }
 
-    parseCSV(csvFile);
+    parseFile(csvFile);
   };
 
   const uploadMutation = useMutation({
@@ -318,10 +446,10 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="w-5 h-5" />
-            Upload Trades from CSV
+            Upload Trades
           </DialogTitle>
           <DialogDescription>
-            Upload trades from MT4/MT5/TradeZella CSV files to your trading account
+            Upload trades from MT4/MT5/TradeZella exports (CSV, Excel, or HTML) to your trading account
           </DialogDescription>
         </DialogHeader>
 
@@ -345,13 +473,13 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
 
           {/* File Upload */}
           <div className="space-y-2">
-            <Label htmlFor="csv-upload">CSV File</Label>
+            <Label htmlFor="csv-upload">Trade History File (CSV, Excel, or HTML)</Label>
             <div className="flex items-center gap-2">
               <input
                 ref={fileInputRef}
                 id="csv-upload"
                 type="file"
-                accept=".csv"
+                accept=".csv,.xls,.xlsx,.html,.htm"
                 onChange={handleFileChange}
                 className="hidden"
               />
@@ -363,7 +491,7 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
                 data-testid="button-select-csv"
               >
                 <FileText className="w-4 h-4 mr-2" />
-                {csvFile ? csvFile.name : "Choose CSV File"}
+                {csvFile ? csvFile.name : "Choose File"}
               </Button>
               <Button
                 type="button"
