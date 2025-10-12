@@ -42,9 +42,10 @@ import { useUserProfile } from "@/hooks/use-user-profile";
 
 interface TradingCalendarProps {
   className?: string;
+  selectedAccount?: string;
 }
 
-export function TradingCalendar({ className }: TradingCalendarProps) {
+export function TradingCalendar({ className, selectedAccount = "all" }: TradingCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [viewMonth, setViewMonth] = useState<Date>(new Date());
   const [isAddTradeModalOpen, setIsAddTradeModalOpen] = useState(false);
@@ -168,7 +169,6 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
   };
   
   // Filter states
-  const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [selectedSymbol, setSelectedSymbol] = useState<string>("all");
   const [selectedStrategy, setSelectedStrategy] = useState<string>("all");
   const [selectedDirection, setSelectedDirection] = useState<string>("all");
@@ -213,7 +213,6 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
           if (settings.displayMode) setDisplayMode(settings.displayMode);
           if (settings.clearView !== undefined) setClearView(settings.clearView);
           if (settings.monthlyStatsConfig) setMonthlyStatsConfig(settings.monthlyStatsConfig);
-          if (settings.selectedAccount) setSelectedAccount(settings.selectedAccount);
           if (settings.selectedSymbol) setSelectedSymbol(settings.selectedSymbol);
           if (settings.selectedStrategy) setSelectedStrategy(settings.selectedStrategy);
           if (settings.selectedDirection) setSelectedDirection(settings.selectedDirection);
@@ -237,7 +236,6 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
           displayMode,
           clearView,
           monthlyStatsConfig,
-          selectedAccount,
           selectedSymbol,
           selectedStrategy,
           selectedDirection,
@@ -256,7 +254,6 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
     displayMode,
     clearView,
     monthlyStatsConfig,
-    selectedAccount,
     selectedSymbol,
     selectedStrategy,
     selectedDirection,
@@ -794,19 +791,7 @@ export function TradingCalendar({ className }: TradingCalendarProps) {
 
         {/* Filter Controls */}
         {!clearView && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 sm:mb-6">
-            <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-              <SelectTrigger className="h-9 text-xs sm:text-sm">
-                <SelectValue placeholder="All Accounts" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Accounts</SelectItem>
-                <SelectItem value="main">Main Account</SelectItem>
-                <SelectItem value="demo">Demo Account</SelectItem>
-                <SelectItem value="prop">Prop Firm</SelectItem>
-              </SelectContent>
-            </Select>
-
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 sm:mb-6">
             <Select value={selectedSymbol} onValueChange={setSelectedSymbol}>
               <SelectTrigger className="h-9 text-xs sm:text-sm">
                 <SelectValue placeholder="All Symbols" />
