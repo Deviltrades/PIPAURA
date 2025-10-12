@@ -6,12 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Upload } from "lucide-react";
 import { AddTradeModal } from "@/components/AddTradeModal";
 import { UploadTradesModal } from "@/components/UploadTradesModal";
+import { AccountSelector } from "@/components/AccountSelector";
 import { formatCurrency } from "@/lib/utils";
 import { getTrades, deleteTrade } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
 export default function Trades() {
+  const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
@@ -85,10 +87,11 @@ export default function Trades() {
 
   return (
     <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Trade Journal</h1>
-          <p className="text-gray-300">Manage and track all your trading positions</p>
+          <p className="text-gray-300 mb-3">Manage and track all your trading positions</p>
+          <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
         </div>
         <div className="flex gap-2">
           <Button 
