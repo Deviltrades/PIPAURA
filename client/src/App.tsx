@@ -22,6 +22,7 @@ import Notes from "@/pages/notes";
 import Charts from "@/pages/charts";
 import Fundamentals from "@/pages/fundamentals";
 import Mentor from "@/pages/mentor";
+import TaxReports from "@/pages/tax-reports";
 import Settings from "@/pages/settings";
 import CalendarSettings from "@/pages/CalendarSettings";
 import Journal from "@/pages/journal";
@@ -63,6 +64,7 @@ function Router() {
           <Route path="/charts" component={Charts} />
           <Route path="/fundamentals" component={Fundamentals} />
           <Route path="/mentor" component={Mentor} />
+          <Route path="/tax-reports" component={TaxReports} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />
           <Route path="/calendar-settings" component={CalendarSettings} />

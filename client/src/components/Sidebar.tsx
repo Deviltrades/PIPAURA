@@ -45,6 +45,7 @@ const navigation = [
   { name: "Notes", href: "/notes", icon: StickyNote },
   { name: "Widgets", href: "/widgets", icon: Grid3X3 },
   { name: "AI Trading Mentor", href: "/mentor", icon: Brain },
+  { name: "Tax Reports", href: "/tax-reports", icon: FileText },
   { name: "Settings", href: "/settings", icon: SettingsIcon },
 ];
 
