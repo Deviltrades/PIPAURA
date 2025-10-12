@@ -69,6 +69,7 @@ interface MappedTrade {
  * Flexible date parser supporting multiple formats
  * Formats supported:
  * - YYYY.MM.DD HH:MM or YYYY.MM.DD HH:MM:SS
+ * - YYYY.MM DD HH MM (HTML export format with spaces)
  * - DD/MM/YYYY HH:MM or DD/MM/YYYY HH:MM:SS
  * - ISO format and other standard formats
  */
@@ -85,6 +86,15 @@ function parseFlexibleDate(dateStr: string | undefined): string | undefined {
   }
   
   const trimmed = dateStr.trim();
+  
+  // Try format: YYYY.MM DD HH MM SS (HTML export with spaces)
+  // Example: "2025.07 10 11 59"
+  const htmlSpaceFormatRegex = /^(\d{4})\.(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})(?:\s+(\d{2}))?$/;
+  const htmlMatch = trimmed.match(htmlSpaceFormatRegex);
+  if (htmlMatch) {
+    const [_, year, month, day, hour, minute, second] = htmlMatch;
+    return `${year}-${month}-${day}T${hour}:${minute}:${second || '00'}`;
+  }
   
   // Try format: YYYY.MM.DD HH:MM or YYYY.MM.DD HH:MM:SS
   if (trimmed.includes('.')) {
@@ -263,9 +273,26 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
             return;
           }
           
-          // Extract headers from first row
+          // Extract headers from first row, handling duplicates by adding suffixes
           const headerCells = Array.from(rows[0].querySelectorAll('th, td'));
-          const headers = headerCells.map(cell => cell.textContent?.trim() || '');
+          const headers: string[] = [];
+          const headerCounts: Record<string, number> = {};
+          
+          headerCells.forEach(cell => {
+            let headerName = cell.textContent?.trim() || '';
+            
+            // Handle duplicate headers by adding _1, _2, etc.
+            if (headerCounts[headerName] !== undefined) {
+              headerCounts[headerName]++;
+              headerName = `${headerName}_${headerCounts[headerName]}`;
+            } else {
+              headerCounts[headerName] = 0;
+            }
+            
+            headers.push(headerName);
+          });
+          
+          console.log("HTML headers (with duplicate handling):", headers);
           
           // Extract data rows
           const data = rows.slice(1).map(row => {
