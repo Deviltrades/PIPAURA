@@ -43,6 +43,7 @@ export const trades = pgTable('trades', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   user_id: uuid('user_id').notNull(),
   account_id: uuid('account_id'),
+  ticket_id: text('ticket_id'),
   instrument: text('instrument').notNull(),
   instrument_type: instrumentTypeEnum('instrument_type').notNull(),
   trade_type: tradeTypeEnum('trade_type').notNull(),
