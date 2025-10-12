@@ -363,6 +363,9 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
   let skipped = 0;
 
   for (const trade of trades) {
+    // Temporarily disabled: ticket_id duplicate check due to Supabase schema cache issue
+    // Will re-enable once PostgREST recognizes the ticket_id column
+    /*
     if (trade.ticket_id) {
       const { data: existing } = await supabase
         .from('trades')
@@ -377,26 +380,34 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
         continue;
       }
     }
+    */
+
+    const tradeData: any = {
+      user_id: user.id,
+      account_id: trade.account_id,
+      instrument: trade.instrument,
+      instrument_type: trade.instrument_type,
+      trade_type: trade.trade_type,
+      position_size: trade.position_size.toString(),
+      entry_price: trade.entry_price.toString(),
+      exit_price: trade.exit_price?.toString(),
+      stop_loss: trade.stop_loss?.toString(),
+      take_profit: trade.take_profit?.toString(),
+      pnl: trade.pnl?.toString(),
+      status: trade.status,
+      entry_date: trade.entry_date,
+      exit_date: trade.exit_date,
+    };
+
+    // TEMPORARILY EXCLUDED: ticket_id until Supabase PostgREST schema cache is refreshed
+    // Uncomment once schema cache recognizes the ticket_id column
+    // if (trade.ticket_id) {
+    //   tradeData.ticket_id = trade.ticket_id;
+    // }
 
     const { error } = await supabase
       .from('trades')
-      .insert([{
-        user_id: user.id,
-        account_id: trade.account_id,
-        ticket_id: trade.ticket_id,
-        instrument: trade.instrument,
-        instrument_type: trade.instrument_type,
-        trade_type: trade.trade_type,
-        position_size: trade.position_size.toString(),
-        entry_price: trade.entry_price.toString(),
-        exit_price: trade.exit_price?.toString(),
-        stop_loss: trade.stop_loss?.toString(),
-        take_profit: trade.take_profit?.toString(),
-        pnl: trade.pnl?.toString(),
-        status: trade.status,
-        entry_date: trade.entry_date,
-        exit_date: trade.exit_date,
-      }]);
+      .insert([tradeData]);
 
     if (error) {
       console.error('Error inserting trade:', error);
