@@ -34,15 +34,15 @@ import {
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Accounts", href: "/accounts", icon: Wallet },
   { name: "Trades", href: "/trades", icon: BookOpen },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Calendar", href: "/calendar", icon: Calendar },
+  { name: "Charts", href: "/charts", icon: LineChart },
   { name: "Signals", href: "/signals", icon: Radio },
-  { name: "Accounts", href: "/accounts", icon: Wallet },
-  { name: "Widgets", href: "/widgets", icon: Grid3X3 },
   { name: "Strategy/Playbook", href: "/strategy", icon: MapPin },
   { name: "Notes", href: "/notes", icon: StickyNote },
-  { name: "Charts", href: "/charts", icon: LineChart },
+  { name: "Widgets", href: "/widgets", icon: Grid3X3 },
   { name: "Fundamentals", href: "/fundamentals", icon: Newspaper },
   { name: "AI Trading Mentor", href: "/mentor", icon: Brain },
   { name: "Settings", href: "/settings", icon: SettingsIcon },
