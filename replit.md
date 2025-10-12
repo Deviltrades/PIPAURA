@@ -48,6 +48,24 @@ The analytics page features a "Trader DNA Core" visualization: an animated 3D-li
 ### Instrument Type Expansion
 The application supports five asset classes (FOREX, INDICES, CRYPTO, FUTURES, STOCKS) with advanced searchable dropdowns and custom instrument creation. Users can create any custom instrument not in predefined lists, with smart detection to prevent duplicates.
 
+### CSV Trade Upload System
+A robust CSV import system supports MT4/MT5/TradeZella formats with:
+- **Auto-Delimiter Detection**: Automatically detects comma, semicolon, or tab delimiters.
+- **Flexible Column Mapping**: Supports multiple column name variations (e.g., "Ticket", "Order", "Deal #", "Trade ID").
+- **Broker Compatibility**: Handles capitalized headers from MT4/MT5 exports and various broker formats.
+- **Account Association**: Links all imported trades to selected trading account.
+- **Balance Updates**: Automatically updates account balance based on closed trades.
+
+#### Trade Enrichment System (Currently Disabled)
+An automated post-upload enrichment system is built but temporarily disabled due to Supabase PostgREST schema cache issues (PGRST204 errors). The system calculates:
+- **Session Detection**: Identifies trading session (London/New York/Asia) based on UTC entry time.
+- **Holding Time**: Calculates duration between entry and exit in minutes.
+- **Profit Normalization**: Computes profit-per-lot for position sizing analysis.
+
+Database columns exist (`session_tag`, `holding_time_minutes`, `profit_per_lot`) but PostgREST API doesn't recognize them. Enrichment logic is commented out in `supabase-service.ts` until resolved. Similar issue affects `ticket_id` column for duplicate detection.
+
+**Workaround**: Lines marked "TEMPORARILY EXCLUDED" in CSV upload and trade CRUD functions can be uncommented once schema cache refreshes.
+
 ## External Dependencies
 
 ### Cloud Services
