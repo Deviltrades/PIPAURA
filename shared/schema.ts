@@ -316,6 +316,9 @@ export interface Trade {
   attachments?: string[];
   entry_date?: string;
   exit_date?: string;
+  session_tag?: string;
+  holding_time_minutes?: number;
+  profit_per_lot?: number;
   created_at?: string;
   updated_at?: string;
 }

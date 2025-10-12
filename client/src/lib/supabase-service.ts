@@ -394,12 +394,13 @@ function detectTradingSession(entryDate: string | undefined): string | null {
   const date = new Date(entryDate);
   const utcHour = date.getUTCHours();
   
-  if (utcHour >= 23 || utcHour < 8) {
-    return "Asia";
-  } else if (utcHour >= 7 && utcHour < 15) {
-    return "London";
-  } else if (utcHour >= 12 && utcHour < 21) {
+  // Check New York first (12:00-21:00 UTC) to handle overlap with London
+  if (utcHour >= 12 && utcHour < 21) {
     return "New York";
+  } else if (utcHour >= 7 && utcHour < 12) {
+    return "London";
+  } else if (utcHour >= 23 || utcHour < 8) {
+    return "Asia";
   }
   
   return null;
