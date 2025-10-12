@@ -101,50 +101,99 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
     return "FOREX";
   };
 
+  const getFieldValue = (row: any, aliases: string[]): string | undefined => {
+    for (const alias of aliases) {
+      if (row[alias] !== undefined && row[alias] !== null && row[alias] !== "") {
+        return String(row[alias]).trim();
+      }
+    }
+    return undefined;
+  };
+
   const parseCSV = (file: File) => {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
+      delimiter: "",
       complete: (results) => {
-        const parsedData = results.data as ParsedTrade[];
+        const parsedData = results.data as any[];
         const mappedTrades: MappedTrade[] = [];
         const parseErrors: string[] = [];
 
+        if (parsedData.length > 0) {
+          console.log("CSV Headers detected:", Object.keys(parsedData[0]));
+        }
+
         parsedData.forEach((row, index) => {
           try {
-            const instrument = row.pair?.trim();
+            const instrument = getFieldValue(row, [
+              'Pair', 'pair', 'Symbol', 'symbol', 'Item', 'item', 'Instrument', 'instrument', 'PAIR', 'SYMBOL'
+            ]);
+            
             if (!instrument) {
               parseErrors.push(`Row ${index + 1}: Missing pair/instrument`);
               return;
             }
 
-            const tradeType = row.type?.toUpperCase();
+            const tradeTypeRaw = getFieldValue(row, [
+              'Type', 'type', 'TYPE', 'Direction', 'direction', 'Side', 'side'
+            ]);
+            
+            const tradeType = tradeTypeRaw?.toUpperCase();
             if (tradeType !== "BUY" && tradeType !== "SELL") {
-              parseErrors.push(`Row ${index + 1}: Invalid trade type "${row.type}"`);
+              parseErrors.push(`Row ${index + 1}: Invalid trade type "${tradeTypeRaw}"`);
               return;
             }
 
-            const entryDate = row.open_date && row.open_time
-              ? `${row.open_date} ${row.open_time}`
-              : row.open_date || undefined;
+            const openDate = getFieldValue(row, [
+              'Open Time', 'open_time', 'OpenTime', 'open_date', 'Open Date', 'Entry Time', 'entry_time', 'Date', 'date'
+            ]);
 
-            const exitDate = row.close_date && row.close_time
-              ? `${row.close_date} ${row.close_time}`
-              : row.close_date || undefined;
+            const closeDate = getFieldValue(row, [
+              'Close Time', 'close_time', 'CloseTime', 'close_date', 'Close Date', 'Exit Time', 'exit_time'
+            ]);
+
+            const ticketId = getFieldValue(row, [
+              'Ticket', 'ticket', 'ticket_id', 'Order', 'order', 'ID', 'id', 'Trade ID', 'trade_id'
+            ]);
+
+            const lotSize = getFieldValue(row, [
+              'Size', 'size', 'Lot Size', 'lot_size', 'LotSize', 'Volume', 'volume', 'Lots', 'lots', 'Position Size', 'position_size'
+            ]);
+
+            const entryPrice = getFieldValue(row, [
+              'Price', 'price', 'Entry Price', 'entry_price', 'EntryPrice', 'Open Price', 'open_price', 'OpenPrice'
+            ]);
+
+            const exitPrice = getFieldValue(row, [
+              'Close Price', 'close_price', 'ClosePrice', 'Exit Price', 'exit_price', 'ExitPrice'
+            ]);
+
+            const stopLoss = getFieldValue(row, [
+              'SL', 'sl', 'S/L', 'Stop Loss', 'stop_loss', 'StopLoss'
+            ]);
+
+            const takeProfit = getFieldValue(row, [
+              'TP', 'tp', 'T/P', 'Take Profit', 'take_profit', 'TakeProfit'
+            ]);
+
+            const profit = getFieldValue(row, [
+              'Profit', 'profit', 'P/L', 'pnl', 'PnL', 'P&L', 'Net Profit', 'net_profit'
+            ]);
 
             const trade: MappedTrade = {
-              ticket_id: row.ticket_id?.trim(),
+              ticket_id: ticketId,
               instrument: instrument,
               trade_type: tradeType as "BUY" | "SELL",
-              position_size: parseFloat(row.lot_size || "1.0"),
-              entry_price: parseFloat(row.entry_price || "0"),
-              exit_price: row.exit_price ? parseFloat(row.exit_price) : undefined,
-              stop_loss: row.stop_loss ? parseFloat(row.stop_loss) : undefined,
-              take_profit: row.take_profit ? parseFloat(row.take_profit) : undefined,
-              pnl: row.profit ? parseFloat(row.profit) : undefined,
-              entry_date: entryDate,
-              exit_date: exitDate,
-              status: exitDate ? "CLOSED" : "OPEN",
+              position_size: parseFloat(lotSize || "1.0"),
+              entry_price: parseFloat(entryPrice || "0"),
+              exit_price: exitPrice ? parseFloat(exitPrice) : undefined,
+              stop_loss: stopLoss ? parseFloat(stopLoss) : undefined,
+              take_profit: takeProfit ? parseFloat(takeProfit) : undefined,
+              pnl: profit ? parseFloat(profit) : undefined,
+              entry_date: openDate,
+              exit_date: closeDate,
+              status: closeDate ? "CLOSED" : "OPEN",
             };
 
             mappedTrades.push(trade);
