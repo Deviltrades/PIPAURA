@@ -51,10 +51,23 @@ The application supports five asset classes (FOREX, INDICES, CRYPTO, FUTURES, ST
 ### Multi-Format Trade Upload System
 A comprehensive trade import system supporting CSV, Excel (.xls/.xlsx), and HTML formats from MT4/MT5/TradeZella platforms:
 - **Multi-Format Support**: Automatic file type detection and parsing for CSV, Excel spreadsheets, and HTML table exports.
-- **Excel Parser**: Uses SheetJS (xlsx) library to read .xls and .xlsx files with full header detection.
+- **Excel Parser**: Uses SheetJS (xlsx) library with smart header detection that:
+  - Automatically finds header row by scanning first 10 rows for columns with data
+  - Skips title rows, formatting rows, and Excel artifacts (`__EMPTY` columns)
+  - Handles MT4/MT5 exports with "Trade History Report" titles and metadata
+- **Intelligent Row Filtering**: Automatically skips non-trade rows including:
+  - Balance adjustments, deposits, withdrawals (Type: "balance", "deposit", "credit", etc.)
+  - Duplicate header rows within data
+  - Completely empty rows
+  - Rows with numeric Type values (summary/malformed rows)
+  - Rows with invalid date formats (numeric values in date columns)
 - **HTML Parser**: Browser-native DOMParser extracts trade data from HTML table exports.
 - **Auto-Delimiter Detection**: CSV files automatically detect comma, semicolon, or tab delimiters.
-- **Flexible Column Mapping**: Supports multiple column name variations (e.g., "Ticket", "Order", "Deal #", "Trade ID").
+- **Flexible Column Mapping**: Supports multiple column name variations:
+  - Ticket ID: "Position", "Ticket", "Order", "Deal #", "Trade ID"
+  - Dates: "Time", "Time_1" (for entry/exit), standard variations
+  - SL/TP: "S / L", "T / P" (with spaces), standard variations
+  - Exit Price: "Price_1", standard close price variations
 - **Broker Compatibility**: Handles capitalized headers from MT4/MT5 exports and various broker formats.
 - **Account Association**: Links all imported trades to selected trading account.
 - **Balance Updates**: Automatically updates account balance based on closed trades.
