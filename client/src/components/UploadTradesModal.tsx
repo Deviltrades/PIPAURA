@@ -278,10 +278,19 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
           return; // Skip completely empty rows silently
         }
         
-        // Skip rows that are duplicate headers (where Type column = "Type")
+        // Get critical fields early
         const typeColumnValue = getFieldValue(row, ['Type', 'type', 'TYPE']);
+        const positionValue = getFieldValue(row, ['Position', 'position', 'Ticket', 'ticket']);
+        
+        // Skip rows that are duplicate headers (where Type column = "Type")
         if (typeColumnValue === 'Type' || typeColumnValue === 'TYPE' || typeColumnValue === 'type') {
           return; // Skip this row silently, it's a header row
+        }
+        
+        // Skip rows where both Type AND Position are empty (definitely not a trade)
+        if ((!typeColumnValue || typeColumnValue.trim() === '') && 
+            (!positionValue || positionValue.trim() === '')) {
+          return; // Skip empty rows silently
         }
         
         // Skip balance adjustments, deposits, withdrawals (Type = "balance", "deposit", "credit", etc.)
