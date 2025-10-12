@@ -200,37 +200,6 @@ export default function Charts() {
         <div className="lg:col-span-1 space-y-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Chart Features</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Moving Averages</span>
-                <Badge variant="default">Active</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">RSI Indicator</span>
-                <Badge variant="default">Active</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Drawing Tools</span>
-                <Badge variant="secondary">Available</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Volume Profile</span>
-                <Badge variant="secondary">Available</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Symbol Search</span>
-                <Badge variant="secondary">Available</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground pt-2">
-                Use the toolbar on the chart to add more indicators, drawing tools, and customize your view.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
               <CardTitle className="text-lg">Quick Symbols</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
