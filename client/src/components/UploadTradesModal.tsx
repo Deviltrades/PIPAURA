@@ -61,6 +61,93 @@ interface MappedTrade {
   status: "OPEN" | "CLOSED";
 }
 
+// ===========================
+// SHARED UTILITY FUNCTIONS
+// ===========================
+
+/**
+ * Flexible date parser supporting multiple formats
+ * Formats supported:
+ * - YYYY.MM.DD HH:MM or YYYY.MM.DD HH:MM:SS
+ * - DD/MM/YYYY HH:MM or DD/MM/YYYY HH:MM:SS
+ * - ISO format and other standard formats
+ */
+function parseFlexibleDate(dateStr: string | undefined): string | undefined {
+  if (!dateStr || dateStr.trim() === '') return undefined;
+  
+  // If it's a number (like "-0.04"), it's not a valid date
+  if (!isNaN(Number(dateStr))) return undefined;
+  
+  // If it doesn't contain date/time indicators, it's not a valid date
+  if (!dateStr.includes('-') && !dateStr.includes('/') && !dateStr.includes('.') && 
+      !dateStr.includes(':') && !dateStr.includes(' ')) {
+    return undefined;
+  }
+  
+  const trimmed = dateStr.trim();
+  
+  // Try format: YYYY.MM.DD HH:MM or YYYY.MM.DD HH:MM:SS
+  if (trimmed.includes('.')) {
+    const dotFormatRegex = /^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})(?::(\d{2}))?$/;
+    const match = trimmed.match(dotFormatRegex);
+    if (match) {
+      const [_, year, month, day, hour, minute, second] = match;
+      return `${year}-${month}-${day}T${hour}:${minute}:${second || '00'}`;
+    }
+  }
+  
+  // Try format: DD/MM/YYYY HH:MM or DD/MM/YYYY HH:MM:SS
+  if (trimmed.includes('/')) {
+    const slashFormatRegex = /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?$/;
+    const match = trimmed.match(slashFormatRegex);
+    if (match) {
+      const [_, day, month, year, hour, minute, second] = match;
+      return `${year}-${month}-${day}T${hour}:${minute}:${second || '00'}`;
+    }
+  }
+  
+  // Try ISO format or other standard formats (already works)
+  return trimmed;
+}
+
+/**
+ * Get field value from row with multiple possible header names (case-insensitive)
+ */
+function getFieldValue(row: any, possibleNames: string[]): string | undefined {
+  for (const name of possibleNames) {
+    const value = row[name];
+    if (value !== undefined && value !== null && value !== '') {
+      return String(value).trim();
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Unified close time detection and parsing
+ * Returns parsed close date string or undefined
+ */
+function detectAndParseCloseTime(row: any): string | undefined {
+  const closeTimeValue = getFieldValue(row, [
+    'Close Time', 'close_time', 'Close_time', 'CloseTime', 
+    'close_date', 'Close Date', 'TimeClosed', 'Close',
+    'Exit Time', 'exit_time', 'Time_1', 'time_1'
+  ]);
+  
+  return parseFlexibleDate(closeTimeValue);
+}
+
+/**
+ * Determine if trade is closed based on close time
+ */
+function isTradeClosedByCloseTime(parsedCloseDate: string | undefined): boolean {
+  return Boolean(parsedCloseDate);
+}
+
+// ===========================
+// END SHARED UTILITY FUNCTIONS
+// ===========================
+
 export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const [csvFile, setCsvFile] = useState<File | null>(null);
@@ -102,14 +189,6 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
     return "FOREX";
   };
 
-  const getFieldValue = (row: any, aliases: string[]): string | undefined => {
-    for (const alias of aliases) {
-      if (row[alias] !== undefined && row[alias] !== null && row[alias] !== "") {
-        return String(row[alias]).trim();
-      }
-    }
-    return undefined;
-  };
 
   const parseExcel = async (file: File): Promise<any[]> => {
     return new Promise((resolve, reject) => {
@@ -353,60 +432,20 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
           return;
         }
 
-        const openDate = getFieldValue(row, [
+        // Parse open date
+        const openDateValue = getFieldValue(row, [
           'Open Time', 'open_time', 'OpenTime', 'open_date', 'Open Date', 'Entry Time', 'entry_time', 'Date', 'date', 'Time', 'time'
         ]);
-
-        const closeDate = getFieldValue(row, [
-          'Close Time', 'close_time', 'Close_time', 'CloseTime', 'close_date', 'Close Date', 'TimeClosed', 'Close', 'Exit Time', 'exit_time', 'Time_1', 'time_1'
-        ]);
-        
-        // Flexible date parser that supports multiple formats
-        const parseFlexibleDate = (dateStr: string | undefined): string | undefined => {
-          if (!dateStr || dateStr.trim() === '') return undefined;
-          
-          // If it's a number (like "-0.04"), it's not a valid date
-          if (!isNaN(Number(dateStr))) return undefined;
-          
-          // If it doesn't contain date/time indicators, it's not a valid date
-          if (!dateStr.includes('-') && !dateStr.includes('/') && !dateStr.includes('.') && !dateStr.includes(':') && !dateStr.includes(' ')) {
-            return undefined;
-          }
-          
-          const trimmed = dateStr.trim();
-          
-          // Try format: YYYY.MM.DD HH:MM or YYYY.MM.DD HH:MM:SS
-          if (trimmed.includes('.')) {
-            const dotFormatRegex = /^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})(?::(\d{2}))?$/;
-            const match = trimmed.match(dotFormatRegex);
-            if (match) {
-              const [_, year, month, day, hour, minute, second] = match;
-              return `${year}-${month}-${day}T${hour}:${minute}:${second || '00'}`;
-            }
-          }
-          
-          // Try format: DD/MM/YYYY HH:MM or DD/MM/YYYY HH:MM:SS
-          if (trimmed.includes('/')) {
-            const slashFormatRegex = /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?$/;
-            const match = trimmed.match(slashFormatRegex);
-            if (match) {
-              const [_, day, month, year, hour, minute, second] = match;
-              return `${year}-${month}-${day}T${hour}:${minute}:${second || '00'}`;
-            }
-          }
-          
-          // Try ISO format or other standard formats (already works)
-          return trimmed;
-        };
-        
-        const parsedOpenDate = parseFlexibleDate(openDate);
-        const parsedCloseDate = parseFlexibleDate(closeDate);
+        const parsedOpenDate = parseFlexibleDate(openDateValue);
         
         // Skip if open date is invalid
         if (!parsedOpenDate) {
           skippedInvalidDate++;
           return;
         }
+
+        // Parse close date using shared utility (unified across all file types)
+        const parsedCloseDate = detectAndParseCloseTime(row);
 
         const ticketId = getFieldValue(row, [
           'Ticket', 'ticket', 'ticket_id', 'Order', 'order', 'ID', 'id', 'Trade ID', 'trade_id', 'Deal #', 'deal', 'Position', 'position'
@@ -436,8 +475,8 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
           'Profit', 'profit', 'P/L', 'pnl', 'PnL', 'P&L', 'Net Profit', 'net_profit'
         ]);
 
-        // Determine if trade is closed: if we have a valid close time, it's closed
-        const isClosed = Boolean(parsedCloseDate);
+        // Determine if trade is closed using shared utility (unified across all file types)
+        const isClosed = isTradeClosedByCloseTime(parsedCloseDate);
 
         const trade: MappedTrade = {
           ticket_id: ticketId,
