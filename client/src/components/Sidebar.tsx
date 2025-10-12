@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useTheme } from "./ThemeProvider";
@@ -26,7 +27,9 @@ import {
   Settings as SettingsIcon,
   LogOut,
   FileText,
-  Newspaper
+  Newspaper,
+  ChevronRight,
+  ChevronLeft
 } from "lucide-react";
 
 const navigation = [
@@ -56,11 +59,32 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const { theme, toggleTheme } = useTheme();
   const { signOut } = useAuth();
   const isMobile = useIsMobile();
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isPinned, setIsPinned] = useState(false);
   
   const { data: user } = useQuery({
     queryKey: ["/api/user/profile"],
     retry: false,
   });
+
+  const handleMouseEnter = () => {
+    if (!isPinned) {
+      setIsCollapsed(false);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isPinned) {
+      setIsCollapsed(true);
+    }
+  };
+
+  const togglePin = () => {
+    setIsPinned(!isPinned);
+    if (!isPinned) {
+      setIsCollapsed(false);
+    }
+  };
 
   // Default sidebar settings
   const defaultSidebarSettings: SidebarSettings = {
@@ -239,8 +263,118 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   }
 
   return (
-    <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-br ${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo} shadow-lg hidden lg:flex lg:flex-col`}>
-      {sidebarContent}
+    <div 
+      className={cn(
+        "fixed inset-y-0 left-0 z-50 bg-gradient-to-br shadow-lg hidden lg:flex lg:flex-col transition-all duration-300",
+        `${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo}`,
+        isCollapsed ? "w-20" : "w-64"
+      )}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} relative`}>
+        <div className={cn(
+          "bg-black rounded-lg flex items-center justify-center transition-all duration-300",
+          isCollapsed ? "w-10 h-10" : "w-12 h-12"
+        )}>
+          <img 
+            src="/logo.jpg"
+            alt="TJ Logo" 
+            className={cn(
+              "object-contain transition-all duration-300",
+              isCollapsed ? "h-8 w-8" : "h-10 w-10"
+            )}
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={togglePin}
+          className={cn(
+            "absolute right-2 text-white hover:bg-white/10 transition-opacity duration-300",
+            isCollapsed && !isPinned ? "opacity-0" : "opacity-100"
+          )}
+          data-testid="button-pin-sidebar"
+        >
+          {isPinned ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </Button>
+      </div>
+      
+      <nav className="mt-8 flex-1 overflow-y-auto">
+        <div className="space-y-1">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            const isActive = location === item.href;
+            
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={cn(
+                  "flex items-center py-3 text-sm font-medium transition-all duration-300 rounded-lg mx-2",
+                  isCollapsed ? "px-3 justify-center" : "px-6",
+                  isActive
+                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} text-white border ${sidebarSettings.activeBorder}`
+                    : `text-gray-300 ${sidebarSettings.hoverColor} hover:text-white`
+                )}
+                data-testid={`link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
+              >
+                <Icon className={cn(
+                  "h-5 w-5 flex-shrink-0",
+                  !isCollapsed && "mr-3"
+                )} />
+                <span className={cn(
+                  "transition-all duration-300 whitespace-nowrap overflow-hidden",
+                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                )}>
+                  {item.name}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      <div className={cn(
+        "p-4 transition-all duration-300",
+        isCollapsed && "p-2"
+      )}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={toggleTheme}
+          className={cn(
+            `w-full border-${sidebarSettings.primaryColor}-600/30 text-gray-300 hover:bg-${sidebarSettings.primaryColor}-800/50 transition-all duration-300`,
+            isCollapsed && "px-2"
+          )}
+          data-testid="button-theme-toggle"
+        >
+          {theme === "dark" ? (
+            <>
+              <Sun className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+              <span className={cn(
+                "transition-all duration-300 whitespace-nowrap overflow-hidden",
+                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+              )}>
+                Light Mode
+              </span>
+            </>
+          ) : (
+            <>
+              <Moon className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+              <span className={cn(
+                "transition-all duration-300 whitespace-nowrap overflow-hidden",
+                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+              )}>
+                Dark Mode
+              </span>
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   );
 }
