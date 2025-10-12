@@ -261,10 +261,16 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
   const processParsedData = (parsedData: any[]) => {
     const mappedTrades: MappedTrade[] = [];
     const parseErrors: string[] = [];
+    let skippedBalance = 0;
+    let skippedEmpty = 0;
+    let skippedNumericType = 0;
+    let skippedInvalidDate = 0;
+    let skippedHeader = 0;
 
     if (parsedData.length > 0) {
       console.log("Headers detected:", Object.keys(parsedData[0]));
     }
+    console.log(`Processing ${parsedData.length} rows from file...`);
 
     parsedData.forEach((row, index) => {
       try {
@@ -275,6 +281,7 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         );
         
         if (!hasAnyData) {
+          skippedEmpty++;
           return; // Skip completely empty rows silently
         }
         
@@ -284,12 +291,14 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         
         // Skip rows that are duplicate headers (where Type column = "Type")
         if (typeColumnValue === 'Type' || typeColumnValue === 'TYPE' || typeColumnValue === 'type') {
+          skippedHeader++;
           return; // Skip this row silently, it's a header row
         }
         
         // Skip rows where both Type AND Position are empty (definitely not a trade)
         if ((!typeColumnValue || typeColumnValue.trim() === '') && 
             (!positionValue || positionValue.trim() === '')) {
+          skippedEmpty++;
           return; // Skip empty rows silently
         }
         
@@ -298,16 +307,19 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         
         if (typeLower === 'balance' || typeLower === 'deposit' || typeLower === 'withdrawal' || 
             typeLower === 'credit' || typeLower === 'debit' || typeLower === 'bonus') {
+          skippedBalance++;
           return; // Skip non-trade entries silently
         }
         
         // Skip rows where Type is a number (these are malformed/summary rows)
         if (typeColumnValue && !isNaN(Number(typeColumnValue))) {
+          skippedNumericType++;
           return; // Skip rows with numeric Type values silently
         }
         
         // Skip rows where Type is empty (likely empty rows)
         if (!typeColumnValue || typeColumnValue.trim() === '') {
+          skippedEmpty++;
           return; // Skip empty rows silently
         }
         
@@ -360,6 +372,7 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         };
         
         if (!isValidDate(openDate) || !isValidDate(closeDate)) {
+          skippedInvalidDate++;
           return; // Skip rows with invalid date values silently
         }
 
@@ -411,6 +424,16 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         parseErrors.push(`Row ${index + 1}: ${error instanceof Error ? error.message : "Parse error"}`);
       }
     });
+
+    console.log(`\n📊 Parsing Summary:`);
+    console.log(`   Total rows in file: ${parsedData.length}`);
+    console.log(`   ✅ Valid trades parsed: ${mappedTrades.length}`);
+    console.log(`   ⏭️  Skipped - Balance entries: ${skippedBalance}`);
+    console.log(`   ⏭️  Skipped - Empty rows: ${skippedEmpty}`);
+    console.log(`   ⏭️  Skipped - Numeric Type: ${skippedNumericType}`);
+    console.log(`   ⏭️  Skipped - Invalid dates: ${skippedInvalidDate}`);
+    console.log(`   ⏭️  Skipped - Header rows: ${skippedHeader}`);
+    console.log(`   ❌ Parse errors: ${parseErrors.length}\n`);
 
     setParsedTrades(mappedTrades);
     setPreviewTrades(mappedTrades.slice(0, 5));
