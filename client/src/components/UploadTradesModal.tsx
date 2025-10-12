@@ -268,6 +268,15 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
 
     parsedData.forEach((row, index) => {
       try {
+        // Check if row is completely empty (all important fields are empty)
+        const hasAnyData = Object.values(row).some(value => 
+          value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== '__EMPTY'
+        );
+        
+        if (!hasAnyData) {
+          return; // Skip completely empty rows silently
+        }
+        
         // Skip rows that are duplicate headers (where Type column = "Type")
         const typeColumnValue = getFieldValue(row, ['Type', 'type', 'TYPE']);
         if (typeColumnValue === 'Type' || typeColumnValue === 'TYPE' || typeColumnValue === 'type') {
@@ -281,7 +290,7 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
           return; // Skip non-trade entries silently
         }
         
-        // Skip rows where Symbol is empty but Type is also empty (likely empty rows)
+        // Skip rows where Type is empty (likely empty rows)
         if (!typeColumnValue || typeColumnValue.trim() === '') {
           return; // Skip empty rows silently
         }
