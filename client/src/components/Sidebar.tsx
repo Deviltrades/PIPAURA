@@ -39,11 +39,11 @@ const navigation = [
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Calendar", href: "/calendar", icon: Calendar },
   { name: "Charts", href: "/charts", icon: LineChart },
+  { name: "Fundamentals", href: "/fundamentals", icon: Newspaper },
   { name: "Signals", href: "/signals", icon: Radio },
   { name: "Strategy/Playbook", href: "/strategy", icon: MapPin },
   { name: "Notes", href: "/notes", icon: StickyNote },
   { name: "Widgets", href: "/widgets", icon: Grid3X3 },
-  { name: "Fundamentals", href: "/fundamentals", icon: Newspaper },
   { name: "AI Trading Mentor", href: "/mentor", icon: Brain },
   { name: "Settings", href: "/settings", icon: SettingsIcon },
 ];
