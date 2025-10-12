@@ -268,8 +268,14 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
 
     parsedData.forEach((row, index) => {
       try {
+        // Skip rows that are duplicate headers (where Type column = "Type")
+        const typeColumnValue = getFieldValue(row, ['Type', 'type', 'TYPE']);
+        if (typeColumnValue === 'Type' || typeColumnValue === 'TYPE' || typeColumnValue === 'type') {
+          return; // Skip this row silently, it's a header row
+        }
+        
         const instrument = getFieldValue(row, [
-          'Pair', 'pair', 'Symbol', 'symbol', 'Item', 'item', 'Instrument', 'instrument', 'PAIR', 'SYMBOL'
+          'Pair', 'pair', 'Symbol', 'symbol', 'Item', 'item', 'Instrument', 'instrument', 'PAIR', 'SYMBOL', 'ITEM'
         ]);
         
         if (!instrument) {
@@ -288,15 +294,15 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         }
 
         const openDate = getFieldValue(row, [
-          'Open Time', 'open_time', 'OpenTime', 'open_date', 'Open Date', 'Entry Time', 'entry_time', 'Date', 'date'
+          'Open Time', 'open_time', 'OpenTime', 'open_date', 'Open Date', 'Entry Time', 'entry_time', 'Date', 'date', 'Time', 'time'
         ]);
 
         const closeDate = getFieldValue(row, [
-          'Close Time', 'close_time', 'CloseTime', 'close_date', 'Close Date', 'Exit Time', 'exit_time'
+          'Close Time', 'close_time', 'CloseTime', 'close_date', 'Close Date', 'Exit Time', 'exit_time', 'Time_1', 'time_1'
         ]);
 
         const ticketId = getFieldValue(row, [
-          'Ticket', 'ticket', 'ticket_id', 'Order', 'order', 'ID', 'id', 'Trade ID', 'trade_id', 'Deal #', 'deal'
+          'Ticket', 'ticket', 'ticket_id', 'Order', 'order', 'ID', 'id', 'Trade ID', 'trade_id', 'Deal #', 'deal', 'Position', 'position'
         ]);
 
         const lotSize = getFieldValue(row, [
@@ -308,15 +314,15 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         ]);
 
         const exitPrice = getFieldValue(row, [
-          'Close Price', 'close_price', 'ClosePrice', 'Exit Price', 'exit_price', 'ExitPrice'
+          'Close Price', 'close_price', 'ClosePrice', 'Exit Price', 'exit_price', 'ExitPrice', 'Price_1', 'price_1'
         ]);
 
         const stopLoss = getFieldValue(row, [
-          'SL', 'sl', 'S/L', 'Stop Loss', 'stop_loss', 'StopLoss'
+          'SL', 'sl', 'S/L', 'S / L', 's / l', 'Stop Loss', 'stop_loss', 'StopLoss'
         ]);
 
         const takeProfit = getFieldValue(row, [
-          'TP', 'tp', 'T/P', 'Take Profit', 'take_profit', 'TakeProfit'
+          'TP', 'tp', 'T/P', 'T / P', 't / p', 'Take Profit', 'take_profit', 'TakeProfit'
         ]);
 
         const profit = getFieldValue(row, [
