@@ -274,6 +274,13 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
           return; // Skip this row silently, it's a header row
         }
         
+        // Skip balance adjustments, deposits, withdrawals (Type = "balance", "deposit", "credit", etc.)
+        const typeLower = typeColumnValue?.toLowerCase().trim() || '';
+        if (typeLower === 'balance' || typeLower === 'deposit' || typeLower === 'withdrawal' || 
+            typeLower === 'credit' || typeLower === 'debit' || typeLower === 'bonus') {
+          return; // Skip non-trade entries silently
+        }
+        
         // Skip rows where Symbol is empty but Type is also empty (likely empty rows)
         if (!typeColumnValue || typeColumnValue.trim() === '') {
           return; // Skip empty rows silently
