@@ -28,8 +28,8 @@ export default function Analytics() {
   const [hoveredMonthIndex, setHoveredMonthIndex] = useState<number | null>(null);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const { data: analytics, isLoading } = useQuery({
-    queryKey: ["analytics"],
-    queryFn: getAnalytics,
+    queryKey: ["analytics", selectedAccount],
+    queryFn: () => getAnalytics(selectedAccount),
     retry: false,
   });
 
