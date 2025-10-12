@@ -25,6 +25,7 @@ const MAJOR_PAIRS = [
   { symbol: "EURJPY", label: "EUR/JPY" },
   { symbol: "GBPJPY", label: "GBP/JPY" },
   { symbol: "AUDJPY", label: "AUD/JPY" },
+  { symbol: "OANDA:XAUUSD", label: "XAU/USD (Gold)" },
   { symbol: "BTCUSD", label: "BTC/USD" },
   { symbol: "ETHUSD", label: "ETH/USD" },
 ];
