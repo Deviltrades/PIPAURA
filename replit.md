@@ -56,15 +56,26 @@ A robust CSV import system supports MT4/MT5/TradeZella formats with:
 - **Account Association**: Links all imported trades to selected trading account.
 - **Balance Updates**: Automatically updates account balance based on closed trades.
 
-#### Trade Enrichment System (Currently Disabled)
-An automated post-upload enrichment system is built but temporarily disabled due to Supabase PostgREST schema cache issues (PGRST204 errors). The system calculates:
+#### Trade Enrichment System (Disabled - Supabase Platform Limitation)
+An automated post-upload enrichment system is fully built but disabled due to persistent Supabase PostgREST schema cache issues (PGRST204 errors). The system calculates:
 - **Session Detection**: Identifies trading session (London/New York/Asia) based on UTC entry time.
 - **Holding Time**: Calculates duration between entry and exit in minutes.
 - **Profit Normalization**: Computes profit-per-lot for position sizing analysis.
+- **Duplicate Detection**: Prevents duplicate trades via ticket_id matching.
 
-Database columns exist (`session_tag`, `holding_time_minutes`, `profit_per_lot`) but PostgREST API doesn't recognize them. Enrichment logic is commented out in `supabase-service.ts` until resolved. Similar issue affects `ticket_id` column for duplicate detection.
+**Technical Issue**: Database columns exist (`ticket_id`, `session_tag`, `holding_time_minutes`, `profit_per_lot`) but Supabase's PostgREST API doesn't recognize them in the schema cache. Error: "Could not find the 'holding_time_minutes' column of 'trades' in the schema cache" (PGRST204).
 
-**Workaround**: Lines marked "TEMPORARILY EXCLUDED" in CSV upload and trade CRUD functions can be uncommented once schema cache refreshes.
+**Attempted Fixes**:
+1. ✗ SQL command: `NOTIFY pgrst, 'reload schema';` - No effect
+2. ✗ Supabase instance restart via Dashboard → Settings → General → Restart - No effect
+3. ✗ Event triggers for automatic schema reload - Not available in managed Supabase
+
+**Current State**: All enrichment logic is commented out in `supabase-service.ts` (lines marked "DISABLED: Supabase PostgREST schema cache issue"). The enrichment functions (`detectTradingSession`, `calculateHoldingTimeMinutes`, `calculateProfitPerLot`) are fully implemented but not being saved to the database.
+
+**Future Solutions**:
+- Wait for Supabase PostgREST schema cache auto-refresh (can take 24-48 hours)
+- Contact Supabase support for manual schema cache flush
+- Consider alternative approaches: Supabase Edge Functions, direct database access, or backend-calculated enrichment
 
 ## External Dependencies
 
