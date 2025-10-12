@@ -289,15 +289,21 @@ export async function createTrade(trade: Omit<TradeData, 'user_id'>) {
   return data;
 }
 
-export async function getTrades() {
+export async function getTrades(accountId?: string) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('trades')
     .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+    .eq('user_id', user.id);
+
+  // Filter by account_id if a specific account is selected
+  if (accountId && accountId !== 'all') {
+    query = query.eq('account_id', accountId);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) throw error;
   return data;
@@ -501,7 +507,7 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
 }
 
 // Analytics operations
-export async function getAnalytics() {
+export async function getAnalytics(accountId?: string) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
@@ -511,11 +517,18 @@ export async function getAnalytics() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id);
 
-  // Get all trades with dates for comprehensive analytics
-  const { data: trades, error: tradesError } = await supabase
+  // Build query for trades with optional account filter
+  let tradesQuery = supabase
     .from('trades')
     .select('pnl, status, entry_date, exit_date, created_at')
-    .eq('user_id', user.id)
+    .eq('user_id', user.id);
+
+  // Filter by account_id if a specific account is selected
+  if (accountId && accountId !== 'all') {
+    tradesQuery = tradesQuery.eq('account_id', accountId);
+  }
+
+  const { data: trades, error: tradesError } = await tradesQuery
     .order('entry_date', { ascending: true });
 
   if (tradesError) throw tradesError;
