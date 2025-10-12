@@ -1,9 +1,9 @@
 import { TradingCalendar } from "@/components/TradingCalendar";
 import { AccountSelector } from "@/components/AccountSelector";
-import { useState } from "react";
+import { useSelectedAccount } from "@/hooks/use-selected-account";
 
 export default function Calendar() {
-  const [selectedAccount, setSelectedAccount] = useState<string>("all");
+  const [selectedAccount, setSelectedAccount] = useSelectedAccount();
   
   return (
     <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">

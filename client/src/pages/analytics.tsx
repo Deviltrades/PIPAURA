@@ -22,9 +22,10 @@ import {
 import { formatCurrency } from "@/lib/utils";
 import { getAnalytics } from "@/lib/supabase-service";
 import { FloatingDNACore } from "@/components/FloatingDNACore";
+import { useSelectedAccount } from "@/hooks/use-selected-account";
 
 export default function Analytics() {
-  const [selectedAccount, setSelectedAccount] = useState<string>("all");
+  const [selectedAccount, setSelectedAccount] = useSelectedAccount();
   const [hoveredMonthIndex, setHoveredMonthIndex] = useState<number | null>(null);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const { data: analytics, isLoading } = useQuery({

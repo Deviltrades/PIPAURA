@@ -11,9 +11,10 @@ import { formatCurrency } from "@/lib/utils";
 import { getTrades, deleteTrade } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useSelectedAccount } from "@/hooks/use-selected-account";
 
 export default function Trades() {
-  const [selectedAccount, setSelectedAccount] = useState<string>("all");
+  const [selectedAccount, setSelectedAccount] = useSelectedAccount();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);

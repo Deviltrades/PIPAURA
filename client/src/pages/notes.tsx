@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { AccountSelector } from "@/components/AccountSelector";
+import { useSelectedAccount } from "@/hooks/use-selected-account";
 import { useState } from "react";
 
 const mockNotes = [
@@ -34,7 +35,7 @@ const mockNotes = [
 ];
 
 export default function Notes() {
-  const [selectedAccount, setSelectedAccount] = useState<string>("all");
+  const [selectedAccount, setSelectedAccount] = useSelectedAccount();
   const [newNote, setNewNote] = useState({ title: "", content: "", category: "" });
   const [showNewNote, setShowNewNote] = useState(false);
 
