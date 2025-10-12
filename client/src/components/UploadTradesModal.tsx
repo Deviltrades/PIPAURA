@@ -274,11 +274,20 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
           return; // Skip this row silently, it's a header row
         }
         
+        // Skip rows where Symbol is empty but Type is also empty (likely empty rows)
+        if (!typeColumnValue || typeColumnValue.trim() === '') {
+          return; // Skip empty rows silently
+        }
+        
         const instrument = getFieldValue(row, [
           'Pair', 'pair', 'Symbol', 'symbol', 'Item', 'item', 'Instrument', 'instrument', 'PAIR', 'SYMBOL', 'ITEM'
         ]);
         
-        if (!instrument) {
+        if (!instrument || instrument.trim() === '') {
+          // Debug: log the problematic row for first few errors
+          if (parseErrors.length < 3) {
+            console.log(`Row ${index + 1} data:`, row);
+          }
           parseErrors.push(`Row ${index + 1}: Missing pair/instrument`);
           return;
         }
