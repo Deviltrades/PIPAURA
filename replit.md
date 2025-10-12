@@ -25,8 +25,16 @@ The application uses Supabase PostgreSQL for all data storage, including:
 ### Dashboard Features
 The dashboard features a customizable widget system allowing users to add/remove from 8 widget types, categorize them, persist preferences, and enjoy real-time data updates. It includes drag-and-drop and resize functionality for widgets, and a template system to save up to 5 custom dashboard layouts.
 
+### Account Filtering System
+A comprehensive account filtering system allows users to view data for specific trading accounts or all accounts combined:
+- **Universal Account Selector**: Reusable AccountSelector component positioned below page titles across all pages (Dashboard, Trades, Analytics, Calendar, Widgets, Strategy, Notes)
+- **Database-Level Filtering**: Trades and analytics queries filter by `account_id` at the database level for optimal performance
+- **Smart Query Caching**: React Query uses account-specific cache keys (`["trades", accountId]`, `["analytics", accountId]`) for proper data isolation
+- **Seamless Data Updates**: Selecting "All Accounts" shows combined data; selecting a specific account shows only that account's trades and metrics
+- **Cross-Page Consistency**: Account selection is managed at the page level, ensuring consistent filtering across navigation
+
 ### Calendar Features
-The trading calendar offers comprehensive settings persistence, including auto-save of display options (weekends, weekly/monthly totals, consistency tracker), view modes (percentage/dollar, clear view), and filter selections (account, symbol, strategy, direction). It also provides quick navigation with month/year selectors.
+The trading calendar offers comprehensive settings persistence, including auto-save of display options (weekends, weekly/monthly totals, consistency tracker), view modes (percentage/dollar, clear view), and filter selections (symbol, strategy, direction). It also provides quick navigation with month/year selectors and integrates with the account filtering system for account-specific calendar views.
 
 ### Authentication and Authorization
 Authentication is handled entirely through Supabase Auth, providing:
