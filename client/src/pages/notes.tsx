@@ -39,11 +39,11 @@ export default function Notes() {
   const [showNewNote, setShowNewNote] = useState(false);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-start">
+    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">
+      <div className="flex justify-between items-start mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Trading Notes</h1>
-          <p className="text-muted-foreground mb-3">Document your trading thoughts and analysis</p>
+          <h1 className="text-3xl font-bold text-white">Trading Notes</h1>
+          <p className="text-gray-300 mb-3">Document your trading thoughts and analysis</p>
           <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
         </div>
         <Button onClick={() => setShowNewNote(!showNewNote)}>

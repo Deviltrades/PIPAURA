@@ -9,10 +9,10 @@ export default function Strategy() {
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
   
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Strategy & Playbook</h1>
-        <p className="text-muted-foreground mb-3">Document and track your trading strategies</p>
+    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-white">Strategy & Playbook</h1>
+        <p className="text-gray-300 mb-3">Document and track your trading strategies</p>
         <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
       </div>
 

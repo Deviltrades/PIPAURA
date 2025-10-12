@@ -6,10 +6,10 @@ export default function Calendar() {
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
   
   return (
-    <div className="p-3 sm:p-4 lg:p-8">
-      <div className="mb-4 sm:mb-6 lg:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Trading Calendar</h1>
-        <p className="text-sm sm:text-base text-muted-foreground mb-3">Daily P&L overview and trading activity</p>
+    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-white">Trading Calendar</h1>
+        <p className="text-gray-300 mb-3">Daily P&L overview and trading activity</p>
         <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
       </div>
 

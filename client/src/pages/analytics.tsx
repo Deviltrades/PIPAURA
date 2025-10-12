@@ -91,11 +91,11 @@ export default function Analytics() {
   const currentMonth = currentDate.toLocaleDateString('en-US', { month: 'short' });
 
   return (
-    <div className="min-h-screen bg-[#0a1628] p-4 lg:p-8">
+    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">Trading Analytics</h1>
-        <p className="text-gray-400 text-sm lg:text-base mb-3">Detailed performance analysis and metrics</p>
+        <h1 className="text-3xl font-bold text-white">Trading Analytics</h1>
+        <p className="text-gray-300 mb-3">Detailed performance analysis and metrics</p>
         <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
       </div>
 
