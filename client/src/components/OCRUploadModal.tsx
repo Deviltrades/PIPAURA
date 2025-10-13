@@ -33,7 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { createTrade, getTradeAccounts } from "@/lib/supabase-service";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
@@ -65,6 +65,7 @@ interface ParsedTradeData {
   stopLoss?: string;
   entryTime?: string;
   exitTime?: string;
+  rawText?: string;
 }
 
 const reviewTradeSchema = z.object({
@@ -175,7 +176,9 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
 
   const parseOCRText = (text: string): ParsedTradeData => {
     const cleanText = text.replace(/\s+/g, ' ').trim();
-    const parsed: ParsedTradeData = {};
+    const parsed: ParsedTradeData = {
+      rawText: text, // Store raw text for debugging
+    };
 
     // Extract symbol/pair (e.g., XAUUSD, EURUSD, etc.)
     const symbolMatch = cleanText.match(/([A-Z]{3,6}USD|USD[A-Z]{3,6}|XAU[A-Z]{3}|[A-Z]{3}[A-Z]{3})/i);
@@ -189,26 +192,30 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
       parsed.tradeType = typeMatch[1].toUpperCase() as 'BUY' | 'SELL';
     }
 
-    // Extract lot size (e.g., 0.01, 1.00, etc.)
-    const lotMatch = cleanText.match(/(?:lot|volume|size)[:\s]*([0-9]+\.?[0-9]*)/i);
+    // Extract lot size (e.g., 0.01, 1.00, etc.) - try multiple patterns
+    const lotMatch = cleanText.match(/(?:lot|volume|size|position\s*size)[:\s]*([0-9]+\.?[0-9]*)/i) ||
+                     cleanText.match(/\b([0-9]+\.?[0-9]+)\s*(?:lot|volume)/i);
     if (lotMatch) {
       parsed.lotSize = lotMatch[1];
     }
 
-    // Extract entry price
-    const entryMatch = cleanText.match(/(?:entry|open)[:\s]*([0-9]+\.?[0-9]*)/i);
+    // Extract entry price - try multiple patterns
+    const entryMatch = cleanText.match(/(?:entry|open|price)[:\s]*([0-9]+\.?[0-9]*)/i) ||
+                       cleanText.match(/entry\s*price[:\s]*([0-9]+\.?[0-9]*)/i);
     if (entryMatch) {
       parsed.entryPrice = entryMatch[1];
     }
 
-    // Extract exit price
-    const exitMatch = cleanText.match(/(?:exit|close)[:\s]*([0-9]+\.?[0-9]*)/i);
+    // Extract exit price - try multiple patterns
+    const exitMatch = cleanText.match(/(?:exit|close)[:\s]*price[:\s]*([0-9]+\.?[0-9]*)/i) ||
+                      cleanText.match(/(?:exit|close)[:\s]*([0-9]+\.?[0-9]*)/i);
     if (exitMatch) {
       parsed.exitPrice = exitMatch[1];
     }
 
-    // Extract profit/loss
-    const profitMatch = cleanText.match(/(?:profit|p\/l|pnl)[:\s]*(-?[0-9]+\.?[0-9]*)/i);
+    // Extract profit/loss - try multiple patterns including currency symbols
+    const profitMatch = cleanText.match(/(?:profit|p\/l|pnl|p&l)[:\s]*\$?\s*(-?[0-9]+\.?[0-9]*)/i) ||
+                       cleanText.match(/\$\s*(-?[0-9]+\.?[0-9]*)/);
     if (profitMatch) {
       parsed.profit = profitMatch[1];
     }
@@ -220,43 +227,51 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
     }
 
     // Extract commission
-    const commissionMatch = cleanText.match(/(?:commission|charges?)[:\s]*(-?[0-9]+\.?[0-9]*)/i);
+    const commissionMatch = cleanText.match(/(?:commission|charges?|fee)[:\s]*(-?[0-9]+\.?[0-9]*)/i);
     if (commissionMatch) {
       parsed.commission = commissionMatch[1];
     }
 
     // Extract take profit
-    const tpMatch = cleanText.match(/(?:t\/p|take profit|tp)[:\s]*([0-9]+\.?[0-9]*)/i);
+    const tpMatch = cleanText.match(/(?:t\.?\/?p|take\s*profit|tp)[:\s]*([0-9]+\.?[0-9]*)/i);
     if (tpMatch) {
       parsed.takeProfit = tpMatch[1];
     }
 
     // Extract stop loss
-    const slMatch = cleanText.match(/(?:s\/l|stop loss|sl)[:\s]*([0-9]+\.?[0-9]*)/i);
+    const slMatch = cleanText.match(/(?:s\.?\/?l|stop\s*loss|sl)[:\s]*([0-9]+\.?[0-9]*)/i);
     if (slMatch) {
       parsed.stopLoss = slMatch[1];
     }
 
     // Extract entry time (e.g., 2025.10.06 16:15:08)
-    const entryTimeMatch = cleanText.match(/(?:open time|entry time)[:\s]*(\d{4}[.\-\/]\d{2}[.\-\/]\d{2}\s+\d{2}:\d{2}(?::\d{2})?)/i);
+    const entryTimeMatch = cleanText.match(/(?:open\s*time|entry\s*time)[:\s]*(\d{4}[.\-\/]\d{2}[.\-\/]\d{2}\s+\d{2}:\d{2}(?::\d{2})?)/i);
     if (entryTimeMatch) {
       const dateStr = entryTimeMatch[1].replace(/\./g, '-');
-      parsed.entryTime = new Date(dateStr).toISOString();
+      try {
+        parsed.entryTime = new Date(dateStr).toISOString();
+      } catch (e) {
+        console.error('Failed to parse entry time:', dateStr);
+      }
     }
 
     // Extract exit time
-    const exitTimeMatch = cleanText.match(/(?:close time|exit time)[:\s]*(\d{4}[.\-\/]\d{2}[.\-\/]\d{2}\s+\d{2}:\d{2}(?::\d{2})?)/i);
+    const exitTimeMatch = cleanText.match(/(?:close\s*time|exit\s*time)[:\s]*(\d{4}[.\-\/]\d{2}[.\-\/]\d{2}\s+\d{2}:\d{2}(?::\d{2})?)/i);
     if (exitTimeMatch) {
       const dateStr = exitTimeMatch[1].replace(/\./g, '-');
-      parsed.exitTime = new Date(dateStr).toISOString();
+      try {
+        parsed.exitTime = new Date(dateStr).toISOString();
+      } catch (e) {
+        console.error('Failed to parse exit time:', dateStr);
+      }
     }
 
     return parsed;
   };
 
-  const processImage = async (index: number) => {
+  const processImage = async (index: number): Promise<string | null> => {
     const image = images[index];
-    if (!image || image.status !== 'pending') return;
+    if (!image || image.status !== 'pending') return null;
 
     setImages((prev) =>
       prev.map((img, i) =>
@@ -288,11 +303,7 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
         )
       );
 
-      // Parse the first completed image automatically
-      if (index === 0 || !parsedData) {
-        const parsed = parseOCRText(extractedText);
-        setParsedData(parsed);
-      }
+      return extractedText;
     } catch (error) {
       setImages((prev) =>
         prev.map((img, i) =>
@@ -310,36 +321,51 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
         description: `Failed to process image ${index + 1}`,
         variant: "destructive",
       });
+      return null;
     }
   };
 
-  const processAllImages = async () => {
+  const processAllImages = async (): Promise<string[]> => {
+    const extractedTexts: string[] = [];
+    
     for (let i = 0; i < images.length; i++) {
-      if (images[i].status === 'pending') {
-        await processImage(i);
+      const image = images[i];
+      
+      // If already completed, use the stored text
+      if (image.status === 'completed' && image.extractedText) {
+        extractedTexts.push(image.extractedText);
+      }
+      // If pending, process it
+      else if (image.status === 'pending') {
+        const text = await processImage(i);
+        if (text) {
+          extractedTexts.push(text);
+        }
       }
     }
+    
+    return extractedTexts;
   };
 
   const handleProceedToReview = async () => {
-    await processAllImages();
+    const extractedTexts = await processAllImages();
     
     // Combine all extracted text
-    const allText = images
-      .filter((img) => img.status === 'completed' && img.extractedText)
-      .map((img) => img.extractedText)
-      .join('\n\n');
+    const allText = extractedTexts.join('\n\n');
 
-    if (!allText) {
+    console.log('OCR Extracted Text:', allText);
+
+    if (!allText || allText.trim().length === 0) {
       toast({
         title: "No text extracted",
-        description: "Could not extract text from the images",
+        description: "Could not extract text from the images. Please ensure the image contains readable text.",
         variant: "destructive",
       });
       return;
     }
 
     const parsed = parseOCRText(allText);
+    console.log('Parsed Trade Data:', parsed);
     setParsedData(parsed);
 
     // Pre-fill form with parsed data
@@ -355,6 +381,19 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
     if (parsed.profit) form.setValue('pnl', parsed.profit);
     if (parsed.swap) form.setValue('swap', parsed.swap);
     if (parsed.commission) form.setValue('commission', parsed.commission);
+
+    // Check if at least some trade-relevant fields were extracted (exclude rawText)
+    const tradeFields = { ...parsed };
+    delete tradeFields.rawText;
+    const hasAnyData = Object.values(tradeFields).some(value => value !== undefined);
+    
+    if (!hasAnyData) {
+      toast({
+        title: "No trade data found",
+        description: "Could not identify trade fields in the extracted text. You can still manually enter the data in the next step.",
+        variant: "default",
+      });
+    }
 
     setCurrentStep('review');
   };
@@ -499,6 +538,22 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {parsedData?.rawText && (
+                <Card className="bg-muted/50">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Extracted Text (Debug Info)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <pre className="text-xs bg-black/20 p-3 rounded overflow-auto max-h-32">
+                      {parsedData.rawText}
+                    </pre>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      The AI extracted this text from your screenshot. Review the fields below and make corrections if needed.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+              
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
