@@ -45,10 +45,32 @@ Authentication is handled entirely through Supabase Auth, providing:
 - Production-ready email verification with domain restrictions.
 
 ### Automated Fundamental Bias System
-A comprehensive automated fundamental analysis system provides real-time (30-min/hourly) and weekly deep analysis. It uses Python scripts (`hourly_update.py`, `main.py`) to gather data from various sources (Polygon.io, Yahoo Finance, TradingEconomics, EconDB, ForexFactory) to score currencies, FX pairs, and indices. This data is stored in Supabase (`currency_scores`, `fundamental_bias`, `index_bias` tables) and integrated into the frontend for display in a "Fundamental Strength" tab.
+A comprehensive automated fundamental analysis system provides real-time (30-min/hourly) bias calculations. The system has been migrated from Python scripts to TypeScript serverless functions deployed on Vercel for production reliability:
 
-### Forex Factory Economic Calendar Integration
-An event-driven bias update system processes the Forex Factory economic calendar. A Python script (`forexfactory_feed.py`) fetches and scores events, triggering instant bias recalculations for high-impact events and regular refreshes for others. Scores are integrated into overall bias calculations and stored in `forex_events` and `economic_scores` tables.
+**Architecture:**
+- **Forex Factory Feed** (`lib/cron/forex-factory.ts`): Fetches and parses XML economic calendar, scores events based on actual vs forecast
+- **Hourly Bias Calculator** (`lib/cron/hourly-bias.ts`): Calculates currency scores using Yahoo Finance market data, central bank tones, and commodity correlations
+- **Vercel API Endpoints** (`api/cron/*.ts`): Serverless functions called by external cron service (cron-job.org)
+
+**Data Sources:**
+- Yahoo Finance: Market data (DXY, WTI, Gold, Copper, SPX, UST10Y, VIX)
+- Forex Factory: Economic calendar events (https://nfs.faireconomy.media/ff_calendar_thisweek.xml)
+- Manual: Central bank tone settings (hawkish/dovish/neutral)
+
+**Cron Schedule:**
+- **Every 15 minutes**: High-impact event check → instant bias recalculation if detected
+- **Every 30 minutes**: Hourly bias update for all currencies, pairs, and indices
+- **Every 4 hours**: Full Forex Factory calendar refresh
+
+**Database Tables:**
+- `forex_events`: Economic calendar events with scores
+- `economic_scores`: Aggregated event scores by currency
+- `currency_scores`: Full scoring breakdown (CB tone, commodities, market flows, economic data)
+- `fundamental_bias`: FX pair bias calculations (38 pairs)
+- `index_bias`: Stock index bias calculations (10 indices)
+
+**Deployment:**
+The cron endpoints are deployed on Vercel (not Replit) for 100% uptime and production reliability. See `VERCEL_CRON_SETUP.md` for configuration details.
 
 ### Floating DNA Core Visualization
 The analytics page features a "Trader DNA Core" visualization: an animated 3D-like double-helix structure colored by overall Edge Integrity score, with six orbiting metrics (Win Rate, Avg R:R, Risk Consistency, Emotional Control, Discipline, Session Focus) connected by dynamic glowing beams.

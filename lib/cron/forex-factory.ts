@@ -189,16 +189,28 @@ export function aggregateCurrencyScores(events: ForexEvent[]): Record<string, nu
 export async function updateEconomicScores(
   supabaseUrl: string,
   supabaseKey: string,
-  currencyScores: Record<string, number>
+  currenciesUpdated: Set<string>
 ): Promise<void> {
   const supabase = createClient(supabaseUrl, supabaseKey);
   const timestamp = new Date().toISOString();
 
-  for (const [currency, score] of Object.entries(currencyScores)) {
+  // For each currency that had new events, recalculate total from ALL processed events
+  for (const currency of currenciesUpdated) {
     try {
+      // Query all processed events for this currency
+      const { data: events, error } = await supabase
+        .from('forex_events')
+        .select('score')
+        .eq('currency', currency);
+
+      if (error) throw error;
+
+      // Sum all scores to get cumulative total
+      const totalScore = events?.reduce((sum, event) => sum + (event.score || 0), 0) || 0;
+
       await supabase.from('economic_scores').upsert({
         currency,
-        total_score: Math.round(score),
+        total_score: Math.round(totalScore),
         last_updated: timestamp,
       });
     } catch (error) {
@@ -246,18 +258,22 @@ export async function runUpdate(
     return false;
   }
 
-  const allEventsData: ForexEvent[] = [];
+  const currenciesUpdated = new Set<string>();
   for (const [eventId, event] of newEvents) {
     const impactWeight = IMPACT_WEIGHTS[event.impact as keyof typeof IMPACT_WEIGHTS] || 1;
     const score = scoreEvent(event.actual, event.forecast, impactWeight);
 
-    allEventsData.push(event);
     await markEventProcessed(supabaseUrl, supabaseKey, eventId, event, score);
+    
+    const currency = COUNTRY_TO_CURRENCY[event.country];
+    if (currency) {
+      currenciesUpdated.add(currency);
+    }
   }
 
-  const currencyScores = aggregateCurrencyScores(allEventsData);
-  if (Object.keys(currencyScores).length) {
-    await updateEconomicScores(supabaseUrl, supabaseKey, currencyScores);
+  // Recalculate total scores for all currencies with new events
+  if (currenciesUpdated.size > 0) {
+    await updateEconomicScores(supabaseUrl, supabaseKey, currenciesUpdated);
   }
 
   const highImpactCount = newEvents.filter(([, e]) => e.impact === 'High').length;
