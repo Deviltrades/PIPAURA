@@ -1,7 +1,6 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { runHourlyUpdate } from '../../lib/cron/hourly-bias';
+import { runUpdate as runForexFactoryUpdate } from '../../lib/cron/forex-factory.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req, res) {
   // Check API key (fail closed if not configured)
   const API_KEY = process.env.CRON_API_KEY;
   if (!API_KEY) {
@@ -22,13 +21,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       throw new Error('Missing Supabase credentials');
     }
 
-    await runHourlyUpdate(supabaseUrl, supabaseKey);
+    console.log('[CRON] Running FF Full Refresh...');
+
+    // Run Forex Factory update (all events)
+    await runForexFactoryUpdate(supabaseUrl, supabaseKey, false);
 
     return res.status(200).json({
       success: true,
-      message: 'Hourly bias update completed',
+      message: 'FF full refresh completed',
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('[CRON ERROR]', error);
     return res.status(500).json({
       success: false,

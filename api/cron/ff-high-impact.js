@@ -1,8 +1,7 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { runUpdate as runForexFactoryUpdate } from '../../lib/cron/forex-factory';
-import { runHourlyUpdate } from '../../lib/cron/hourly-bias';
+import { runUpdate as runForexFactoryUpdate } from '../../lib/cron/forex-factory.js';
+import { runHourlyUpdate } from '../../lib/cron/hourly-bias.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req, res) {
   // Check API key (fail closed if not configured)
   const API_KEY = process.env.CRON_API_KEY;
   if (!API_KEY) {
@@ -39,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message: 'FF high-impact check completed',
       highImpactDetected: hasHighImpact,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('[CRON ERROR]', error);
     return res.status(500).json({
       success: false,

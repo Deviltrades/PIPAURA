@@ -4,11 +4,11 @@ This document explains how to configure cron-job.org to call the Vercel-deployed
 
 ## Architecture
 
-The cron system has been migrated from Python scripts on Replit to TypeScript serverless functions on Vercel:
+The cron system has been migrated from Python scripts on Replit to JavaScript serverless functions on Vercel:
 
-- **Forex Factory feed parsing** → `lib/cron/forex-factory.ts`
-- **Hourly bias calculation** → `lib/cron/hourly-bias.ts`
-- **API endpoints** → `api/cron/*.ts`
+- **Forex Factory feed parsing** → `lib/cron/forex-factory.js`
+- **Hourly bias calculation** → `lib/cron/hourly-bias.js`
+- **API endpoints** → `api/cron/*.js`
 
 ## Vercel Endpoints
 
@@ -119,7 +119,7 @@ curl -X POST https://your-app-name.vercel.app/api/cron/hourly-update \
 ✅ **Always available** - No sleeping, no 502 errors  
 ✅ **Production-ready** - Stable URLs that don't change  
 ✅ **No Replit dependency** - Works independently  
-✅ **TypeScript** - Type-safe, maintainable code  
+✅ **JavaScript ES6+** - Modern, maintainable code  
 ✅ **Automatic scaling** - Handles traffic spikes automatically  
 
 ## Troubleshooting
@@ -150,10 +150,11 @@ View logs in real-time:
 
 If you want to keep the weekly deep analysis (main.py), you can create a separate endpoint:
 
-```typescript
-// api/cron/weekly-analysis.ts
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-// Implementation would be similar to hourly-update but with weekly logic
+```javascript
+// api/cron/weekly-analysis.js
+export default async function handler(req, res) {
+  // Implementation would be similar to hourly-update but with weekly logic
+}
 ```
 
 However, the current hourly updates should provide sufficient fundamental bias data.
