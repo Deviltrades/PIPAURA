@@ -1210,6 +1210,15 @@ export async function getTaxSummary(year: number, accountIds: string[] = []) {
     throw tradesError;
   }
   console.log('Tax Summary - Trades fetched:', trades?.length || 0, 'trades for year', year);
+  console.log('Tax Summary - Query params:', { userId: user.id, year, startDate, endDate, accountIds });
+  if (trades && trades.length > 0) {
+    console.log('Tax Summary - First trade sample:', {
+      exit_date: trades[0].exit_date,
+      status: trades[0].status,
+      pnl: trades[0].pnl,
+      pnl_report: trades[0].pnl_report
+    });
+  }
 
   // Get expenses for the year
   const expenses = await getTaxExpenses(year);
