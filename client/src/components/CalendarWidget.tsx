@@ -5,9 +5,10 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CalendarWidgetProps {
   textColor?: string;
+  selectedAccount?: string;
 }
 
-export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidgetProps) {
+export default function CalendarWidget({ textColor = "#ffffff", selectedAccount = "all" }: CalendarWidgetProps) {
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
   const currentYear = currentDate.getFullYear();
@@ -32,10 +33,10 @@ export default function CalendarWidget({ textColor = "#ffffff" }: CalendarWidget
     }
   };
 
-  // Fetch trades
+  // Fetch trades with account filter
   const { data: trades = [] } = useQuery({
-    queryKey: ["trades"],
-    queryFn: getTrades,
+    queryKey: ["trades", selectedAccount],
+    queryFn: () => getTrades(selectedAccount === 'all' ? undefined : selectedAccount),
   });
 
   // Calculate daily P&L for the selected month

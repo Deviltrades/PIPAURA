@@ -38,5 +38,5 @@ export default function TradingAnalytics({ selectedAccount }: TradingAnalyticsPr
     retry: false,
   });
 
-  return <DashboardGrid analytics={analytics} trades={trades || []} />;
+  return <DashboardGrid analytics={analytics} trades={trades || []} selectedAccount={selectedAccount} />;
 }

@@ -21,9 +21,10 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 interface DashboardGridProps {
   analytics: any;
   trades: any[];
+  selectedAccount?: string;
 }
 
-export default function DashboardGrid({ analytics, trades }: DashboardGridProps) {
+export default function DashboardGrid({ analytics, trades, selectedAccount }: DashboardGridProps) {
   const { toast } = useToast();
   const [editMode, setEditMode] = useState(false);
   const [themeColor, setThemeColor] = useState("slate");
@@ -1040,7 +1041,7 @@ export default function DashboardGrid({ analytics, trades }: DashboardGridProps)
           {/* Calendar Widget */}
           <div key="calendar">
             <DraggableWidget title="Trading Calendar" themeColor={themeColor} textColor={textColor}>
-              <CalendarWidget textColor={textColor} />
+              <CalendarWidget textColor={textColor} selectedAccount={selectedAccount} />
             </DraggableWidget>
           </div>
         </ResponsiveGridLayout>
