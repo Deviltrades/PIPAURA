@@ -311,6 +311,8 @@ export interface Trade {
   stop_loss?: number;
   take_profit?: number;
   pnl?: number;
+  swap?: number;
+  commission?: number;
   status: 'OPEN' | 'CLOSED' | 'CANCELLED';
   notes?: string;
   attachments?: string[];
@@ -333,6 +335,8 @@ export interface CreateTrade {
   stop_loss?: number;
   take_profit?: number;
   pnl?: number;
+  swap?: number;
+  commission?: number;
   status?: 'OPEN' | 'CLOSED' | 'CANCELLED';
   notes?: string;
   attachments?: string[];

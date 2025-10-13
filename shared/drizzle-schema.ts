@@ -53,6 +53,8 @@ export const trades = pgTable('trades', {
   stop_loss: decimal('stop_loss'),
   take_profit: decimal('take_profit'),
   pnl: decimal('pnl'),
+  swap: decimal('swap', { precision: 10, scale: 2 }),
+  commission: decimal('commission', { precision: 10, scale: 2 }),
   status: tradeStatusEnum('status').default('OPEN'),
   notes: text('notes'),
   attachments: text('attachments').array(),
