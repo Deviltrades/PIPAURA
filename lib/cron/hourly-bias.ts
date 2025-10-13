@@ -450,7 +450,7 @@ export async function runHourlyUpdate(supabaseUrl: string, supabaseKey: string):
   await supabase.from('currency_scores').insert(currencyRows);
 
   // Build FX pair biases
-  const pairRows = [];
+  const pairRows: any[] = [];
   for (const [base, quote] of PAIRS) {
     const b = perCcy[base].total_score;
     const q = perCcy[quote].total_score;
