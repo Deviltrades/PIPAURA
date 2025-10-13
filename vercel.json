@@ -1,20 +1,13 @@
 {
-  "buildCommand": "vite build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist/public",
   "installCommand": "npm install",
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+  "rewrites": [
+    { "source": "/((?!api).*)", "destination": "/index.html" }
   ],
-  "env": {
-    "VITE_SUPABASE_URL": "@supabase_url",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-    "CRON_API_KEY": "@cron_api_key"
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "@vercel/node@3"
+    }
   }
 }
