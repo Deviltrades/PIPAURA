@@ -1245,7 +1245,11 @@ export async function getTaxSummary(year: number, accountIds: string[] = []) {
   }
 
   const { data: trades, error: tradesError } = await tradesQuery;
-  if (tradesError) throw tradesError;
+  if (tradesError) {
+    console.error('Tax Summary - Trades Query Error:', tradesError);
+    throw tradesError;
+  }
+  console.log('Tax Summary - Trades fetched:', trades?.length || 0, 'trades for year', year);
 
   // Get expenses for the year
   const expenses = await getTaxExpenses(year);
