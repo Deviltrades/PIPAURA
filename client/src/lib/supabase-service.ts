@@ -1001,3 +1001,314 @@ export async function getAccountAnalytics(accountId: string) {
     winRate: winRate.toFixed(2)
   };
 }
+
+// ============================================
+// TAX REPORTS SYSTEM
+// ============================================
+
+// Tax Profile Operations
+export async function getTaxProfile() {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const { data, error } = await supabase
+    .from('tax_profile')
+    .select('*')
+    .eq('user_id', profile.id)
+    .single();
+
+  if (error && error.code !== 'PGRST116') throw error;
+  
+  // Return default if no profile exists
+  if (!data) {
+    return {
+      reporting_currency: 'USD',
+      tax_year_start_month: 1,
+      include_swap_in_income: 1,
+      include_commission_deduction: 1,
+      include_unrealized_pnl: 0
+    };
+  }
+  
+  return data;
+}
+
+export async function upsertTaxProfile(profileData: any) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const { data, error } = await supabase
+    .from('tax_profile')
+    .upsert({
+      user_id: profile.id,
+      ...profileData,
+      updated_at: new Date().toISOString()
+    }, {
+      onConflict: 'user_id'
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Tax Expenses Operations
+export async function getTaxExpenses(year?: number) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  let query = supabase
+    .from('tax_expenses')
+    .select('*')
+    .eq('user_id', profile.id)
+    .order('expense_date', { ascending: false });
+
+  if (year) {
+    const startDate = new Date(year, 0, 1).toISOString();
+    const endDate = new Date(year, 11, 31, 23, 59, 59).toISOString();
+    query = query.gte('expense_date', startDate).lte('expense_date', endDate);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createTaxExpense(expenseData: any) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const { data, error } = await supabase
+    .from('tax_expenses')
+    .insert({
+      user_id: profile.id,
+      ...expenseData
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function updateTaxExpense(id: string, expenseData: any) {
+  const { data, error } = await supabase
+    .from('tax_expenses')
+    .update(expenseData)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteTaxExpense(id: string) {
+  const { error } = await supabase
+    .from('tax_expenses')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
+// Account Cashflows Operations
+export async function getAccountCashflows(accountId?: string, year?: number) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  let query = supabase
+    .from('account_cashflows')
+    .select('*')
+    .eq('user_id', profile.id)
+    .order('flow_date', { ascending: false });
+
+  if (accountId && accountId !== 'all') {
+    query = query.eq('account_id', accountId);
+  }
+
+  if (year) {
+    const startDate = new Date(year, 0, 1).toISOString();
+    const endDate = new Date(year, 11, 31, 23, 59, 59).toISOString();
+    query = query.gte('flow_date', startDate).lte('flow_date', endDate);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createAccountCashflow(cashflowData: any) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const { data, error } = await supabase
+    .from('account_cashflows')
+    .insert({
+      user_id: profile.id,
+      ...cashflowData
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteAccountCashflow(id: string) {
+  const { error } = await supabase
+    .from('account_cashflows')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
+// Tax Summary Calculation
+export async function getTaxSummary(year: number, accountIds: string[] = []) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const taxProfile = await getTaxProfile();
+  
+  // Get closed trades for the year
+  let tradesQuery = supabase
+    .from('trades')
+    .select('*')
+    .eq('user_id', profile.id)
+    .eq('status', 'CLOSED')
+    .not('exit_date', 'is', null);
+
+  const startDate = new Date(year, 0, 1).toISOString();
+  const endDate = new Date(year, 11, 31, 23, 59, 59).toISOString();
+  tradesQuery = tradesQuery.gte('exit_date', startDate).lte('exit_date', endDate);
+
+  if (accountIds.length > 0 && !accountIds.includes('all')) {
+    tradesQuery = tradesQuery.in('account_id', accountIds);
+  }
+
+  const { data: trades, error: tradesError } = await tradesQuery;
+  if (tradesError) throw tradesError;
+
+  // Get expenses for the year
+  const expenses = await getTaxExpenses(year);
+  
+  // Calculate monthly breakdown
+  const monthlyData = Array.from({ length: 12 }, (_, i) => ({
+    month: i + 1,
+    trading_income: 0,
+    swap_income: 0,
+    commission_deduction: 0,
+    expenses: 0,
+    net_income: 0
+  }));
+
+  // Process trades
+  (trades || []).forEach(trade => {
+    const month = new Date(trade.exit_date!).getMonth();
+    const pnl = parseFloat(trade.pnl_report || trade.pnl || '0');
+    const swap = parseFloat(trade.swap_report || trade.swap || '0');
+    const commission = parseFloat(trade.commission_report || trade.commission || '0');
+
+    monthlyData[month].trading_income += pnl;
+    
+    if (taxProfile.include_swap_in_income) {
+      monthlyData[month].swap_income += swap;
+    }
+    
+    if (taxProfile.include_commission_deduction) {
+      monthlyData[month].commission_deduction += Math.abs(commission);
+    }
+  });
+
+  // Process expenses
+  expenses.forEach(expense => {
+    const month = new Date(expense.expense_date).getMonth();
+    const amount = parseFloat(expense.amount_report || expense.amount || '0');
+    monthlyData[month].expenses += amount;
+  });
+
+  // Calculate net income
+  monthlyData.forEach(month => {
+    month.net_income = month.trading_income + month.swap_income - month.commission_deduction - month.expenses;
+  });
+
+  // Calculate totals
+  const totals = monthlyData.reduce((acc, month) => ({
+    trading_income: acc.trading_income + month.trading_income,
+    swap_income: acc.swap_income + month.swap_income,
+    commission_deduction: acc.commission_deduction + month.commission_deduction,
+    expenses: acc.expenses + month.expenses,
+    net_income: acc.net_income + month.net_income
+  }), {
+    trading_income: 0,
+    swap_income: 0,
+    commission_deduction: 0,
+    expenses: 0,
+    net_income: 0
+  });
+
+  return {
+    year,
+    monthly: monthlyData,
+    totals,
+    tax_profile: taxProfile
+  };
+}

@@ -22,6 +22,8 @@ export const tagCategoryEnum = pgEnum('tag_category', ['timeframe', 'strategy', 
 export const journalStatusEnum = pgEnum('journal_status', ['OPEN', 'CLOSED', 'CANCELLED']);
 export const tradeAccountTypeEnum = pgEnum('account_type_enum', ['demo', 'proprietary', 'live']);
 export const marketTypeEnum = pgEnum('market_type_enum', ['forex', 'futures', 'stocks', 'crypto']);
+export const cashflowTypeEnum = pgEnum('cashflow_type', ['deposit', 'withdrawal']);
+export const expenseTypeEnum = pgEnum('expense_type', ['software', 'education', 'data', 'hardware', 'other']);
 
 // Trade Accounts table
 export const tradeAccounts = pgTable('trade_accounts', {
@@ -55,6 +57,11 @@ export const trades = pgTable('trades', {
   pnl: decimal('pnl'),
   swap: decimal('swap', { precision: 10, scale: 2 }),
   commission: decimal('commission', { precision: 10, scale: 2 }),
+  currency: text('currency').default('USD'),
+  fx_to_report: decimal('fx_to_report', { precision: 10, scale: 6 }),
+  pnl_report: decimal('pnl_report', { precision: 12, scale: 2 }),
+  swap_report: decimal('swap_report', { precision: 10, scale: 2 }),
+  commission_report: decimal('commission_report', { precision: 10, scale: 2 }),
   status: tradeStatusEnum('status').default('OPEN'),
   notes: text('notes'),
   attachments: text('attachments').array(),
@@ -139,4 +146,48 @@ export const media = pgTable('media', {
   file_size: integer('file_size'),
   mime_type: text('mime_type'),
   uploaded_at: timestamp('uploaded_at', { withTimezone: true }).default(sql`now()`)
+});
+
+// Tax Profile table
+export const taxProfile = pgTable('tax_profile', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').notNull().unique(),
+  reporting_currency: text('reporting_currency').default('USD').notNull(),
+  tax_year_start_month: integer('tax_year_start_month').default(1).notNull(),
+  include_swap_in_income: integer('include_swap_in_income').default(1).notNull(),
+  include_commission_deduction: integer('include_commission_deduction').default(1).notNull(),
+  include_unrealized_pnl: integer('include_unrealized_pnl').default(0).notNull(),
+  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+  updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)
+});
+
+// Account Cashflows table
+export const accountCashflows = pgTable('account_cashflows', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').notNull(),
+  account_id: uuid('account_id').notNull(),
+  flow_type: cashflowTypeEnum('flow_type').notNull(),
+  amount: decimal('amount', { precision: 12, scale: 2 }).notNull(),
+  currency: text('currency').default('USD').notNull(),
+  fx_to_report: decimal('fx_to_report', { precision: 10, scale: 6 }),
+  amount_report: decimal('amount_report', { precision: 12, scale: 2 }),
+  flow_date: timestamp('flow_date', { withTimezone: true }).notNull(),
+  notes: text('notes'),
+  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`)
+});
+
+// Tax Expenses table
+export const taxExpenses = pgTable('tax_expenses', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').notNull(),
+  expense_type: expenseTypeEnum('expense_type').notNull(),
+  vendor: text('vendor').notNull(),
+  amount: decimal('amount', { precision: 12, scale: 2 }).notNull(),
+  currency: text('currency').default('USD').notNull(),
+  fx_to_report: decimal('fx_to_report', { precision: 10, scale: 6 }),
+  amount_report: decimal('amount_report', { precision: 12, scale: 2 }),
+  expense_date: timestamp('expense_date', { withTimezone: true }).notNull(),
+  receipt_url: text('receipt_url'),
+  notes: text('notes'),
+  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`)
 });
