@@ -1202,17 +1202,15 @@ export async function getTaxSummary(year: number, accountIds: string[] = []) {
     };
   }
   
-  // Get CLOSED trades for the year (only count realized P&L for tax purposes)
+  // Get ALL trades (OPEN + CLOSED) for the year based on entry_date
   let tradesQuery = supabase
     .from('trades')
     .select('*')
-    .eq('user_id', user.id)
-    .eq('status', 'CLOSED')
-    .not('exit_date', 'is', null);
+    .eq('user_id', user.id);
 
   const startDate = new Date(year, 0, 1).toISOString();
   const endDate = new Date(year, 11, 31, 23, 59, 59).toISOString();
-  tradesQuery = tradesQuery.gte('exit_date', startDate).lte('exit_date', endDate);
+  tradesQuery = tradesQuery.gte('entry_date', startDate).lte('entry_date', endDate);
 
   if (accountIds.length > 0 && !accountIds.includes('all')) {
     tradesQuery = tradesQuery.in('account_id', accountIds);

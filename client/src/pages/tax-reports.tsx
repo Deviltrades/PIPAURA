@@ -430,7 +430,7 @@ export default function TaxReports() {
                     <div className={`text-2xl font-bold ${(taxSummary?.totals.trading_income || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       ${(taxSummary?.totals.trading_income || 0).toFixed(2)}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">Realized P&L for {selectedYear}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Total P&L for {selectedYear}</p>
                   </CardContent>
                 </Card>
 
