@@ -547,7 +547,7 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
                     <pre className="text-xs bg-black/20 p-3 rounded overflow-auto max-h-32">
                       {parsedData.rawText}
                     </pre>
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="text-xs text-red-500 dark:text-red-400 mt-2">
                       The AI extracted this text from your screenshot. Review the fields below and make corrections if needed.
                     </p>
                   </CardContent>
@@ -570,7 +570,7 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
                         <SelectContent>
                           {accounts.map((account: any) => (
                             <SelectItem key={account.id} value={account.id}>
-                              {account.account_name}
+                              {account.account_name} ({account.account_type === 'proprietary_firm' ? 'Prop Firm' : account.account_type === 'live_personal' ? 'Live Personal' : account.account_type === 'live_company' ? 'Live Company' : 'Demo'})
                             </SelectItem>
                           ))}
                         </SelectContent>
