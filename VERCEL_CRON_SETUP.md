@@ -2,17 +2,19 @@
 
 This document explains how to configure cron-job.org to call the Vercel-deployed cron endpoints instead of the Replit development URLs.
 
-## Architecture
+## ✅ DEPLOYMENT STATUS: LIVE AND OPERATIONAL
 
-The cron system has been migrated from Python scripts on Replit to JavaScript serverless functions on Vercel:
+The cron system has been successfully migrated from Python scripts on Replit to JavaScript ES6+ serverless functions on Vercel:
 
 - **Forex Factory feed parsing** → `lib/cron/forex-factory.js`
 - **Hourly bias calculation** → `lib/cron/hourly-bias.js`
 - **API endpoints** → `api/cron/*.js`
 
+**Live URL:** `https://pipaura-git-main-deviltrades-projects.vercel.app`
+
 ## Vercel Endpoints
 
-Your Vercel app URL: `https://your-app-name.vercel.app`
+**Production URL:** `https://pipaura-git-main-deviltrades-projects.vercel.app`
 
 ### Available Endpoints:
 

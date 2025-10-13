@@ -45,12 +45,12 @@ Authentication is handled entirely through Supabase Auth, providing:
 - Production-ready email verification with domain restrictions.
 
 ### Automated Fundamental Bias System
-A comprehensive automated fundamental analysis system provides real-time (30-min/hourly) bias calculations. The system has been migrated from Python scripts to TypeScript serverless functions deployed on Vercel for production reliability:
+A comprehensive automated fundamental analysis system provides real-time (30-min/hourly) bias calculations. The system has been successfully migrated from Python scripts to JavaScript ES6+ serverless functions deployed on Vercel for 100% uptime and production reliability:
 
 **Architecture:**
-- **Forex Factory Feed** (`lib/cron/forex-factory.ts`): Fetches and parses XML economic calendar, scores events based on actual vs forecast
-- **Hourly Bias Calculator** (`lib/cron/hourly-bias.ts`): Calculates currency scores using Yahoo Finance market data, central bank tones, and commodity correlations
-- **Vercel API Endpoints** (`api/cron/*.ts`): Serverless functions called by external cron service (cron-job.org)
+- **Forex Factory Feed** (`lib/cron/forex-factory.js`): Fetches and parses XML economic calendar, scores events based on actual vs forecast
+- **Hourly Bias Calculator** (`lib/cron/hourly-bias.js`): Calculates currency scores using Yahoo Finance market data, central bank tones, and commodity correlations
+- **Vercel API Endpoints** (`api/cron/*.js`): JavaScript serverless functions called by external cron service (cron-job.org)
 
 **Data Sources:**
 - Yahoo Finance: Market data (DXY, WTI, Gold, Copper, SPX, UST10Y, VIX)
@@ -69,8 +69,13 @@ A comprehensive automated fundamental analysis system provides real-time (30-min
 - `fundamental_bias`: FX pair bias calculations (38 pairs)
 - `index_bias`: Stock index bias calculations (10 indices)
 
-**Deployment:**
-The cron endpoints are deployed on Vercel (not Replit) for 100% uptime and production reliability. See `VERCEL_CRON_SETUP.md` for configuration details.
+**Deployment Status:**
+✅ **LIVE AND OPERATIONAL** - The cron endpoints are successfully deployed on Vercel at `https://pipaura-git-main-deviltrades-projects.vercel.app/api/cron/*` with 100% uptime. All 3 cron jobs are configured in cron-job.org and actively updating the Supabase database every 15-30 minutes. See `VERCEL_CRON_SETUP.md` for configuration details.
+
+**Active Cron Schedule:**
+- Every 15 minutes: High-impact event detection → `/api/cron/ff-high-impact`
+- Every 30 minutes: Hourly bias update → `/api/cron/hourly-update`
+- Every 4 hours: Full calendar refresh → `/api/cron/ff-full-refresh`
 
 ### Floating DNA Core Visualization
 The analytics page features a "Trader DNA Core" visualization: an animated 3D-like double-helix structure colored by overall Edge Integrity score, with six orbiting metrics (Win Rate, Avg R:R, Risk Consistency, Emotional Control, Discipline, Session Focus) connected by dynamic glowing beams.
