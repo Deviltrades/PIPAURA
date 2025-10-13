@@ -13,6 +13,7 @@ import { getTrades, deleteTrade } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
+import { formatTradeDateTime } from "@/lib/date-utils";
 
 export default function Trades() {
   const [selectedAccount, setSelectedAccount] = useSelectedAccount();
@@ -181,14 +182,18 @@ export default function Trades() {
                       </div>
                     )}
 
-                    {trade.entry_date && (
-                      <p className="text-xs text-gray-500 mt-4">
-                        Entry Date: {new Date(trade.entry_date).toLocaleDateString()}
-                      </p>
-                    )}
-                    <p className="text-xs text-gray-500 mt-1">
-                      Created: {new Date(trade.created_at).toLocaleString()}
-                    </p>
+                    <div className="mt-4 space-y-1">
+                      {trade.entry_date && (
+                        <p className="text-xs text-gray-500" data-testid={`text-entry-${trade.id}`}>
+                          Entry: {formatTradeDateTime(trade.entry_date)}
+                        </p>
+                      )}
+                      {trade.exit_date && (
+                        <p className="text-xs text-gray-500" data-testid={`text-exit-${trade.id}`}>
+                          Exit: {formatTradeDateTime(trade.exit_date)}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex gap-2 ml-4">

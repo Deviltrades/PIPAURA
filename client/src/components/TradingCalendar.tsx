@@ -39,6 +39,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { getTrades, updateTrade, uploadFile, getCalendarSettings, updateCalendarSettings } from "@/lib/supabase-service";
 import { useUserProfile } from "@/hooks/use-user-profile";
+import { formatTradeDateTime } from "@/lib/date-utils";
 
 interface TradingCalendarProps {
   className?: string;
@@ -1472,26 +1473,20 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                           )}
                         </div>
 
-                        {/* Entry Date */}
+                        {/* Entry Date & Time */}
                         <div className="space-y-1">
-                          <span className="text-muted-foreground text-xs">Entry Date:</span>
-                          <div className="font-medium">
-                            {trade.entry_date ? format(
-                              typeof trade.entry_date === 'string' ? parseISO(trade.entry_date) : trade.entry_date, 
-                              'MMM dd, yyyy'
-                            ) : 'Not set'}
+                          <span className="text-muted-foreground text-xs">Entry:</span>
+                          <div className="font-medium" data-testid={`calendar-entry-${trade.id}`}>
+                            {formatTradeDateTime(trade.entry_date as string)}
                           </div>
                         </div>
 
-                        {/* Exit Date */}
+                        {/* Exit Date & Time */}
                         {(trade.exit_date || isEditing(trade.id, 'exit_date')) && (
                           <div className="space-y-1">
-                            <span className="text-muted-foreground text-xs">Exit Date:</span>
-                            <div className="font-medium">
-                              {trade.exit_date ? format(
-                                typeof trade.exit_date === 'string' ? parseISO(trade.exit_date) : trade.exit_date, 
-                                'MMM dd, yyyy'
-                              ) : 'Not set'}
+                            <span className="text-muted-foreground text-xs">Exit:</span>
+                            <div className="font-medium" data-testid={`calendar-exit-${trade.id}`}>
+                              {formatTradeDateTime(trade.exit_date as string)}
                             </div>
                           </div>
                         )}
