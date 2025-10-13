@@ -241,8 +241,8 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
       parsed.commission = commissionMatch[1];
     }
 
-    // Extract take profit
-    const tpMatch = cleanText.match(/(?:t\.?\/?p|take\s*profit|tp)[:\s]*([0-9]+\.?[0-9]*)/i);
+    // Extract take profit - includes "IE" which OCR sometimes misreads from "T/P:"
+    const tpMatch = cleanText.match(/(?:t\.?\/?p|take\s*profit|tp|ie)[:\s]*([0-9]+\.?[0-9]*)/i);
     if (tpMatch) {
       parsed.takeProfit = tpMatch[1];
     }
