@@ -53,6 +53,8 @@ const expenseSchema = z.object({
 type ExpenseFormData = z.infer<typeof expenseSchema>;
 
 export default function TaxReports() {
+  console.log('🚀 TAX REPORTS PAGE LOADED');
+  
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedAccount, setSelectedAccount] = useState("all");
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -60,6 +62,8 @@ export default function TaxReports() {
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  
+  console.log('📊 Tax Reports State:', { selectedYear, selectedAccount });
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => (currentYear - i).toString());
@@ -83,13 +87,21 @@ export default function TaxReports() {
   });
 
   // Fetch tax summary
-  const { data: taxSummary, isLoading: summaryLoading } = useQuery({
+  const { data: taxSummary, isLoading: summaryLoading, error: summaryError } = useQuery({
     queryKey: ['/api/tax/summary', parseInt(selectedYear), selectedAccount],
-    queryFn: () => {
+    queryFn: async () => {
+      console.log('🔍 TAX SUMMARY QUERY STARTED', { year: selectedYear, account: selectedAccount });
       const accountIds = selectedAccount === 'all' ? [] : [selectedAccount];
-      return getTaxSummary(parseInt(selectedYear), accountIds);
+      const result = await getTaxSummary(parseInt(selectedYear), accountIds);
+      console.log('✅ TAX SUMMARY RESULT:', result);
+      return result;
     },
   });
+
+  // Log any errors
+  if (summaryError) {
+    console.error('❌ TAX SUMMARY ERROR:', summaryError);
+  }
 
   // Fetch all trades for export
   const { data: allTrades = [] } = useQuery({

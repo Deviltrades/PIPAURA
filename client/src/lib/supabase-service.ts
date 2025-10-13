@@ -1186,15 +1186,29 @@ export async function getTaxSummary(year: number, accountIds: string[] = []) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  const taxProfile = await getTaxProfile();
+  // WORKAROUND: Use default tax profile due to Supabase PostgREST cache issue (PGRST205)
+  let taxProfile;
+  try {
+    taxProfile = await getTaxProfile();
+  } catch (error: any) {
+    console.warn('Tax profile not available, using defaults:', error.message);
+    taxProfile = {
+      report_currency: 'USD',
+      trader_status: false,
+      tax_deductible_expenses_enabled: true,
+      include_swap_in_income: false,
+      include_commission_deduction: true,
+      include_unrealized_pnl: false
+    };
+  }
   
-  // Get closed trades for the year (using same user_id as getTrades)
+  // TEMPORARY: Get ALL trades to debug, not just closed ones
   let tradesQuery = supabase
     .from('trades')
     .select('*')
-    .eq('user_id', user.id)
-    .eq('status', 'CLOSED')
-    .not('exit_date', 'is', null);
+    .eq('user_id', user.id);
+    // .eq('status', 'CLOSED')  // COMMENTED OUT FOR DEBUGGING
+    // .not('exit_date', 'is', null);  // COMMENTED OUT FOR DEBUGGING
 
   const startDate = new Date(year, 0, 1).toISOString();
   const endDate = new Date(year, 11, 31, 23, 59, 59).toISOString();
@@ -1220,8 +1234,14 @@ export async function getTaxSummary(year: number, accountIds: string[] = []) {
     });
   }
 
-  // Get expenses for the year
-  const expenses = await getTaxExpenses(year);
+  // Get expenses for the year (with workaround for Supabase cache issue)
+  let expenses = [];
+  try {
+    expenses = await getTaxExpenses(year);
+  } catch (error: any) {
+    console.warn('Tax expenses not available, using empty array:', error.message);
+    expenses = [];
+  }
   
   // Calculate monthly breakdown
   const monthlyData = Array.from({ length: 12 }, (_, i) => ({
@@ -1278,6 +1298,8 @@ export async function getTaxSummary(year: number, accountIds: string[] = []) {
     net_income: 0
   });
 
+  console.log('💰 TAX SUMMARY TOTALS:', totals);
+  
   return {
     year,
     monthly: monthlyData,
