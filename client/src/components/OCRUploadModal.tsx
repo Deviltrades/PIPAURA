@@ -193,32 +193,40 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
       parsed.tradeType = typeMatch[1].toUpperCase() as 'BUY' | 'SELL';
     }
 
-    // Extract lot size (e.g., 0.01, 1.00, etc.) - try multiple patterns
-    const lotMatch = cleanText.match(/(?:lot|volume|size|position\s*size)[:\s]*([0-9]+\.?[0-9]*)/i) ||
+    // Extract lot size - MT4 format: "sell 5" or "buy 0.01"
+    const lotMatch = cleanText.match(/(?:buy|sell)\s+([0-9]+\.?[0-9]*)/i) ||
+                     cleanText.match(/(?:lot|volume|size|position\s*size)[:\s]*([0-9]+\.?[0-9]*)/i) ||
                      cleanText.match(/\b([0-9]+\.?[0-9]+)\s*(?:lot|volume)/i);
     if (lotMatch) {
       parsed.lotSize = lotMatch[1];
     }
 
-    // Extract entry price - try multiple patterns
-    const entryMatch = cleanText.match(/(?:entry|open|price)[:\s]*([0-9]+\.?[0-9]*)/i) ||
-                       cleanText.match(/entry\s*price[:\s]*([0-9]+\.?[0-9]*)/i);
-    if (entryMatch) {
-      parsed.entryPrice = entryMatch[1];
-    }
+    // Extract entry/exit prices - MT4 format: "1.39656 — 1.39557 354.69" (entry — exit P&L)
+    const priceLineMatch = cleanText.match(/([0-9]+\.?[0-9]+)\s*[—\-–]\s*([0-9]+\.?[0-9]+)\s+([0-9]+\.?[0-9]+)/);
+    if (priceLineMatch) {
+      parsed.entryPrice = priceLineMatch[1];
+      parsed.exitPrice = priceLineMatch[2];
+      parsed.profit = priceLineMatch[3];
+    } else {
+      // Fallback to individual patterns
+      const entryMatch = cleanText.match(/(?:entry|open|price)[:\s]*([0-9]+\.?[0-9]*)/i) ||
+                         cleanText.match(/entry\s*price[:\s]*([0-9]+\.?[0-9]*)/i);
+      if (entryMatch) {
+        parsed.entryPrice = entryMatch[1];
+      }
 
-    // Extract exit price - try multiple patterns
-    const exitMatch = cleanText.match(/(?:exit|close)[:\s]*price[:\s]*([0-9]+\.?[0-9]*)/i) ||
-                      cleanText.match(/(?:exit|close)[:\s]*([0-9]+\.?[0-9]*)/i);
-    if (exitMatch) {
-      parsed.exitPrice = exitMatch[1];
-    }
+      const exitMatch = cleanText.match(/(?:exit|close)[:\s]*price[:\s]*([0-9]+\.?[0-9]*)/i) ||
+                        cleanText.match(/(?:exit|close)[:\s]*([0-9]+\.?[0-9]*)/i);
+      if (exitMatch) {
+        parsed.exitPrice = exitMatch[1];
+      }
 
-    // Extract profit/loss - try multiple patterns including currency symbols
-    const profitMatch = cleanText.match(/(?:profit|p\/l|pnl|p&l)[:\s]*\$?\s*(-?[0-9]+\.?[0-9]*)/i) ||
-                       cleanText.match(/\$\s*(-?[0-9]+\.?[0-9]*)/);
-    if (profitMatch) {
-      parsed.profit = profitMatch[1];
+      // Extract profit/loss - try multiple patterns including currency symbols
+      const profitMatch = cleanText.match(/(?:profit|p\/l|pnl|p&l)[:\s]*\$?\s*(-?[0-9]+\.?[0-9]*)/i) ||
+                         cleanText.match(/\$\s*(-?[0-9]+\.?[0-9]*)/);
+      if (profitMatch) {
+        parsed.profit = profitMatch[1];
+      }
     }
 
     // Extract swap
@@ -245,25 +253,37 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
       parsed.stopLoss = slMatch[1];
     }
 
-    // Extract entry time (e.g., 2025.10.06 16:15:08)
-    const entryTimeMatch = cleanText.match(/(?:open\s*time|entry\s*time)[:\s]*(\d{4}[.\-\/]\d{2}[.\-\/]\d{2}\s+\d{2}:\d{2}(?::\d{2})?)/i);
-    if (entryTimeMatch) {
-      const dateStr = entryTimeMatch[1].replace(/\./g, '-');
+    // Extract times - MT4 format: "2025.10.06 16:15:08 — 2025.10.09 09:33:39"
+    const timeLineMatch = cleanText.match(/(\d{4}[.\-\/]\d{2}[.\-\/]\d{2}\s+\d{2}:\d{2}:\d{2})\s*[—\-–]\s*(\d{4}[.\-\/]\d{2}[.\-\/]\d{2}\s+\d{2}:\d{2}:\d{2})/);
+    if (timeLineMatch) {
+      const entryDateStr = timeLineMatch[1].replace(/\./g, '-');
+      const exitDateStr = timeLineMatch[2].replace(/\./g, '-');
       try {
-        parsed.entryTime = new Date(dateStr).toISOString();
+        parsed.entryTime = new Date(entryDateStr).toISOString();
+        parsed.exitTime = new Date(exitDateStr).toISOString();
       } catch (e) {
-        console.error('Failed to parse entry time:', dateStr);
+        console.error('Failed to parse times:', entryDateStr, exitDateStr);
       }
-    }
+    } else {
+      // Fallback to individual patterns
+      const entryTimeMatch = cleanText.match(/(?:open\s*time|entry\s*time)[:\s]*(\d{4}[.\-\/]\d{2}[.\-\/]\d{2}\s+\d{2}:\d{2}(?::\d{2})?)/i);
+      if (entryTimeMatch) {
+        const dateStr = entryTimeMatch[1].replace(/\./g, '-');
+        try {
+          parsed.entryTime = new Date(dateStr).toISOString();
+        } catch (e) {
+          console.error('Failed to parse entry time:', dateStr);
+        }
+      }
 
-    // Extract exit time
-    const exitTimeMatch = cleanText.match(/(?:close\s*time|exit\s*time)[:\s]*(\d{4}[.\-\/]\d{2}[.\-\/]\d{2}\s+\d{2}:\d{2}(?::\d{2})?)/i);
-    if (exitTimeMatch) {
-      const dateStr = exitTimeMatch[1].replace(/\./g, '-');
-      try {
-        parsed.exitTime = new Date(dateStr).toISOString();
-      } catch (e) {
-        console.error('Failed to parse exit time:', dateStr);
+      const exitTimeMatch = cleanText.match(/(?:close\s*time|exit\s*time)[:\s]*(\d{4}[.\-\/]\d{2}[.\-\/]\d{2}\s+\d{2}:\d{2}(?::\d{2})?)/i);
+      if (exitTimeMatch) {
+        const dateStr = exitTimeMatch[1].replace(/\./g, '-');
+        try {
+          parsed.exitTime = new Date(dateStr).toISOString();
+        } catch (e) {
+          console.error('Failed to parse exit time:', dateStr);
+        }
       }
     }
 
