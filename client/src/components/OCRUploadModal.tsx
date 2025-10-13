@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import Tesseract from "tesseract.js";
-import { Loader2, Upload, X, FileImage, Trash2, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader2, Upload, X, FileImage, Trash2, CheckCircle, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
 import {
   Dialog,
@@ -65,6 +65,7 @@ interface ParsedTradeData {
   stopLoss?: string;
   entryTime?: string;
   exitTime?: string;
+  notes?: string;
   rawText?: string;
 }
 
@@ -92,6 +93,8 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [currentStep, setCurrentStep] = useState<'upload' | 'review'>('upload');
   const [parsedData, setParsedData] = useState<ParsedTradeData | null>(null);
+  const [allParsedTrades, setAllParsedTrades] = useState<ParsedTradeData[]>([]); // Store all parsed trades
+  const [currentTradeIndex, setCurrentTradeIndex] = useState(0); // Current trade being reviewed
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -371,51 +374,46 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
   const handleProceedToReview = async () => {
     const extractedTexts = await processAllImages();
     
-    // Combine all extracted text
-    const allText = extractedTexts.join('\n\n');
+    // Parse EACH screenshot separately (not combined!)
+    const parsedTrades: ParsedTradeData[] = [];
+    
+    for (let i = 0; i < extractedTexts.length; i++) {
+      const text = extractedTexts[i];
+      console.log(`OCR Extracted Text (Trade ${i + 1}):`, text);
+      
+      const parsed = parseOCRText(text);
+      console.log(`Parsed Trade Data (Trade ${i + 1}):`, parsed);
+      parsedTrades.push(parsed);
+    }
 
-    console.log('OCR Extracted Text:', allText);
-
-    if (!allText || allText.trim().length === 0) {
+    if (parsedTrades.length === 0) {
       toast({
         title: "No text extracted",
-        description: "Could not extract text from the images. Please ensure the image contains readable text.",
+        description: "Could not extract text from the images. Please ensure the images contain readable text.",
         variant: "destructive",
       });
       return;
     }
 
-    const parsed = parseOCRText(allText);
-    console.log('Parsed Trade Data:', parsed);
-    setParsedData(parsed);
-
-    // Pre-fill form with parsed data
-    if (parsed.symbol) form.setValue('instrument', parsed.symbol);
-    if (parsed.tradeType) form.setValue('tradeType', parsed.tradeType);
-    if (parsed.lotSize) form.setValue('positionSize', parsed.lotSize);
-    if (parsed.entryPrice) form.setValue('entryPrice', parsed.entryPrice);
-    if (parsed.exitPrice) form.setValue('exitPrice', parsed.exitPrice);
-    if (parsed.stopLoss) form.setValue('stopLoss', parsed.stopLoss);
-    if (parsed.takeProfit) form.setValue('takeProfit', parsed.takeProfit);
-    if (parsed.entryTime) form.setValue('entryTime', parsed.entryTime);
-    if (parsed.exitTime) form.setValue('exitTime', parsed.exitTime);
-    if (parsed.profit) form.setValue('pnl', parsed.profit);
-    if (parsed.swap) form.setValue('swap', parsed.swap);
-    if (parsed.commission) form.setValue('commission', parsed.commission);
-
-    // Check if at least some trade-relevant fields were extracted (exclude rawText)
-    const tradeFields = { ...parsed };
-    delete tradeFields.rawText;
-    const hasAnyData = Object.values(tradeFields).some(value => value !== undefined);
+    setAllParsedTrades(parsedTrades);
+    setCurrentTradeIndex(0);
     
-    if (!hasAnyData) {
-      toast({
-        title: "No trade data found",
-        description: "Could not identify trade fields in the extracted text. You can still manually enter the data in the next step.",
-        variant: "default",
-      });
-    }
+    // Pre-fill form with first trade's data
+    const firstTrade = parsedTrades[0];
+    if (firstTrade.symbol) form.setValue('instrument', firstTrade.symbol);
+    if (firstTrade.tradeType) form.setValue('tradeType', firstTrade.tradeType);
+    if (firstTrade.lotSize) form.setValue('positionSize', firstTrade.lotSize);
+    if (firstTrade.entryPrice) form.setValue('entryPrice', firstTrade.entryPrice);
+    if (firstTrade.exitPrice) form.setValue('exitPrice', firstTrade.exitPrice);
+    if (firstTrade.stopLoss) form.setValue('stopLoss', firstTrade.stopLoss);
+    if (firstTrade.takeProfit) form.setValue('takeProfit', firstTrade.takeProfit);
+    if (firstTrade.entryTime) form.setValue('entryTime', firstTrade.entryTime);
+    if (firstTrade.exitTime) form.setValue('exitTime', firstTrade.exitTime);
+    if (firstTrade.profit) form.setValue('pnl', firstTrade.profit);
+    if (firstTrade.swap) form.setValue('swap', firstTrade.swap);
+    if (firstTrade.commission) form.setValue('commission', firstTrade.commission);
 
+    setParsedData(firstTrade);
     setCurrentStep('review');
   };
 
@@ -434,12 +432,185 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
     setImages([]);
     setCurrentStep('upload');
     setParsedData(null);
+    setAllParsedTrades([]);
+    setCurrentTradeIndex(0);
     form.reset();
     onClose();
   };
 
-  const onSubmit = (data: ReviewTradeFormData) => {
-    createTradeMutation.mutate(data);
+  // Navigate to next trade
+  const handleNextTrade = () => {
+    const formData = form.getValues();
+    
+    // Update current trade with form data
+    const updatedTrades = [...allParsedTrades];
+    updatedTrades[currentTradeIndex] = {
+      ...updatedTrades[currentTradeIndex],
+      symbol: formData.instrument,
+      tradeType: formData.tradeType as 'BUY' | 'SELL',
+      lotSize: formData.positionSize,
+      entryPrice: formData.entryPrice,
+      exitPrice: formData.exitPrice,
+      stopLoss: formData.stopLoss,
+      takeProfit: formData.takeProfit,
+      entryTime: formData.entryTime,
+      exitTime: formData.exitTime,
+      profit: formData.pnl,
+      swap: formData.swap,
+      commission: formData.commission,
+      notes: formData.notes,
+    };
+    setAllParsedTrades(updatedTrades);
+
+    // Move to next trade
+    const nextIndex = currentTradeIndex + 1;
+    setCurrentTradeIndex(nextIndex);
+    
+    // Load next trade data into form
+    const nextTrade = updatedTrades[nextIndex];
+    form.reset();
+    if (nextTrade.symbol) form.setValue('instrument', nextTrade.symbol);
+    if (nextTrade.tradeType) form.setValue('tradeType', nextTrade.tradeType);
+    if (nextTrade.lotSize) form.setValue('positionSize', nextTrade.lotSize);
+    if (nextTrade.entryPrice) form.setValue('entryPrice', nextTrade.entryPrice);
+    if (nextTrade.exitPrice) form.setValue('exitPrice', nextTrade.exitPrice);
+    if (nextTrade.stopLoss) form.setValue('stopLoss', nextTrade.stopLoss);
+    if (nextTrade.takeProfit) form.setValue('takeProfit', nextTrade.takeProfit);
+    if (nextTrade.entryTime) form.setValue('entryTime', nextTrade.entryTime);
+    if (nextTrade.exitTime) form.setValue('exitTime', nextTrade.exitTime);
+    if (nextTrade.profit) form.setValue('pnl', nextTrade.profit);
+    if (nextTrade.swap) form.setValue('swap', nextTrade.swap);
+    if (nextTrade.commission) form.setValue('commission', nextTrade.commission);
+    if (nextTrade.notes) form.setValue('notes', nextTrade.notes);
+    
+    setParsedData(nextTrade);
+  };
+
+  // Navigate to previous trade
+  const handlePreviousTrade = () => {
+    const formData = form.getValues();
+    
+    // Update current trade with form data
+    const updatedTrades = [...allParsedTrades];
+    updatedTrades[currentTradeIndex] = {
+      ...updatedTrades[currentTradeIndex],
+      symbol: formData.instrument,
+      tradeType: formData.tradeType as 'BUY' | 'SELL',
+      lotSize: formData.positionSize,
+      entryPrice: formData.entryPrice,
+      exitPrice: formData.exitPrice,
+      stopLoss: formData.stopLoss,
+      takeProfit: formData.takeProfit,
+      entryTime: formData.entryTime,
+      exitTime: formData.exitTime,
+      profit: formData.pnl,
+      swap: formData.swap,
+      commission: formData.commission,
+      notes: formData.notes,
+    };
+    setAllParsedTrades(updatedTrades);
+
+    // Move to previous trade
+    const prevIndex = currentTradeIndex - 1;
+    setCurrentTradeIndex(prevIndex);
+    
+    // Load previous trade data into form
+    const prevTrade = updatedTrades[prevIndex];
+    form.reset();
+    if (prevTrade.symbol) form.setValue('instrument', prevTrade.symbol);
+    if (prevTrade.tradeType) form.setValue('tradeType', prevTrade.tradeType);
+    if (prevTrade.lotSize) form.setValue('positionSize', prevTrade.lotSize);
+    if (prevTrade.entryPrice) form.setValue('entryPrice', prevTrade.entryPrice);
+    if (prevTrade.exitPrice) form.setValue('exitPrice', prevTrade.exitPrice);
+    if (prevTrade.stopLoss) form.setValue('stopLoss', prevTrade.stopLoss);
+    if (prevTrade.takeProfit) form.setValue('takeProfit', prevTrade.takeProfit);
+    if (prevTrade.entryTime) form.setValue('entryTime', prevTrade.entryTime);
+    if (prevTrade.exitTime) form.setValue('exitTime', prevTrade.exitTime);
+    if (prevTrade.profit) form.setValue('pnl', prevTrade.profit);
+    if (prevTrade.swap) form.setValue('swap', prevTrade.swap);
+    if (prevTrade.commission) form.setValue('commission', prevTrade.commission);
+    if (prevTrade.notes) form.setValue('notes', prevTrade.notes);
+    
+    setParsedData(prevTrade);
+  };
+
+  const onSubmit = async (data: ReviewTradeFormData) => {
+    // Update current trade with final form data
+    const updatedTrades = [...allParsedTrades];
+    updatedTrades[currentTradeIndex] = {
+      ...updatedTrades[currentTradeIndex],
+      symbol: data.instrument,
+      tradeType: data.tradeType as 'BUY' | 'SELL',
+      lotSize: data.positionSize,
+      entryPrice: data.entryPrice,
+      exitPrice: data.exitPrice,
+      stopLoss: data.stopLoss,
+      takeProfit: data.takeProfit,
+      entryTime: data.entryTime,
+      exitTime: data.exitTime,
+      profit: data.pnl,
+      swap: data.swap,
+      commission: data.commission,
+      notes: data.notes,
+    };
+
+    // Upload all trades to database
+    let successCount = 0;
+    const failedTrades: string[] = [];
+    
+    for (let i = 0; i < updatedTrades.length; i++) {
+      const trade = updatedTrades[i];
+      try {
+        const tradeData = {
+          account_id: data.account_id,
+          instrument: trade.symbol || '',
+          instrument_type: 'FOREX' as const,
+          trade_type: trade.tradeType || 'BUY',
+          position_size: trade.lotSize ? parseFloat(trade.lotSize) : 0.01,
+          entry_price: trade.entryPrice ? parseFloat(trade.entryPrice) : 0,
+          exit_price: trade.exitPrice ? parseFloat(trade.exitPrice) : undefined,
+          stop_loss: trade.stopLoss ? parseFloat(trade.stopLoss) : undefined,
+          take_profit: trade.takeProfit ? parseFloat(trade.takeProfit) : undefined,
+          entry_date: trade.entryTime || new Date().toISOString(),
+          exit_date: trade.exitTime || undefined,
+          pnl: trade.profit ? parseFloat(trade.profit) : undefined,
+          status: (trade.exitPrice ? 'CLOSED' : 'OPEN') as 'CLOSED' | 'OPEN',
+          notes: trade.notes || 'Imported via OCR Screenshot',
+        };
+
+        await createTrade(tradeData);
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to upload trade ${i + 1}:`, error);
+        failedTrades.push(`Trade ${i + 1} (${trade.symbol || 'Unknown'})`);
+      }
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["trades"] });
+    queryClient.invalidateQueries({ queryKey: ["analytics"] });
+    
+    // Only close modal if ALL trades succeeded
+    if (successCount === updatedTrades.length) {
+      toast({
+        title: `✅ All ${successCount} trades logged successfully`,
+        description: "All trades have been added to your journal",
+      });
+      handleClose();
+    } else if (successCount > 0) {
+      // Some succeeded, some failed - show warning and keep modal open
+      toast({
+        title: `⚠️ Partial success: ${successCount} of ${updatedTrades.length} trades saved`,
+        description: `Failed to save: ${failedTrades.join(', ')}. Please check your data and try again.`,
+        variant: "destructive",
+      });
+    } else {
+      // All failed - show error and keep modal open
+      toast({
+        title: "❌ Upload failed",
+        description: "None of the trades could be saved. Please check your data and try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -792,30 +963,58 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
                 )}
               />
 
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setCurrentStep('upload')}
-                  data-testid="button-back-upload"
-                >
-                  Back
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={createTradeMutation.isPending}
-                  data-testid="button-confirm-save"
-                >
-                  {createTradeMutation.isPending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    'Confirm & Save'
-                  )}
-                </Button>
-              </div>
+              {/* Multi-trade navigation */}
+              {allParsedTrades.length > 0 && (
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <p className="text-sm text-gray-500">
+                    Trade {currentTradeIndex + 1} of {allParsedTrades.length}
+                  </p>
+                  <div className="flex gap-2">
+                    {/* Previous button */}
+                    {currentTradeIndex > 0 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handlePreviousTrade}
+                        data-testid="button-previous-trade"
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                      </Button>
+                    )}
+                    
+                    {/* Next button (only if not last trade) */}
+                    {currentTradeIndex < allParsedTrades.length - 1 && (
+                      <Button
+                        type="button"
+                        onClick={handleNextTrade}
+                        data-testid="button-next-trade"
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    )}
+                    
+                    {/* Upload All button (only on last trade) */}
+                    {currentTradeIndex === allParsedTrades.length - 1 && (
+                      <Button
+                        type="submit"
+                        disabled={createTradeMutation.isPending}
+                        data-testid="button-upload-all"
+                      >
+                        {createTradeMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Uploading...
+                          </>
+                        ) : (
+                          `Upload All ${allParsedTrades.length} Trades`
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
             </form>
           </Form>
         )}
