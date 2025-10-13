@@ -570,7 +570,7 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
                         <SelectContent>
                           {accounts.map((account: any) => (
                             <SelectItem key={account.id} value={account.id}>
-                              {account.account_name} ({account.account_type === 'proprietary_firm' ? 'Prop Firm' : account.account_type === 'live_personal' ? 'Live Personal' : account.account_type === 'live_company' ? 'Live Company' : 'Demo'})
+                              {account.broker_name} ({account.account_name})
                             </SelectItem>
                           ))}
                         </SelectContent>
