@@ -123,8 +123,9 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
         entry_date: data.entryTime || new Date().toISOString(),
         exit_date: data.exitTime || undefined,
         pnl: data.pnl ? parseFloat(data.pnl) : undefined,
-        swap: data.swap ? parseFloat(data.swap) : undefined,
-        commission: data.commission ? parseFloat(data.commission) : undefined,
+        // DISABLED: Supabase PostgREST schema cache issue - columns exist but API doesn't recognize them yet
+        // swap: data.swap ? parseFloat(data.swap) : undefined,
+        // commission: data.commission ? parseFloat(data.commission) : undefined,
         status: (data.exitPrice ? 'CLOSED' : 'OPEN') as 'CLOSED' | 'OPEN',
         notes: data.notes || 'Imported via OCR Screenshot',
       };
