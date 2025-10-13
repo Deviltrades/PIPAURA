@@ -29,10 +29,17 @@ import {
   updateTaxExpense,
   deleteTaxExpense,
   getTaxSummary,
-  getTradeAccounts
+  getTradeAccounts,
+  getTrades
 } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import {
+  exportTradesToCSV,
+  exportExpensesToCSV,
+  exportTaxSummaryHTML,
+  exportTaxSummaryPDF
+} from "@/lib/tax-exports";
 
 const expenseSchema = z.object({
   expense_type: z.enum(['software', 'education', 'data', 'hardware', 'other']),
@@ -82,6 +89,12 @@ export default function TaxReports() {
       const accountIds = selectedAccount === 'all' ? [] : [selectedAccount];
       return getTaxSummary(parseInt(selectedYear), accountIds);
     },
+  });
+
+  // Fetch all trades for export
+  const { data: allTrades = [] } = useQuery({
+    queryKey: ['/api/trades', selectedAccount],
+    queryFn: () => getTrades(selectedAccount === 'all' ? undefined : selectedAccount),
   });
 
   // Tax profile mutation
@@ -174,6 +187,43 @@ export default function TaxReports() {
   const totalExpenses = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount_report || exp.amount || '0'), 0);
 
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+  // Export handlers
+  const handleExportTrades = () => {
+    if (!allTrades || allTrades.length === 0) {
+      toast({ title: "No trades to export", variant: "destructive" });
+      return;
+    }
+    exportTradesToCSV(allTrades, parseInt(selectedYear));
+    toast({ title: "Trades exported successfully", description: `Downloaded trades_${selectedYear}.csv` });
+  };
+
+  const handleExportExpenses = () => {
+    if (!expenses || expenses.length === 0) {
+      toast({ title: "No expenses to export", variant: "destructive" });
+      return;
+    }
+    exportExpensesToCSV(expenses, parseInt(selectedYear));
+    toast({ title: "Expenses exported successfully", description: `Downloaded expenses_${selectedYear}.csv` });
+  };
+
+  const handleExportPDF = () => {
+    if (!taxSummary) {
+      toast({ title: "No tax summary available", variant: "destructive" });
+      return;
+    }
+    exportTaxSummaryPDF(taxSummary, parseInt(selectedYear));
+    toast({ title: "PDF export initiated", description: "Print dialog opened for PDF generation" });
+  };
+
+  const handleExportHTML = () => {
+    if (!taxSummary) {
+      toast({ title: "No tax summary available", variant: "destructive" });
+      return;
+    }
+    exportTaxSummaryHTML(taxSummary, parseInt(selectedYear));
+    toast({ title: "HTML exported successfully", description: `Downloaded tax_summary_${selectedYear}.html` });
+  };
 
   return (
     <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">
@@ -515,25 +565,45 @@ export default function TaxReports() {
               <CardDescription>Download tax documents and trading summaries</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-start" variant="outline" data-testid="button-export-csv-trades">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline" 
+                onClick={handleExportTrades}
+                data-testid="button-export-csv-trades"
+              >
                 <FileText className="h-4 w-4 mr-2" />
                 Export Trades (CSV)
                 <Download className="h-4 w-4 ml-auto" />
               </Button>
               
-              <Button className="w-full justify-start" variant="outline" data-testid="button-export-csv-expenses">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline" 
+                onClick={handleExportExpenses}
+                data-testid="button-export-csv-expenses"
+              >
                 <FileText className="h-4 w-4 mr-2" />
                 Export Expenses (CSV)
                 <Download className="h-4 w-4 ml-auto" />
               </Button>
               
-              <Button className="w-full justify-start" variant="outline" data-testid="button-export-pdf">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline" 
+                onClick={handleExportPDF}
+                data-testid="button-export-pdf"
+              >
                 <FileText className="h-4 w-4 mr-2" />
                 Tax Summary Report (PDF)
                 <Download className="h-4 w-4 ml-auto" />
               </Button>
               
-              <Button className="w-full justify-start" variant="outline" data-testid="button-export-html">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline" 
+                onClick={handleExportHTML}
+                data-testid="button-export-html"
+              >
                 <FileText className="h-4 w-4 mr-2" />
                 Tax Summary Report (HTML)
                 <Download className="h-4 w-4 ml-auto" />
