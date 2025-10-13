@@ -1074,18 +1074,10 @@ export async function getTaxExpenses(year?: number) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('id')
-    .eq('supabase_user_id', user.id)
-    .single();
-
-  if (!profile) throw new Error('User profile not found');
-
   let query = supabase
     .from('tax_expenses')
     .select('*')
-    .eq('user_id', profile.id)
+    .eq('user_id', user.id)
     .order('expense_date', { ascending: false });
 
   if (year) {
@@ -1103,18 +1095,10 @@ export async function createTaxExpense(expenseData: any) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('id')
-    .eq('supabase_user_id', user.id)
-    .single();
-
-  if (!profile) throw new Error('User profile not found');
-
   const { data, error } = await supabase
     .from('tax_expenses')
     .insert({
-      user_id: profile.id,
+      user_id: user.id,
       ...expenseData
     })
     .select()
@@ -1150,18 +1134,10 @@ export async function getAccountCashflows(accountId?: string, year?: number) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('id')
-    .eq('supabase_user_id', user.id)
-    .single();
-
-  if (!profile) throw new Error('User profile not found');
-
   let query = supabase
     .from('account_cashflows')
     .select('*')
-    .eq('user_id', profile.id)
+    .eq('user_id', user.id)
     .order('flow_date', { ascending: false });
 
   if (accountId && accountId !== 'all') {
@@ -1183,18 +1159,10 @@ export async function createAccountCashflow(cashflowData: any) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('id')
-    .eq('supabase_user_id', user.id)
-    .single();
-
-  if (!profile) throw new Error('User profile not found');
-
   const { data, error } = await supabase
     .from('account_cashflows')
     .insert({
-      user_id: profile.id,
+      user_id: user.id,
       ...cashflowData
     })
     .select()
@@ -1218,21 +1186,13 @@ export async function getTaxSummary(year: number, accountIds: string[] = []) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('id')
-    .eq('supabase_user_id', user.id)
-    .single();
-
-  if (!profile) throw new Error('User profile not found');
-
   const taxProfile = await getTaxProfile();
   
-  // Get closed trades for the year
+  // Get closed trades for the year (using same user_id as getTrades)
   let tradesQuery = supabase
     .from('trades')
     .select('*')
-    .eq('user_id', profile.id)
+    .eq('user_id', user.id)
     .eq('status', 'CLOSED')
     .not('exit_date', 'is', null);
 
