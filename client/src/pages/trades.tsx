@@ -150,7 +150,7 @@ export default function Trades() {
                       </Badge>
                     </div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm">
                       <div>
                         <p className="text-gray-400">Position Size</p>
                         <p className="font-medium text-white">{trade.position_size}</p>
@@ -163,6 +163,18 @@ export default function Trades() {
                         <div>
                           <p className="text-gray-400">Exit Price</p>
                           <p className="font-medium text-white">{trade.exit_price}</p>
+                        </div>
+                      )}
+                      {trade.stop_loss && (
+                        <div>
+                          <p className="text-gray-400">Stop Loss</p>
+                          <p className="font-medium text-orange-400">{trade.stop_loss}</p>
+                        </div>
+                      )}
+                      {trade.take_profit && (
+                        <div>
+                          <p className="text-gray-400">Take Profit</p>
+                          <p className="font-medium text-blue-400">{trade.take_profit}</p>
                         </div>
                       )}
                       {trade.pnl !== null && (
