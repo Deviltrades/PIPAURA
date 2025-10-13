@@ -11,6 +11,9 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
+import { AccountSelector } from "@/components/AccountSelector";
+import { useSelectedAccount } from "@/hooks/use-selected-account";
+import { getAnalytics, getTrades } from "@/lib/supabase-service";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -20,14 +23,17 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [isDraggable, setIsDraggable] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useSelectedAccount();
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
-    queryKey: ["/api/analytics/stats"],
+    queryKey: ["/api/analytics/stats", selectedAccount],
+    queryFn: () => getAnalytics(selectedAccount === 'all' ? undefined : selectedAccount),
     retry: false,
   });
 
   const { data: trades, isLoading: tradesLoading } = useQuery({
-    queryKey: ["/api/trades"],
+    queryKey: ["/api/trades", selectedAccount],
+    queryFn: () => getTrades(selectedAccount === 'all' ? undefined : selectedAccount),
     retry: false,
   });
 
@@ -150,9 +156,10 @@ export default function Dashboard() {
   return (
     <div className="p-4 lg:p-8">
       <div className="flex items-center justify-between mb-8">
-        <div>
+        <div className="flex-1">
           <h1 className="text-3xl font-bold text-foreground">Trading Dashboard</h1>
-          <p className="text-muted-foreground">Monitor your performance with customizable widgets</p>
+          <p className="text-muted-foreground mb-3">Monitor your performance with customizable widgets</p>
+          <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -253,6 +260,7 @@ export default function Dashboard() {
                     onRemove={() => handleRemoveWidget(widgetId)}
                     analytics={analytics}
                     trades={trades as any[] || []}
+                    selectedAccount={selectedAccount}
                   />
                 </div>
               );

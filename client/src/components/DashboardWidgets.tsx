@@ -22,6 +22,7 @@ interface WidgetProps {
   analytics?: any;
   trades?: any[];
   isCustomizing?: boolean;
+  selectedAccount?: string;
 }
 
 export function TotalPnLWidget({ onRemove, analytics }: WidgetProps) {
@@ -192,7 +193,7 @@ export function DailyPnLChartWidget({ onRemove }: WidgetProps) {
   );
 }
 
-export function TradingCalendarWidget({ onRemove }: WidgetProps) {
+export function TradingCalendarWidget({ onRemove, selectedAccount }: WidgetProps) {
   return (
     <div className="relative group col-span-full">
       <Button 
@@ -203,7 +204,7 @@ export function TradingCalendarWidget({ onRemove }: WidgetProps) {
       >
         <X className="h-3 w-3" />
       </Button>
-      <TradingCalendar className="w-full" />
+      <TradingCalendar className="w-full" selectedAccount={selectedAccount} />
     </div>
   );
 }
