@@ -201,12 +201,12 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
       parsed.lotSize = lotMatch[1];
     }
 
-    // Extract entry/exit prices - MT4 format: "1.39656 — 1.39557 354.69" (entry — exit P&L)
-    const priceLineMatch = cleanText.match(/([0-9]+\.?[0-9]+)\s*[—\-–]\s*([0-9]+\.?[0-9]+)\s+([0-9]+\.?[0-9]+)/);
+    // Extract entry/exit prices - MT4 format: "1.39656 — 1.39557 354.69" or "0.86921 — 0.86619 2 026.45" (with spaces in P&L)
+    const priceLineMatch = cleanText.match(/([0-9]+\.?[0-9]+)\s*[—\-–]\s*([0-9]+\.?[0-9]+)\s+([0-9\s]+\.?[0-9]+)/);
     if (priceLineMatch) {
       parsed.entryPrice = priceLineMatch[1];
       parsed.exitPrice = priceLineMatch[2];
-      parsed.profit = priceLineMatch[3];
+      parsed.profit = priceLineMatch[3].replace(/\s/g, ''); // Remove spaces from P&L (e.g., "2 026.45" → "2026.45")
     } else {
       // Fallback to individual patterns
       const entryMatch = cleanText.match(/(?:entry|open|price)[:\s]*([0-9]+\.?[0-9]*)/i) ||
