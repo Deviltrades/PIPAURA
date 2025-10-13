@@ -3,9 +3,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Upload } from "lucide-react";
+import { Plus, Edit, Trash2, Upload, Scan } from "lucide-react";
 import { AddTradeModal } from "@/components/AddTradeModal";
 import { UploadTradesModal } from "@/components/UploadTradesModal";
+import { OCRUploadModal } from "@/components/OCRUploadModal";
 import { AccountSelector } from "@/components/AccountSelector";
 import { formatCurrency } from "@/lib/utils";
 import { getTrades, deleteTrade } from "@/lib/supabase-service";
@@ -17,6 +18,7 @@ export default function Trades() {
   const [selectedAccount, setSelectedAccount] = useSelectedAccount();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isOCRModalOpen, setIsOCRModalOpen] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -95,6 +97,15 @@ export default function Trades() {
           <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
         </div>
         <div className="flex gap-2">
+          <Button 
+            onClick={() => setIsOCRModalOpen(true)}
+            variant="outline"
+            className="border-green-500/50 text-white hover:bg-green-600/20"
+            data-testid="button-upload-screenshot"
+          >
+            <Scan className="h-4 w-4 mr-2" />
+            Upload Trade Screenshot (AI-Read)
+          </Button>
           <Button 
             onClick={() => setIsUploadModalOpen(true)}
             variant="outline"
@@ -223,6 +234,11 @@ export default function Trades() {
         isOpen={isFormOpen}
         onClose={handleFormClose}
         trade={editingTrade}
+      />
+
+      <OCRUploadModal
+        isOpen={isOCRModalOpen}
+        onClose={() => setIsOCRModalOpen(false)}
       />
 
       <UploadTradesModal
