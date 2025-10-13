@@ -2,11 +2,14 @@
   "buildCommand": "vite build",
   "outputDirectory": "dist/public",
   "installCommand": "npm install",
-  "framework": "vite",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "env": {
