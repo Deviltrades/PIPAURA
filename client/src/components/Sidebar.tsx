@@ -130,10 +130,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 )}
                 onClick={onClose}
               >
-                <Icon className={cn(
-                  "mr-3 h-5 w-5",
-                  "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent"
-                )} />
+                <Icon className="mr-3 h-5 w-5 text-pink-500" />
                 <span className={cn(
                   "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent font-semibold"
                 )}>
@@ -211,10 +208,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         onClick={onClose}
                         data-testid={`link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
                       >
-                        <Icon className={cn(
-                          "mr-3 h-5 w-5",
-                          "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent"
-                        )} />
+                        <Icon className="mr-3 h-5 w-5 text-pink-500" />
                         <span className={cn(
                           "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent font-semibold"
                         )}>
@@ -236,12 +230,12 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 >
                   {theme === "dark" ? (
                     <>
-                      <Sun className="h-4 w-4 mr-2 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent" />
+                      <Sun className="h-4 w-4 mr-2 text-pink-500" />
                       <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">Light Mode</span>
                     </>
                   ) : (
                     <>
-                      <Moon className="h-4 w-4 mr-2 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent" />
+                      <Moon className="h-4 w-4 mr-2 text-pink-500" />
                       <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">Dark Mode</span>
                     </>
                   )}
@@ -254,7 +248,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   className={`w-full border-pink-500/30 hover:bg-gray-200/20`}
                   data-testid="button-mobile-logout"
                 >
-                  <LogOut className="h-4 w-4 mr-2 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent" />
+                  <LogOut className="h-4 w-4 mr-2 text-pink-500" />
                   <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">
                     {signOut.isPending ? "Logging out..." : "Logout"}
                   </span>
@@ -288,7 +282,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           size="sm"
           onClick={togglePin}
           className={cn(
-            "absolute right-2 hover:bg-white/10 transition-opacity duration-300 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent",
+            "absolute right-2 hover:bg-white/10 transition-opacity duration-300 text-pink-500",
             isCollapsed && !isPinned ? "opacity-0" : "opacity-100"
           )}
           data-testid="button-pin-sidebar"
@@ -317,9 +311,8 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 data-testid={`link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <Icon className={cn(
-                  "h-5 w-5 flex-shrink-0",
-                  !isCollapsed && "mr-3",
-                  "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent"
+                  "h-5 w-5 flex-shrink-0 text-pink-500",
+                  !isCollapsed && "mr-3"
                 )} />
                 <span className={cn(
                   "transition-all duration-300 whitespace-nowrap overflow-hidden",
@@ -351,7 +344,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           {theme === "dark" ? (
             <>
               <Sun className={cn(
-                "h-4 w-4 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent",
+                "h-4 w-4 text-pink-500",
                 !isCollapsed && "mr-2"
               )} />
               <span className={cn(
@@ -364,7 +357,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           ) : (
             <>
               <Moon className={cn(
-                "h-4 w-4 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent",
+                "h-4 w-4 text-pink-500",
                 !isCollapsed && "mr-2"
               )} />
               <span className={cn(
