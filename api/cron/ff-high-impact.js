@@ -1,4 +1,4 @@
-import { runUpdate } from '../../lib/cron/forex-factory.js';
+import { runRapidApiUpdate } from '../../lib/cron/rapidapi-calendar.js';
 import { runHourlyUpdate } from '../../lib/cron/hourly-bias.js';
 
 export default async function handler(req, res) {
@@ -16,14 +16,19 @@ export default async function handler(req, res) {
   try {
     const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const rapidApiKey = process.env.RAPIDAPI_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Missing Supabase credentials');
     }
 
-    console.log('[CRON] Checking for high-impact events...');
+    if (!rapidApiKey) {
+      throw new Error('Missing RAPIDAPI_KEY');
+    }
 
-    const hasHighImpact = await runUpdate(supabaseUrl, supabaseKey, true);
+    console.log('[CRON] Checking for high-impact economic events...');
+
+    const hasHighImpact = await runRapidApiUpdate(supabaseUrl, supabaseKey, rapidApiKey, true);
 
     if (hasHighImpact) {
       console.log('🚨 High-impact economic event detected! Triggering bias update...');
@@ -32,7 +37,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: 'High-impact check completed',
+      message: 'High-impact RapidAPI check completed',
       highImpactDetected: hasHighImpact,
     });
   } catch (error) {

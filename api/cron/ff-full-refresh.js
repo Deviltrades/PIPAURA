@@ -1,4 +1,4 @@
-import { runUpdate } from '../../lib/cron/forex-factory.js';
+import { runRapidApiUpdate } from '../../lib/cron/rapidapi-calendar.js';
 
 export default async function handler(req, res) {
   const API_KEY = process.env.CRON_API_KEY;
@@ -15,18 +15,23 @@ export default async function handler(req, res) {
   try {
     const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const rapidApiKey = process.env.RAPIDAPI_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Missing Supabase credentials');
     }
 
-    console.log('[CRON] Running Forex Factory Full Refresh...');
+    if (!rapidApiKey) {
+      throw new Error('Missing RAPIDAPI_KEY');
+    }
 
-    await runUpdate(supabaseUrl, supabaseKey, false);
+    console.log('[CRON] Running RapidAPI Economic Calendar Full Refresh...');
+
+    await runRapidApiUpdate(supabaseUrl, supabaseKey, rapidApiKey, false);
 
     return res.status(200).json({
       success: true,
-      message: 'FF full refresh completed',
+      message: 'RapidAPI economic calendar refresh completed',
     });
   } catch (error) {
     console.error('[CRON ERROR]', error);
