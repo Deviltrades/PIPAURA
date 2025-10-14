@@ -103,60 +103,58 @@ export default function Fundamentals() {
                           </tr>
                         </thead>
                         <tbody>
-                          {Object.keys(groupedEvents).map((date, dateIdx) => (
-                            <>
-                              <tr key={`date-${dateIdx}`} className="bg-slate-800/30">
-                                <td colSpan={8} className="py-2 px-4 text-sm font-semibold text-gray-300">
-                                  {format(parseISO(date), 'EEE MMM dd')}
-                                </td>
-                              </tr>
-                              {groupedEvents[date].map((event: any, eventIdx: number) => {
-                                const getImpactColor = (impact: string) => {
-                                  if (impact === "High") return "text-red-500";
-                                  if (impact === "Medium") return "text-yellow-500";
-                                  return "text-gray-500";
-                                };
+                          {Object.keys(groupedEvents).map((date) => [
+                            <tr key={`date-${date}`} className="bg-slate-800/30">
+                              <td colSpan={8} className="py-2 px-4 text-sm font-semibold text-gray-300">
+                                {format(parseISO(date), 'EEE MMM dd')}
+                              </td>
+                            </tr>,
+                            ...groupedEvents[date].map((event: any, eventIdx: number) => {
+                              const getImpactColor = (impact: string) => {
+                                if (impact === "High") return "text-red-500";
+                                if (impact === "Medium") return "text-yellow-500";
+                                return "text-gray-500";
+                              };
 
-                                return (
-                                  <tr 
-                                    key={`event-${dateIdx}-${eventIdx}`}
-                                    className="border-b border-[#1a2f4a]/50 hover:bg-cyan-600/10 transition-colors"
-                                    data-testid={`event-${dateIdx}-${eventIdx}`}
-                                  >
-                                    <td className="py-3 px-4"></td>
-                                    <td className="py-3 px-2 text-sm font-mono text-gray-400">
-                                      {event.event_time?.substring(0, 5) || 'TBA'}
-                                    </td>
-                                    <td className="py-3 px-2">
-                                      <span className="text-xs font-semibold text-cyan-400">
-                                        {event.currency}
-                                      </span>
-                                    </td>
-                                    <td className="py-3 px-1">
-                                      <Circle 
-                                        className={`h-3 w-3 ${getImpactColor(event.impact)} fill-current`}
-                                        data-testid={`impact-${event.impact.toLowerCase()}`}
-                                      />
-                                    </td>
-                                    <td className="py-3 px-3 text-sm text-gray-200">
-                                      {event.title}
-                                    </td>
-                                    <td className={`py-3 px-3 text-sm text-right font-medium ${
-                                      event.actual ? 'text-white' : 'text-gray-500'
-                                    }`}>
-                                      {event.actual || '-'}
-                                    </td>
-                                    <td className="py-3 px-3 text-sm text-right text-gray-400">
-                                      {event.forecast || '-'}
-                                    </td>
-                                    <td className="py-3 px-3 text-sm text-right text-gray-400">
-                                      {event.previous || '-'}
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </>
-                          ))}
+                              return (
+                                <tr 
+                                  key={`event-${date}-${eventIdx}`}
+                                  className="border-b border-[#1a2f4a]/50 hover:bg-cyan-600/10 transition-colors"
+                                  data-testid={`event-${date}-${eventIdx}`}
+                                >
+                                  <td className="py-3 px-4"></td>
+                                  <td className="py-3 px-2 text-sm font-mono text-gray-400">
+                                    {event.event_time?.substring(0, 5) || 'TBA'}
+                                  </td>
+                                  <td className="py-3 px-2">
+                                    <span className="text-xs font-semibold text-cyan-400">
+                                      {event.currency}
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-1">
+                                    <Circle 
+                                      className={`h-3 w-3 ${getImpactColor(event.impact)} fill-current`}
+                                      data-testid={`impact-${event.impact.toLowerCase()}`}
+                                    />
+                                  </td>
+                                  <td className="py-3 px-3 text-sm text-gray-200">
+                                    {event.title}
+                                  </td>
+                                  <td className={`py-3 px-3 text-sm text-right font-medium ${
+                                    event.actual ? 'text-white' : 'text-gray-500'
+                                  }`}>
+                                    {event.actual || '-'}
+                                  </td>
+                                  <td className="py-3 px-3 text-sm text-right text-gray-400">
+                                    {event.forecast || '-'}
+                                  </td>
+                                  <td className="py-3 px-3 text-sm text-right text-gray-400">
+                                    {event.previous || '-'}
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          ])}
                         </tbody>
                       </table>
                     </div>
