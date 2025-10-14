@@ -129,7 +129,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 className={cn(
                   "flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl group widget-hover-pulse",
                   isActive
-                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-cyan-500/10 animate-[hover-pulse_1s_ease-in-out_infinite]`
+                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-cyan-500/30`
                     : `${sidebarSettings.hoverColor} border-l-2 border-transparent`
                 )}
                 onClick={onClose}
@@ -214,7 +214,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         className={cn(
                           "flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl group widget-hover-pulse",
                           isActive
-                            ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-cyan-500/10 animate-[hover-pulse_1s_ease-in-out_infinite]`
+                            ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-cyan-500/30`
                             : `${sidebarSettings.hoverColor} border-l-2 border-transparent`
                         )}
                         onClick={onClose}
@@ -325,7 +325,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   "flex items-center py-3 text-sm font-medium transition-all duration-200 rounded-xl group widget-hover-pulse",
                   isCollapsed ? "px-3 justify-center" : "px-4",
                   isActive
-                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-cyan-500/10 animate-[hover-pulse_1s_ease-in-out_infinite]`
+                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-cyan-500/30`
                     : `${sidebarSettings.hoverColor} border-l-2 border-transparent`
                 )}
                 data-testid={`link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
