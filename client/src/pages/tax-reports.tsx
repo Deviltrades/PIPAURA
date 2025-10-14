@@ -310,7 +310,7 @@ export default function TaxReports() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-3">
-                    <Card className="border-red-500/30 bg-red-950/20">
+                    <Card className="border-2 border-red-500/60 bg-red-950/20 red-hover-pulse transition-all duration-300">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Total Expenses</CardTitle>
                       </CardHeader>
@@ -322,7 +322,7 @@ export default function TaxReports() {
                       </CardContent>
                     </Card>
 
-                    <Card className="border-cyan-500/30 bg-cyan-950/20">
+                    <Card className="border-2 border-cyan-500/60 bg-cyan-950/20 widget-hover-pulse transition-all duration-300">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Expense Count</CardTitle>
                       </CardHeader>
@@ -332,7 +332,7 @@ export default function TaxReports() {
                       </CardContent>
                     </Card>
 
-                    <Card className="border-purple-500/30 bg-purple-950/20">
+                    <Card className="border-2 border-purple-500/60 bg-purple-950/20 purple-hover-pulse transition-all duration-300">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Currency</CardTitle>
                       </CardHeader>

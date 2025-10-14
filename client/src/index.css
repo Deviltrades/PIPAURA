@@ -513,6 +513,36 @@
   border-color: rgba(34, 211, 238, 1) !important;
 }
 
+/* Red Pulse Animation for Expense Cards */
+@keyframes red-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5), 0 0 30px rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.8), 0 0 45px rgba(239, 68, 68, 0.5);
+  }
+}
+
+.red-hover-pulse:hover {
+  animation: red-pulse 1s ease-in-out infinite;
+  border-color: rgba(239, 68, 68, 1) !important;
+}
+
+/* Purple Pulse Animation for Currency Cards */
+@keyframes purple-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.5), 0 0 30px rgba(168, 85, 247, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.8), 0 0 45px rgba(168, 85, 247, 0.5);
+  }
+}
+
+.purple-hover-pulse:hover {
+  animation: purple-pulse 1s ease-in-out infinite;
+  border-color: rgba(168, 85, 247, 1) !important;
+}
+
 /* Dashboard Scrollbar - Cyan Theme (matches sidebar) */
 .dashboard-scrollbar::-webkit-scrollbar {
   width: 8px;
