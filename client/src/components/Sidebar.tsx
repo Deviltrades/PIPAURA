@@ -33,6 +33,7 @@ import {
 import logoImage from "@assets/pipaura-logo.png";
 import headerLogoVideo from "@assets/PipAura_1760451006076.mp4";
 import collapsedLogo from "@assets/pipaura-collapsed-logo-v2.png";
+import { PipAuraLogo } from "./PipAuraLogo";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -104,16 +105,8 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   const sidebarContent = (
     <>
-      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} border-b border-white/5`}>
-        <video 
-          src={headerLogoVideo}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover"
-          aria-label="PipAura Logo"
-        />
+      <div className={`flex items-center justify-center h-16 border-b border-white/5`}>
+        <PipAuraLogo isCollapsed={isCollapsed} />
       </div>
       
       <nav className="mt-4 flex-1 px-3">
@@ -180,21 +173,15 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
             <div className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-br ${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo} backdrop-blur-xl shadow-2xl flex flex-col`}>
-              <div className={`flex items-center justify-between h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} border-b border-white/5`}>
-                <video 
-                  src={headerLogoVideo}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="h-full object-cover flex-1"
-                  aria-label="PipAura Logo"
-                />
+              <div className={`flex items-center justify-between h-16 border-b border-white/5`}>
+                <div className="flex-1">
+                  <PipAuraLogo isCollapsed={false} />
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={onClose}
-                  className="hover:bg-white/10 text-gray-300"
+                  className="hover:bg-white/10 text-gray-300 mr-2"
                   data-testid="button-close-mobile-menu"
                 >
                   <X className="h-4 w-4" />
@@ -287,16 +274,8 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} border-b border-white/5 relative`}>
-        <video 
-          src={headerLogoVideo}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover transition-opacity duration-300"
-          aria-label="PipAura Logo"
-        />
+      <div className={`flex items-center justify-center h-16 border-b border-white/5 relative`}>
+        <PipAuraLogo isCollapsed={isCollapsed} />
         <Button
           variant="ghost"
           size="sm"

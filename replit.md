@@ -94,7 +94,11 @@ The application features a unified cyan/teal color scheme (hsl(188, 94%, 60%)) w
   - Dashboard background: Inset steady dim cyan glow
 - **Menu Interaction**: Sidebar menu tabs display steady cyan glow on hover and when active/selected
 - **Calendar Styling**: Non-trading days show gradient logo at 40% opacity; winning days use dulled green (#00ad57); losing days use toned-down red (#e55555)
-- **Video Logo**: PipAura_1760451006076.mp4 displays in sidebar header (all states: expanded, collapsed, mobile)
+- **Custom Logo**: Text-based logo displays in sidebar header with:
+  - Background: Matches sidebar gradient (slate-950/900)
+  - Text: Cyan/teal color matching scrollbar (hsl(188, 94%, 60%))
+  - Collapsed state: Shows "PipAura" only
+  - Expanded state: Shows "PipAura" with "Traders Hub" slogan in white
 - **Light Mode Support**: Theme-aware text classes (text-foreground dark:text-white) and backgrounds (bg-slate-200 dark:bg-slate-800) ensure visibility in both modes
 
 ### Instrument Type Expansion
