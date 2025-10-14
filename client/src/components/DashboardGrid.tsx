@@ -337,21 +337,20 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
   };
 
   return (
-    <div className="min-h-screen p-4 lg:p-8 dashboard-scrollbar" style={{ backgroundColor: bgColor, color: textColor }}>
-      <div className="max-w-7xl mx-auto relative">
-        {/* Animated Cyan Border Snake Effect - Outer Box */}
-        <div className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none z-0">
-          <div className="absolute inset-[-2px]" style={{
-            background: 'conic-gradient(from 0deg, transparent 0%, transparent 60%, hsl(188, 94%, 60%) 80%, hsl(188, 94%, 70%) 90%, transparent 100%)',
-            animation: 'border-rotate 5.76s linear infinite',
-            borderRadius: '0.5rem',
-            filter: 'blur(0.5px)',
-          }}></div>
-          <div className="absolute inset-[2px] rounded-lg" style={{ backgroundColor: bgColor }}></div>
-        </div>
+    <div className="min-h-screen p-4 lg:p-8 dashboard-scrollbar relative" style={{ backgroundColor: bgColor, color: textColor }}>
+      {/* Animated Cyan Border Snake Effect - Full Screen Border */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute inset-[-3px]" style={{
+          background: 'conic-gradient(from 0deg, transparent 0%, transparent 60%, hsl(188, 94%, 60%) 80%, hsl(188, 94%, 70%) 90%, transparent 100%)',
+          animation: 'border-rotate 5.76s linear infinite',
+          filter: 'blur(0.5px)',
+        }}></div>
+        <div className="absolute inset-[3px]" style={{ backgroundColor: bgColor }}></div>
+      </div>
 
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Header Controls */}
-        <div className="flex justify-between items-center mb-4 relative z-10">
+        <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold mb-2" style={{ color: textColor }}>Trading Dashboard</h1>
           <div className="flex gap-3 items-center">
             {/* Save Layout Button */}
