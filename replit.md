@@ -48,13 +48,13 @@ Authentication is handled entirely through Supabase Auth, providing:
 A comprehensive automated fundamental analysis system provides real-time (30-min/hourly) bias calculations. The system has been successfully migrated from Python scripts to JavaScript ES6+ serverless functions deployed on Vercel for 100% uptime and production reliability:
 
 **Architecture:**
-- **Forex Factory Feed** (`lib/cron/forex-factory.js`): Fetches and parses XML economic calendar, scores events based on actual vs forecast
+- **RapidAPI Calendar Feed** (`lib/cron/rapidapi-calendar.js`): Fetches economic events from RapidAPI Ultimate Economic Calendar with actual/forecast/previous values
 - **Hourly Bias Calculator** (`lib/cron/hourly-bias.js`): Calculates currency scores using Yahoo Finance market data, central bank tones, and commodity correlations
 - **Vercel API Endpoints** (`api/cron/*.js`): JavaScript serverless functions called by external cron service (cron-job.org)
 
 **Data Sources:**
 - Yahoo Finance: Market data (DXY, WTI, Gold, Copper, SPX, UST10Y, VIX)
-- Forex Factory: Economic calendar events (https://nfs.faireconomy.media/ff_calendar_thisweek.xml)
+- RapidAPI Ultimate Economic Calendar: Real economic calendar events with actual/forecast/previous values
 - Manual: Central bank tone settings (hawkish/dovish/neutral)
 
 **Cron Schedule:**
