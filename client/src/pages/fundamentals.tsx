@@ -2,10 +2,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus } from "lucide-react";
+import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus, Circle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getFundamentalBias, getIndexBias, getMarketDrivers, getTodaysEconomicEvents, getHighImpactEventCounts } from "@/lib/supabase-service";
-import { format } from "date-fns";
+import { getFundamentalBias, getIndexBias, getMarketDrivers, getWeeklyEconomicEvents, getHighImpactEventCounts } from "@/lib/supabase-service";
+import { format, parseISO } from "date-fns";
 
 export default function Fundamentals() {
   const { data: fundamentalBias, isLoading: biasLoading } = useQuery({
@@ -23,10 +23,20 @@ export default function Fundamentals() {
     queryFn: getMarketDrivers,
   });
 
-  const { data: todaysEvents, isLoading: eventsLoading } = useQuery({
-    queryKey: ['/api/todays-events'],
-    queryFn: getTodaysEconomicEvents,
+  const { data: weeklyEvents, isLoading: eventsLoading } = useQuery({
+    queryKey: ['/api/weekly-events'],
+    queryFn: getWeeklyEconomicEvents,
   });
+
+  // Group events by date
+  const groupedEvents = weeklyEvents?.reduce((acc: any, event: any) => {
+    const date = event.event_date;
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(event);
+    return acc;
+  }, {}) || {};
 
   const { data: eventCounts, isLoading: countsLoading } = useQuery({
     queryKey: ['/api/event-counts'],
@@ -71,49 +81,88 @@ export default function Fundamentals() {
             <div className="lg:col-span-2">
               <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
                 <CardHeader>
-                  <CardTitle>Today's Economic Events</CardTitle>
-                  <CardDescription>Key economic releases and central bank events</CardDescription>
+                  <CardTitle>Economic Calendar</CardTitle>
+                  <CardDescription>This week's key economic releases and central bank events</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                   {eventsLoading ? (
-                    <div className="text-center py-8 text-muted-foreground">Loading today's events...</div>
-                  ) : todaysEvents && todaysEvents.length > 0 ? (
-                    <div className="space-y-4">
-                      {todaysEvents.map((event: any, index: number) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                          data-testid={`event-${index}`}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="text-sm font-mono text-muted-foreground w-16">
-                              {event.event_time}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant={event.currency === "USD" ? "default" : "secondary"}>
-                                {event.currency}
-                              </Badge>
-                              <Badge 
-                                variant={event.impact === "High" ? "destructive" : event.impact === "Medium" ? "default" : "secondary"}
-                              >
-                                {event.impact.toLowerCase()}
-                              </Badge>
-                            </div>
-                            <div>
-                              <div className="font-medium">{event.event_title}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {event.previous && `Previous: ${event.previous}`}
-                                {event.previous && event.forecast && ' | '}
-                                {event.forecast && `Forecast: ${event.forecast}`}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                    <div className="text-center py-8 text-muted-foreground">Loading events...</div>
+                  ) : weeklyEvents && weeklyEvents.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-[#1a2f4a] bg-slate-900/50">
+                            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+                            <th className="text-left py-3 px-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Time</th>
+                            <th className="text-left py-3 px-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Cur</th>
+                            <th className="text-left py-3 px-1 text-xs font-semibold text-gray-400 uppercase tracking-wider w-8">Impact</th>
+                            <th className="text-left py-3 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Event</th>
+                            <th className="text-right py-3 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Actual</th>
+                            <th className="text-right py-3 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Forecast</th>
+                            <th className="text-right py-3 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Previous</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.keys(groupedEvents).map((date, dateIdx) => (
+                            <>
+                              <tr key={`date-${dateIdx}`} className="bg-slate-800/30">
+                                <td colSpan={8} className="py-2 px-4 text-sm font-semibold text-gray-300">
+                                  {format(parseISO(date), 'EEE MMM dd')}
+                                </td>
+                              </tr>
+                              {groupedEvents[date].map((event: any, eventIdx: number) => {
+                                const getImpactColor = (impact: string) => {
+                                  if (impact === "High") return "text-red-500";
+                                  if (impact === "Medium") return "text-yellow-500";
+                                  return "text-gray-500";
+                                };
+
+                                return (
+                                  <tr 
+                                    key={`event-${dateIdx}-${eventIdx}`}
+                                    className="border-b border-[#1a2f4a]/50 hover:bg-cyan-600/10 transition-colors"
+                                    data-testid={`event-${dateIdx}-${eventIdx}`}
+                                  >
+                                    <td className="py-3 px-4"></td>
+                                    <td className="py-3 px-2 text-sm font-mono text-gray-400">
+                                      {event.event_time?.substring(0, 5) || 'TBA'}
+                                    </td>
+                                    <td className="py-3 px-2">
+                                      <span className="text-xs font-semibold text-cyan-400">
+                                        {event.currency}
+                                      </span>
+                                    </td>
+                                    <td className="py-3 px-1">
+                                      <Circle 
+                                        className={`h-3 w-3 ${getImpactColor(event.impact)} fill-current`}
+                                        data-testid={`impact-${event.impact.toLowerCase()}`}
+                                      />
+                                    </td>
+                                    <td className="py-3 px-3 text-sm text-gray-200">
+                                      {event.title}
+                                    </td>
+                                    <td className={`py-3 px-3 text-sm text-right font-medium ${
+                                      event.actual ? 'text-white' : 'text-gray-500'
+                                    }`}>
+                                      {event.actual || '-'}
+                                    </td>
+                                    <td className="py-3 px-3 text-sm text-right text-gray-400">
+                                      {event.forecast || '-'}
+                                    </td>
+                                    <td className="py-3 px-3 text-sm text-right text-gray-400">
+                                      {event.previous || '-'}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
-                      No economic events scheduled for today. Check the Forex Factory feed for updates.
+                      No economic events scheduled. Check the calendar feed for updates.
                     </div>
                   )}
                 </CardContent>

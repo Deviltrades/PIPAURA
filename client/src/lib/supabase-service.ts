@@ -71,6 +71,23 @@ export async function getTodaysEconomicEvents() {
   return data;
 }
 
+export async function getWeeklyEconomicEvents() {
+  const today = new Date();
+  const endOfWeek = new Date(today);
+  endOfWeek.setDate(today.getDate() + 7);
+  
+  const { data, error } = await supabase
+    .from('forex_events')
+    .select('*')
+    .gte('event_date', today.toISOString().split('T')[0])
+    .lte('event_date', endOfWeek.toISOString().split('T')[0])
+    .order('event_date', { ascending: true })
+    .order('event_time', { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
 export async function getHighImpactEventCounts() {
   const today = new Date();
   const endOfWeek = new Date(today);
