@@ -31,7 +31,7 @@ import {
   ChevronLeft
 } from "lucide-react";
 import logoImage from "@assets/pipaura-logo.png";
-import headerLogoVideo from "@assets/PipAurastealth_1760450849929.mp4";
+import headerLogoVideo from "@assets/PipAura_1760451006076.mp4";
 import collapsedLogo from "@assets/pipaura-collapsed-logo-v2.png";
 
 const navigation = [
