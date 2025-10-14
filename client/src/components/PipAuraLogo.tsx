@@ -17,9 +17,9 @@ export function PipAuraLogo({ isCollapsed = false, className = "" }: PipAuraLogo
           </h1>
         </div>
       ) : (
-        // Expanded version - "PipAura" + "Traders Hub"
+        // Expanded version - "PipAura" (50% bigger) + "Traders Hub"
         <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'hsl(188, 94%, 60%)' }}>
+          <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'hsl(188, 94%, 60%)' }}>
             PipAura
           </h1>
           <p className="text-sm text-white font-medium tracking-wide">
