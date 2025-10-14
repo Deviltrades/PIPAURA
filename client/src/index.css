@@ -497,6 +497,22 @@
   border-color: rgba(34, 211, 238, 1) !important;
 }
 
+/* Calendar Day Pulse Animation - Hover & Selected States */
+@keyframes calendar-day-pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.6), 0 0 24px rgba(34, 211, 238, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.9), 0 0 35px rgba(34, 211, 238, 0.6);
+  }
+}
+
+.calendar-day-pulse:hover,
+.calendar-day-pulse.selected {
+  animation: calendar-day-pulse 1s ease-in-out infinite;
+  border-color: rgba(34, 211, 238, 1) !important;
+}
+
 /* Dashboard Scrollbar - Cyan Theme (matches sidebar) */
 .dashboard-scrollbar::-webkit-scrollbar {
   width: 8px;

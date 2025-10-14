@@ -1095,8 +1095,9 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                 key={day.toISOString()}
                 className={`
                   ${layout.cellClass} border-2 rounded-xl transition-all duration-200
-                  ${isSelected ? 'ring-2 ring-blue-400' : ''}
-                  ${isCurrentDay ? 'ring-1 ring-blue-300' : ''}
+                  calendar-day-pulse
+                  ${isSelected ? 'selected ring-2 ring-cyan-400' : ''}
+                  ${isCurrentDay ? 'ring-1 ring-cyan-300' : ''}
                   ${!isCurrentMonth ? 'opacity-40' : ''}
                   ${dayTrades.length > 0 ? 'brightness-125 saturate-150' : ''}
                   relative group cursor-pointer overflow-hidden
