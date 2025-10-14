@@ -1,8 +1,7 @@
-import { runUpdate as runFinnhubUpdate } from '../../lib/cron/finnhub-calendar.js';
+import { runUpdate } from '../../lib/cron/forex-factory.js';
 import { runHourlyUpdate } from '../../lib/cron/hourly-bias.js';
 
 export default async function handler(req, res) {
-  // Check API key (fail closed if not configured)
   const API_KEY = process.env.CRON_API_KEY;
   if (!API_KEY) {
     console.error('CRON_API_KEY not configured');
@@ -17,31 +16,24 @@ export default async function handler(req, res) {
   try {
     const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const finnhubKey = process.env.FINNHUB_API_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Missing Supabase credentials');
     }
 
-    if (!finnhubKey) {
-      throw new Error('Missing FINNHUB_API_KEY');
-    }
+    console.log('[CRON] Checking for high-impact events...');
 
-    console.log('[CRON] Running Finnhub Event Check...');
+    const hasHighImpact = await runUpdate(supabaseUrl, supabaseKey, true);
 
-    // Run Finnhub update - it will process all new events with actual values
-    const hasNewEvents = await runFinnhubUpdate(supabaseUrl, supabaseKey, finnhubKey);
-
-    // If new events processed, trigger bias recalculation
-    if (hasNewEvents) {
-      console.log('🚨 New economic events detected! Triggering bias update...');
+    if (hasHighImpact) {
+      console.log('🚨 High-impact economic event detected! Triggering bias update...');
       await runHourlyUpdate(supabaseUrl, supabaseKey);
     }
 
     return res.status(200).json({
       success: true,
-      message: 'Finnhub event check completed',
-      newEventsDetected: hasNewEvents,
+      message: 'High-impact check completed',
+      highImpactDetected: hasHighImpact,
     });
   } catch (error) {
     console.error('[CRON ERROR]', error);
