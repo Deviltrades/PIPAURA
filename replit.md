@@ -83,10 +83,10 @@ The analytics page features a "Trader DNA Core" visualization: an animated 3D-li
 ### UI/UX Design and Visual Effects
 The application features a unified cyan/teal color scheme (hsl(188, 94%, 60%)) with dark blue backgrounds and steady glow effects for interactive elements:
 - **Color Theme**: Unified cyan/teal throughout with theme-aware styling for both light and dark modes
-- **Visual Feedback**: All interactive elements use steady glows instead of pulsating or animated effects for a polished, professional appearance
+- **Visual Feedback**: All interactive elements use steady glows for a polished, professional appearance, except fundamental bias cards which pulsate when showing Strong/Weak signals
 - **Glow Effects**: 
   - Widget hover: Steady cyan glow
-  - Strong bias cards: Steady cyan glow
+  - Strong/Weak bias cards: **Pulsating cyan glow** (only element that pulsates)
   - Expense cards: Steady red glow
   - Currency cards: Steady purple glow
   - Account cards: Steady dim cyan glow with subtle border
