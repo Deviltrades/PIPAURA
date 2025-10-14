@@ -355,7 +355,7 @@ export default function MainPage() {
             Ready to Transform Your Trading?
           </h2>
           <p className="text-lg text-muted-foreground mb-6">
-            Join thousands of traders who have elevated their performance with TJ - Traders Brotherhood
+            Join thousands of traders who have elevated their performance with PipAura
           </p>
           <div className="flex flex-col gap-4 justify-center items-center">
             <Button size="lg" className="text-lg px-8 py-3" onClick={() => setActiveTab("register")}>

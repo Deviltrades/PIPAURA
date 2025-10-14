@@ -105,7 +105,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
           <img 
             src="/logo.jpg"
-            alt="TJ - Traders Brotherhood Logo" 
+            alt="PipAura Logo" 
             className="h-10 w-10 object-contain"
             onError={(e) => {
               console.log('Logo failed to load');
@@ -175,7 +175,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
                   <img 
                     src="/logo.jpg"
-                    alt="TJ - Traders Brotherhood Logo" 
+                    alt="PipAura Logo" 
                     className="h-8 w-8 object-contain"
                     onError={(e) => {
                       console.log('Logo failed to load');

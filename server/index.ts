@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawn } from 'child_process';
 
-console.log('🚀 Starting TJ - Traders Brotherhood');
+console.log('🚀 Starting PipAura');
 console.log('📦 Frontend: Vite + Supabase | API: Cron endpoints');
 console.log(`🌐 Allowing host: ${process.env.REPLIT_DOMAINS}`);
 
