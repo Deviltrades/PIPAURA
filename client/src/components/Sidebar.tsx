@@ -30,6 +30,7 @@ import {
   ChevronRight,
   ChevronLeft
 } from "lucide-react";
+import logoImage from "@assets/pipaura-logo.png";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -102,15 +103,11 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const sidebarContent = (
     <>
       <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo}`}>
-        <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
+        <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-1">
           <img 
-            src="/logo.jpg"
+            src={logoImage}
             alt="PipAura Logo" 
-            className="h-10 w-10 object-contain"
-            onError={(e) => {
-              console.log('Logo failed to load');
-              e.currentTarget.style.display = 'none';
-            }}
+            className="h-full w-full object-contain"
           />
         </div>
       </div>
@@ -172,15 +169,11 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
             <div className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-br ${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo} shadow-lg flex flex-col`}>
               <div className={`flex items-center justify-between h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} px-4`}>
-                <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1">
                   <img 
-                    src="/logo.jpg"
+                    src={logoImage}
                     alt="PipAura Logo" 
-                    className="h-8 w-8 object-contain"
-                    onError={(e) => {
-                      console.log('Logo failed to load');
-                      e.currentTarget.style.display = 'none';
-                    }}
+                    className="h-full w-full object-contain"
                   />
                 </div>
                 <Button
@@ -272,19 +265,13 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     >
       <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} relative`}>
         <div className={cn(
-          "bg-black rounded-lg flex items-center justify-center transition-all duration-300",
+          "bg-white rounded-lg flex items-center justify-center transition-all duration-300 p-1",
           isCollapsed ? "w-10 h-10" : "w-12 h-12"
         )}>
           <img 
-            src="/logo.jpg"
+            src={logoImage}
             alt="PipAura Logo" 
-            className={cn(
-              "object-contain transition-all duration-300",
-              isCollapsed ? "h-8 w-8" : "h-10 w-10"
-            )}
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
+            className="h-full w-full object-contain transition-all duration-300"
           />
         </div>
         <Button
