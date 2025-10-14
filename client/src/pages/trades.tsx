@@ -101,7 +101,7 @@ export default function Trades() {
           <Button 
             onClick={() => setIsOCRModalOpen(true)}
             variant="outline"
-            className="border-green-500/50 text-white hover:bg-green-600/20"
+            className="border-cyan-500/50 text-white hover:bg-cyan-600/20"
             data-testid="button-upload-screenshot"
           >
             <Scan className="h-4 w-4 mr-2" />
@@ -110,7 +110,7 @@ export default function Trades() {
           <Button 
             onClick={() => setIsUploadModalOpen(true)}
             variant="outline"
-            className="border-purple-500/50 text-white hover:bg-purple-600/20"
+            className="border-cyan-500/50 text-white hover:bg-cyan-600/20"
             data-testid="button-upload-trades"
           >
             <Upload className="h-4 w-4 mr-2" />
@@ -118,7 +118,7 @@ export default function Trades() {
           </Button>
           <Button 
             onClick={() => setIsFormOpen(true)}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0"
+            className="bg-cyan-600 hover:bg-cyan-700 text-white border-0"
             data-testid="button-add-trade"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -130,7 +130,7 @@ export default function Trades() {
       <div className="space-y-4">
         {trades.length > 0 ? (
           trades.map((trade: any) => (
-            <Card key={trade.id} className="bg-gradient-to-br from-purple-900/40 to-blue-900/40 border-purple-500/30">
+            <Card key={trade.id} className="bg-[#0f1f3a] border-[#1a2f4a]">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -145,7 +145,7 @@ export default function Trades() {
                       <h3 className="text-lg font-semibold text-white">{trade.instrument}</h3>
                       <Badge variant={trade.status === 'OPEN' ? 'default' : 
                                    trade.status === 'CLOSED' ? 'secondary' : 'destructive'} 
-                             className="bg-purple-600 text-white">
+                             className="bg-cyan-600 text-white">
                         {trade.status}
                       </Badge>
                     </div>
@@ -213,7 +213,7 @@ export default function Trades() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(trade)}
-                      className="border-purple-500/30 text-purple-300 hover:bg-purple-800/50"
+                      className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-800/50"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
