@@ -92,7 +92,7 @@ export default function Analytics() {
   const currentMonth = currentDate.toLocaleDateString('en-US', { month: 'short' });
 
   return (
-    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">
+    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-white">Trading Analytics</h1>
