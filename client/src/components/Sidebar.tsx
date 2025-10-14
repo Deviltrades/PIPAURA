@@ -108,7 +108,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         <img 
           src={headerLogo}
           alt="PipAura" 
-          className="w-[90%] h-full object-contain"
+          className="w-full h-full object-cover"
         />
       </div>
       
@@ -172,7 +172,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 <img 
                   src={headerLogo}
                   alt="PipAura" 
-                  className="h-full w-[85%] object-contain"
+                  className="h-full object-cover flex-1"
                 />
                 <Button
                   variant="ghost"
@@ -265,10 +265,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         <img 
           src={isCollapsed ? collapsedLogo : headerLogo}
           alt="PipAura" 
-          className={cn(
-            "h-full object-contain transition-opacity duration-300",
-            isCollapsed ? "w-[90%]" : "w-[90%]"
-          )}
+          className="w-full h-full object-cover transition-opacity duration-300"
         />
         <Button
           variant="ghost"
