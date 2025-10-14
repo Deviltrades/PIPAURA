@@ -1196,7 +1196,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                         />
                       </div>
                       {/* Zero Trades Text */}
-                      <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="absolute inset-0 flex items-end justify-center pb-2">
                         <div className="text-[9px] sm:text-[10px] text-white/60 font-bold text-center px-1">
                           Zero Trades
                         </div>
