@@ -103,11 +103,11 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   const sidebarContent = (
     <>
-      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} px-4`}>
+      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo}`}>
         <img 
           src={headerLogo}
           alt="PipAura" 
-          className="w-full h-10 object-contain"
+          className="w-full h-full object-cover"
         />
       </div>
       
@@ -167,11 +167,11 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
             <div className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-br ${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo} shadow-lg flex flex-col`}>
-              <div className={`flex items-center justify-between h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} px-4`}>
+              <div className={`flex items-center justify-between h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo}`}>
                 <img 
                   src={headerLogo}
                   alt="PipAura" 
-                  className="h-10 object-contain flex-1"
+                  className="h-full object-cover flex-1"
                 />
                 <Button
                   variant="ghost"
@@ -260,12 +260,12 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} relative px-4`}>
+      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} relative`}>
         {!isCollapsed ? (
           <img 
             src={headerLogo}
             alt="PipAura" 
-            className="w-full h-10 object-contain transition-opacity duration-300"
+            className="w-full h-full object-cover transition-opacity duration-300"
           />
         ) : (
           <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1">
