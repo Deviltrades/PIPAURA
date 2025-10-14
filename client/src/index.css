@@ -438,7 +438,7 @@
   @apply font-semibold text-blue-600 dark:text-blue-400;
 }
 
-/* Futuristic Sidebar Scrollbar */
+/* Futuristic Sidebar Scrollbar - Cyan Theme */
 .sidebar-scrollbar::-webkit-scrollbar {
   width: 8px;
 }
@@ -450,26 +450,26 @@
 }
 
 .sidebar-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.6), rgba(37, 99, 235, 0.8));
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.6), rgba(20, 184, 166, 0.8));
   border-radius: 10px;
   border: 2px solid rgba(15, 23, 42, 0.3);
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
   transition: all 0.3s ease;
 }
 
 .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 1));
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.8), 0 0 25px rgba(59, 130, 246, 0.4);
-  border-color: rgba(59, 130, 246, 0.2);
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.9), rgba(20, 184, 166, 1));
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.8), 0 0 25px rgba(34, 211, 238, 0.4);
+  border-color: rgba(34, 211, 238, 0.2);
 }
 
 .sidebar-scrollbar::-webkit-scrollbar-thumb:active {
-  background: linear-gradient(180deg, rgba(37, 99, 235, 1), rgba(29, 78, 216, 1));
-  box-shadow: 0 0 20px rgba(59, 130, 246, 1), 0 0 35px rgba(59, 130, 246, 0.6);
+  background: linear-gradient(180deg, rgba(20, 184, 166, 1), rgba(13, 148, 136, 1));
+  box-shadow: 0 0 20px rgba(34, 211, 238, 1), 0 0 35px rgba(34, 211, 238, 0.6);
 }
 
 /* Firefox scrollbar styling */
 .sidebar-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(59, 130, 246, 0.7) rgba(15, 23, 42, 0.3);
+  scrollbar-color: rgba(34, 211, 238, 0.7) rgba(15, 23, 42, 0.3);
 }
