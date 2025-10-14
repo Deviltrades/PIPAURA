@@ -819,16 +819,16 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
 
         {/* Monthly Summary Bar */}
         {showMonthlySummary && (
-          <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between overflow-x-auto border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
+          <div className="mb-4 sm:mb-6 bg-slate-200 dark:bg-slate-800 rounded-lg px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between overflow-x-auto border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
             <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="text-white text-xs sm:text-sm font-medium">Monthly:</span>
+                <span className="text-foreground dark:text-white text-xs sm:text-sm font-medium">Monthly:</span>
               </div>
               
               {(() => {
                 const monthlyStats = getMonthlySummary();
                 return (
-                  <div className="flex items-center gap-2 sm:gap-4 text-white">
+                  <div className="flex items-center gap-2 sm:gap-4 text-foreground dark:text-white">
                     {/* Total Net P&L */}
                     {monthlyStatsConfig.totalPnL && (
                       <div className={`px-2 sm:px-3 py-1 sm:py-2 rounded-md text-xs sm:text-sm font-semibold whitespace-nowrap ${
@@ -883,15 +883,15 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-white hover:bg-slate-700"
+                  className="h-8 w-8 p-0 text-foreground dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
                   data-testid="button-monthly-stats-settings"
                 >
                   <Settings className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-64 bg-slate-900 border-slate-700">
+              <PopoverContent className="w-64 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                 <div className="space-y-4">
-                  <h4 className="text-sm font-medium text-white mb-3">Select which stats to display</h4>
+                  <h4 className="text-sm font-medium text-foreground dark:text-white mb-3">Select which stats to display</h4>
                   
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
@@ -903,7 +903,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                         }
                         data-testid="checkbox-total-pnl"
                       />
-                      <Label htmlFor="pnl-stat" className="text-sm text-white">
+                      <Label htmlFor="pnl-stat" className="text-sm text-foreground dark:text-white">
                         Daily P/L
                       </Label>
                     </div>
@@ -917,7 +917,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                         }
                         data-testid="checkbox-days-traded"
                       />
-                      <Label htmlFor="days-stat" className="text-sm text-white">
+                      <Label htmlFor="days-stat" className="text-sm text-foreground dark:text-white">
                         Days Traded
                       </Label>
                     </div>
@@ -931,7 +931,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                         }
                         data-testid="checkbox-risk-reward"
                       />
-                      <Label htmlFor="risk-reward-stat" className="text-sm text-white">
+                      <Label htmlFor="risk-reward-stat" className="text-sm text-foreground dark:text-white">
                         R Multiple
                       </Label>
                     </div>
@@ -945,7 +945,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                         }
                         data-testid="checkbox-total-trades"
                       />
-                      <Label htmlFor="total-trades-stat" className="text-sm text-white">
+                      <Label htmlFor="total-trades-stat" className="text-sm text-foreground dark:text-white">
                         Number of trades
                       </Label>
                     </div>
@@ -959,7 +959,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                         }
                         data-testid="checkbox-win-rate"
                       />
-                      <Label htmlFor="win-rate-stat" className="text-sm text-white">
+                      <Label htmlFor="win-rate-stat" className="text-sm text-foreground dark:text-white">
                         Day Winrate
                       </Label>
                     </div>
@@ -977,11 +977,11 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
           const ratingColor = score < 30 ? 'text-red-400' : score < 60 ? 'text-orange-400' : 'text-green-400';
           
           return (
-            <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-3 sm:px-4 py-2 sm:py-3 border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
+            <div className="mb-4 sm:mb-6 bg-slate-200 dark:bg-slate-800 rounded-lg px-3 sm:px-4 py-2 sm:py-3 border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
               {/* Main Bar Row */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                  <span className="text-white text-xs sm:text-sm font-medium flex-shrink-0">Consistency:</span>
+                  <span className="text-foreground dark:text-white text-xs sm:text-sm font-medium flex-shrink-0">Consistency:</span>
                   <div className="relative flex-1">
                     <div className="relative w-full h-2 bg-gray-700 rounded-full overflow-hidden">
                       <div 
@@ -991,7 +991,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                       />
                     </div>
                     {/* Scale Legend - Centered below the progress bar */}
-                    <div className="flex items-center justify-center gap-2 sm:gap-4 mt-2 text-[10px] sm:text-xs text-gray-300">
+                    <div className="flex items-center justify-center gap-2 sm:gap-4 mt-2 text-[10px] sm:text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full"></div>
                         <span className="hidden sm:inline">0 - 30%</span>
@@ -1011,7 +1011,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                   </div>
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                  <span className="text-white text-xs sm:text-sm font-semibold">{score}%</span>
+                  <span className="text-foreground dark:text-white text-xs sm:text-sm font-semibold">{score}%</span>
                   <span className={`text-[10px] sm:text-xs font-medium ${ratingColor} hidden sm:inline`}>{rating}</span>
                 </div>
               </div>
@@ -1139,7 +1139,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                 {/* Date - Top Left */}
                 <div className="absolute top-0.5 left-1 sm:top-1 sm:left-1.5">
                   <span className={`text-xs sm:text-sm font-semibold ${
-                    dayTrades.length > 0 ? 'text-black' : 'text-white'
+                    dayTrades.length > 0 ? 'text-black dark:text-white' : 'text-foreground dark:text-white'
                   }`}>
                     {format(day, 'd')}
                   </span>
@@ -1157,7 +1157,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                     title="Add trade to this date"
                     data-testid="button-add-trade"
                   >
-                    <PlusIcon className="h-3 w-3 text-white" />
+                    <PlusIcon className="h-3 w-3 text-foreground dark:text-white" />
                   </button>
                 )}
                 
