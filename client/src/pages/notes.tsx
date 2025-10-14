@@ -101,7 +101,7 @@ export default function Notes() {
               <div className="absolute inset-[2px] bg-slate-950 rounded-lg"></div>
             </div>
 
-            <Card className="relative z-10">
+            <Card className="relative z-10 bg-transparent border-0 shadow-none">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
