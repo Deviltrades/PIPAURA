@@ -201,8 +201,8 @@ export default function Dashboard() {
       ) : (
         <div className="relative">
           {isDraggable && (
-            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
+            <div className="mb-4 p-3 bg-cyan-50 dark:bg-cyan-950 border border-cyan-200 dark:border-cyan-800 rounded-lg">
+              <p className="text-sm text-cyan-800 dark:text-cyan-200">
                 <Move className="h-4 w-4 inline mr-2" />
                 Drag widgets to rearrange them, resize by dragging the corners
               </p>

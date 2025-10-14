@@ -11,7 +11,7 @@ interface DraggableWidgetProps {
 export default function DraggableWidget({ title, children, className = "", themeColor = "slate", textColor = "#ffffff" }: DraggableWidgetProps) {
   const colorStyles = {
     slate: "bg-slate-800/60 border-slate-700/40",
-    blue: "bg-blue-900/40 border-blue-800/30",
+    blue: "bg-slate-900/40 border-blue-800/30",
     purple: "bg-purple-900/40 border-purple-800/30",
     green: "bg-emerald-900/40 border-emerald-800/30",
     orange: "bg-orange-900/40 border-orange-800/30",

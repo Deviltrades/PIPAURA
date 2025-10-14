@@ -174,7 +174,7 @@ export default function Trades() {
                       {trade.take_profit && (
                         <div>
                           <p className="text-gray-400">Take Profit</p>
-                          <p className="font-medium text-blue-400">{trade.take_profit}</p>
+                          <p className="font-medium text-cyan-400">{trade.take_profit}</p>
                         </div>
                       )}
                       {trade.pnl !== null && (

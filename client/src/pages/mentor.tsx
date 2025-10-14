@@ -94,9 +94,9 @@ export default function Mentor() {
               <CardDescription>Daily insights</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                <div className="font-medium text-sm text-blue-900 dark:text-blue-100">Risk Management</div>
-                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+              <div className="p-3 bg-cyan-50 dark:bg-cyan-950/20 rounded-lg">
+                <div className="font-medium text-sm text-cyan-900 dark:text-cyan-100">Risk Management</div>
+                <p className="text-xs text-cyan-700 dark:text-cyan-300 mt-1">
                   Never risk more than 2% of your account on a single trade
                 </p>
               </div>

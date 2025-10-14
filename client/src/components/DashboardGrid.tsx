@@ -349,7 +349,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
               size="sm"
               onClick={handleSaveLayout}
               disabled={saveLayoutMutation.isPending}
-              className="bg-blue-900/40 border-blue-700 text-white hover:bg-blue-800/50"
+              className="bg-slate-900/40 border-cyan-700 text-white hover:bg-slate-800/50"
               data-testid="button-save-layout"
             >
               <Save className="w-4 h-4 mr-2" />
@@ -362,14 +362,14 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
                 <Button
                   variant="outline"
                   size="sm"
-                  className="bg-blue-900/40 border-blue-700 text-white hover:bg-blue-800/50"
+                  className="bg-slate-900/40 border-cyan-700 text-white hover:bg-slate-800/50"
                   data-testid="button-theme"
                 >
                   <Palette className="w-4 h-4 mr-2" />
                   Theme
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-blue-950 border-blue-700 text-white max-w-2xl">
+              <DialogContent className="bg-slate-950 border-cyan-700 text-white max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Dashboard Customization</DialogTitle>
                 </DialogHeader>
@@ -379,7 +379,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
                     <div className="grid grid-cols-3 gap-3">
                       {[
                         { name: "Slate/Grey", value: "slate", color: "bg-slate-700" },
-                        { name: "Blue", value: "blue", color: "bg-blue-700" },
+                        { name: "Blue", value: "blue", color: "bg-slate-800" },
                         { name: "Purple", value: "purple", color: "bg-purple-700" },
                         { name: "Green", value: "green", color: "bg-emerald-700" },
                         { name: "Orange", value: "orange", color: "bg-orange-700" },
@@ -457,7 +457,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
               onClick={resetLayout}
               variant="outline"
               size="sm"
-              className="bg-blue-900/40 border-blue-700 text-white hover:bg-blue-800/50"
+              className="bg-slate-900/40 border-cyan-700 text-white hover:bg-slate-800/50"
             >
               <RotateCcw className="w-4 h-4 mr-2" />
               Reset Layout
@@ -467,8 +467,8 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
               variant={editMode ? "default" : "outline"}
               size="sm"
               className={editMode 
-                ? "bg-blue-600 hover:bg-blue-700 text-white" 
-                : "bg-blue-900/40 border-blue-700 text-white hover:bg-blue-800/50"
+                ? "bg-cyan-600 hover:bg-slate-800 text-white" 
+                : "bg-slate-900/40 border-cyan-700 text-white hover:bg-slate-800/50"
               }
             >
               <Move className="w-4 h-4 mr-2" />
@@ -478,7 +478,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
         </div>
 
         {editMode && (
-          <div className="mb-4 p-3 bg-blue-900/30 rounded-lg border border-blue-700">
+          <div className="mb-4 p-3 bg-slate-900/30 rounded-lg border border-cyan-700">
             <p className="text-blue-200 text-sm">
               <strong>Edit Mode:</strong> Drag widgets to move them around or drag the corner to resize. Click "Exit Edit" when finished.
             </p>
@@ -948,7 +948,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
             <DraggableWidget title="Last Five Trades" themeColor={themeColor} textColor={textColor}>
               <div className="space-y-3 overflow-y-auto h-full">
                 {lastFiveTrades.map((trade) => (
-                  <div key={trade.id} className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
+                  <div key={trade.id} className="bg-slate-800/20 rounded-lg p-3 border border-cyan-700/30">
                     <div className="grid grid-cols-3 items-center gap-4">
                       <div className="flex items-center gap-2">
                         <div className={`w-4 h-4 rounded flex items-center justify-center text-xs font-bold ${
@@ -985,7 +985,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
             <DraggableWidget title="Long vs Short Performance" themeColor={themeColor} textColor={textColor}>
               <div className="grid grid-cols-2 gap-4 h-full">
                 {/* Longs */}
-                <div className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
+                <div className="bg-slate-800/20 rounded-lg p-3 border border-cyan-700/30">
                   <div className="text-center mb-3">
                     <div className="text-gray-400 text-lg">{longTrades.length} LONGS</div>
                   </div>
@@ -1007,7 +1007,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
                 </div>
 
                 {/* Shorts */}
-                <div className="bg-blue-800/20 rounded-lg p-3 border border-blue-700/30">
+                <div className="bg-slate-800/20 rounded-lg p-3 border border-cyan-700/30">
                   <div className="text-center mb-3">
                     <div className="text-gray-400 text-lg">{shortTrades.length} SHORTS</div>
                   </div>

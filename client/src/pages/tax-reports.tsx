@@ -322,12 +322,12 @@ export default function TaxReports() {
                       </CardContent>
                     </Card>
 
-                    <Card className="border-blue-500/30 bg-blue-950/20">
+                    <Card className="border-cyan-500/30 bg-cyan-950/20">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Expense Count</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold text-blue-600">{expenses.length}</div>
+                        <div className="text-2xl font-bold text-cyan-600">{expenses.length}</div>
                         <p className="text-xs text-muted-foreground mt-1">Total expense entries</p>
                       </CardContent>
                     </Card>
@@ -439,7 +439,7 @@ export default function TaxReports() {
                     <CardTitle className="text-sm font-medium text-muted-foreground">Swap Income</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-2xl font-bold text-cyan-600">
                       ${(taxSummary?.totals.swap_income || 0).toFixed(2)}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">

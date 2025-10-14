@@ -1152,7 +1152,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                       setAddTradeDate(day);
                       setIsAddTradeModalOpen(true);
                     }}
-                    className="absolute top-1 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-5 h-5 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center z-20 shadow-lg"
+                    className="absolute top-1 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-5 h-5 bg-cyan-600 hover:bg-slate-800 rounded-full flex items-center justify-center z-20 shadow-lg"
                     title="Add trade to this date"
                     data-testid="button-add-trade"
                   >

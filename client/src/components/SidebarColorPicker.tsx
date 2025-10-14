@@ -27,7 +27,7 @@ const colorThemes: ColorTheme[] = [
       headerTo: "to-blue-500",
       activeGradient: "from-blue-600/20 to-blue-500/20",
       activeBorder: "border-blue-500/30",
-      hoverColor: "hover:bg-blue-900/30"
+      hoverColor: "hover:bg-slate-900/30"
     },
     preview: "bg-gradient-to-br from-blue-950 via-blue-900 to-slate-950"
   },
