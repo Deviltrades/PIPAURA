@@ -626,11 +626,11 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
                         {winRate.toFixed(1)}%
                       </div>
                     </div>
-                    <div className="relative w-24 h-12">
-                      <svg viewBox="0 0 100 50" className="w-full h-full">
+                    <div className="relative w-24 h-16 -mt-2">
+                      <svg viewBox="0 0 100 60" className="w-full h-full">
                         {/* Red arc (losing trades - full background) */}
                         <path
-                          d="M 10 45 A 40 40 0 0 1 90 45"
+                          d="M 10 40 A 40 40 0 0 1 90 40"
                           fill="none"
                           stroke="#ef4444"
                           strokeWidth="8"
@@ -639,7 +639,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
                         
                         {/* Green arc (winning trades - overlays on top based on win rate) */}
                         <path
-                          d="M 10 45 A 40 40 0 0 1 90 45"
+                          d="M 10 40 A 40 40 0 0 1 90 40"
                           fill="none"
                           stroke="#10b981"
                           strokeWidth="8"
@@ -651,16 +651,16 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
                         {/* Indicator dot at the transition point */}
                         <circle
                           cx={50 + 40 * Math.cos((Math.PI * (1 - winRate / 100)))}
-                          cy={45 - 40 * Math.sin((Math.PI * (1 - winRate / 100)))}
+                          cy={40 - 40 * Math.sin((Math.PI * (1 - winRate / 100)))}
                           r="5"
                           fill="white"
                           className="transition-all duration-500"
                         />
+                        
+                        {/* Min/Max labels */}
+                        <text x="10" y="55" className="text-xs fill-gray-500" textAnchor="middle">0</text>
+                        <text x="90" y="55" className="text-xs fill-gray-500" textAnchor="middle">100</text>
                       </svg>
-                      
-                      {/* Min/Max labels */}
-                      <div className="absolute -bottom-4 left-0 text-gray-500 text-xs">0</div>
-                      <div className="absolute -bottom-4 right-0 text-gray-500 text-xs">100</div>
                     </div>
                   </div>
                 )}
