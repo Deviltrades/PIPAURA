@@ -1192,7 +1192,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                         <img 
                           src={logoImage} 
                           alt="PipAura Logo" 
-                          className="w-full h-full object-cover opacity-10"
+                          className="w-full h-full object-cover opacity-40"
                         />
                       </div>
                       {/* Zero Trades Text */}
