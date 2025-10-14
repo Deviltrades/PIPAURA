@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, BarChart3, Calendar, Signal, Shield, Zap } from "lucide-react";
-import logoImage from "@assets/btrustedprops_1756670174065.jpg";
+import logoImage from "@assets/pipaura-logo.png";
 
 export default function Landing() {
   return (

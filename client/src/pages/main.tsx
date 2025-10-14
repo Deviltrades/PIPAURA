@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { TrendingUp, BarChart3, Calendar, Signal, Shield, Zap, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import logoImage from "@assets/btrustedprops_1756670174065.jpg";
+import logoImage from "@assets/pipaura-logo.png";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -321,7 +321,7 @@ export default function MainPage() {
           <Card className="border-border hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <Signal className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-3">Brotherhood Signals</h3>
+              <h3 className="text-xl font-semibold mb-3">Trading Signals</h3>
               <p className="text-muted-foreground">
                 Share and receive high-quality trading signals from verified traders with detailed entry, exit, and risk parameters
               </p>

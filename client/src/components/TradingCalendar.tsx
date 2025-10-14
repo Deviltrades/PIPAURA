@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus, Edit3, Check, X, Settings } from "lucide-react";
-import logoImage from "@assets/btrustedprops_1758388648347.jpg";
+import logoImage from "@assets/pipaura-logo.png";
 import { 
   format, 
   startOfMonth, 
@@ -1190,7 +1190,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                       <div className="absolute inset-0 flex items-center justify-center">
                         <img 
                           src={logoImage} 
-                          alt="TJ Logo" 
+                          alt="PipAura Logo" 
                           className="w-full h-full object-cover opacity-10"
                         />
                       </div>

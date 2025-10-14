@@ -277,7 +277,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         )}>
           <img 
             src="/logo.jpg"
-            alt="TJ Logo" 
+            alt="PipAura Logo" 
             className={cn(
               "object-contain transition-all duration-300",
               isCollapsed ? "h-8 w-8" : "h-10 w-10"

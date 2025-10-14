@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, TrendingUp, Users, Crown } from "lucide-react";
-import logoImage from "@assets/btrustedprops_1756670174065.jpg";
+import logoImage from "@assets/pipaura-logo.png";
 
 export default function Pricing() {
   const plans = [
@@ -194,7 +194,7 @@ export default function Pricing() {
         {/* CTA Section */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            Ready to Join the Brotherhood?
+            Ready to Get Started?
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
             Get instant access today and experience the power of community-driven trading analytics.
