@@ -23,11 +23,11 @@ export default function Landing() {
           <div className="flex items-center justify-center mb-6">
             <img 
               src={logoImage} 
-              alt="TJ - Traders Brotherhood Logo" 
+              alt="PipAura Logo" 
               className="w-20 h-20 mr-4 rounded-lg shadow-lg"
             />
             <h1 className="text-5xl font-bold text-foreground">
-              TJ - Traders Brotherhood
+              PipAura
             </h1>
           </div>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -82,9 +82,9 @@ export default function Landing() {
           <Card className="border-border hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <Signal className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-3">Brotherhood Signals</h3>
+              <h3 className="text-xl font-semibold mb-3">Trading Signals</h3>
               <p className="text-muted-foreground">
-                Share and receive trading signals from the brotherhood community with detailed entry, exit, and risk parameters
+                Share and receive trading signals from the community with detailed entry, exit, and risk parameters
               </p>
             </CardContent>
           </Card>
@@ -113,14 +113,14 @@ export default function Landing() {
         {/* CTA Section */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            Ready to Join the Brotherhood?
+            Ready to Elevate Your Trading?
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Connect with fellow traders and elevate your trading journey with TJ - Traders Brotherhood
+            Connect with fellow traders and elevate your trading journey with PipAura
           </p>
           <Button size="lg" asChild className="text-lg px-8 py-3">
             <a href="/pricing">
-              Join the Brotherhood
+              Get Started Now
             </a>
           </Button>
         </div>

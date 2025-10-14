@@ -21,7 +21,7 @@ export default function Pricing() {
         "Proprietary firm friendly",
         "Created specifically for forex, futures and crypto traders",
         "Advanced analytics and reports",
-        "Signal sharing with the brotherhood",
+        "Signal sharing with the community",
         "Custom dashboard widgets",
         "Calendar view of trading activity",
         "Mobile and desktop access",
@@ -35,7 +35,7 @@ export default function Pricing() {
       name: "Lifetime",
       price: "£275",
       period: "one-time",
-      description: "Pay once and access TJ - Traders Brotherhood forever",
+      description: "Pay once and access PipAura forever",
       icon: Crown,
       features: [
         "Add up to 10 Accounts",
@@ -68,10 +68,10 @@ export default function Pricing() {
           <div className="flex items-center">
             <img 
               src={logoImage} 
-              alt="TJ - Traders Brotherhood Logo" 
+              alt="PipAura Logo" 
               className="w-12 h-12 mr-3 rounded-lg shadow-lg"
             />
-            <span className="text-2xl font-bold text-foreground">TJ - Traders Brotherhood</span>
+            <span className="text-2xl font-bold text-foreground">PipAura</span>
           </div>
           <Button variant="outline" asChild>
             <a href="/api/login">
@@ -85,10 +85,10 @@ export default function Pricing() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Choose Your Brotherhood Level
+            Choose Your Plan
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Join thousands of traders who are elevating their performance with TJ. 
+            Join thousands of traders who are elevating their performance with PipAura. 
             Select the plan that matches your trading journey.
           </p>
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
