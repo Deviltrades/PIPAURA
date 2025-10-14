@@ -819,7 +819,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
 
         {/* Monthly Summary Bar */}
         {showMonthlySummary && (
-          <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between overflow-x-auto">
+          <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between overflow-x-auto border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
             <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className="text-white text-xs sm:text-sm font-medium">Monthly:</span>
@@ -977,7 +977,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
           const ratingColor = score < 30 ? 'text-red-400' : score < 60 ? 'text-orange-400' : 'text-green-400';
           
           return (
-            <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-3 sm:px-4 py-2 sm:py-3">
+            <div className="mb-4 sm:mb-6 bg-slate-800 rounded-lg px-3 sm:px-4 py-2 sm:py-3 border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
               {/* Main Bar Row */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
