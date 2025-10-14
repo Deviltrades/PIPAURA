@@ -87,17 +87,17 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     }
   };
 
-  // Default sidebar settings
+  // Default sidebar settings - Silver gradient background with pink-purple text
   const defaultSidebarSettings: SidebarSettings = {
-    primaryColor: "blue",
-    gradientFrom: "from-blue-950",
-    gradientVia: "via-blue-900",
-    gradientTo: "to-slate-950",
-    headerFrom: "from-blue-600",
-    headerTo: "to-blue-500",
-    activeGradient: "from-blue-600/20 to-blue-500/20",
-    activeBorder: "border-blue-500/30",
-    hoverColor: "hover:bg-blue-900/30"
+    primaryColor: "gray",
+    gradientFrom: "from-gray-300",
+    gradientVia: "via-gray-400",
+    gradientTo: "to-gray-500",
+    headerFrom: "from-gray-300",
+    headerTo: "to-gray-400",
+    activeGradient: "from-pink-500/20 to-purple-600/20",
+    activeBorder: "border-pink-500/30",
+    hoverColor: "hover:bg-gray-200/20"
   };
 
   const sidebarSettings = (user as any)?.sidebarSettings || defaultSidebarSettings;
@@ -125,13 +125,20 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 className={cn(
                   "flex items-center px-6 py-3 text-sm font-medium transition-colors rounded-lg mx-2",
                   isActive
-                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} text-white border ${sidebarSettings.activeBorder}`
-                    : `text-gray-300 ${sidebarSettings.hoverColor} hover:text-white`
+                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} border ${sidebarSettings.activeBorder}`
+                    : `${sidebarSettings.hoverColor}`
                 )}
                 onClick={onClose}
               >
-                <Icon className="mr-3 h-5 w-5" />
-                {item.name}
+                <Icon className={cn(
+                  "mr-3 h-5 w-5",
+                  "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent"
+                )} />
+                <span className={cn(
+                  "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent font-semibold"
+                )}>
+                  {item.name}
+                </span>
               </Link>
             );
           })}
@@ -143,17 +150,17 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           variant="outline"
           size="sm"
           onClick={toggleTheme}
-          className={`w-full border-${sidebarSettings.primaryColor}-600/30 text-gray-300 hover:bg-${sidebarSettings.primaryColor}-800/50`}
+          className={`w-full border-pink-500/30 hover:bg-gray-200/20`}
         >
           {theme === "dark" ? (
             <>
-              <Sun className="h-4 w-4 mr-2" />
-              Light Mode
+              <Sun className="h-4 w-4 mr-2 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent" />
+              <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">Light Mode</span>
             </>
           ) : (
             <>
-              <Moon className="h-4 w-4 mr-2" />
-              Dark Mode
+              <Moon className="h-4 w-4 mr-2 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent" />
+              <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">Dark Mode</span>
             </>
           )}
         </Button>
@@ -178,7 +185,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   variant="ghost"
                   size="sm"
                   onClick={onClose}
-                  className={`text-white hover:bg-${sidebarSettings.primaryColor}-700/50`}
+                  className="hover:bg-gray-200/20"
                   data-testid="button-close-mobile-menu"
                 >
                   <X className="h-4 w-4" />
@@ -198,14 +205,21 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         className={cn(
                           "flex items-center px-6 py-3 text-sm font-medium transition-colors rounded-lg mx-2",
                           isActive
-                            ? `bg-gradient-to-r ${sidebarSettings.activeGradient} text-white border ${sidebarSettings.activeBorder}`
-                            : `text-gray-300 ${sidebarSettings.hoverColor} hover:text-white`
+                            ? `bg-gradient-to-r ${sidebarSettings.activeGradient} border ${sidebarSettings.activeBorder}`
+                            : `${sidebarSettings.hoverColor}`
                         )}
                         onClick={onClose}
                         data-testid={`link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
                       >
-                        <Icon className="mr-3 h-5 w-5" />
-                        {item.name}
+                        <Icon className={cn(
+                          "mr-3 h-5 w-5",
+                          "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent"
+                        )} />
+                        <span className={cn(
+                          "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent font-semibold"
+                        )}>
+                          {item.name}
+                        </span>
                       </Link>
                     );
                   })}
@@ -217,18 +231,18 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   variant="outline"
                   size="sm"
                   onClick={toggleTheme}
-                  className={`w-full border-${sidebarSettings.primaryColor}-600/30 text-gray-300 hover:bg-${sidebarSettings.primaryColor}-800/50`}
+                  className={`w-full border-pink-500/30 hover:bg-gray-200/20`}
                   data-testid="button-mobile-theme-toggle"
                 >
                   {theme === "dark" ? (
                     <>
-                      <Sun className="h-4 w-4 mr-2" />
-                      Light Mode
+                      <Sun className="h-4 w-4 mr-2 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent" />
+                      <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">Light Mode</span>
                     </>
                   ) : (
                     <>
-                      <Moon className="h-4 w-4 mr-2" />
-                      Dark Mode
+                      <Moon className="h-4 w-4 mr-2 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent" />
+                      <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">Dark Mode</span>
                     </>
                   )}
                 </Button>
@@ -237,11 +251,13 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   size="sm"
                   onClick={() => signOut.mutate()}
                   disabled={signOut.isPending}
-                  className={`w-full border-${sidebarSettings.primaryColor}-600/30 text-gray-300 hover:bg-${sidebarSettings.primaryColor}-800/50`}
+                  className={`w-full border-pink-500/30 hover:bg-gray-200/20`}
                   data-testid="button-mobile-logout"
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  {signOut.isPending ? "Logging out..." : "Logout"}
+                  <LogOut className="h-4 w-4 mr-2 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent" />
+                  <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">
+                    {signOut.isPending ? "Logging out..." : "Logout"}
+                  </span>
                 </Button>
               </div>
             </div>
@@ -272,7 +288,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           size="sm"
           onClick={togglePin}
           className={cn(
-            "absolute right-2 text-white hover:bg-white/10 transition-opacity duration-300",
+            "absolute right-2 hover:bg-white/10 transition-opacity duration-300 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent",
             isCollapsed && !isPinned ? "opacity-0" : "opacity-100"
           )}
           data-testid="button-pin-sidebar"
@@ -295,18 +311,20 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   "flex items-center py-3 text-sm font-medium transition-all duration-300 rounded-lg mx-2",
                   isCollapsed ? "px-3 justify-center" : "px-6",
                   isActive
-                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} text-white border ${sidebarSettings.activeBorder}`
-                    : `text-gray-300 ${sidebarSettings.hoverColor} hover:text-white`
+                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} border ${sidebarSettings.activeBorder}`
+                    : `${sidebarSettings.hoverColor}`
                 )}
                 data-testid={`link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <Icon className={cn(
                   "h-5 w-5 flex-shrink-0",
-                  !isCollapsed && "mr-3"
+                  !isCollapsed && "mr-3",
+                  "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent"
                 )} />
                 <span className={cn(
                   "transition-all duration-300 whitespace-nowrap overflow-hidden",
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
+                  "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent font-semibold"
                 )}>
                   {item.name}
                 </span>
@@ -325,16 +343,19 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           size="sm"
           onClick={toggleTheme}
           className={cn(
-            `w-full border-${sidebarSettings.primaryColor}-600/30 text-gray-300 hover:bg-${sidebarSettings.primaryColor}-800/50 transition-all duration-300`,
+            `w-full border-pink-500/30 hover:bg-gray-200/20 transition-all duration-300`,
             isCollapsed && "px-2"
           )}
           data-testid="button-theme-toggle"
         >
           {theme === "dark" ? (
             <>
-              <Sun className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+              <Sun className={cn(
+                "h-4 w-4 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent",
+                !isCollapsed && "mr-2"
+              )} />
               <span className={cn(
-                "transition-all duration-300 whitespace-nowrap overflow-hidden",
+                "transition-all duration-300 whitespace-nowrap overflow-hidden bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold",
                 isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
               )}>
                 Light Mode
@@ -342,9 +363,12 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             </>
           ) : (
             <>
-              <Moon className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+              <Moon className={cn(
+                "h-4 w-4 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent",
+                !isCollapsed && "mr-2"
+              )} />
               <span className={cn(
-                "transition-all duration-300 whitespace-nowrap overflow-hidden",
+                "transition-all duration-300 whitespace-nowrap overflow-hidden bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold",
                 isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
               )}>
                 Dark Mode
