@@ -337,13 +337,13 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
   };
 
   return (
-    <div className="min-h-screen p-4 lg:p-8" style={{ backgroundColor: bgColor, color: textColor }}>
+    <div className="min-h-screen p-4 lg:p-8 dashboard-scrollbar" style={{ backgroundColor: bgColor, color: textColor }}>
       <div className="max-w-7xl mx-auto relative">
         {/* Animated Cyan Border Snake Effect */}
         <div className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none z-0">
           <div className="absolute inset-[-3px]" style={{
             background: 'conic-gradient(from 0deg, transparent 0%, transparent 60%, hsl(188, 94%, 60%) 80%, hsl(188, 94%, 70%) 90%, transparent 100%)',
-            animation: 'border-rotate 4.8s linear infinite',
+            animation: 'border-rotate 5.76s linear infinite',
             borderRadius: '0.5rem',
             filter: 'blur(1px)',
           }}></div>
