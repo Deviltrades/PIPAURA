@@ -1074,10 +1074,10 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
               }
               if (dailyPnL > 0) {
                 return {
-                  backgroundColor: '#00cc66', // Toned down bright green (20% less bright)
-                  borderColor: '#00cc66',
+                  backgroundColor: '#00ad57', // Dulled down green (15% less bright)
+                  borderColor: '#00ad57',
                   textColor: 'text-black',
-                  boxShadow: '0 0 12px #00cc66' // Slightly reduced glow
+                  boxShadow: '0 0 12px #00ad57' // Slightly reduced glow
                 };
               }
               return {
