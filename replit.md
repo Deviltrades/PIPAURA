@@ -128,26 +128,25 @@ A comprehensive trade import system supporting CSV, Excel (.xls/.xlsx), and HTML
 - **Account Association**: Links all imported trades to selected trading account.
 - **Balance Updates**: Automatically updates account balance based on closed trades.
 
-#### Trade Enrichment System (Disabled - Supabase Platform Limitation)
-An automated post-upload enrichment system is fully built but disabled due to persistent Supabase PostgREST schema cache issues (PGRST204 errors). The system calculates:
+#### Trade Enrichment System ✅ OPERATIONAL
+An automated post-upload enrichment system that calculates and stores advanced trade analytics:
 - **Session Detection**: Identifies trading session (London/New York/Asia) based on UTC entry time.
 - **Holding Time**: Calculates duration between entry and exit in minutes.
 - **Profit Normalization**: Computes profit-per-lot for position sizing analysis.
 - **Duplicate Detection**: Prevents duplicate trades via ticket_id matching.
 
-**Technical Issue**: Database columns exist (`ticket_id`, `session_tag`, `holding_time_minutes`, `profit_per_lot`) but Supabase's PostgREST API doesn't recognize them in the schema cache. Error: "Could not find the 'holding_time_minutes' column of 'trades' in the schema cache" (PGRST204).
+**Database Columns**: 
+- `ticket_id` (text): Unique broker-assigned trade identifier for duplicate prevention
+- `session_tag` (text): Trading session classification (London/New York/Asia/Overlap)
+- `holding_time_minutes` (int4): Trade duration in minutes
+- `profit_per_lot` (numeric): Normalized profit per lot for position sizing analysis
 
-**Attempted Fixes**:
-1. ✗ SQL command: `NOTIFY pgrst, 'reload schema';` - No effect
-2. ✗ Supabase instance restart via Dashboard → Settings → General → Restart - No effect
-3. ✗ Event triggers for automatic schema reload - Not available in managed Supabase
+**Implementation**: All enrichment functions are active in `supabase-service.ts` and automatically process:
+- Individual trade creation via `createTrade()`
+- Bulk trade uploads via `uploadTrades()`
+- Trade updates via `updateTrade()` (recalculates if entry/exit dates or P&L changes)
 
-**Current State**: All enrichment logic is commented out in `supabase-service.ts` (lines marked "DISABLED: Supabase PostgREST schema cache issue"). The enrichment functions (`detectTradingSession`, `calculateHoldingTimeMinutes`, `calculateProfitPerLot`) are fully implemented but not being saved to the database.
-
-**Future Solutions**:
-- Wait for Supabase PostgREST schema cache auto-refresh (can take 24-48 hours)
-- Contact Supabase support for manual schema cache flush
-- Consider alternative approaches: Supabase Edge Functions, direct database access, or backend-calculated enrichment
+**Resolution**: Previously disabled due to Supabase PostgREST schema cache issues. Resolved by manually adding columns via Supabase Dashboard → Table Editor, which triggers immediate schema cache refresh.
 
 ## External Dependencies
 
