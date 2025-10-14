@@ -87,24 +87,24 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     }
   };
 
-  // Default sidebar settings - Silver gradient background with pink-purple text
+  // Default sidebar settings - Dark glassmorphism to match dashboard
   const defaultSidebarSettings: SidebarSettings = {
-    primaryColor: "gray",
-    gradientFrom: "from-gray-300",
-    gradientVia: "via-gray-400",
-    gradientTo: "to-gray-500",
-    headerFrom: "from-gray-300",
-    headerTo: "to-gray-400",
-    activeGradient: "from-pink-500/20 to-purple-600/20",
-    activeBorder: "border-pink-500/30",
-    hoverColor: "hover:bg-gray-200/20"
+    primaryColor: "slate",
+    gradientFrom: "from-gray-950/98",
+    gradientVia: "via-slate-900/98",
+    gradientTo: "to-gray-950/98",
+    headerFrom: "from-gray-900/95",
+    headerTo: "to-slate-950/95",
+    activeGradient: "from-pink-500/15 via-purple-600/15 to-pink-500/15",
+    activeBorder: "border-l-2 border-pink-500",
+    hoverColor: "hover:bg-white/5 hover:border-l-2 hover:border-pink-500/30"
   };
 
   const sidebarSettings = (user as any)?.sidebarSettings || defaultSidebarSettings;
 
   const sidebarContent = (
     <>
-      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo}`}>
+      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} border-b border-white/5`}>
         <img 
           src={headerLogo}
           alt="PipAura" 
@@ -112,7 +112,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         />
       </div>
       
-      <nav className="mt-8 flex-1">
+      <nav className="mt-4 flex-1 px-3">
         <div className="space-y-1">
           {navigation.map((item) => {
             const Icon = item.icon;
@@ -123,16 +123,20 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center px-6 py-3 text-sm font-medium transition-colors rounded-lg mx-2",
+                  "flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl group",
                   isActive
-                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} border ${sidebarSettings.activeBorder}`
-                    : `${sidebarSettings.hoverColor}`
+                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-pink-500/10`
+                    : `${sidebarSettings.hoverColor} border-l-2 border-transparent`
                 )}
                 onClick={onClose}
               >
-                <Icon className="mr-3 h-5 w-5 text-pink-500" />
+                <Icon className={cn(
+                  "mr-3 h-5 w-5 transition-colors",
+                  isActive ? "text-pink-400" : "text-gray-400 group-hover:text-pink-400"
+                )} />
                 <span className={cn(
-                  "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent font-semibold"
+                  "font-medium transition-colors",
+                  isActive ? "text-white" : "text-gray-300 group-hover:text-white"
                 )}>
                   {item.name}
                 </span>
@@ -142,22 +146,22 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         </div>
       </nav>
 
-      <div className="p-4">
+      <div className="p-4 border-t border-white/5">
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={toggleTheme}
-          className={`w-full border-pink-500/30 hover:bg-gray-200/20`}
+          className="w-full justify-start text-gray-300 hover:text-white hover:bg-white/5 transition-all"
         >
           {theme === "dark" ? (
             <>
-              <Sun className="h-4 w-4 mr-2 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent" />
-              <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">Light Mode</span>
+              <Sun className="h-4 w-4 mr-3 text-gray-400" />
+              <span>Light Mode</span>
             </>
           ) : (
             <>
-              <Moon className="h-4 w-4 mr-2 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent" />
-              <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">Dark Mode</span>
+              <Moon className="h-4 w-4 mr-3 text-gray-400" />
+              <span>Dark Mode</span>
             </>
           )}
         </Button>
@@ -171,8 +175,8 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         {isOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
-            <div className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-br ${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo} shadow-lg flex flex-col`}>
-              <div className={`flex items-center justify-between h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo}`}>
+            <div className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-br ${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo} backdrop-blur-xl shadow-2xl flex flex-col`}>
+              <div className={`flex items-center justify-between h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} border-b border-white/5`}>
                 <img 
                   src={headerLogo}
                   alt="PipAura" 
@@ -182,14 +186,14 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   variant="ghost"
                   size="sm"
                   onClick={onClose}
-                  className="hover:bg-gray-200/20"
+                  className="hover:bg-white/10 text-gray-300"
                   data-testid="button-close-mobile-menu"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
               
-              <nav className="mt-8 flex-1">
+              <nav className="mt-4 flex-1 px-3">
                 <div className="space-y-1">
                   {navigation.map((item) => {
                     const Icon = item.icon;
@@ -200,17 +204,21 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         key={item.name}
                         href={item.href}
                         className={cn(
-                          "flex items-center px-6 py-3 text-sm font-medium transition-colors rounded-lg mx-2",
+                          "flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl group",
                           isActive
-                            ? `bg-gradient-to-r ${sidebarSettings.activeGradient} border ${sidebarSettings.activeBorder}`
-                            : `${sidebarSettings.hoverColor}`
+                            ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-pink-500/10`
+                            : `${sidebarSettings.hoverColor} border-l-2 border-transparent`
                         )}
                         onClick={onClose}
                         data-testid={`link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
                       >
-                        <Icon className="mr-3 h-5 w-5 text-pink-500" />
+                        <Icon className={cn(
+                          "mr-3 h-5 w-5 transition-colors",
+                          isActive ? "text-pink-400" : "text-gray-400 group-hover:text-pink-400"
+                        )} />
                         <span className={cn(
-                          "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent font-semibold"
+                          "font-medium transition-colors",
+                          isActive ? "text-white" : "text-gray-300 group-hover:text-white"
                         )}>
                           {item.name}
                         </span>
@@ -220,36 +228,36 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 </div>
               </nav>
 
-              <div className="p-4 space-y-2">
+              <div className="p-4 space-y-2 border-t border-white/5">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={toggleTheme}
-                  className={`w-full border-pink-500/30 hover:bg-gray-200/20`}
+                  className="w-full justify-start text-gray-300 hover:text-white hover:bg-white/5"
                   data-testid="button-mobile-theme-toggle"
                 >
                   {theme === "dark" ? (
                     <>
-                      <Sun className="h-4 w-4 mr-2 text-pink-500" />
-                      <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">Light Mode</span>
+                      <Sun className="h-4 w-4 mr-3 text-gray-400" />
+                      <span>Light Mode</span>
                     </>
                   ) : (
                     <>
-                      <Moon className="h-4 w-4 mr-2 text-pink-500" />
-                      <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">Dark Mode</span>
+                      <Moon className="h-4 w-4 mr-3 text-gray-400" />
+                      <span>Dark Mode</span>
                     </>
                   )}
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={() => signOut.mutate()}
                   disabled={signOut.isPending}
-                  className={`w-full border-pink-500/30 hover:bg-gray-200/20`}
+                  className="w-full justify-start text-gray-300 hover:text-white hover:bg-white/5"
                   data-testid="button-mobile-logout"
                 >
-                  <LogOut className="h-4 w-4 mr-2 text-pink-500" />
-                  <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold">
+                  <LogOut className="h-4 w-4 mr-3 text-gray-400" />
+                  <span>
                     {signOut.isPending ? "Logging out..." : "Logout"}
                   </span>
                 </Button>
@@ -264,14 +272,14 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   return (
     <div 
       className={cn(
-        "fixed inset-y-0 left-0 z-50 bg-gradient-to-br shadow-lg hidden lg:flex lg:flex-col transition-all duration-300",
+        "fixed inset-y-0 left-0 z-50 bg-gradient-to-br backdrop-blur-xl shadow-2xl hidden lg:flex lg:flex-col transition-all duration-300 border-r border-white/5",
         `${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo}`,
         isCollapsed ? "w-20" : "w-64"
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} relative`}>
+      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} border-b border-white/5 relative`}>
         <img 
           src={isCollapsed ? collapsedLogo : headerLogo}
           alt="PipAura" 
@@ -282,7 +290,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           size="sm"
           onClick={togglePin}
           className={cn(
-            "absolute right-2 hover:bg-white/10 transition-opacity duration-300 text-pink-500",
+            "absolute right-2 hover:bg-white/10 transition-opacity duration-300 text-gray-400 hover:text-pink-400",
             isCollapsed && !isPinned ? "opacity-0" : "opacity-100"
           )}
           data-testid="button-pin-sidebar"
@@ -291,7 +299,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         </Button>
       </div>
       
-      <nav className="mt-8 flex-1 overflow-y-auto sidebar-scrollbar">
+      <nav className="mt-4 flex-1 overflow-y-auto sidebar-scrollbar px-3">
         <div className="space-y-1">
           {navigation.map((item) => {
             const Icon = item.icon;
@@ -302,22 +310,23 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center py-3 text-sm font-medium transition-all duration-300 rounded-lg mx-2",
-                  isCollapsed ? "px-3 justify-center" : "px-6",
+                  "flex items-center py-3 text-sm font-medium transition-all duration-200 rounded-xl group",
+                  isCollapsed ? "px-3 justify-center" : "px-4",
                   isActive
-                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} border ${sidebarSettings.activeBorder}`
-                    : `${sidebarSettings.hoverColor}`
+                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-pink-500/10`
+                    : `${sidebarSettings.hoverColor} border-l-2 border-transparent`
                 )}
                 data-testid={`link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <Icon className={cn(
-                  "h-5 w-5 flex-shrink-0 text-pink-500",
-                  !isCollapsed && "mr-3"
+                  "h-5 w-5 flex-shrink-0 transition-colors",
+                  !isCollapsed && "mr-3",
+                  isActive ? "text-pink-400" : "text-gray-400 group-hover:text-pink-400"
                 )} />
                 <span className={cn(
-                  "transition-all duration-300 whitespace-nowrap overflow-hidden",
+                  "transition-all duration-300 whitespace-nowrap overflow-hidden font-medium",
                   isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
-                  "bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 bg-clip-text text-transparent font-semibold"
+                  isActive ? "text-white" : "text-gray-300 group-hover:text-white"
                 )}>
                   {item.name}
                 </span>
@@ -328,27 +337,27 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       </nav>
 
       <div className={cn(
-        "p-4 transition-all duration-300",
+        "p-4 transition-all duration-300 border-t border-white/5",
         isCollapsed && "p-2"
       )}>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={toggleTheme}
           className={cn(
-            `w-full border-pink-500/30 hover:bg-gray-200/20 transition-all duration-300`,
-            isCollapsed && "px-2"
+            `w-full text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300`,
+            isCollapsed ? "px-2 justify-center" : "justify-start"
           )}
           data-testid="button-theme-toggle"
         >
           {theme === "dark" ? (
             <>
               <Sun className={cn(
-                "h-4 w-4 text-pink-500",
-                !isCollapsed && "mr-2"
+                "h-4 w-4 text-gray-400",
+                !isCollapsed && "mr-3"
               )} />
               <span className={cn(
-                "transition-all duration-300 whitespace-nowrap overflow-hidden bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold",
+                "transition-all duration-300 whitespace-nowrap overflow-hidden",
                 isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
               )}>
                 Light Mode
@@ -357,11 +366,11 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           ) : (
             <>
               <Moon className={cn(
-                "h-4 w-4 text-pink-500",
-                !isCollapsed && "mr-2"
+                "h-4 w-4 text-gray-400",
+                !isCollapsed && "mr-3"
               )} />
               <span className={cn(
-                "transition-all duration-300 whitespace-nowrap overflow-hidden bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent font-semibold",
+                "transition-all duration-300 whitespace-nowrap overflow-hidden",
                 isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
               )}>
                 Dark Mode
