@@ -103,7 +103,7 @@ export default function Analytics() {
       {/* Top Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
         {/* Total P&L */}
-        <Card className="bg-[#0f1f3a] border-[#1a2f4a]" data-testid="card-total-pnl">
+        <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-total-pnl">
           <CardContent className="p-4 lg:p-6">
             <div className="text-gray-400 text-sm mb-2">Total P&L</div>
             <div className={`text-2xl lg:text-3xl font-bold ${stats.totalPnL >= 0 ? 'text-cyan-400' : 'text-red-500'}`} data-testid="text-total-pnl">
@@ -113,7 +113,7 @@ export default function Analytics() {
         </Card>
 
         {/* Win Rate */}
-        <Card className="bg-[#0f1f3a] border-[#1a2f4a]" data-testid="card-win-rate">
+        <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-win-rate">
           <CardContent className="p-4 lg:p-6">
             <div className="text-gray-400 text-sm mb-2">Win Rate</div>
             <div className="text-2xl lg:text-3xl font-bold text-white" data-testid="text-win-rate">
@@ -123,7 +123,7 @@ export default function Analytics() {
         </Card>
 
         {/* Profit Factor */}
-        <Card className="bg-[#0f1f3a] border-[#1a2f4a]" data-testid="card-profit-factor">
+        <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-profit-factor">
           <CardContent className="p-4 lg:p-6">
             <div className="text-gray-400 text-sm mb-2">Profit Factor</div>
             <div className="text-2xl lg:text-3xl font-bold text-white" data-testid="text-profit-factor">
@@ -133,7 +133,7 @@ export default function Analytics() {
         </Card>
 
         {/* Max Drawdown */}
-        <Card className="bg-[#0f1f3a] border-[#1a2f4a]" data-testid="card-max-drawdown">
+        <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-max-drawdown">
           <CardContent className="p-4 lg:p-6">
             <div className="text-gray-400 text-sm mb-2">Max Drawdown</div>
             <div className="text-2xl lg:text-3xl font-bold text-red-500" data-testid="text-max-drawdown">
@@ -145,7 +145,7 @@ export default function Analytics() {
 
       {/* DNA Core Intelligence Visualization */}
       <div className="mb-6">
-        <Card className="bg-[#0f1f3a] border-[#1a2f4a]" data-testid="card-dna-core">
+        <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-dna-core">
           <CardHeader>
             <CardTitle className="text-xl text-white">Trader DNA Core</CardTitle>
             <p className="text-sm text-gray-400">Real-time intelligence core showing your trading genome</p>
@@ -159,7 +159,7 @@ export default function Analytics() {
       {/* Bottom Visualizations Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Flow Curve */}
-        <Card className="bg-[#0f1f3a] border-[#1a2f4a]" data-testid="card-flow-curve">
+        <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-flow-curve">
           <CardHeader>
             <CardTitle className="text-xl text-white">Flow Curve</CardTitle>
           </CardHeader>
@@ -210,7 +210,7 @@ export default function Analytics() {
         </Card>
 
         {/* Monthly Orbit Rings */}
-        <Card className="bg-[#0f1f3a] border-[#1a2f4a]" data-testid="card-monthly-orbit">
+        <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-monthly-orbit">
           <CardHeader>
             <CardTitle className="text-xl text-white flex items-center gap-2">
               Monthly Orbit Rings
