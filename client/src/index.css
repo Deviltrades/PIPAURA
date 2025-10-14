@@ -458,88 +458,34 @@
   animation: border-rotate 4s linear infinite;
 }
 
-/* Heartbeat Pulse Animation for Fundamental Bias Cards */
-@keyframes heartbeat-pulse {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(34, 211, 238, 0.4), 0 0 20px rgba(34, 211, 238, 0.2);
-    border-color: rgba(34, 211, 238, 0.6);
-  }
-  25% {
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.8), 0 0 35px rgba(34, 211, 238, 0.4);
-    border-color: rgba(34, 211, 238, 1);
-  }
-  50% {
-    box-shadow: 0 0 10px rgba(34, 211, 238, 0.4), 0 0 20px rgba(34, 211, 238, 0.2);
-    border-color: rgba(34, 211, 238, 0.6);
-  }
-  75% {
-    box-shadow: 0 0 25px rgba(34, 211, 238, 1), 0 0 45px rgba(34, 211, 238, 0.5);
-    border-color: rgba(34, 211, 238, 1);
-  }
-}
-
+/* Steady Glow for Fundamental Bias Cards */
 .heartbeat-pulse {
-  animation: heartbeat-pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.8), 0 0 35px rgba(34, 211, 238, 0.4);
+  border-color: rgba(34, 211, 238, 1);
 }
 
-/* Hover Pulse Animation for Dashboard Widgets */
-@keyframes hover-pulse {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(34, 211, 238, 0.5), 0 0 30px rgba(34, 211, 238, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 25px rgba(34, 211, 238, 0.8), 0 0 45px rgba(34, 211, 238, 0.5);
-  }
-}
-
+/* Steady Glow for Dashboard Widgets on Hover */
 .widget-hover-pulse:hover {
-  animation: hover-pulse 1s ease-in-out infinite;
+  box-shadow: 0 0 25px rgba(34, 211, 238, 0.8), 0 0 45px rgba(34, 211, 238, 0.5);
   border-color: rgba(34, 211, 238, 1) !important;
 }
 
-/* Calendar Day Pulse Animation - Hover & Selected States */
-@keyframes calendar-day-pulse {
-  0%, 100% {
-    box-shadow: 0 0 12px rgba(34, 211, 238, 0.6), 0 0 24px rgba(34, 211, 238, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.9), 0 0 35px rgba(34, 211, 238, 0.6);
-  }
-}
-
+/* Steady Glow for Calendar Days - Hover & Selected States */
 .calendar-day-pulse:hover,
 .calendar-day-pulse.selected {
-  animation: calendar-day-pulse 1s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.9), 0 0 35px rgba(34, 211, 238, 0.6);
   border-color: rgba(34, 211, 238, 1) !important;
 }
 
-/* Red Pulse Animation for Expense Cards */
-@keyframes red-pulse {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5), 0 0 30px rgba(239, 68, 68, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 25px rgba(239, 68, 68, 0.8), 0 0 45px rgba(239, 68, 68, 0.5);
-  }
-}
-
+/* Steady Red Glow for Expense Cards on Hover */
 .red-hover-pulse:hover {
-  animation: red-pulse 1s ease-in-out infinite;
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.8), 0 0 45px rgba(239, 68, 68, 0.5);
   border-color: rgba(239, 68, 68, 1) !important;
 }
 
-/* Purple Pulse Animation for Currency Cards */
-@keyframes purple-pulse {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.5), 0 0 30px rgba(168, 85, 247, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 25px rgba(168, 85, 247, 0.8), 0 0 45px rgba(168, 85, 247, 0.5);
-  }
-}
-
+/* Steady Purple Glow for Currency Cards on Hover */
 .purple-hover-pulse:hover {
-  animation: purple-pulse 1s ease-in-out infinite;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.8), 0 0 45px rgba(168, 85, 247, 0.5);
   border-color: rgba(168, 85, 247, 1) !important;
 }
 

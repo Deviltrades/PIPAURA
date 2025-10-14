@@ -80,6 +80,16 @@ A comprehensive automated fundamental analysis system provides real-time (30-min
 ### Floating DNA Core Visualization
 The analytics page features a "Trader DNA Core" visualization: an animated 3D-like double-helix structure colored by overall Edge Integrity score, with six orbiting metrics (Win Rate, Avg R:R, Risk Consistency, Emotional Control, Discipline, Session Focus) connected by dynamic glowing beams.
 
+### UI/UX Design and Visual Effects
+The application features a unified cyan/teal color scheme (hsl(188, 94%, 60%)) with dark blue backgrounds and steady glow effects for interactive elements:
+- **Color Theme**: Unified cyan/teal throughout with theme-aware styling for both light and dark modes
+- **Visual Feedback**: All interactive elements use steady glows instead of pulsating animations for a polished, professional appearance
+- **Glow Effects**: Cyan glow on widget hover, strong bias cards show steady cyan glow, expense cards show red glow, currency cards show purple glow
+- **Menu Interaction**: Sidebar menu tabs display steady cyan glow on hover and when active/selected
+- **Calendar Styling**: Non-trading days show gradient logo at 40% opacity; winning days use dulled green (#00ad57); losing days use toned-down red (#e55555)
+- **Video Logo**: PipAura_1760451006076.mp4 displays in sidebar header (all states: expanded, collapsed, mobile)
+- **Light Mode Support**: Theme-aware text classes (text-foreground dark:text-white) and backgrounds (bg-slate-200 dark:bg-slate-800) ensure visibility in both modes
+
 ### Instrument Type Expansion
 The application supports five asset classes (FOREX, INDICES, CRYPTO, FUTURES, STOCKS) with advanced searchable dropdowns and custom instrument creation. Users can create any custom instrument not in predefined lists, with smart detection to prevent duplicates.
 
