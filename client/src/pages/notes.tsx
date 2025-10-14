@@ -89,34 +89,47 @@ export default function Notes() {
 
       <div className="grid gap-4">
         {mockNotes.map((note) => (
-          <Card key={note.id}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">{note.title}</CardTitle>
-                  <CardDescription>
-                    {note.category} • {new Date(note.date).toLocaleDateString()}
-                  </CardDescription>
+          <div key={note.id} className="relative">
+            {/* Animated Cyan Border Snake Effect */}
+            <div className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none z-0">
+              <div className="absolute inset-[-2px]" style={{
+                background: 'conic-gradient(from 0deg, transparent 0%, transparent 60%, hsl(188, 94%, 60%) 80%, hsl(188, 94%, 70%) 90%, transparent 100%)',
+                animation: 'border-rotate 5.76s linear infinite',
+                borderRadius: '0.5rem',
+                filter: 'blur(0.5px)',
+              }}></div>
+              <div className="absolute inset-[2px] bg-slate-950 rounded-lg"></div>
+            </div>
+
+            <Card className="relative z-10">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-lg">{note.title}</CardTitle>
+                    <CardDescription>
+                      {note.category} • {new Date(note.date).toLocaleDateString()}
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">Edit</Button>
+                    <Button variant="outline" size="sm">Delete</Button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">Edit</Button>
-                  <Button variant="outline" size="sm">Delete</Button>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                  {note.content}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {note.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                {note.content}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {note.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         ))}
       </div>
 
