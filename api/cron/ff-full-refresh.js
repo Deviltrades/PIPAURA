@@ -1,4 +1,4 @@
-import { runUpdate as runForexFactoryUpdate } from '../../lib/cron/forex-factory.js';
+import { runUpdate as runFinnhubUpdate } from '../../lib/cron/finnhub-calendar.js';
 
 export default async function handler(req, res) {
   // Check API key (fail closed if not configured)
@@ -16,19 +16,24 @@ export default async function handler(req, res) {
   try {
     const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const finnhubKey = process.env.FINNHUB_API_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Missing Supabase credentials');
     }
 
-    console.log('[CRON] Running FF Full Refresh...');
+    if (!finnhubKey) {
+      throw new Error('Missing FINNHUB_API_KEY');
+    }
 
-    // Run Forex Factory update (all events)
-    await runForexFactoryUpdate(supabaseUrl, supabaseKey, false);
+    console.log('[CRON] Running Finnhub Economic Calendar Update...');
+
+    // Run Finnhub economic calendar update
+    await runFinnhubUpdate(supabaseUrl, supabaseKey, finnhubKey);
 
     return res.status(200).json({
       success: true,
-      message: 'FF full refresh completed',
+      message: 'Finnhub economic calendar update completed',
     });
   } catch (error) {
     console.error('[CRON ERROR]', error);

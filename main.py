@@ -78,6 +78,9 @@ SB_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 TE_KEY = os.getenv("TRADING_ECONOMICS_API_KEY")
 POLYGON_API_KEY = os.getenv("POLYGON_API_KEY")
 
+if not SB_URL or not SB_KEY:
+    raise ValueError("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY")
+
 sb = create_client(SB_URL, SB_KEY)
 
 # ----------------- TIME WINDOW -----------------
