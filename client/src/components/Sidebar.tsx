@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import logoImage from "@assets/pipaura-logo.png";
 import headerLogo from "@assets/pipaura-header-logo.png";
+import collapsedLogo from "@assets/pipaura-collapsed-logo.png";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -261,21 +262,11 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       onMouseLeave={handleMouseLeave}
     >
       <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} relative`}>
-        {!isCollapsed ? (
-          <img 
-            src={headerLogo}
-            alt="PipAura" 
-            className="w-full h-full object-cover transition-opacity duration-300"
-          />
-        ) : (
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1">
-            <img 
-              src={logoImage}
-              alt="PipAura Logo" 
-              className="h-full w-full object-contain"
-            />
-          </div>
-        )}
+        <img 
+          src={isCollapsed ? collapsedLogo : headerLogo}
+          alt="PipAura" 
+          className="w-full h-full object-cover transition-opacity duration-300"
+        />
         <Button
           variant="ghost"
           size="sm"
