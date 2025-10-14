@@ -31,6 +31,7 @@ import {
   ChevronLeft
 } from "lucide-react";
 import logoImage from "@assets/pipaura-logo.png";
+import headerLogo from "@assets/pipaura-header-logo.png";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -102,14 +103,12 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   const sidebarContent = (
     <>
-      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo}`}>
-        <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-1">
-          <img 
-            src={logoImage}
-            alt="PipAura Logo" 
-            className="h-full w-full object-contain"
-          />
-        </div>
+      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} px-4`}>
+        <img 
+          src={headerLogo}
+          alt="PipAura" 
+          className="w-full h-10 object-contain"
+        />
       </div>
       
       <nav className="mt-8 flex-1">
@@ -169,13 +168,11 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
             <div className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-br ${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo} shadow-lg flex flex-col`}>
               <div className={`flex items-center justify-between h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} px-4`}>
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1">
-                  <img 
-                    src={logoImage}
-                    alt="PipAura Logo" 
-                    className="h-full w-full object-contain"
-                  />
-                </div>
+                <img 
+                  src={headerLogo}
+                  alt="PipAura" 
+                  className="h-10 object-contain flex-1"
+                />
                 <Button
                   variant="ghost"
                   size="sm"
@@ -263,17 +260,22 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} relative`}>
-        <div className={cn(
-          "bg-white rounded-lg flex items-center justify-center transition-all duration-300 p-1",
-          isCollapsed ? "w-10 h-10" : "w-12 h-12"
-        )}>
+      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} relative px-4`}>
+        {!isCollapsed ? (
           <img 
-            src={logoImage}
-            alt="PipAura Logo" 
-            className="h-full w-full object-contain transition-all duration-300"
+            src={headerLogo}
+            alt="PipAura" 
+            className="w-full h-10 object-contain transition-opacity duration-300"
           />
-        </div>
+        ) : (
+          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1">
+            <img 
+              src={logoImage}
+              alt="PipAura Logo" 
+              className="h-full w-full object-contain"
+            />
+          </div>
+        )}
         <Button
           variant="ghost"
           size="sm"
