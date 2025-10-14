@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Info } from "lucide-react";
 import { AccountSelector } from "@/components/AccountSelector";
+import { SessionInsights } from "@/components/SessionInsights";
 import { 
   LineChart, 
   Line, 
@@ -20,7 +21,7 @@ import {
   RadarChart
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
-import { getAnalytics } from "@/lib/supabase-service";
+import { getAnalytics, getTrades } from "@/lib/supabase-service";
 import { FloatingDNACore } from "@/components/FloatingDNACore";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
 
@@ -31,6 +32,12 @@ export default function Analytics() {
   const { data: analytics, isLoading } = useQuery({
     queryKey: ["analytics", selectedAccount],
     queryFn: () => getAnalytics(selectedAccount),
+    retry: false,
+  });
+
+  const { data: trades = [] } = useQuery({
+    queryKey: ["trades", selectedAccount],
+    queryFn: () => getTrades(selectedAccount),
     retry: false,
   });
 
@@ -141,6 +148,11 @@ export default function Analytics() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Session Insights Section */}
+      <div className="mb-6">
+        <SessionInsights trades={trades} />
       </div>
 
       {/* DNA Core Intelligence Visualization */}
