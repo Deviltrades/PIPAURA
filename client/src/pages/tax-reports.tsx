@@ -422,7 +422,7 @@ export default function TaxReports() {
           ) : (
             <>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+                <Card className="border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Trading Income</CardTitle>
                   </CardHeader>
@@ -434,7 +434,7 @@ export default function TaxReports() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Swap Income</CardTitle>
                   </CardHeader>
@@ -448,7 +448,7 @@ export default function TaxReports() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Deductions</CardTitle>
                   </CardHeader>
@@ -460,7 +460,7 @@ export default function TaxReports() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Net Taxable Income</CardTitle>
                   </CardHeader>
@@ -474,7 +474,7 @@ export default function TaxReports() {
               </div>
 
               <div className="grid gap-6 lg:grid-cols-2">
-                <Card>
+                <Card className="border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
                   <CardHeader>
                     <CardTitle>Monthly Breakdown</CardTitle>
                     <CardDescription>Income and expenses by month for {selectedYear}</CardDescription>
@@ -500,7 +500,7 @@ export default function TaxReports() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
                   <CardHeader>
                     <CardTitle>Tax Settings</CardTitle>
                     <CardDescription>Configure what to include in tax calculations</CardDescription>
