@@ -87,17 +87,17 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     }
   };
 
-  // Default sidebar settings - Dark glassmorphism to match dashboard
+  // Default sidebar settings - Dark with cyan accents
   const defaultSidebarSettings: SidebarSettings = {
     primaryColor: "slate",
-    gradientFrom: "from-gray-950/98",
+    gradientFrom: "from-slate-950/98",
     gradientVia: "via-slate-900/98",
-    gradientTo: "to-gray-950/98",
-    headerFrom: "from-gray-900/95",
-    headerTo: "to-slate-950/95",
-    activeGradient: "from-pink-500/15 via-purple-600/15 to-pink-500/15",
-    activeBorder: "border-l-2 border-pink-500",
-    hoverColor: "hover:bg-white/5 hover:border-l-2 hover:border-pink-500/30"
+    gradientTo: "to-slate-950/98",
+    headerFrom: "from-slate-950/95",
+    headerTo: "to-slate-900/95",
+    activeGradient: "from-cyan-500/15 via-teal-500/15 to-cyan-500/15",
+    activeBorder: "border-l-4 border-cyan-400",
+    hoverColor: "hover:bg-cyan-500/5 hover:border-l-2 hover:border-cyan-500/40"
   };
 
   const sidebarSettings = (user as any)?.sidebarSettings || defaultSidebarSettings;
@@ -125,14 +125,14 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 className={cn(
                   "flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl group",
                   isActive
-                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-pink-500/10`
+                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-cyan-500/10`
                     : `${sidebarSettings.hoverColor} border-l-2 border-transparent`
                 )}
                 onClick={onClose}
               >
                 <Icon className={cn(
                   "mr-3 h-5 w-5 transition-colors",
-                  isActive ? "text-pink-400" : "text-gray-400 group-hover:text-pink-400"
+                  isActive ? "text-cyan-400" : "text-gray-400 group-hover:text-cyan-400"
                 )} />
                 <span className={cn(
                   "font-medium transition-colors",
@@ -206,7 +206,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         className={cn(
                           "flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl group",
                           isActive
-                            ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-pink-500/10`
+                            ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-cyan-500/10`
                             : `${sidebarSettings.hoverColor} border-l-2 border-transparent`
                         )}
                         onClick={onClose}
@@ -214,7 +214,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                       >
                         <Icon className={cn(
                           "mr-3 h-5 w-5 transition-colors",
-                          isActive ? "text-pink-400" : "text-gray-400 group-hover:text-pink-400"
+                          isActive ? "text-cyan-400" : "text-gray-400 group-hover:text-cyan-400"
                         )} />
                         <span className={cn(
                           "font-medium transition-colors",
@@ -290,7 +290,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           size="sm"
           onClick={togglePin}
           className={cn(
-            "absolute right-2 hover:bg-white/10 transition-opacity duration-300 text-gray-400 hover:text-pink-400",
+            "absolute right-2 hover:bg-white/10 transition-opacity duration-300 text-gray-400 hover:text-cyan-400",
             isCollapsed && !isPinned ? "opacity-0" : "opacity-100"
           )}
           data-testid="button-pin-sidebar"
@@ -313,7 +313,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   "flex items-center py-3 text-sm font-medium transition-all duration-200 rounded-xl group",
                   isCollapsed ? "px-3 justify-center" : "px-4",
                   isActive
-                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-pink-500/10`
+                    ? `bg-gradient-to-r ${sidebarSettings.activeGradient} ${sidebarSettings.activeBorder} shadow-lg shadow-cyan-500/10`
                     : `${sidebarSettings.hoverColor} border-l-2 border-transparent`
                 )}
                 data-testid={`link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
@@ -321,7 +321,7 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 <Icon className={cn(
                   "h-5 w-5 flex-shrink-0 transition-colors",
                   !isCollapsed && "mr-3",
-                  isActive ? "text-pink-400" : "text-gray-400 group-hover:text-pink-400"
+                  isActive ? "text-cyan-400" : "text-gray-400 group-hover:text-cyan-400"
                 )} />
                 <span className={cn(
                   "transition-all duration-300 whitespace-nowrap overflow-hidden font-medium",
