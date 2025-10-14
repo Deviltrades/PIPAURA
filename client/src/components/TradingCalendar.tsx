@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Plus, Edit3, Check, X, Settings } from "lucide-react";
-import logoImage from "@assets/pipaura-logo.png";
+import logoImage from "@assets/image_1760452804525.png";
 import { 
   format, 
   startOfMonth, 
