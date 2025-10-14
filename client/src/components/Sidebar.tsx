@@ -288,23 +288,15 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       onMouseLeave={handleMouseLeave}
     >
       <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} border-b border-white/5 relative`}>
-        {isCollapsed ? (
-          <img 
-            src={collapsedLogo}
-            alt="PipAura" 
-            className="w-full h-full object-cover transition-opacity duration-300"
-          />
-        ) : (
-          <video 
-            src={headerLogoVideo}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover transition-opacity duration-300"
-            aria-label="PipAura Logo"
-          />
-        )}
+        <video 
+          src={headerLogoVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover transition-opacity duration-300"
+          aria-label="PipAura Logo"
+        />
         <Button
           variant="ghost"
           size="sm"
