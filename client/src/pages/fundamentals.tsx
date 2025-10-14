@@ -377,9 +377,15 @@ export default function Fundamentals() {
                               <Minus className="h-4 w-4 text-gray-500" />
                             )}
                           </div>
-                          <Badge variant={getBiasVariant(bias.total_bias)}>
-                            {bias.bias_text}
-                          </Badge>
+                          {bias.total_bias >= 7 ? (
+                            <Badge className="bg-green-600 hover:bg-green-700 text-white">
+                              {bias.bias_text}
+                            </Badge>
+                          ) : (
+                            <Badge variant={getBiasVariant(bias.total_bias)}>
+                              {bias.bias_text}
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-2">{bias.summary}</p>
                         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
@@ -475,9 +481,15 @@ export default function Fundamentals() {
                               <Minus className="h-4 w-4 text-gray-500" />
                             )}
                           </div>
-                          <Badge variant={getBiasVariant(index.score)}>
-                            {index.bias_text}
-                          </Badge>
+                          {index.score >= 3 ? (
+                            <Badge className="bg-green-600 hover:bg-green-700 text-white">
+                              {index.bias_text}
+                            </Badge>
+                          ) : (
+                            <Badge variant={getBiasVariant(index.score)}>
+                              {index.bias_text}
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-2">{index.summary}</p>
                         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
