@@ -69,7 +69,7 @@ export default function Fundamentals() {
         <TabsContent value="calendar" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <Card>
+              <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
                 <CardHeader>
                   <CardTitle>Today's Economic Events</CardTitle>
                   <CardDescription>Key economic releases and central bank events</CardDescription>
@@ -121,7 +121,7 @@ export default function Fundamentals() {
             </div>
 
             <div className="space-y-4">
-              <Card>
+              <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
                 <CardHeader>
                   <CardTitle className="text-lg">High Impact Events</CardTitle>
                 </CardHeader>
@@ -149,7 +149,7 @@ export default function Fundamentals() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
                 <CardHeader>
                   <CardTitle className="text-lg">Central Bank Rates</CardTitle>
                 </CardHeader>
@@ -179,20 +179,20 @@ export default function Fundamentals() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
                 <CardHeader>
                   <CardTitle className="text-lg">Quick Links</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start" data-testid="button-forex-factory">
+                  <Button variant="outline" className="w-full justify-start border-cyan-500/50 text-white hover:bg-cyan-600/20" data-testid="button-forex-factory">
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Forex Factory Calendar
                   </Button>
-                  <Button variant="outline" className="w-full justify-start" data-testid="button-investing">
+                  <Button variant="outline" className="w-full justify-start border-cyan-500/50 text-white hover:bg-cyan-600/20" data-testid="button-investing">
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Investing.com Calendar
                   </Button>
-                  <Button variant="outline" className="w-full justify-start" data-testid="button-tradingeconomics">
+                  <Button variant="outline" className="w-full justify-start border-cyan-500/50 text-white hover:bg-cyan-600/20" data-testid="button-tradingeconomics">
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Trading Economics
                   </Button>
@@ -203,7 +203,7 @@ export default function Fundamentals() {
         </TabsContent>
 
         <TabsContent value="news" className="space-y-4">
-          <Card>
+          <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
             <CardHeader>
               <CardTitle>Latest Market News</CardTitle>
               <CardDescription>Breaking news and market-moving headlines</CardDescription>
@@ -235,7 +235,7 @@ export default function Fundamentals() {
                 ].map((news, index) => (
                   <div
                     key={index}
-                    className="border-l-4 border-l-blue-500 pl-4 hover:bg-muted/50 p-3 rounded-r transition-colors"
+                    className="border-l-4 border-l-cyan-500 pl-4 hover:bg-muted/50 p-3 rounded-r transition-colors"
                     data-testid={`news-${index}`}
                   >
                     <div className="flex items-start justify-between mb-2">
@@ -259,7 +259,7 @@ export default function Fundamentals() {
 
         <TabsContent value="analysis" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
+            <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
               <CardHeader>
                 <CardTitle>Market Sentiment</CardTitle>
                 <CardDescription>Current market bias and positioning</CardDescription>
@@ -297,7 +297,7 @@ export default function Fundamentals() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
               <CardHeader>
                 <CardTitle>Key Levels to Watch</CardTitle>
                 <CardDescription>Important price levels and zones</CardDescription>
@@ -333,7 +333,7 @@ export default function Fundamentals() {
         </TabsContent>
 
         <TabsContent value="strength" className="space-y-4">
-          <Card>
+          <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
             <CardHeader>
               <CardTitle>FX Pair Fundamental Bias</CardTitle>
               <CardDescription>Automated fundamental analysis for 38 major currency pairs</CardDescription>
@@ -392,7 +392,7 @@ export default function Fundamentals() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
             <CardHeader>
               <CardTitle>Key Fundamental Drivers</CardTitle>
               <CardDescription>Current market-moving themes</CardDescription>
@@ -403,7 +403,7 @@ export default function Fundamentals() {
               ) : marketDrivers && marketDrivers.length > 0 ? (
                 <div className="space-y-3">
                   {marketDrivers.map((driver: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between p-2 border-l-4 border-l-blue-500 pl-3" data-testid={`driver-${index}`}>
+                    <div key={index} className="flex items-center justify-between p-2 border-l-4 border-l-cyan-500 pl-3" data-testid={`driver-${index}`}>
                       <div>
                         <div className="font-medium text-sm">{driver.driver}</div>
                         <div className="text-xs text-muted-foreground">{driver.status}</div>
@@ -423,7 +423,7 @@ export default function Fundamentals() {
           </Card>
 
           {/* Indices Section */}
-          <Card className="mt-6">
+          <Card className="mt-6 bg-[#0f1f3a] border-[#1a2f4a]">
             <CardHeader>
               <CardTitle>Global Indices Fundamental Bias</CardTitle>
               <CardDescription>Automated fundamental analysis for major stock market indices</CardDescription>
