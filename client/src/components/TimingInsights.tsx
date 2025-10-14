@@ -127,7 +127,7 @@ export default function TimingInsights({ trades, textColor = "#ffffff" }: Timing
       if (data.totalTrades === 0) return null;
       
       return (
-        <div className="bg-[#0f172a] border border-blue-500/30 rounded-lg p-3 shadow-lg">
+        <div className="bg-[#0f172a] border border-cyan-500/30 rounded-lg p-3 shadow-lg">
           <p className="text-white font-bold mb-1">{data.displayHour}</p>
           <p className={`font-semibold ${data.avgPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {formatCurrency(data.avgPnL)} avg

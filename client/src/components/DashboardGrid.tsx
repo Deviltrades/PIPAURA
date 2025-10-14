@@ -479,7 +479,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
 
         {editMode && (
           <div className="mb-4 p-3 bg-slate-900/30 rounded-lg border border-cyan-700">
-            <p className="text-blue-200 text-sm">
+            <p className="text-cyan-200 text-sm">
               <strong>Edit Mode:</strong> Drag widgets to move them around or drag the corner to resize. Click "Exit Edit" when finished.
             </p>
           </div>
