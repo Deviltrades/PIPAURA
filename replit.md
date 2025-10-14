@@ -83,8 +83,15 @@ The analytics page features a "Trader DNA Core" visualization: an animated 3D-li
 ### UI/UX Design and Visual Effects
 The application features a unified cyan/teal color scheme (hsl(188, 94%, 60%)) with dark blue backgrounds and steady glow effects for interactive elements:
 - **Color Theme**: Unified cyan/teal throughout with theme-aware styling for both light and dark modes
-- **Visual Feedback**: All interactive elements use steady glows instead of pulsating animations for a polished, professional appearance
-- **Glow Effects**: Cyan glow on widget hover, strong bias cards show steady cyan glow, expense cards show red glow, currency cards show purple glow
+- **Visual Feedback**: All interactive elements use steady glows instead of pulsating or animated effects for a polished, professional appearance
+- **Glow Effects**: 
+  - Widget hover: Steady cyan glow
+  - Strong bias cards: Steady cyan glow
+  - Expense cards: Steady red glow
+  - Currency cards: Steady purple glow
+  - Account cards: Steady dim cyan glow with subtle border
+  - Note cards: Steady dim cyan glow with subtle border
+  - Dashboard background: Inset steady dim cyan glow
 - **Menu Interaction**: Sidebar menu tabs display steady cyan glow on hover and when active/selected
 - **Calendar Styling**: Non-trading days show gradient logo at 40% opacity; winning days use dulled green (#00ad57); losing days use toned-down red (#e55555)
 - **Video Logo**: PipAura_1760451006076.mp4 displays in sidebar header (all states: expanded, collapsed, mobile)
