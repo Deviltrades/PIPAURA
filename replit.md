@@ -1,7 +1,7 @@
-# TJ - Traders Brotherhood
+# PipAura
 
 ## Overview
-TJ - Traders Brotherhood is a comprehensive trading journal application for forex, indices, and cryptocurrency traders. It offers advanced analytics, trade logging, signal sharing, and performance tracking. The application is a full-stack web application with a modern React frontend and a Supabase backend for authentication, database, and file storage. The business vision is to provide traders with a robust tool to improve their performance through detailed analysis and tracking, with ambitions to expand into advanced AI-driven insights and community features.
+PipAura is a comprehensive trading journal application for forex, indices, and cryptocurrency traders. It offers advanced analytics, trade logging, signal sharing, and performance tracking. The application is a full-stack web application with a modern React frontend and a Supabase backend for authentication, database, and file storage. The business vision is to provide traders with a robust tool to improve their performance through detailed analysis and tracking, with ambitions to expand into advanced AI-driven insights and community features.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

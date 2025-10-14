@@ -138,13 +138,13 @@ export default function AuthPage() {
               <TrendingUp className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">TJ</h1>
-              <p className="text-sm text-muted-foreground">Traders Brotherhood</p>
+              <h1 className="text-2xl font-bold text-foreground">PipAura</h1>
+              <p className="text-sm text-muted-foreground">Trading Journal</p>
             </div>
           </div>
           
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            Join the Brotherhood of Elite Traders
+            Elevate Your Trading Performance
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
             Track, analyze, and improve your trading performance with our comprehensive journal and analytics platform.

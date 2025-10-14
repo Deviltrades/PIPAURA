@@ -92,15 +92,15 @@ export default function MainPage() {
             <div className="flex items-center justify-center gap-4 mb-4">
               <img 
                 src={logoImage} 
-                alt="TJ - Traders Brotherhood Logo" 
+                alt="PipAura Logo" 
                 className="w-16 h-16 rounded-lg shadow-lg"
               />
               <div>
                 <h1 className="text-3xl font-bold text-foreground">
-                  TJ - Traders Brotherhood
+                  PipAura
                 </h1>
                 <p className="text-muted-foreground">
-                  Professional Trading Journal & Community
+                  Professional Trading Journal & Analytics
                 </p>
               </div>
             </div>
