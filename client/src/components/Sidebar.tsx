@@ -31,7 +31,7 @@ import {
   ChevronLeft
 } from "lucide-react";
 import logoImage from "@assets/pipaura-logo.png";
-import headerLogo from "@assets/pipaura-header-logo.png";
+import headerLogoVideo from "@assets/PipAura_1760448470996.mp4";
 import collapsedLogo from "@assets/pipaura-collapsed-logo-v2.png";
 
 const navigation = [
@@ -105,10 +105,14 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const sidebarContent = (
     <>
       <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} border-b border-white/5`}>
-        <img 
-          src={headerLogo}
-          alt="PipAura" 
+        <video 
+          src={headerLogoVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
           className="w-full h-full object-cover"
+          aria-label="PipAura Logo"
         />
       </div>
       
@@ -177,10 +181,14 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
             <div className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-br ${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo} backdrop-blur-xl shadow-2xl flex flex-col`}>
               <div className={`flex items-center justify-between h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} border-b border-white/5`}>
-                <img 
-                  src={headerLogo}
-                  alt="PipAura" 
+                <video 
+                  src={headerLogoVideo}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
                   className="h-full object-cover flex-1"
+                  aria-label="PipAura Logo"
                 />
                 <Button
                   variant="ghost"
@@ -280,11 +288,23 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       onMouseLeave={handleMouseLeave}
     >
       <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} border-b border-white/5 relative`}>
-        <img 
-          src={isCollapsed ? collapsedLogo : headerLogo}
-          alt="PipAura" 
-          className="w-full h-full object-cover transition-opacity duration-300"
-        />
+        {isCollapsed ? (
+          <img 
+            src={collapsedLogo}
+            alt="PipAura" 
+            className="w-full h-full object-cover transition-opacity duration-300"
+          />
+        ) : (
+          <video 
+            src={headerLogoVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover transition-opacity duration-300"
+            aria-label="PipAura Logo"
+          />
+        )}
         <Button
           variant="ghost"
           size="sm"
