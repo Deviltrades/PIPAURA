@@ -94,7 +94,7 @@ export default function Notes() {
             <div className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none z-0">
               <div className="absolute inset-[-2px]" style={{
                 background: 'conic-gradient(from 0deg, transparent 0%, transparent 60%, hsl(188, 94%, 60%) 80%, hsl(188, 94%, 70%) 90%, transparent 100%)',
-                animation: 'border-rotate 5.76s linear infinite',
+                animation: 'border-rotate 8.06s linear infinite',
                 borderRadius: '0.5rem',
                 filter: 'blur(0.5px)',
               }}></div>
