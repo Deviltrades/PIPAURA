@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, TrendingUp, Percent, Calculator, BarChart3, Calendar, DollarSign } from "lucide-react";
+import { Plus, TrendingUp, Percent, Calculator, BarChart3, Calendar, DollarSign, Clock } from "lucide-react";
 
 export type WidgetType = 
   | "total-pnl"
@@ -25,7 +25,8 @@ export type WidgetType =
   | "daily-pnl-chart"
   | "recent-trades"
   | "trading-calendar"
-  | "risk-metrics";
+  | "risk-metrics"
+  | "session-breakdown";
 
 export interface WidgetConfig {
   id: WidgetType;
@@ -84,6 +85,13 @@ export const availableWidgets: WidgetConfig[] = [
     description: "Risk management statistics and ratios",
     icon: <TrendingUp className="h-4 w-4" />,
     category: "performance"
+  },
+  {
+    id: "session-breakdown",
+    title: "Session Breakdown",
+    description: "Performance analytics by trading session (London, NY, Asia)",
+    icon: <Clock className="h-4 w-4" />,
+    category: "analytics"
   }
 ];
 

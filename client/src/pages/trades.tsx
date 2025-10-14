@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Upload, Scan } from "lucide-react";
+import { Plus, Edit, Trash2, Upload, Scan, Clock } from "lucide-react";
 import { AddTradeModal } from "@/components/AddTradeModal";
 import { UploadTradesModal } from "@/components/UploadTradesModal";
 import { OCRUploadModal } from "@/components/OCRUploadModal";
@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
 import { formatTradeDateTime } from "@/lib/date-utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Trades() {
   const [selectedAccount, setSelectedAccount] = useSelectedAccount();
@@ -21,6 +22,7 @@ export default function Trades() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isOCRModalOpen, setIsOCRModalOpen] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
+  const [sessionFilter, setSessionFilter] = useState<string>("all");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [location, setLocation] = useLocation();
@@ -67,6 +69,37 @@ export default function Trades() {
     setEditingTrade(null);
   };
 
+  // Filter trades by session
+  const filteredTrades = sessionFilter === "all" 
+    ? trades 
+    : trades.filter((trade: any) => trade.session_tag?.toLowerCase() === sessionFilter.toLowerCase());
+
+  // Helper function to get session badge color
+  const getSessionBadgeColor = (session: string | null) => {
+    if (!session) return "bg-gray-600 text-white";
+    switch (session.toLowerCase()) {
+      case "london":
+        return "bg-blue-600 text-white";
+      case "new york":
+        return "bg-purple-600 text-white";
+      case "asia":
+        return "bg-orange-600 text-white";
+      case "overlap":
+        return "bg-pink-600 text-white";
+      default:
+        return "bg-gray-600 text-white";
+    }
+  };
+
+  // Helper function to format holding time
+  const formatHoldingTime = (minutes: number | null) => {
+    if (!minutes) return "N/A";
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+  };
+
   if (isLoading) {
     return (
       <div className="p-4 lg:p-8">
@@ -95,7 +128,21 @@ export default function Trades() {
         <div>
           <h1 className="text-3xl font-bold text-white">Trade Journal</h1>
           <p className="text-gray-300 mb-3">Manage and track all your trading positions</p>
-          <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
+          <div className="flex gap-3 items-center">
+            <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
+            <Select value={sessionFilter} onValueChange={setSessionFilter}>
+              <SelectTrigger className="w-[180px] bg-slate-800 border-slate-700 text-white" data-testid="select-session-filter">
+                <SelectValue placeholder="Filter by session" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sessions</SelectItem>
+                <SelectItem value="london">London</SelectItem>
+                <SelectItem value="new york">New York</SelectItem>
+                <SelectItem value="asia">Asia</SelectItem>
+                <SelectItem value="overlap">Overlap</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button 
@@ -128,13 +175,13 @@ export default function Trades() {
       </div>
 
       <div className="space-y-4">
-        {trades.length > 0 ? (
-          trades.map((trade: any) => (
+        {filteredTrades.length > 0 ? (
+          filteredTrades.map((trade: any) => (
             <Card key={trade.id} className="bg-[#0f1f3a] border-[#1a2f4a]">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-3 mb-3 flex-wrap">
                       <Badge variant={trade.trade_type === 'BUY' ? 'default' : 'secondary'} className={
                         trade.trade_type === 'BUY' 
                           ? 'bg-green-600 text-white hover:bg-green-700' 
@@ -148,6 +195,17 @@ export default function Trades() {
                              className="bg-cyan-600 text-white">
                         {trade.status}
                       </Badge>
+                      {trade.session_tag && (
+                        <Badge className={getSessionBadgeColor(trade.session_tag)} data-testid={`badge-session-${trade.id}`}>
+                          {trade.session_tag}
+                        </Badge>
+                      )}
+                      {trade.holding_time_minutes && (
+                        <Badge variant="outline" className="border-cyan-500/30 text-cyan-400 bg-transparent flex items-center gap-1" data-testid={`badge-holding-time-${trade.id}`}>
+                          <Clock className="h-3 w-3" />
+                          {formatHoldingTime(trade.holding_time_minutes)}
+                        </Badge>
+                      )}
                     </div>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm">
@@ -182,6 +240,14 @@ export default function Trades() {
                           <p className="text-gray-400">P&L</p>
                           <p className={`font-medium ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {formatCurrency(trade.pnl)}
+                          </p>
+                        </div>
+                      )}
+                      {trade.profit_per_lot !== null && trade.profit_per_lot !== undefined && (
+                        <div>
+                          <p className="text-gray-400">P&L per Lot</p>
+                          <p className={`font-medium ${parseFloat(trade.profit_per_lot) >= 0 ? 'text-green-400' : 'text-red-400'}`} data-testid={`text-profit-per-lot-${trade.id}`}>
+                            {formatCurrency(parseFloat(trade.profit_per_lot))}
                           </p>
                         </div>
                       )}
@@ -232,16 +298,23 @@ export default function Trades() {
             </Card>
           ))
         ) : (
-          <Card>
+          <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
             <CardContent className="p-12 text-center">
-              <h3 className="text-lg font-medium mb-2">No trades yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Start building your trading journal by adding your first trade
+              <h3 className="text-lg font-medium mb-2 text-white">
+                {sessionFilter === "all" ? "No trades yet" : `No ${sessionFilter} session trades`}
+              </h3>
+              <p className="text-gray-400 mb-4">
+                {sessionFilter === "all" 
+                  ? "Start building your trading journal by adding your first trade"
+                  : `Try selecting a different session filter or add new trades`
+                }
               </p>
-              <Button onClick={() => setIsFormOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Trade
-              </Button>
+              {sessionFilter === "all" && (
+                <Button onClick={() => setIsFormOpen(true)} className="bg-cyan-600 hover:bg-cyan-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Trade
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}

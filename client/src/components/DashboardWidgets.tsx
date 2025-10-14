@@ -11,7 +11,8 @@ import {
   DollarSign,
   X,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Clock
 } from "lucide-react";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { TradingCalendar } from "./TradingCalendar";
@@ -247,6 +248,89 @@ export function RiskMetricsWidget({ onRemove, analytics }: WidgetProps) {
   );
 }
 
+export function SessionBreakdownWidget({ onRemove, trades }: WidgetProps) {
+  // Calculate session statistics
+  const sessionStats = (trades || []).reduce((acc: any, trade: any) => {
+    const session = trade.session_tag || "Unknown";
+    if (!acc[session]) {
+      acc[session] = { count: 0, pnl: 0, wins: 0 };
+    }
+    acc[session].count++;
+    if (trade.pnl !== null && trade.pnl !== undefined) {
+      const pnlValue = parseFloat(trade.pnl);
+      acc[session].pnl += pnlValue;
+      if (pnlValue > 0) acc[session].wins++;
+    }
+    return acc;
+  }, {});
+
+  const sessions = Object.entries(sessionStats).map(([name, stats]: [string, any]) => ({
+    name,
+    ...stats,
+    winRate: stats.count > 0 ? (stats.wins / stats.count) * 100 : 0,
+  })).sort((a, b) => b.count - a.count);
+
+  const getSessionColor = (session: string) => {
+    switch (session.toLowerCase()) {
+      case "london": return "bg-blue-600";
+      case "new york": return "bg-purple-600";
+      case "asia": return "bg-orange-600";
+      case "overlap": return "bg-pink-600";
+      default: return "bg-gray-600";
+    }
+  };
+
+  return (
+    <Card className="relative group">
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+        onClick={onRemove}
+      >
+        <X className="h-3 w-3" />
+      </Button>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">Session Breakdown</CardTitle>
+        <Clock className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {sessions.length > 0 ? (
+            sessions.map((session) => (
+              <div key={session.name} className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Badge className={`${getSessionColor(session.name)} text-white`}>
+                    {session.name}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">{session.count} trades</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Win Rate:</span>
+                  <span className="font-medium">{session.winRate.toFixed(1)}%</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">P&L:</span>
+                  <span className={`font-medium ${session.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {formatCurrency(session.pnl)}
+                  </span>
+                </div>
+                {session.name !== sessions[sessions.length - 1].name && (
+                  <div className="border-b border-border my-2"></div>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No session data available
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export const widgetComponents = {
   "total-pnl": TotalPnLWidget,
   "win-rate": WinRateWidget,
@@ -255,4 +339,5 @@ export const widgetComponents = {
   "recent-trades": RecentTradesWidget,
   "trading-calendar": TradingCalendarWidget,
   "risk-metrics": RiskMetricsWidget,
+  "session-breakdown": SessionBreakdownWidget,
 } as const;
