@@ -341,12 +341,13 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       <div className="max-w-7xl mx-auto relative">
         {/* Animated Cyan Border Snake Effect */}
         <div className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none z-0">
-          <div className="absolute inset-[-2px]" style={{
-            background: 'conic-gradient(from 0deg, transparent 0%, transparent 70%, hsl(188, 94%, 60%) 85%, hsl(188, 94%, 70%) 92%, transparent 100%)',
-            animation: 'border-rotate 4s linear infinite',
+          <div className="absolute inset-[-3px]" style={{
+            background: 'conic-gradient(from 0deg, transparent 0%, transparent 60%, hsl(188, 94%, 60%) 80%, hsl(188, 94%, 70%) 90%, transparent 100%)',
+            animation: 'border-rotate 4.8s linear infinite',
             borderRadius: '0.5rem',
+            filter: 'blur(1px)',
           }}></div>
-          <div className="absolute inset-[2px] rounded-lg" style={{ backgroundColor: bgColor }}></div>
+          <div className="absolute inset-[3px] rounded-lg" style={{ backgroundColor: bgColor }}></div>
         </div>
         
         {/* Header Controls */}
