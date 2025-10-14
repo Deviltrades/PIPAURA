@@ -104,11 +104,11 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   const sidebarContent = (
     <>
-      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} px-3 py-2`}>
+      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo}`}>
         <img 
           src={headerLogo}
           alt="PipAura" 
-          className="w-full h-full object-contain"
+          className="w-[90%] h-full object-contain"
         />
       </div>
       
@@ -168,11 +168,11 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
             <div className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-br ${sidebarSettings.gradientFrom} ${sidebarSettings.gradientVia} ${sidebarSettings.gradientTo} shadow-lg flex flex-col`}>
-              <div className={`flex items-center justify-between h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} px-3 py-2`}>
+              <div className={`flex items-center justify-between h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo}`}>
                 <img 
                   src={headerLogo}
                   alt="PipAura" 
-                  className="h-full object-contain flex-1"
+                  className="h-full w-[85%] object-contain"
                 />
                 <Button
                   variant="ghost"
@@ -261,11 +261,14 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} relative px-3 py-2`}>
+      <div className={`flex items-center justify-center h-16 bg-gradient-to-r ${sidebarSettings.headerFrom} ${sidebarSettings.headerTo} relative`}>
         <img 
           src={isCollapsed ? collapsedLogo : headerLogo}
           alt="PipAura" 
-          className="w-full h-full object-contain transition-opacity duration-300"
+          className={cn(
+            "h-full object-contain transition-opacity duration-300",
+            isCollapsed ? "w-[90%]" : "w-[90%]"
+          )}
         />
         <Button
           variant="ghost"
