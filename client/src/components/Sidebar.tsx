@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import logoImage from "@assets/pipaura-logo.png";
 import headerLogo from "@assets/pipaura-header-logo.png";
-import collapsedLogo from "@assets/pipaura-collapsed-logo.png";
+import collapsedLogo from "@assets/pipaura-collapsed-logo-v2.png";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
