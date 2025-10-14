@@ -458,6 +458,30 @@
   animation: border-rotate 4s linear infinite;
 }
 
+/* Heartbeat Pulse Animation for Fundamental Bias Cards */
+@keyframes heartbeat-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.4), 0 0 20px rgba(34, 211, 238, 0.2);
+    border-color: rgba(34, 211, 238, 0.6);
+  }
+  25% {
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.8), 0 0 35px rgba(34, 211, 238, 0.4);
+    border-color: rgba(34, 211, 238, 1);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.4), 0 0 20px rgba(34, 211, 238, 0.2);
+    border-color: rgba(34, 211, 238, 0.6);
+  }
+  75% {
+    box-shadow: 0 0 25px rgba(34, 211, 238, 1), 0 0 45px rgba(34, 211, 238, 0.5);
+    border-color: rgba(34, 211, 238, 1);
+  }
+}
+
+.heartbeat-pulse {
+  animation: heartbeat-pulse 1.5s ease-in-out infinite;
+}
+
 /* Dashboard Scrollbar - Cyan Theme (matches sidebar) */
 .dashboard-scrollbar::-webkit-scrollbar {
   width: 8px;

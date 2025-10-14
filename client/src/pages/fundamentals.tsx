@@ -356,8 +356,16 @@ export default function Fundamentals() {
                       return "secondary";
                     };
 
+                    const isStrongBias = bias.total_bias >= 7 || bias.total_bias <= -7;
+                    
                     return (
-                      <div key={index} className="space-y-2 p-4 border rounded-lg" data-testid={`pair-bias-${index}`}>
+                      <div 
+                        key={index} 
+                        className={`space-y-2 p-4 rounded-lg bg-[#0a1628] border-2 border-cyan-500/60 transition-all duration-300 ${
+                          isStrongBias ? 'heartbeat-pulse' : ''
+                        }`}
+                        data-testid={`pair-bias-${index}`}
+                      >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="font-bold">{bias.pair}</span>
@@ -446,8 +454,16 @@ export default function Fundamentals() {
                       return "secondary";
                     };
 
+                    const isStrongIndexBias = index.score >= 3 || index.score <= -3;
+                    
                     return (
-                      <div key={idx} className="space-y-2 p-4 border rounded-lg" data-testid={`index-bias-${idx}`}>
+                      <div 
+                        key={idx} 
+                        className={`space-y-2 p-4 rounded-lg bg-[#0a1628] border-2 border-cyan-500/60 transition-all duration-300 ${
+                          isStrongIndexBias ? 'heartbeat-pulse' : ''
+                        }`}
+                        data-testid={`index-bias-${idx}`}
+                      >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="font-bold">{index.instrument}</span>
