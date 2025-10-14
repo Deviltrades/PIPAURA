@@ -31,12 +31,12 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [bgColor, setBgColor] = useState("#0f172a");
   const [textColor, setTextColor] = useState("#ffffff");
-  const [showAllProfits, setShowAllProfits] = useState(true);
-  const [showAllWinRates, setShowAllWinRates] = useState(true);
-  const [showAllRiskReward, setShowAllRiskReward] = useState(true);
-  const [showAllAverage, setShowAllAverage] = useState(true);
-  const [showAllFees, setShowAllFees] = useState(true);
-  const [showAllTotalTrades, setShowAllTotalTrades] = useState(true);
+  const [profitTimePeriod, setProfitTimePeriod] = useState<'daily' | 'weekly' | 'monthly' | 'all'>('all');
+  const [winRateTimePeriod, setWinRateTimePeriod] = useState<'daily' | 'weekly' | 'monthly' | 'all'>('all');
+  const [riskRewardTimePeriod, setRiskRewardTimePeriod] = useState<'daily' | 'weekly' | 'monthly' | 'all'>('all');
+  const [averageTimePeriod, setAverageTimePeriod] = useState<'daily' | 'weekly' | 'monthly' | 'all'>('all');
+  const [feesTimePeriod, setFeesTimePeriod] = useState<'daily' | 'weekly' | 'monthly' | 'all'>('all');
+  const [tradesTimePeriod, setTradesTimePeriod] = useState<'daily' | 'weekly' | 'monthly' | 'all'>('all');
   
   const defaultLayouts = {
     lg: [
@@ -517,58 +517,33 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           {/* Profit Widget */}
           <div key="profit">
             <div className="relative h-full">
-              {/* Toggle Button - Positioned at top right of widget */}
-              <button
-                onClick={() => setShowAllProfits(!showAllProfits)}
-                className="absolute top-4 right-4 px-2 py-1 text-xs rounded transition-colors z-10"
-                style={{ 
-                  backgroundColor: `${textColor}20`,
-                  color: textColor 
-                }}
-                data-testid="button-toggle-profit-view"
-              >
-                {showAllProfits ? "Show All Time Only" : "Show All Periods"}
-              </button>
+              {/* Time Period Selector - Positioned at top right of widget */}
+              <Select value={profitTimePeriod} onValueChange={(value: any) => setProfitTimePeriod(value)}>
+                <SelectTrigger className="absolute top-4 right-4 w-[90px] h-7 text-xs z-10 border-cyan-500/50" data-testid="select-profit-period">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
 
               <DraggableWidget title="Profit" themeColor={themeColor} textColor={textColor}>
-                {/* Profit Values */}
-                {showAllProfits ? (
-                  <div className="flex gap-6 mt-1">
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        ${dailyPnL >= 1000 ? `${(dailyPnL/1000).toFixed(1)}K` : dailyPnL.toFixed(0)}
-                      </div>
+                <div className="flex items-center h-full mt-1">
+                  <div>
+                    <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>
+                      {profitTimePeriod === 'daily' ? 'Daily' : profitTimePeriod === 'weekly' ? 'Weekly' : profitTimePeriod === 'monthly' ? 'Monthly' : 'All Time'}
                     </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        ${weeklyPnL >= 1000 ? `${(weeklyPnL/1000).toFixed(1)}K` : weeklyPnL.toFixed(0)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        ${monthlyPnL >= 1000 ? `${(monthlyPnL/1000).toFixed(1)}K` : monthlyPnL.toFixed(0)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        ${totalPnL >= 1000 ? `${(totalPnL/1000).toFixed(1)}K` : totalPnL.toFixed(0)}
-                      </div>
+                    <div className="font-bold text-3xl" style={{ color: textColor }}>
+                      ${profitTimePeriod === 'daily' ? (dailyPnL >= 1000 ? `${(dailyPnL/1000).toFixed(1)}K` : dailyPnL.toFixed(0)) :
+                        profitTimePeriod === 'weekly' ? (weeklyPnL >= 1000 ? `${(weeklyPnL/1000).toFixed(1)}K` : weeklyPnL.toFixed(0)) :
+                        profitTimePeriod === 'monthly' ? (monthlyPnL >= 1000 ? `${(monthlyPnL/1000).toFixed(1)}K` : monthlyPnL.toFixed(0)) :
+                        (totalPnL >= 1000 ? `${(totalPnL/1000).toFixed(1)}K` : totalPnL.toFixed(0))}
                     </div>
                   </div>
-                ) : (
-                  <div className="flex items-center h-full mt-1">
-                    <div>
-                      <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>All Time</div>
-                      <div className="font-bold text-3xl" style={{ color: textColor }}>
-                        ${totalPnL >= 1000 ? `${(totalPnL/1000).toFixed(1)}K` : totalPnL.toFixed(0)}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                </div>
               </DraggableWidget>
             </div>
           </div>
@@ -576,58 +551,34 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           {/* Win Rate Widget */}
           <div key="winrate">
             <div className="relative h-full">
-              {/* Toggle Button - Positioned at top right of widget */}
-              <button
-                onClick={() => setShowAllWinRates(!showAllWinRates)}
-                className="absolute top-4 right-4 px-2 py-1 text-xs rounded transition-colors z-10"
-                style={{ 
-                  backgroundColor: `${textColor}20`,
-                  color: textColor 
-                }}
-                data-testid="button-toggle-winrate-view"
-              >
-                {showAllWinRates ? "Show All Time Only" : "Show All Periods"}
-              </button>
+              {/* Time Period Selector - Positioned at top right of widget */}
+              <Select value={winRateTimePeriod} onValueChange={(value: any) => setWinRateTimePeriod(value)}>
+                <SelectTrigger className="absolute top-4 right-4 w-[90px] h-7 text-xs z-10 border-cyan-500/50" data-testid="select-winrate-period">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
 
               <DraggableWidget title="Win Rate" themeColor={themeColor} textColor={textColor}>
-                {/* Win Rate Values */}
-                {showAllWinRates ? (
-                  <div className="flex gap-6 mt-1">
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        {dailyWinRate.toFixed(1)}%
-                      </div>
+                <div className="flex items-center justify-between mt-1">
+                  <div className="flex-1">
+                    <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>
+                      {winRateTimePeriod === 'daily' ? 'Daily' : winRateTimePeriod === 'weekly' ? 'Weekly' : winRateTimePeriod === 'monthly' ? 'Monthly' : 'All Time'}
                     </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        {weeklyWinRate.toFixed(1)}%
-                      </div>
-                    </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        {monthlyWinRate.toFixed(1)}%
-                      </div>
-                    </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        {winRate.toFixed(1)}%
-                      </div>
+                    <div className="font-bold text-3xl" style={{ color: textColor }}>
+                      {winRateTimePeriod === 'daily' ? dailyWinRate.toFixed(1) : 
+                       winRateTimePeriod === 'weekly' ? weeklyWinRate.toFixed(1) :
+                       winRateTimePeriod === 'monthly' ? monthlyWinRate.toFixed(1) :
+                       winRate.toFixed(1)}%
                     </div>
                   </div>
-                ) : (
-                  <div className="flex items-center justify-between mt-1">
-                    <div className="flex-1">
-                      <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>All Time</div>
-                      <div className="font-bold text-3xl" style={{ color: textColor }}>
-                        {winRate.toFixed(1)}%
-                      </div>
-                    </div>
-                    <div className="relative w-24 h-12">
-                      <svg viewBox="0 0 100 50" className="w-full h-full">
+                  <div className="relative w-24 h-12">
+                    <svg viewBox="0 0 100 50" className="w-full h-full">
                         {/* Red arc (losing trades - full background) */}
                         <path
                           d="M 10 45 A 40 40 0 0 1 90 45"
@@ -663,7 +614,6 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
                       <div className="absolute -bottom-4 right-0 text-gray-500 text-xs">100</div>
                     </div>
                   </div>
-                )}
               </DraggableWidget>
             </div>
           </div>
@@ -671,58 +621,33 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           {/* Risk Reward Widget */}
           <div key="riskreward">
             <div className="relative h-full">
-              {/* Toggle Button - Positioned at top right of widget */}
-              <button
-                onClick={() => setShowAllRiskReward(!showAllRiskReward)}
-                className="absolute top-4 right-4 px-2 py-1 text-xs rounded transition-colors z-10"
-                style={{ 
-                  backgroundColor: `${textColor}20`,
-                  color: textColor 
-                }}
-                data-testid="button-toggle-riskreward-view"
-              >
-                {showAllRiskReward ? "Show All Time Only" : "Show All Periods"}
-              </button>
+              {/* Time Period Selector - Positioned at top right of widget */}
+              <Select value={riskRewardTimePeriod} onValueChange={(value: any) => setRiskRewardTimePeriod(value)}>
+                <SelectTrigger className="absolute top-4 right-4 w-[90px] h-7 text-xs z-10 border-cyan-500/50" data-testid="select-riskreward-period">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
 
               <DraggableWidget title="Risk Reward" themeColor={themeColor} textColor={textColor}>
-                {/* Risk Reward Values */}
-                {showAllRiskReward ? (
-                  <div className="flex gap-6 mt-1">
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        1:{dailyRiskReward >= 999 ? '∞' : dailyRiskReward.toFixed(1)}
-                      </div>
+                <div className="flex items-center h-full mt-1">
+                  <div>
+                    <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>
+                      {riskRewardTimePeriod === 'daily' ? 'Daily' : riskRewardTimePeriod === 'weekly' ? 'Weekly' : riskRewardTimePeriod === 'monthly' ? 'Monthly' : 'All Time'}
                     </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        1:{weeklyRiskReward >= 999 ? '∞' : weeklyRiskReward.toFixed(1)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        1:{monthlyRiskReward >= 999 ? '∞' : monthlyRiskReward.toFixed(1)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        1:{allTimeRiskReward >= 999 ? '∞' : allTimeRiskReward.toFixed(1)}
-                      </div>
+                    <div className="font-bold text-3xl" style={{ color: textColor }}>
+                      1:{riskRewardTimePeriod === 'daily' ? (dailyRiskReward >= 999 ? '∞' : dailyRiskReward.toFixed(1)) :
+                        riskRewardTimePeriod === 'weekly' ? (weeklyRiskReward >= 999 ? '∞' : weeklyRiskReward.toFixed(1)) :
+                        riskRewardTimePeriod === 'monthly' ? (monthlyRiskReward >= 999 ? '∞' : monthlyRiskReward.toFixed(1)) :
+                        (allTimeRiskReward >= 999 ? '∞' : allTimeRiskReward.toFixed(1))}
                     </div>
                   </div>
-                ) : (
-                  <div className="flex items-center h-full mt-1">
-                    <div>
-                      <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>All Time</div>
-                      <div className="font-bold text-3xl" style={{ color: textColor }}>
-                        1:{allTimeRiskReward >= 999 ? '∞' : allTimeRiskReward.toFixed(1)}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                </div>
               </DraggableWidget>
             </div>
           </div>
@@ -730,58 +655,33 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           {/* Average Widget */}
           <div key="average">
             <div className="relative h-full">
-              {/* Toggle Button - Positioned at top right of widget */}
-              <button
-                onClick={() => setShowAllAverage(!showAllAverage)}
-                className="absolute top-4 right-4 px-2 py-1 text-xs rounded transition-colors z-10"
-                style={{ 
-                  backgroundColor: `${textColor}20`,
-                  color: textColor 
-                }}
-                data-testid="button-toggle-average-view"
-              >
-                {showAllAverage ? "Show All Time Only" : "Show All Periods"}
-              </button>
+              {/* Time Period Selector - Positioned at top right of widget */}
+              <Select value={averageTimePeriod} onValueChange={(value: any) => setAverageTimePeriod(value)}>
+                <SelectTrigger className="absolute top-4 right-4 w-[90px] h-7 text-xs z-10 border-cyan-500/50" data-testid="select-average-period">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
 
               <DraggableWidget title="Average" themeColor={themeColor} textColor={textColor}>
-                {/* Average Values */}
-                {showAllAverage ? (
-                  <div className="flex gap-6 mt-1">
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        ${dailyAvg >= 1000 ? `${(dailyAvg/1000).toFixed(1)}K` : dailyAvg.toFixed(0)}
-                      </div>
+                <div className="flex items-center h-full mt-1">
+                  <div>
+                    <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>
+                      {averageTimePeriod === 'daily' ? 'Daily' : averageTimePeriod === 'weekly' ? 'Weekly' : averageTimePeriod === 'monthly' ? 'Monthly' : 'All Time'}
                     </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        ${weeklyAvg >= 1000 ? `${(weeklyAvg/1000).toFixed(1)}K` : weeklyAvg.toFixed(0)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        ${monthlyAvg >= 1000 ? `${(monthlyAvg/1000).toFixed(1)}K` : monthlyAvg.toFixed(0)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        ${allTimeAvg >= 1000 ? `${(allTimeAvg/1000).toFixed(1)}K` : allTimeAvg.toFixed(0)}
-                      </div>
+                    <div className="font-bold text-3xl" style={{ color: textColor }}>
+                      ${averageTimePeriod === 'daily' ? (dailyAvg >= 1000 ? `${(dailyAvg/1000).toFixed(1)}K` : dailyAvg.toFixed(0)) :
+                        averageTimePeriod === 'weekly' ? (weeklyAvg >= 1000 ? `${(weeklyAvg/1000).toFixed(1)}K` : weeklyAvg.toFixed(0)) :
+                        averageTimePeriod === 'monthly' ? (monthlyAvg >= 1000 ? `${(monthlyAvg/1000).toFixed(1)}K` : monthlyAvg.toFixed(0)) :
+                        (allTimeAvg >= 1000 ? `${(allTimeAvg/1000).toFixed(1)}K` : allTimeAvg.toFixed(0))}
                     </div>
                   </div>
-                ) : (
-                  <div className="flex items-center h-full mt-1">
-                    <div>
-                      <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>All Time</div>
-                      <div className="font-bold text-3xl" style={{ color: textColor }}>
-                        ${allTimeAvg >= 1000 ? `${(allTimeAvg/1000).toFixed(1)}K` : allTimeAvg.toFixed(0)}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                </div>
               </DraggableWidget>
             </div>
           </div>
@@ -789,58 +689,33 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           {/* Fees Widget */}
           <div key="fees">
             <div className="relative h-full">
-              {/* Toggle Button - Positioned at top right of widget */}
-              <button
-                onClick={() => setShowAllFees(!showAllFees)}
-                className="absolute top-4 right-4 px-2 py-1 text-xs rounded transition-colors z-10"
-                style={{ 
-                  backgroundColor: `${textColor}20`,
-                  color: textColor 
-                }}
-                data-testid="button-toggle-fees-view"
-              >
-                {showAllFees ? "Show All Time Only" : "Show All Periods"}
-              </button>
+              {/* Time Period Selector - Positioned at top right of widget */}
+              <Select value={feesTimePeriod} onValueChange={(value: any) => setFeesTimePeriod(value)}>
+                <SelectTrigger className="absolute top-4 right-4 w-[90px] h-7 text-xs z-10 border-cyan-500/50" data-testid="select-fees-period">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
 
               <DraggableWidget title="Swap Fees & Commissions" themeColor={themeColor} textColor={textColor}>
-                {/* Fees Values */}
-                {showAllFees ? (
-                  <div className="flex gap-6 mt-1">
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        ${dailyFees >= 1000 ? `${(dailyFees/1000).toFixed(1)}K` : dailyFees.toFixed(0)}
-                      </div>
+                <div className="flex items-center h-full mt-1">
+                  <div>
+                    <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>
+                      {feesTimePeriod === 'daily' ? 'Daily' : feesTimePeriod === 'weekly' ? 'Weekly' : feesTimePeriod === 'monthly' ? 'Monthly' : 'All Time'}
                     </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        ${weeklyFees >= 1000 ? `${(weeklyFees/1000).toFixed(1)}K` : weeklyFees.toFixed(0)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        ${monthlyFees >= 1000 ? `${(monthlyFees/1000).toFixed(1)}K` : monthlyFees.toFixed(0)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        ${allTimeFees >= 1000 ? `${(allTimeFees/1000).toFixed(1)}K` : allTimeFees.toFixed(0)}
-                      </div>
+                    <div className="font-bold text-3xl" style={{ color: textColor }}>
+                      ${feesTimePeriod === 'daily' ? (dailyFees >= 1000 ? `${(dailyFees/1000).toFixed(1)}K` : dailyFees.toFixed(0)) :
+                        feesTimePeriod === 'weekly' ? (weeklyFees >= 1000 ? `${(weeklyFees/1000).toFixed(1)}K` : weeklyFees.toFixed(0)) :
+                        feesTimePeriod === 'monthly' ? (monthlyFees >= 1000 ? `${(monthlyFees/1000).toFixed(1)}K` : monthlyFees.toFixed(0)) :
+                        (allTimeFees >= 1000 ? `${(allTimeFees/1000).toFixed(1)}K` : allTimeFees.toFixed(0))}
                     </div>
                   </div>
-                ) : (
-                  <div className="flex items-center h-full mt-1">
-                    <div>
-                      <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>All Time</div>
-                      <div className="font-bold text-3xl" style={{ color: textColor }}>
-                        ${allTimeFees >= 1000 ? `${(allTimeFees/1000).toFixed(1)}K` : allTimeFees.toFixed(0)}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                </div>
               </DraggableWidget>
             </div>
           </div>
@@ -848,58 +723,33 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           {/* Total Trades Widget */}
           <div key="totaltrades">
             <div className="relative h-full">
-              {/* Toggle Button - Positioned at top right of widget */}
-              <button
-                onClick={() => setShowAllTotalTrades(!showAllTotalTrades)}
-                className="absolute top-4 right-4 px-2 py-1 text-xs rounded transition-colors z-10"
-                style={{ 
-                  backgroundColor: `${textColor}20`,
-                  color: textColor 
-                }}
-                data-testid="button-toggle-totaltrades-view"
-              >
-                {showAllTotalTrades ? "Show All Time Only" : "Show All Periods"}
-              </button>
+              {/* Time Period Selector - Positioned at top right of widget */}
+              <Select value={tradesTimePeriod} onValueChange={(value: any) => setTradesTimePeriod(value)}>
+                <SelectTrigger className="absolute top-4 right-4 w-[90px] h-7 text-xs z-10 border-cyan-500/50" data-testid="select-trades-period">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
 
               <DraggableWidget title="Total Trades" themeColor={themeColor} textColor={textColor}>
-                {/* Total Trades Values */}
-                {showAllTotalTrades ? (
-                  <div className="flex gap-6 mt-1">
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Daily</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        {dailyTradeCount}
-                      </div>
+                <div className="flex items-center h-full mt-1">
+                  <div>
+                    <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>
+                      {tradesTimePeriod === 'daily' ? 'Daily' : tradesTimePeriod === 'weekly' ? 'Weekly' : tradesTimePeriod === 'monthly' ? 'Monthly' : 'All Time'}
                     </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Weekly</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        {weeklyTradeCount}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>Monthly</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        {monthlyTradeCount}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="opacity-70 text-xs mb-1" style={{ color: textColor }}>All Time</div>
-                      <div className="font-bold text-xl" style={{ color: textColor }}>
-                        {allTimeTradeCount}
-                      </div>
+                    <div className="font-bold text-3xl" style={{ color: textColor }}>
+                      {tradesTimePeriod === 'daily' ? dailyTradeCount :
+                       tradesTimePeriod === 'weekly' ? weeklyTradeCount :
+                       tradesTimePeriod === 'monthly' ? monthlyTradeCount :
+                       allTimeTradeCount}
                     </div>
                   </div>
-                ) : (
-                  <div className="flex items-center h-full mt-1">
-                    <div>
-                      <div className="opacity-70 text-sm mb-2" style={{ color: textColor }}>All Time</div>
-                      <div className="font-bold text-3xl" style={{ color: textColor }}>
-                        {allTimeTradeCount}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                </div>
               </DraggableWidget>
             </div>
           </div>
