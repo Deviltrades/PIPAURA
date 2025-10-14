@@ -335,7 +335,19 @@ export default function Accounts() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
           {accounts.map((account) => (
-            <Card key={account.id} data-testid={`account-card-${account.id}`}>
+            <div key={account.id} className="relative">
+              {/* Animated Cyan Border Snake Effect */}
+              <div className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none z-0">
+                <div className="absolute inset-[-2px]" style={{
+                  background: 'conic-gradient(from 0deg, transparent 0%, transparent 60%, hsl(188, 94%, 60%) 80%, hsl(188, 94%, 70%) 90%, transparent 100%)',
+                  animation: 'border-rotate 5.76s linear infinite',
+                  borderRadius: '0.5rem',
+                  filter: 'blur(0.5px)',
+                }}></div>
+                <div className="absolute inset-[2px] rounded-lg bg-slate-950"></div>
+              </div>
+              
+              <Card className="relative z-10 bg-transparent border-0" data-testid={`account-card-${account.id}`}>
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
@@ -417,7 +429,8 @@ export default function Accounts() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+              </Card>
+            </div>
           ))}
         </div>
       )}
