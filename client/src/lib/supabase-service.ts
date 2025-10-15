@@ -131,6 +131,18 @@ export async function getHighImpactEventCounts() {
   };
 }
 
+// Market News
+export async function getMarketNews(limit: number = 20) {
+  const { data, error } = await supabase
+    .from('market_news')
+    .select('*')
+    .order('datetime', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data;
+}
+
 // Helper function to get user profile with plan info
 export async function getUserProfile() {
   const user = await getCurrentUser();
