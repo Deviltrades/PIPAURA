@@ -115,7 +115,10 @@ export function FloatingDNACore({ accountId = 'all' }: FloatingDNACoreProps) {
         }
       }
       
-      const discipline = analytics.totalTrades > 10 ? Math.min((analytics.totalTrades / 100) * 50 + 50, 100) : 50;
+      // DISCIPLINE: Based on account drawdown (lower drawdown = higher discipline)
+      // 5% drawdown = 95% discipline, 15% = 85%, 100% = 1%
+      const drawdown = analytics.maxDrawdown || 0;
+      const discipline = Math.max(1, 100 - drawdown);
       
       // SESSION FOCUS: Use session_tag data from trades
       let sessionFocus = 50; // Default baseline
