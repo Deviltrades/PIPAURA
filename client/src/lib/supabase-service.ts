@@ -1448,7 +1448,12 @@ export async function getEmotionalAnalytics(accountId: string, startDate: string
     .lte('entry_date', endDate)
     .not('pnl', 'is', null);
 
-  if (perfError) throw perfError;
+  if (perfError) {
+    console.error('❌ Error fetching daily performance:', perfError);
+    throw perfError;
+  }
+  
+  console.log('💹 Daily performance fetched:', dailyPerformance?.length || 0, 'trades');
 
   // Group trades by date and calculate daily P&L
   const dailyPnLMap = new Map<string, number>();
