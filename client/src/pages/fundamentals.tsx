@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus, Circle, RefreshCw } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getFundamentalBias, getIndexBias, getMarketDrivers, getWeeklyEconomicEvents, getHighImpactEventCounts, getMarketNews } from "@/lib/supabase-service";
+import { getFundamentalBias, getIndexBias, getMarketDrivers, getWeeklyEconomicEvents, getHighImpactEventCounts, getMarketNews, getThisWeekHighImpactEvents } from "@/lib/supabase-service";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 
@@ -52,6 +52,12 @@ export default function Fundamentals() {
     refetchInterval: 60000,
   });
 
+  const { data: highImpactEvents, isLoading: highImpactLoading } = useQuery({
+    queryKey: ['/api/high-impact-events'],
+    queryFn: getThisWeekHighImpactEvents,
+    refetchInterval: 60000,
+  });
+
   const { data: marketNews, isLoading: newsLoading } = useQuery({
     queryKey: ['/api/market-news'],
     queryFn: () => getMarketNews(15),
@@ -65,6 +71,7 @@ export default function Fundamentals() {
     await queryClient.invalidateQueries({ queryKey: ['/api/market-drivers'] });
     await queryClient.invalidateQueries({ queryKey: ['/api/weekly-events'] });
     await queryClient.invalidateQueries({ queryKey: ['/api/event-counts'] });
+    await queryClient.invalidateQueries({ queryKey: ['/api/high-impact-events'] });
     await queryClient.invalidateQueries({ queryKey: ['/api/market-news'] });
     setTimeout(() => setIsRefreshing(false), 1000);
   };
@@ -211,58 +218,74 @@ export default function Fundamentals() {
             <div className="space-y-4">
               <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
                 <CardHeader>
-                  <CardTitle className="text-lg">High Impact Events</CardTitle>
+                  <CardTitle className="text-lg">High Impact Events & Central Bank Rates</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  {countsLoading ? (
-                    <div className="text-center py-4 text-muted-foreground">Loading counts...</div>
-                  ) : eventCounts ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">This Week</span>
-                        <Badge variant="destructive" data-testid="badge-this-week">{eventCounts.thisWeek}</Badge>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Next Week</span>
-                        <Badge variant="default" data-testid="badge-next-week">{eventCounts.nextWeek}</Badge>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">This Month</span>
-                        <Badge variant="secondary" data-testid="badge-this-month">{eventCounts.thisMonth}</Badge>
-                      </div>
+                <CardContent className="space-y-4">
+                  {/* High Impact Events This Week */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-gray-300">High Impact Events (This Week)</h3>
+                      {eventCounts && (
+                        <Badge variant="destructive" data-testid="badge-this-week">
+                          {eventCounts.thisWeek}
+                        </Badge>
+                      )}
                     </div>
-                  ) : (
-                    <div className="text-center py-4 text-muted-foreground">No data available</div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
-                <CardHeader>
-                  <CardTitle className="text-lg">Central Bank Rates</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {[
-                      { bank: "Federal Reserve", rate: "5.50%", trend: "up" },
-                      { bank: "ECB", rate: "4.50%", trend: "neutral" },
-                      { bank: "Bank of England", rate: "5.25%", trend: "up" },
-                      { bank: "Bank of Japan", rate: "-0.10%", trend: "neutral" },
-                    ].map((cb, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <span className="text-sm">{cb.bank}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{cb.rate}</span>
-                          {cb.trend === "up" ? (
-                            <TrendingUp className="h-4 w-4 text-green-500" />
-                          ) : cb.trend === "down" ? (
-                            <TrendingDown className="h-4 w-4 text-red-500" />
-                          ) : (
-                            <div className="h-4 w-4" />
-                          )}
-                        </div>
+                    {highImpactLoading ? (
+                      <div className="text-center py-3 text-sm text-muted-foreground">Loading events...</div>
+                    ) : highImpactEvents && highImpactEvents.length > 0 ? (
+                      <div className="space-y-2">
+                        {highImpactEvents.map((event: any, index: number) => (
+                          <div 
+                            key={index} 
+                            className="flex items-center justify-between text-xs bg-slate-800/50 p-2 rounded"
+                            data-testid={`high-impact-event-${index}`}
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-cyan-400 font-semibold">{event.currency}</span>
+                                <span className="text-gray-300">{event.title}</span>
+                              </div>
+                              <div className="text-gray-500 mt-0.5">
+                                {format(parseISO(event.event_date), 'MMM dd')} • {event.event_time?.substring(0, 5) || 'TBA'}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    ) : (
+                      <div className="text-center py-3 text-sm text-muted-foreground">No high impact events this week</div>
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="border-t border-[#1a2f4a]"></div>
+
+                  {/* Central Bank Rates */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-300 mb-3">Central Bank Rates</h3>
+                    <div className="space-y-3">
+                      {[
+                        { bank: "Federal Reserve", rate: "4.50%", trend: "neutral" },
+                        { bank: "ECB", rate: "2.00%", trend: "down" },
+                        { bank: "Bank of England", rate: "4.00%", trend: "down" },
+                        { bank: "Bank of Japan", rate: "0.50%", trend: "up" },
+                      ].map((cb, index) => (
+                        <div key={index} className="flex items-center justify-between" data-testid={`cb-rate-${index}`}>
+                          <span className="text-sm">{cb.bank}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{cb.rate}</span>
+                            {cb.trend === "up" ? (
+                              <TrendingUp className="h-4 w-4 text-green-500" />
+                            ) : cb.trend === "down" ? (
+                              <TrendingDown className="h-4 w-4 text-red-500" />
+                            ) : (
+                              <Minus className="h-4 w-4 text-gray-500" />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

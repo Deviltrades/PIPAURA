@@ -131,6 +131,25 @@ export async function getHighImpactEventCounts() {
   };
 }
 
+export async function getThisWeekHighImpactEvents() {
+  const today = new Date();
+  const endOfWeek = new Date(today);
+  endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
+  
+  const { data, error } = await supabase
+    .from('forex_events')
+    .select('*')
+    .eq('impact', 'High')
+    .gte('event_date', today.toISOString().split('T')[0])
+    .lte('event_date', endOfWeek.toISOString().split('T')[0])
+    .order('event_date', { ascending: true })
+    .order('event_time', { ascending: true })
+    .limit(5);
+
+  if (error) throw error;
+  return data;
+}
+
 // Market News
 export async function getMarketNews(limit: number = 20) {
   const { data, error } = await supabase
