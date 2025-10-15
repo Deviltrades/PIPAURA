@@ -39,6 +39,13 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
     retry: false,
   });
 
+  console.log('📈 Emotional Analytics Component:', { 
+    isLoading, 
+    hasData: !!emotionalData, 
+    totalLogs: emotionalData?.summary?.totalLogs,
+    data: emotionalData 
+  });
+
   const handleSaveLog = async (logData: any) => {
     try {
       const { saveEmotionalLog } = await import('@/lib/supabase-service');
