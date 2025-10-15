@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { format } from "date-fns";
-import { X, Upload, Image as ImageIcon, Trash2, Check, ChevronsUpDown } from "lucide-react";
+import { X, Upload, Image as ImageIcon, Trash2, Check, ChevronsUpDown, Calendar as CalendarIcon } from "lucide-react";
 
 import {
   Dialog,
@@ -45,6 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
 import { SignedImageDisplay } from "@/components/SignedImageDisplay";
 import { PlanGate, FeatureGate } from "@/components/PlanGate";
 import { useToast } from "@/hooks/use-toast";
@@ -135,10 +136,10 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Derive trade date: use trade's original date when editing, otherwise use selectedDate or today
-  const tradeDate = trade?.entry_date 
-    ? new Date(trade.entry_date) 
-    : selectedDate || new Date();
+  // State for trade date (editable by user)
+  const [tradeDate, setTradeDate] = useState<Date>(
+    trade?.entry_date ? new Date(trade.entry_date) : selectedDate || new Date()
+  );
     
   const [entryMode, setEntryMode] = useState<"easy" | "advanced">("advanced");
   const [selectedInstrumentType, setSelectedInstrumentType] = useState<string>("FOREX");
@@ -178,6 +179,10 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
   // Reset form and state when modal opens or trade changes
   useEffect(() => {
     if (isOpen) {
+      // Set trade date based on props
+      const newDate = trade?.entry_date ? new Date(trade.entry_date) : selectedDate || new Date();
+      setTradeDate(newDate);
+      
       if (trade) {
         // Editing existing trade - always use advanced mode
         setEntryMode("advanced");
@@ -462,6 +467,34 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
                 )}
               />
             )}
+
+            {/* Trade Date Picker */}
+            <div className="mb-4">
+              <Label className="mb-2 block">Trade Date *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal bg-background border-input",
+                      !tradeDate && "text-muted-foreground"
+                    )}
+                    data-testid="button-select-trade-date"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {tradeDate ? format(tradeDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={tradeDate}
+                    onSelect={(date) => date && setTradeDate(date)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               {/* Instrument Type */}
