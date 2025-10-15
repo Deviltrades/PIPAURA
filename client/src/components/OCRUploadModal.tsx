@@ -575,7 +575,7 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
           exit_date: trade.exitTime || undefined,
           pnl: trade.profit ? parseFloat(trade.profit) : undefined,
           status: (trade.exitPrice ? 'CLOSED' : 'OPEN') as 'CLOSED' | 'OPEN',
-          notes: trade.notes || 'Imported via OCR Screenshot',
+          notes: trade.notes || 'Uploaded via OCR AI',
         };
 
         await createTrade(tradeData);
