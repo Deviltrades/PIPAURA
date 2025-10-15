@@ -1441,12 +1441,12 @@ export async function getEmotionalAnalytics(accountId: string, startDate: string
   // Get trade performance grouped by date
   const { data: dailyPerformance, error: perfError } = await supabase
     .from('journal_entries')
-    .select('entry_date, pnl')
+    .select('trade_date, profit_loss')
     .eq('user_id', user.id)
     .eq('account_id', accountId)
-    .gte('entry_date', startDate)
-    .lte('entry_date', endDate)
-    .not('pnl', 'is', null);
+    .gte('trade_date', startDate)
+    .lte('trade_date', endDate)
+    .not('profit_loss', 'is', null);
 
   if (perfError) {
     console.error('❌ Error fetching daily performance:', perfError);
@@ -1458,8 +1458,8 @@ export async function getEmotionalAnalytics(accountId: string, startDate: string
   // Group trades by date and calculate daily P&L
   const dailyPnLMap = new Map<string, number>();
   (dailyPerformance || []).forEach(trade => {
-    const date = trade.entry_date;
-    const pnl = parseFloat(trade.pnl || '0');
+    const date = trade.trade_date;
+    const pnl = parseFloat(trade.profit_loss || '0');
     dailyPnLMap.set(date, (dailyPnLMap.get(date) || 0) + pnl);
   });
 
