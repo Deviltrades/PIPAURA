@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
-import { getTrades, getAnalytics } from '@/lib/supabase-service';
+import { getTrades, getAnalytics, getEmotionalAnalytics } from '@/lib/supabase-service';
 import { Info } from 'lucide-react';
+import { format, subDays } from 'date-fns';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,11 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 
-export function FloatingDNACore() {
+interface FloatingDNACoreProps {
+  accountId?: string;
+}
+
+export function FloatingDNACore({ accountId = 'all' }: FloatingDNACoreProps) {
   const [metrics, setMetrics] = useState({
     winRate: 0,
     riskReward: 0,
@@ -61,10 +66,25 @@ export function FloatingDNACore() {
     return () => cancelAnimationFrame(animationFrameId);
   }, [isPaused, prefersReducedMotion]);
 
-  // Fetch analytics data which contains all the metrics we need
+  // Fetch analytics data filtered by account
   const { data: analytics } = useQuery({
-    queryKey: ['analytics'],
-    queryFn: getAnalytics,
+    queryKey: ['analytics', accountId],
+    queryFn: () => getAnalytics(accountId),
+  });
+
+  // Fetch trades to calculate session focus
+  const { data: trades = [] } = useQuery({
+    queryKey: ['trades', accountId],
+    queryFn: () => getTrades(accountId),
+  });
+
+  // Fetch emotional analytics for emotional control metric
+  const startDate = format(subDays(new Date(), 30), 'yyyy-MM-dd');
+  const endDate = format(new Date(), 'yyyy-MM-dd');
+  const { data: emotionalData } = useQuery({
+    queryKey: ['emotional-analytics', accountId, startDate, endDate],
+    queryFn: () => getEmotionalAnalytics(accountId, startDate, endDate),
+    retry: false,
   });
 
   useEffect(() => {
@@ -76,12 +96,87 @@ export function FloatingDNACore() {
       
       // Use analytics data to derive trader performance metrics
       const riskConsistency = Math.max(0, 100 - (analytics.maxDrawdown || 0)); // Lower drawdown = higher consistency
-      const emotionalControl = winRate > 50 ? Math.min(winRate * 1.2, 100) : winRate * 0.8; // Bonus for winning
+      
+      // EMOTIONAL CONTROL: Use actual emotional data
+      // Calculate based on mood volatility and correlation with winning days
+      let emotionalControl = 50; // Default baseline
+      if (emotionalData?.summary) {
+        const { moodVolatility, avgMoodWinning, avgMoodLosing, totalLogs } = emotionalData.summary;
+        
+        if (totalLogs > 0) {
+          // Lower volatility = better control (invert and scale to 0-100)
+          const volatilityScore = Math.max(0, 100 - (moodVolatility * 20));
+          
+          // Higher mood on winning days = better emotional state
+          const moodCorrelation = avgMoodWinning > 0 ? (avgMoodWinning / 10) * 100 : 50;
+          
+          // Combine scores
+          emotionalControl = (volatilityScore * 0.6 + moodCorrelation * 0.4);
+        }
+      }
+      
       const discipline = analytics.totalTrades > 10 ? Math.min((analytics.totalTrades / 100) * 50 + 50, 100) : 50;
-      const sessionFocus = analytics.monthlyPerformance?.length > 0 ? Math.min(analytics.monthlyPerformance.length * 20, 100) : 0;
+      
+      // SESSION FOCUS: Use session_tag data from trades
+      let sessionFocus = 50; // Default baseline
+      if (trades.length > 0) {
+        // Calculate win rate per session
+        const sessionStats: { [key: string]: { wins: number; total: number; pnl: number } } = {};
+        
+        trades.forEach(trade => {
+          const session = trade.session_tag || 'Unknown';
+          if (!sessionStats[session]) {
+            sessionStats[session] = { wins: 0, total: 0, pnl: 0 };
+          }
+          sessionStats[session].total++;
+          const pnl = Number(trade.pnl) || 0;
+          sessionStats[session].pnl += pnl;
+          if (pnl > 0) {
+            sessionStats[session].wins++;
+          }
+        });
+        
+        // Calculate session focus based on:
+        // 1. Having a clear best session (higher P&L concentration)
+        // 2. Consistency in that session (win rate)
+        const sessions = Object.entries(sessionStats);
+        if (sessions.length > 0) {
+          // Find best session by total P&L
+          const sortedSessions = sessions.sort((a, b) => b[1].pnl - a[1].pnl);
+          const bestSession = sortedSessions[0];
+          const bestWinRate = bestSession[1].total > 0 ? (bestSession[1].wins / bestSession[1].total) * 100 : 0;
+          
+          // Calculate P&L concentration (what % of total P&L comes from best session)
+          const totalPnL = sessions.reduce((sum, [_, stats]) => sum + Math.abs(stats.pnl), 0);
+          const concentration = totalPnL > 0 ? (Math.abs(bestSession[1].pnl) / totalPnL) * 100 : 0;
+          
+          // Session focus = blend of concentration and win rate in best session
+          sessionFocus = (concentration * 0.6) + (bestWinRate * 0.4);
+          sessionFocus = Math.min(100, Math.max(0, sessionFocus));
+          
+          console.log('📊 Session Stats:', { 
+            sessions: Object.fromEntries(sessions), 
+            bestSession: bestSession[0],
+            bestWinRate,
+            concentration,
+            sessionFocus 
+          });
+        }
+      }
       
       // Edge Integrity is the composite score
       const edgeIntegrity = (winRate + riskReward + riskConsistency + emotionalControl + discipline + sessionFocus) / 6;
+
+      console.log('🧬 DNA Metrics Updated:', {
+        winRate,
+        riskReward,
+        riskConsistency,
+        emotionalControl,
+        discipline,
+        sessionFocus,
+        edgeIntegrity,
+        accountId
+      });
 
       setMetrics({
         winRate,
@@ -93,7 +188,7 @@ export function FloatingDNACore() {
         edgeIntegrity,
       });
     }
-  }, [analytics]);
+  }, [analytics, emotionalData, trades, accountId]);
 
   // DNA Zone colors - each metric gets its own color zone
   const ZONE_COLORS = {

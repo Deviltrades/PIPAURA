@@ -179,7 +179,7 @@ export default function Analytics() {
             <p className="text-sm text-gray-400">Real-time intelligence core showing your trading genome</p>
           </CardHeader>
           <CardContent className="p-6">
-            <FloatingDNACore />
+            <FloatingDNACore accountId={selectedAccount} />
           </CardContent>
         </Card>
       </div>
