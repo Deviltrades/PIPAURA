@@ -1,0 +1,103 @@
+Step 1 — Daily Emotional Log Prompt
+
+Each day, when the trader logs in (or after market close), display a small modal:
+
+🗓 “How are you feeling today?”
+
+Ask 3–4 quick inputs:
+
+1️⃣ Mood Slider (1–10)
+
+“Overall emotional state today”
+
+1 = Very negative
+
+10 = Very positive
+
+Save as numeric (emotion_score).
+
+2️⃣ Energy Level (1–10)
+
+“How focused / energized do you feel?”
+
+Tracks fatigue, burnout, or overhype trends.
+
+3️⃣ Keywords (Checkboxes or Tags)
+
+“Select words that describe your emotional state”
+Example:
+
+😤 Frustrated   😐 Neutral   😎 Confident   😰 Anxious
+🔥 Motivated    💤 Tired     😔 Doubtful    💪 Disciplined
+
+
+Store as an array (for tagging + analytics heatmap).
+
+4️⃣ Optional Journal Note (Textarea)
+
+“Anything on your mind today?”
+→ Stores free text, optional, sentiment can later be analyzed by AI.
+
+📊 Step 2 — Emotional Analytics Dashboard
+
+Once data is logged, you can show patterns like this:
+
+🧩 Visuals
+Widget	Description
+📈 Mood vs Win Rate Chart	Correlate emotional score with daily performance.
+🔁 Emotional Volatility Gauge	Shows how stable their emotions are week-to-week.
+🌈 Mood Heatmap (Calendar)	Colored calendar cells: green = high mood, red = low.
+🧩 Keyword Frequency Cloud	Visual of most-used emotion tags (“anxious”, “confident”, etc.).
+🔔 Behavioral Alerts	“Confidence dropped 3 days in a row — take it slow tomorrow.”
+🕹 Step 3 — Data Storage (for Replit / Supabase)
+
+Create a new table:
+
+CREATE TABLE emotional_logs (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id uuid REFERENCES user_profiles(id),
+  date date DEFAULT current_date,
+  mood integer CHECK (mood BETWEEN 1 AND 10),
+  energy integer CHECK (energy BETWEEN 1 AND 10),
+  tags text[],
+  note text,
+  created_at timestamptz DEFAULT now()
+);
+
+
+You can easily pull this into analytics with:
+
+SELECT date, mood, energy FROM emotional_logs WHERE user_id = current_user ORDER BY date DESC;
+
+⚡ Step 4 — Analytics Logic
+
+You can compute a “Trader Sentiment Index” (TSI):
+
+TSI = (mood * 0.6) + (energy * 0.4)
+
+
+Then smooth it over 7 days with EWMA:
+
+TSI_smoothed = 0.7 * prev + 0.3 * current
+
+
+Display:
+
+7.5 → Optimal mindset
+
+4–7 → Neutral / watch for tilt
+
+< 4 → Emotional fatigue risk
+
+❤️ Bonus: Correlation Engine
+
+You can automatically correlate emotion_score vs performance each week:
+
+SELECT corr(emotion_score, daily_return)
+FROM emotional_logs JOIN trade_results USING (date)
+WHERE user_id = current_user;
+
+
+→ Output example:
+
+“Your emotional state correlates 0.68 with profitability (positive). You trade best when your mood > 7.”

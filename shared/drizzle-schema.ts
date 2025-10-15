@@ -7,7 +7,10 @@ import {
   pgEnum,
   uuid,
   jsonb,
-  integer
+  integer,
+  date,
+  serial,
+  bigint
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -189,5 +192,32 @@ export const taxExpenses = pgTable('tax_expenses', {
   expense_date: timestamp('expense_date', { withTimezone: true }).notNull(),
   receipt_url: text('receipt_url'),
   notes: text('notes'),
+  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`)
+});
+
+// Market News table (Finnhub integration)
+export const marketNews = pgTable('market_news', {
+  id: serial('id').primaryKey(),
+  headline: text('headline').notNull(),
+  summary: text('summary'),
+  source: text('source'),
+  category: text('category'),
+  datetime: bigint('datetime', { mode: 'number' }).notNull(),
+  url: text('url'),
+  image: text('image'),
+  related: text('related'),
+  impact_level: varchar('impact_level', { length: 20 }).default('low'),
+  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`)
+});
+
+// Emotional Logs table
+export const emotionalLogs = pgTable('emotional_logs', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').notNull(),
+  log_date: date('log_date').notNull().default(sql`current_date`),
+  mood: integer('mood').notNull(),
+  energy: integer('energy').notNull(),
+  tags: text('tags').array(),
+  note: text('note'),
   created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`)
 });
