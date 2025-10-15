@@ -1438,15 +1438,26 @@ export async function getEmotionalAnalytics(accountId: string, startDate: string
   const emotionalLogs = await getEmotionalLogs(startDate, endDate);
   console.log('📊 Emotional logs fetched:', emotionalLogs.length, 'logs', emotionalLogs);
   
-  // Get trade performance grouped by date
-  const { data: dailyPerformance, error: perfError } = await supabase
+  // Get trade performance grouped by date (filtered by user only, not account)
+  // Note: Emotional state is user-wide, not account-specific
+  let tradesQuery = supabase
     .from('journal_entries')
     .select('trade_date, profit_loss')
     .eq('user_id', user.id)
-    .eq('account_id', accountId)
     .gte('trade_date', startDate)
     .lte('trade_date', endDate)
     .not('profit_loss', 'is', null);
+  
+  // Only filter by account if the column exists and accountId is not 'all'
+  if (accountId && accountId !== 'all') {
+    try {
+      tradesQuery = tradesQuery.eq('account_id', accountId);
+    } catch (err) {
+      console.log('⚠️ account_id column might not exist, using all trades');
+    }
+  }
+  
+  const { data: dailyPerformance, error: perfError } = await tradesQuery;
 
   if (perfError) {
     console.error('❌ Error fetching daily performance:', perfError);
