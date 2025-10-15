@@ -143,7 +143,7 @@ export function EmotionalLogModal({
           {/* Mood Slider */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Mood {getMoodEmoji(mood)}</Label>
+              <Label>Mood <span className="text-2xl ml-1">{getMoodEmoji(mood)}</span></Label>
               <span className="text-sm font-medium text-cyan-400" data-testid="text-mood-value">
                 {mood}/10
               </span>
@@ -166,7 +166,7 @@ export function EmotionalLogModal({
           {/* Energy Slider */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Energy Level {getEnergyEmoji(energy)}</Label>
+              <Label>Energy Level <span className="text-2xl ml-1">{getEnergyEmoji(energy)}</span></Label>
               <span className="text-sm font-medium text-cyan-400" data-testid="text-energy-value">
                 {energy}/10
               </span>
