@@ -42,7 +42,7 @@ Provides comprehensive fundamental analysis across four tabs:
 A comprehensive automated fundamental analysis system provides real-time bias calculations via JavaScript ES6+ serverless functions deployed on Vercel. It leverages RapidAPI for economic events, Yahoo Finance for market data, and manual central bank tone settings. Cron jobs run every 15 minutes (high-impact events), 30 minutes (hourly bias update), and 4 hours (full calendar refresh) to update Supabase tables (`forex_events`, `economic_scores`, `currency_scores`, `fundamental_bias`, `index_bias`).
 
 ### Market News Integration
-Utilizes Finnhub API for real-time market news across forex, general market, and crypto. News articles are automatically classified by impact and stored in the `market_news` table. The frontend displays the latest 15 articles with auto-refresh and direct links.
+Utilizes Finnhub API for real-time market news across forex, general market, and crypto. News articles are automatically classified by impact (high/medium/low based on keywords) and stored in the `market_news` Supabase table with RLS policies for public read access. A dedicated cron job (every 30 min) fetches the latest 50 articles, deduplicates via unique constraint on (headline, datetime), and auto-cleans news older than 7 days. The frontend displays the latest 15 articles with 60-second auto-refresh and direct article links.
 
 ### Floating DNA Core Visualization
 The analytics page features a "Trader DNA Core" visualization: an animated 3D-like double-helix structure colored by overall Edge Integrity score, with six orbiting metrics.
