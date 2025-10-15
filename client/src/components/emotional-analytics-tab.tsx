@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Brain, Calendar as CalendarIcon, TrendingUp, AlertTriangle } from "lucide-react";
 import { getEmotionalAnalytics } from "@/lib/supabase-service";
+import { useToast } from "@/hooks/use-toast";
 import { 
   LineChart, 
   Line, 
@@ -26,6 +27,8 @@ interface EmotionalAnalyticsTabProps {
 export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dateRange] = useState(30); // Last 30 days
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const startDate = format(subDays(new Date(), dateRange), 'yyyy-MM-dd');
   const endDate = format(new Date(), 'yyyy-MM-dd');
@@ -41,9 +44,21 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
       const { saveEmotionalLog } = await import('@/lib/supabase-service');
       await saveEmotionalLog(logData);
       setIsModalOpen(false);
-      refetch();
+      
+      // Invalidate all emotional analytics queries to force refetch
+      await queryClient.invalidateQueries({ queryKey: ['emotional-analytics'] });
+      
+      toast({
+        title: "Emotional log saved",
+        description: "Your daily emotional state has been recorded.",
+      });
     } catch (error) {
       console.error('Failed to save emotional log:', error);
+      toast({
+        title: "Error saving log",
+        description: "Failed to save your emotional log. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
