@@ -120,6 +120,30 @@ export function setupCronRoutes(app: express.Express) {
     }
   });
 
+  // Market news update endpoint (every 30 min)
+  app.post('/api/cron/news-update', authenticate, async (req, res) => {
+    try {
+      console.log('[CRON] Fetching latest market news from Finnhub...');
+      const { stdout, stderr } = await execAsync('node -r esbuild-register lib/cron/finnhub-news-runner.js');
+      
+      console.log(stdout);
+      if (stderr) console.error(stderr);
+      
+      res.json({ 
+        success: true, 
+        message: 'Market news updated successfully',
+        output: stdout 
+      });
+    } catch (error: any) {
+      console.error('[CRON ERROR]', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error.message,
+        output: error.stdout 
+      });
+    }
+  });
+
   console.log('🔄 Cron API routes registered on port 5000');
   console.log('🔐 API Key authentication enabled');
   console.log('📡 Endpoints:');
@@ -127,5 +151,6 @@ export function setupCronRoutes(app: express.Express) {
   console.log('   POST /api/cron/ff-full-refresh');
   console.log('   POST /api/cron/hourly-update');
   console.log('   POST /api/cron/weekly-analysis');
+  console.log('   POST /api/cron/news-update');
   console.log('   GET  /api/cron/health\n');
 }
