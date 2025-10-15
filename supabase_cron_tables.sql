@@ -68,12 +68,50 @@ CREATE TABLE IF NOT EXISTS index_bias (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 6. Market News Table (Finnhub news integration)
+CREATE TABLE IF NOT EXISTS market_news (
+  id SERIAL PRIMARY KEY,
+  headline TEXT NOT NULL,
+  summary TEXT,
+  source TEXT,
+  category TEXT,
+  datetime BIGINT NOT NULL,
+  url TEXT,
+  image TEXT,
+  related TEXT,
+  impact_level VARCHAR(20) DEFAULT 'low',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(headline, datetime)
+);
+
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_forex_events_currency ON forex_events(currency);
 CREATE INDEX IF NOT EXISTS idx_forex_events_processed ON forex_events(processed_at);
 CREATE INDEX IF NOT EXISTS idx_currency_scores_currency ON currency_scores(currency);
 CREATE INDEX IF NOT EXISTS idx_fundamental_bias_pair ON fundamental_bias(pair);
 CREATE INDEX IF NOT EXISTS idx_index_bias_instrument ON index_bias(instrument);
+CREATE INDEX IF NOT EXISTS idx_market_news_datetime ON market_news(datetime DESC);
+CREATE INDEX IF NOT EXISTS idx_market_news_category ON market_news(category);
+CREATE INDEX IF NOT EXISTS idx_market_news_impact ON market_news(impact_level);
+
+-- **CRITICAL: RLS Policies for public read access**
+ALTER TABLE market_news ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read access for market news" ON market_news;
+DROP POLICY IF EXISTS "Service role full access for market news" ON market_news;
+
+-- Allow anyone to read news (no authentication required)
+CREATE POLICY "Public read access for market news" ON market_news
+  FOR SELECT
+  TO anon, authenticated
+  USING (true);
+
+-- Service role has full access (for cron jobs)
+CREATE POLICY "Service role full access for market news" ON market_news
+  FOR ALL
+  TO service_role
+  USING (true)
+  WITH CHECK (true);
 
 -- Success message
 SELECT 'Cron database tables created successfully!' as message;
