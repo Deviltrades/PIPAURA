@@ -8,9 +8,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Info } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Info, BarChart3, Heart } from "lucide-react";
 import { AccountSelector } from "@/components/AccountSelector";
 import { SessionInsights } from "@/components/SessionInsights";
+import { EmotionalAnalyticsTab } from "@/components/emotional-analytics-tab";
 import { 
   LineChart, 
   Line, 
@@ -106,6 +108,20 @@ export default function Analytics() {
         <p className="text-gray-300 mb-3">Detailed performance analysis and metrics</p>
         <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
       </div>
+
+      <Tabs defaultValue="performance" className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+          <TabsTrigger value="performance" className="flex items-center gap-2" data-testid="tab-performance">
+            <BarChart3 className="h-4 w-4" />
+            Performance Metrics
+          </TabsTrigger>
+          <TabsTrigger value="emotional" className="flex items-center gap-2" data-testid="tab-emotional">
+            <Heart className="h-4 w-4" />
+            Emotional Analytics
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="performance" className="mt-0">{/* Performance Metrics Tab Content */}
 
       {/* Top Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
@@ -543,6 +559,12 @@ export default function Analytics() {
           </div>
         </DialogContent>
       </Dialog>
+      </TabsContent>
+
+      <TabsContent value="emotional" className="mt-0">
+        <EmotionalAnalyticsTab accountId={selectedAccount} />
+      </TabsContent>
+      </Tabs>
     </div>
   );
 }
