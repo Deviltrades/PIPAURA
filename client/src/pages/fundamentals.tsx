@@ -4,13 +4,48 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus, Circle, RefreshCw } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getFundamentalBias, getIndexBias, getMarketDrivers, getWeeklyEconomicEvents, getHighImpactEventCounts, getMarketNews, getThisWeekHighImpactEvents } from "@/lib/supabase-service";
+import { getFundamentalBias, getIndexBias, getMarketDrivers, getWeeklyEconomicEvents, getHighImpactEventCounts, getMarketNews, getThisWeekHighImpactEvents, getUserProfile } from "@/lib/supabase-service";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { useState } from "react";
+import { TimezoneSelector } from "@/components/timezone-selector";
 
 export default function Fundamentals() {
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['/api/user-profile'],
+    queryFn: getUserProfile,
+  });
+
+  const userTimezone = userProfile?.timezone || 'UTC';
+
+  // Helper function to format event time in user's timezone
+  const formatEventTime = (dateStr: string, timeStr: string) => {
+    // Handle missing or special time strings
+    if (!timeStr) return 'TBA';
+    
+    // Check if time string is in HH:mm format (numeric time)
+    const timePattern = /^\d{1,2}:\d{2}/;
+    if (!timePattern.test(timeStr)) {
+      // Return non-numeric times as-is (e.g., "Tentative", "All Day")
+      return timeStr;
+    }
+    
+    try {
+      // Parse the date and time from the event
+      const [hours, minutes] = timeStr.split(':');
+      const eventDate = parseISO(dateStr);
+      eventDate.setUTCHours(parseInt(hours), parseInt(minutes), 0, 0);
+      
+      // Convert to user's timezone and format
+      return formatInTimeZone(eventDate, userTimezone, 'HH:mm');
+    } catch (error) {
+      // Fallback to original time string if conversion fails
+      return timeStr;
+    }
+  };
 
   const { data: fundamentalBias, isLoading: biasLoading } = useQuery({
     queryKey: ['/api/fundamental-bias'],
@@ -87,21 +122,24 @@ export default function Fundamentals() {
             Economic calendar, news events, and market-moving fundamentals
           </p>
         </div>
-        <Button
-          onClick={handleManualRefresh}
-          variant="outline"
-          className="group border-cyan-600/50 bg-slate-800/50 hover:bg-cyan-600/20 hover:border-cyan-500 transition-all duration-300"
-          disabled={isRefreshing}
-          data-testid="button-refresh-fundamentals"
-        >
-          <RefreshCw 
-            className={`h-4 w-4 mr-2 text-cyan-400 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} 
-          />
-          <div className="flex flex-col items-start">
-            <span className="text-sm font-medium text-white">Refresh Data</span>
-            <span className="text-xs text-gray-400">Auto-updates every 60s</span>
-          </div>
-        </Button>
+        <div className="flex items-center gap-4">
+          <TimezoneSelector />
+          <Button
+            onClick={handleManualRefresh}
+            variant="outline"
+            className="group border-cyan-600/50 bg-slate-800/50 hover:bg-cyan-600/20 hover:border-cyan-500 transition-all duration-300"
+            disabled={isRefreshing}
+            data-testid="button-refresh-fundamentals"
+          >
+            <RefreshCw 
+              className={`h-4 w-4 mr-2 text-cyan-400 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} 
+            />
+            <div className="flex flex-col items-start">
+              <span className="text-sm font-medium text-white">Refresh Data</span>
+              <span className="text-xs text-gray-400">Auto-updates every 60s</span>
+            </div>
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="calendar" className="space-y-4">
@@ -172,7 +210,7 @@ export default function Fundamentals() {
                                 >
                                   <td className="py-3 px-4"></td>
                                   <td className="py-3 px-2 text-sm font-mono text-gray-400">
-                                    {event.event_time?.substring(0, 5) || 'TBA'}
+                                    {formatEventTime(event.event_date, event.event_time)}
                                   </td>
                                   <td className="py-3 px-2">
                                     <span className="text-xs font-semibold text-cyan-400">
@@ -247,7 +285,7 @@ export default function Fundamentals() {
                                 <span className="text-gray-300">{event.title}</span>
                               </div>
                               <div className="text-gray-500 mt-0.5">
-                                {format(parseISO(event.event_date), 'MMM dd')} • {event.event_time?.substring(0, 5) || 'TBA'}
+                                {format(parseISO(event.event_date), 'MMM dd')} • {formatEventTime(event.event_date, event.event_time)}
                               </div>
                             </div>
                           </div>
