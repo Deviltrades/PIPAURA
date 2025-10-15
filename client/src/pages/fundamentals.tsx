@@ -4,8 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus, Circle, RefreshCw } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getFundamentalBias, getIndexBias, getMarketDrivers, getWeeklyEconomicEvents, getHighImpactEventCounts } from "@/lib/supabase-service";
-import { format, parseISO } from "date-fns";
+import { getFundamentalBias, getIndexBias, getMarketDrivers, getWeeklyEconomicEvents, getHighImpactEventCounts, getMarketNews } from "@/lib/supabase-service";
+import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 
 export default function Fundamentals() {
@@ -52,6 +52,12 @@ export default function Fundamentals() {
     refetchInterval: 60000,
   });
 
+  const { data: marketNews, isLoading: newsLoading } = useQuery({
+    queryKey: ['/api/market-news'],
+    queryFn: () => getMarketNews(15),
+    refetchInterval: 60000,
+  });
+
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
     await queryClient.invalidateQueries({ queryKey: ['/api/fundamental-bias'] });
@@ -59,6 +65,7 @@ export default function Fundamentals() {
     await queryClient.invalidateQueries({ queryKey: ['/api/market-drivers'] });
     await queryClient.invalidateQueries({ queryKey: ['/api/weekly-events'] });
     await queryClient.invalidateQueries({ queryKey: ['/api/event-counts'] });
+    await queryClient.invalidateQueries({ queryKey: ['/api/market-news'] });
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
@@ -290,50 +297,58 @@ export default function Fundamentals() {
               <CardDescription>Breaking news and market-moving headlines</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {[
-                  { 
-                    title: "Fed Holds Rates Steady, Signals Potential Cuts Ahead",
-                    source: "Reuters",
-                    time: "2 hours ago",
-                    impact: "high",
-                    summary: "The Federal Reserve maintained interest rates at 5.25%-5.50% while indicating possible rate cuts later in the year."
-                  },
-                  { 
-                    title: "ECB Keeps Rates Unchanged at 4.50%",
-                    source: "Bloomberg",
-                    time: "4 hours ago",
-                    impact: "high",
-                    summary: "European Central Bank holds policy steady amid slowing inflation and economic concerns."
-                  },
-                  { 
-                    title: "US Employment Data Exceeds Expectations",
-                    source: "CNBC",
-                    time: "1 day ago",
-                    impact: "medium",
-                    summary: "Non-farm payrolls increased by 216K, beating forecasts of 170K, showing resilient labor market."
-                  },
-                ].map((news, index) => (
-                  <div
-                    key={index}
-                    className="border-l-4 border-l-cyan-500 pl-4 hover:bg-muted/50 p-3 rounded-r transition-colors"
-                    data-testid={`news-${index}`}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-medium">{news.title}</h3>
-                      <Badge variant={news.impact === "high" ? "destructive" : "default"}>
-                        {news.impact}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-2">{news.summary}</p>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>{news.source}</span>
-                      <span>•</span>
-                      <span>{news.time}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {newsLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading market news...</div>
+              ) : marketNews && marketNews.length > 0 ? (
+                <div className="space-y-4">
+                  {marketNews.map((news: any, index: number) => {
+                    const timestamp = new Date(news.datetime * 1000);
+                    const timeAgo = formatDistanceToNow(timestamp, { addSuffix: true });
+
+                    return (
+                      <div
+                        key={news.id || index}
+                        className="border-l-4 border-l-cyan-500 pl-4 hover:bg-muted/50 p-3 rounded-r transition-colors cursor-pointer"
+                        data-testid={`news-${index}`}
+                        onClick={() => news.url && window.open(news.url, '_blank')}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="font-medium text-white">{news.headline}</h3>
+                          <Badge 
+                            variant={
+                              news.impact_level === "high" 
+                                ? "destructive" 
+                                : news.impact_level === "medium" 
+                                ? "default" 
+                                : "secondary"
+                            }
+                          >
+                            {news.impact_level}
+                          </Badge>
+                        </div>
+                        {news.summary && (
+                          <p className="text-sm text-muted-foreground mb-2">{news.summary}</p>
+                        )}
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span>{news.source}</span>
+                          <span>•</span>
+                          <span>{timeAgo}</span>
+                          {news.category && (
+                            <>
+                              <span>•</span>
+                              <span className="capitalize">{news.category}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No market news available. News will appear once the system fetches the latest updates.
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
