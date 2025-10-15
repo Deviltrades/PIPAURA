@@ -1345,3 +1345,186 @@ export async function getTaxSummary(year: number, accountIds: string[] = []) {
     tax_profile: taxProfile
   };
 }
+
+// ==================== Emotional Analytics ====================
+
+export interface EmotionalLog {
+  id: string;
+  user_id: string;
+  log_date: string;
+  mood: number;
+  energy: number;
+  tags: string[] | null;
+  note: string | null;
+  created_at: string;
+}
+
+export interface SaveEmotionalLogInput {
+  log_date: string;
+  mood: number;
+  energy: number;
+  tags: string[];
+  note: string;
+}
+
+// Save or update emotional log (upsert based on user_id and log_date)
+export async function saveEmotionalLog(input: SaveEmotionalLogInput): Promise<EmotionalLog> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('emotional_logs')
+    .upsert({
+      user_id: user.id,
+      log_date: input.log_date,
+      mood: input.mood,
+      energy: input.energy,
+      tags: input.tags.length > 0 ? input.tags : null,
+      note: input.note || null
+    }, {
+      onConflict: 'user_id,log_date'
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Get emotional logs for a user within a date range
+export async function getEmotionalLogs(startDate: string, endDate: string): Promise<EmotionalLog[]> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('emotional_logs')
+    .select('*')
+    .eq('user_id', user.id)
+    .gte('log_date', startDate)
+    .lte('log_date', endDate)
+    .order('log_date', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+// Get emotional log for a specific date
+export async function getEmotionalLogByDate(date: string): Promise<EmotionalLog | null> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('emotional_logs')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('log_date', date)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null; // No rows found
+    throw error;
+  }
+  return data;
+}
+
+// Get emotional analytics with trade performance correlation
+export async function getEmotionalAnalytics(accountId: string, startDate: string, endDate: string) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  // Get emotional logs
+  const emotionalLogs = await getEmotionalLogs(startDate, endDate);
+  
+  // Get trade performance grouped by date
+  const { data: dailyPerformance, error: perfError } = await supabase
+    .from('journal_entries')
+    .select('entry_date, pnl')
+    .eq('user_id', user.id)
+    .eq('account_id', accountId)
+    .gte('entry_date', startDate)
+    .lte('entry_date', endDate)
+    .not('pnl', 'is', null);
+
+  if (perfError) throw perfError;
+
+  // Group trades by date and calculate daily P&L
+  const dailyPnLMap = new Map<string, number>();
+  (dailyPerformance || []).forEach(trade => {
+    const date = trade.entry_date;
+    const pnl = parseFloat(trade.pnl || '0');
+    dailyPnLMap.set(date, (dailyPnLMap.get(date) || 0) + pnl);
+  });
+
+  // Correlate emotional state with performance
+  const correlationData = emotionalLogs.map(log => ({
+    date: log.log_date,
+    mood: log.mood,
+    energy: log.energy,
+    tags: log.tags || [],
+    pnl: dailyPnLMap.get(log.log_date) || 0,
+    win: (dailyPnLMap.get(log.log_date) || 0) > 0
+  }));
+
+  // Calculate average mood/energy for winning vs losing days
+  const winningDays = correlationData.filter(d => d.win && d.pnl !== 0);
+  const losingDays = correlationData.filter(d => !d.win && d.pnl !== 0);
+
+  const avgMoodWinning = winningDays.length > 0
+    ? winningDays.reduce((sum, d) => sum + d.mood, 0) / winningDays.length
+    : 0;
+  const avgMoodLosing = losingDays.length > 0
+    ? losingDays.reduce((sum, d) => sum + d.mood, 0) / losingDays.length
+    : 0;
+  const avgEnergyWinning = winningDays.length > 0
+    ? winningDays.reduce((sum, d) => sum + d.energy, 0) / winningDays.length
+    : 0;
+  const avgEnergyLosing = losingDays.length > 0
+    ? losingDays.reduce((sum, d) => sum + d.energy, 0) / losingDays.length
+    : 0;
+
+  // Calculate emotional volatility (standard deviation of mood)
+  const allMoods = emotionalLogs.map(log => log.mood);
+  const avgMood = allMoods.length > 0
+    ? allMoods.reduce((sum, m) => sum + m, 0) / allMoods.length
+    : 0;
+  const moodVariance = allMoods.length > 0
+    ? allMoods.reduce((sum, m) => sum + Math.pow(m - avgMood, 2), 0) / allMoods.length
+    : 0;
+  const moodVolatility = Math.sqrt(moodVariance);
+
+  // Tag frequency analysis
+  const tagFrequency = new Map<string, { count: number; avgPnL: number; totalPnL: number }>();
+  correlationData.forEach(d => {
+    d.tags.forEach(tag => {
+      const current = tagFrequency.get(tag) || { count: 0, avgPnL: 0, totalPnL: 0 };
+      tagFrequency.set(tag, {
+        count: current.count + 1,
+        totalPnL: current.totalPnL + d.pnl,
+        avgPnL: 0 // Will calculate after
+      });
+    });
+  });
+
+  // Calculate average P&L per tag
+  const tagAnalysis = Array.from(tagFrequency.entries()).map(([tag, stats]) => ({
+    tag,
+    frequency: stats.count,
+    avgPnL: stats.totalPnL / stats.count,
+    totalPnL: stats.totalPnL
+  })).sort((a, b) => b.frequency - a.frequency);
+
+  return {
+    correlationData,
+    summary: {
+      avgMoodWinning,
+      avgMoodLosing,
+      avgEnergyWinning,
+      avgEnergyLosing,
+      moodVolatility,
+      totalLogs: emotionalLogs.length,
+      winningDays: winningDays.length,
+      losingDays: losingDays.length
+    },
+    tagAnalysis
+  };
+}
