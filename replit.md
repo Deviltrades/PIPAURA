@@ -44,6 +44,33 @@ Authentication is handled entirely through Supabase Auth, providing:
 - Custom sign-up and sign-in forms.
 - Production-ready email verification with domain restrictions.
 
+### Fundamentals Page Features
+The Fundamentals page provides comprehensive fundamental analysis tools across four main tabs:
+
+**1. Economic Calendar Tab:**
+- Weekly economic events with actual vs forecast values
+- High-impact event counters (this week, next week, this month)
+- Central bank rates display
+- Quick links to external economic calendars
+
+**2. Market News Tab:**
+- Latest market-moving headlines
+- Impact level classification (high/medium/low)
+- News source and timestamp tracking
+
+**3. Market Analysis Tab:**
+- **Market Sentiment**: Real-time fundamental bias display for all 38 FX pairs and 10 global indices
+- Visual sentiment bars showing bullish/bearish/neutral positioning
+- Score and confidence metrics for each instrument
+- Removed: "Key Levels to Watch" (technical analysis, not fundamental)
+- Auto-updates every 60 seconds with latest bias calculations
+
+**4. Fundamental Strength Tab:**
+- Detailed FX pair bias breakdown with scoring methodology
+- Currency strength analysis (10 currencies)
+- Global indices fundamental bias
+- Pulsating visual effects for strong/weak signals
+
 ### Automated Fundamental Bias System
 A comprehensive automated fundamental analysis system provides real-time (30-min/hourly) bias calculations. The system has been successfully migrated from Python scripts to JavaScript ES6+ serverless functions deployed on Vercel for 100% uptime and production reliability:
 

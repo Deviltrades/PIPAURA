@@ -339,78 +339,114 @@ export default function Fundamentals() {
         </TabsContent>
 
         <TabsContent value="analysis" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
-              <CardHeader>
-                <CardTitle>Market Sentiment</CardTitle>
-                <CardDescription>Current market bias and positioning</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { pair: "EUR/USD", sentiment: "Bullish", strength: 75 },
-                    { pair: "GBP/USD", sentiment: "Neutral", strength: 50 },
-                    { pair: "USD/JPY", sentiment: "Bearish", strength: 35 },
-                    { pair: "BTC/USD", sentiment: "Bullish", strength: 80 },
-                  ].map((item, index) => (
-                    <div key={index}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">{item.pair}</span>
-                        <Badge 
-                          variant={item.sentiment === "Bullish" ? "default" : item.sentiment === "Bearish" ? "destructive" : "secondary"}
-                        >
-                          {item.sentiment}
-                        </Badge>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${
-                            item.sentiment === "Bullish" ? "bg-green-500" : 
-                            item.sentiment === "Bearish" ? "bg-red-500" : 
-                            "bg-gray-500"
-                          }`}
-                          style={{ width: `${item.strength}%` }}
-                        />
+          <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
+            <CardHeader>
+              <CardTitle>Market Sentiment</CardTitle>
+              <CardDescription>Real-time fundamental bias for all FX pairs and global indices</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {biasLoading || indexLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading market sentiment data...</div>
+              ) : (
+                <div className="space-y-6">
+                  {/* FX Pairs Section */}
+                  {fundamentalBias && fundamentalBias.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 text-white">FX Pairs</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {fundamentalBias.map((item: any, index: number) => {
+                          const isStrong = item.total_bias >= 7;
+                          const isWeak = item.total_bias <= -7;
+                          const sentiment = isStrong ? "Bullish" : isWeak ? "Bearish" : "Neutral";
+                          
+                          // Calculate strength percentage (map -15 to +15 range to 0-100%)
+                          const strength = ((item.total_bias + 15) / 30) * 100;
+                          
+                          return (
+                            <div key={index} data-testid={`sentiment-pair-${index}`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-medium text-white">{item.pair}</span>
+                                <Badge 
+                                  variant={isStrong ? "default" : isWeak ? "destructive" : "secondary"}
+                                  className={isStrong ? "bg-green-600 hover:bg-green-700" : isWeak ? "bg-red-600 hover:bg-red-700" : ""}
+                                >
+                                  {sentiment}
+                                </Badge>
+                              </div>
+                              <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full transition-all duration-500 ${
+                                    isStrong ? "bg-green-500" : 
+                                    isWeak ? "bg-red-500" : 
+                                    "bg-gray-500"
+                                  }`}
+                                  style={{ width: `${Math.max(0, Math.min(100, strength))}%` }}
+                                />
+                              </div>
+                              <div className="mt-1 text-xs text-gray-400">
+                                Score: {item.total_bias > 0 ? '+' : ''}{item.total_bias} | Confidence: {item.confidence}%
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  )}
 
-            <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
-              <CardHeader>
-                <CardTitle>Key Levels to Watch</CardTitle>
-                <CardDescription>Important price levels and zones</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { pair: "EUR/USD", resistance: "1.0950", support: "1.0850" },
-                    { pair: "GBP/USD", resistance: "1.2720", support: "1.2620" },
-                    { pair: "USD/JPY", resistance: "150.50", support: "148.20" },
-                    { pair: "BTC/USD", resistance: "45,000", support: "42,000" },
-                  ].map((level, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="font-medium">{level.pair}</div>
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-green-500" />
-                          <span className="text-muted-foreground">Resistance:</span>
-                          <span className="font-medium">{level.resistance}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <TrendingDown className="h-4 w-4 text-red-500" />
-                          <span className="text-muted-foreground">Support:</span>
-                          <span className="font-medium">{level.support}</span>
-                        </div>
+                  {/* Global Indices Section */}
+                  {indexBias && indexBias.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 text-white">Global Indices</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {indexBias.map((item: any, index: number) => {
+                          const isStrong = item.score >= 3;
+                          const isWeak = item.score <= -3;
+                          const sentiment = isStrong ? "Bullish" : isWeak ? "Bearish" : "Neutral";
+                          
+                          // Calculate strength percentage (map -6 to +6 range to 0-100%)
+                          const strength = ((item.score + 6) / 12) * 100;
+                          
+                          return (
+                            <div key={index} data-testid={`sentiment-index-${index}`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-medium text-white">{item.instrument}</span>
+                                <Badge 
+                                  variant={isStrong ? "default" : isWeak ? "destructive" : "secondary"}
+                                  className={isStrong ? "bg-green-600 hover:bg-green-700" : isWeak ? "bg-red-600 hover:bg-red-700" : ""}
+                                >
+                                  {sentiment}
+                                </Badge>
+                              </div>
+                              <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full transition-all duration-500 ${
+                                    isStrong ? "bg-green-500" : 
+                                    isWeak ? "bg-red-500" : 
+                                    "bg-gray-500"
+                                  }`}
+                                  style={{ width: `${Math.max(0, Math.min(100, strength))}%` }}
+                                />
+                              </div>
+                              <div className="mt-1 text-xs text-gray-400">
+                                Score: {item.score > 0 ? '+' : ''}{item.score} | Confidence: {item.confidence}%
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* No Data State */}
+                  {(!fundamentalBias || fundamentalBias.length === 0) && (!indexBias || indexBias.length === 0) && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No market sentiment data available. Automated bias calculations will populate once cron jobs run.
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="strength" className="space-y-4">
