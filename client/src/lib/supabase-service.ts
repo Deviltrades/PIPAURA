@@ -1432,8 +1432,11 @@ export async function getEmotionalAnalytics(accountId: string, startDate: string
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
   
+  console.log('🔍 Fetching emotional analytics:', { accountId, startDate, endDate, userId: user.id });
+  
   // Get emotional logs
   const emotionalLogs = await getEmotionalLogs(startDate, endDate);
+  console.log('📊 Emotional logs fetched:', emotionalLogs.length, 'logs', emotionalLogs);
   
   // Get trade performance grouped by date
   const { data: dailyPerformance, error: perfError } = await supabase
