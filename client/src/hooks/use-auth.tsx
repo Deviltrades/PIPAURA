@@ -74,11 +74,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
+      // Use REPLIT_DOMAINS env var or window.location.origin as fallback
+      const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth`
+          emailRedirectTo: `${siteUrl}/auth`
         }
       });
       if (error) throw error;
