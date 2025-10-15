@@ -93,7 +93,7 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
   }
 
   return (
-    <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
+    <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all duration-300">
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-cyan-400" />
