@@ -1461,7 +1461,7 @@ export async function getEmotionalAnalytics(accountId: string, startDate: string
   // Group trades by date and calculate daily P&L
   const dailyPnLMap = new Map<string, number>();
   (dailyPerformance || []).forEach(trade => {
-    const date = trade.entry_date.split(' ')[0]; // Extract just the date part (YYYY-MM-DD)
+    const date = trade.entry_date.split('T')[0]; // Extract just the date part (YYYY-MM-DD)
     const pnl = parseFloat(trade.pnl || '0');
     dailyPnLMap.set(date, (dailyPnLMap.get(date) || 0) + pnl);
   });
