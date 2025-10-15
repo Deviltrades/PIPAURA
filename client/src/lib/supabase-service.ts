@@ -1441,12 +1441,12 @@ export async function getEmotionalAnalytics(accountId: string, startDate: string
   // Get trade performance grouped by date (filtered by user only)
   // Note: Emotional state is user-wide, not account-specific
   const { data: dailyPerformance, error: perfError } = await supabase
-    .from('journal_entries')
-    .select('trade_date, profit_loss')
+    .from('trades')
+    .select('entry_date, pnl')
     .eq('user_id', user.id)
-    .gte('trade_date', startDate)
-    .lte('trade_date', endDate)
-    .not('profit_loss', 'is', null);
+    .gte('entry_date', startDate)
+    .lte('entry_date', endDate)
+    .not('pnl', 'is', null);
 
   if (perfError) {
     console.error('❌ Error fetching daily performance:', perfError);
@@ -1455,14 +1455,14 @@ export async function getEmotionalAnalytics(accountId: string, startDate: string
   
   console.log('💹 Daily performance fetched:', dailyPerformance?.length || 0, 'trades');
   if (dailyPerformance && dailyPerformance.length > 0) {
-    console.log('📅 Sample trade dates:', dailyPerformance.slice(0, 3).map(t => t.trade_date));
+    console.log('📅 Sample trade dates:', dailyPerformance.slice(0, 3).map(t => t.entry_date));
   }
 
   // Group trades by date and calculate daily P&L
   const dailyPnLMap = new Map<string, number>();
   (dailyPerformance || []).forEach(trade => {
-    const date = trade.trade_date;
-    const pnl = parseFloat(trade.profit_loss || '0');
+    const date = trade.entry_date.split(' ')[0]; // Extract just the date part (YYYY-MM-DD)
+    const pnl = parseFloat(trade.pnl || '0');
     dailyPnLMap.set(date, (dailyPnLMap.get(date) || 0) + pnl);
   });
   
