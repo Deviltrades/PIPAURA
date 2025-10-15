@@ -2,30 +2,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus, Circle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Calendar, TrendingUp, TrendingDown, AlertCircle, ExternalLink, Gauge, Minus, Circle, RefreshCw } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFundamentalBias, getIndexBias, getMarketDrivers, getWeeklyEconomicEvents, getHighImpactEventCounts } from "@/lib/supabase-service";
 import { format, parseISO } from "date-fns";
+import { useState } from "react";
 
 export default function Fundamentals() {
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const { data: fundamentalBias, isLoading: biasLoading } = useQuery({
     queryKey: ['/api/fundamental-bias'],
     queryFn: getFundamentalBias,
+    refetchInterval: 60000, // Auto-refresh every 60 seconds
   });
 
   const { data: indexBias, isLoading: indexLoading } = useQuery({
     queryKey: ['/api/index-bias'],
     queryFn: getIndexBias,
+    refetchInterval: 60000,
   });
 
   const { data: marketDrivers, isLoading: driversLoading } = useQuery({
     queryKey: ['/api/market-drivers'],
     queryFn: getMarketDrivers,
+    refetchInterval: 60000,
   });
 
   const { data: weeklyEvents, isLoading: eventsLoading } = useQuery({
     queryKey: ['/api/weekly-events'],
     queryFn: getWeeklyEconomicEvents,
+    refetchInterval: 60000,
   });
 
   // Group events by date
@@ -41,7 +49,18 @@ export default function Fundamentals() {
   const { data: eventCounts, isLoading: countsLoading } = useQuery({
     queryKey: ['/api/event-counts'],
     queryFn: getHighImpactEventCounts,
+    refetchInterval: 60000,
   });
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ['/api/fundamental-bias'] });
+    await queryClient.invalidateQueries({ queryKey: ['/api/index-bias'] });
+    await queryClient.invalidateQueries({ queryKey: ['/api/market-drivers'] });
+    await queryClient.invalidateQueries({ queryKey: ['/api/weekly-events'] });
+    await queryClient.invalidateQueries({ queryKey: ['/api/event-counts'] });
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
 
   return (
     <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -54,6 +73,21 @@ export default function Fundamentals() {
             Economic calendar, news events, and market-moving fundamentals
           </p>
         </div>
+        <Button
+          onClick={handleManualRefresh}
+          variant="outline"
+          className="group border-cyan-600/50 bg-slate-800/50 hover:bg-cyan-600/20 hover:border-cyan-500 transition-all duration-300"
+          disabled={isRefreshing}
+          data-testid="button-refresh-fundamentals"
+        >
+          <RefreshCw 
+            className={`h-4 w-4 mr-2 text-cyan-400 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} 
+          />
+          <div className="flex flex-col items-start">
+            <span className="text-sm font-medium text-white">Refresh Data</span>
+            <span className="text-xs text-gray-400">Auto-updates every 60s</span>
+          </div>
+        </Button>
       </div>
 
       <Tabs defaultValue="calendar" className="space-y-4">
