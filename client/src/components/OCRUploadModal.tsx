@@ -130,7 +130,7 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
         // swap: data.swap ? parseFloat(data.swap) : undefined,
         // commission: data.commission ? parseFloat(data.commission) : undefined,
         status: (data.exitPrice ? 'CLOSED' : 'OPEN') as 'CLOSED' | 'OPEN',
-        notes: data.notes || 'Imported via OCR Screenshot',
+        notes: data.notes || 'Uploaded via OCR AI',
       };
 
       return createTrade(tradeData);
