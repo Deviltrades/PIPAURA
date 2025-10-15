@@ -1,7 +1,7 @@
 # PipAura
 
 ## Overview
-PipAura is a comprehensive trading journal application for forex, indices, and cryptocurrency traders. It offers advanced analytics, trade logging, signal sharing, and performance tracking. The application is a full-stack web application with a modern React frontend and a Supabase backend for authentication, database, and file storage. The business vision is to provide traders with a robust tool to improve their performance through detailed analysis and tracking, with ambitions to expand into advanced AI-driven insights and community features.
+PipAura is a comprehensive trading journal application for forex, indices, and cryptocurrency traders. It provides advanced analytics, trade logging, signal sharing, and performance tracking. The application aims to enhance trader performance through detailed analysis and tracking, with future ambitions for AI-driven insights and community features.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -10,170 +10,54 @@ Settings access: Settings icon next to theme toggle with dedicated logout tab.
 
 ## System Architecture
 
-### Frontend Architecture
-The client-side application is built with React 18 and TypeScript, using a component-based architecture. It leverages shadcn/ui components built on Radix UI, Tailwind CSS for styling (supporting light/dark themes and responsiveness), React Query for server state management, Wouter for lightweight client-side routing, and React Hook Form with Zod for type-safe form validation.
+### Frontend
+The client-side is a React 18 and TypeScript application using `shadcn/ui` (built on Radix UI), Tailwind CSS for styling (light/dark themes, responsiveness), React Query for server state management, Wouter for routing, and React Hook Form with Zod for form validation.
 
-### Backend Architecture
-The application utilizes a pure Supabase architecture, eliminating the need for a separate Express.js server in production. All database operations, authentication, and file storage are handled directly through Supabase. This enables a JAMstack architecture with a serverless backend.
+### Backend
+The application uses a pure Supabase architecture for all database operations, authentication, and file storage, enabling a JAMstack approach without a separate server.
 
-### Data Storage Solutions
-The application uses Supabase PostgreSQL for all data storage, including:
-- **User Profiles**: Extended user data.
-- **Journal Entries**: Main trading journal entries with instrument types, position details, and P&L tracking.
-- **File Storage**: Supabase Storage for trade attachments and supporting documents.
+### Data Storage
+Supabase PostgreSQL stores all data, including user profiles, journal entries (instrument types, position details, P&L), and Supabase Storage handles trade attachments.
 
-### Dashboard Features
-The dashboard features a customizable widget system allowing users to add/remove from 8 widget types, categorize them, persist preferences, and enjoy real-time data updates. It includes drag-and-drop and resize functionality for widgets, and a template system to save up to 5 custom dashboard layouts.
+### Dashboard
+Features a customizable widget system with 8 types, drag-and-drop, resize functionality, and template saving for up to 5 custom layouts.
 
 ### Account Filtering System
-A comprehensive account filtering system allows users to view data for specific trading accounts or all accounts combined:
-- **Universal Account Selector**: Reusable AccountSelector component positioned below page titles across all pages (Dashboard, Trades, Analytics, Calendar, Widgets, Strategy, Notes)
-- **Database-Level Filtering**: Trades and analytics queries filter by `account_id` at the database level for optimal performance
-- **Smart Query Caching**: React Query uses account-specific cache keys (`["trades", accountId]`, `["analytics", accountId]`) for proper data isolation
-- **Seamless Data Updates**: Selecting "All Accounts" shows combined data; selecting a specific account shows only that account's trades and metrics
-- **Cross-Page Consistency**: Account selection is managed at the page level, ensuring consistent filtering across navigation
+A universal account selector enables database-level filtering by `account_id` across all pages. React Query uses account-specific cache keys for data isolation, ensuring consistent data updates and cross-page consistency.
 
-### Calendar Features
-The trading calendar offers comprehensive settings persistence, including auto-save of display options (weekends, weekly/monthly totals, consistency tracker), view modes (percentage/dollar, clear view), and filter selections (symbol, strategy, direction). It also provides quick navigation with month/year selectors and integrates with the account filtering system for account-specific calendar views.
+### Calendar
+Offers comprehensive settings persistence for display options (weekends, totals, consistency tracker), view modes, and filter selections. It integrates with the account filtering system for account-specific views.
 
 ### Authentication and Authorization
-Authentication is handled entirely through Supabase Auth, providing:
-- Email/password authentication with verification.
-- JWT tokens and automatic session management.
-- Role-based permissions support through Supabase Auth users.
-- Custom sign-up and sign-in forms.
-- Production-ready email verification with domain restrictions.
+Supabase Auth manages email/password authentication, JWT tokens, session management, role-based permissions, and custom sign-up/sign-in forms with production-ready email verification.
 
-### Fundamentals Page Features
-The Fundamentals page provides comprehensive fundamental analysis tools across four main tabs:
-
-**1. Economic Calendar Tab:**
-- Weekly economic events with actual vs forecast values
-- High-impact event counters (this week, next week, this month)
-- Central bank rates display
-- Quick links to external economic calendars
-
-**2. Market News Tab:**
-- Latest market-moving headlines
-- Impact level classification (high/medium/low)
-- News source and timestamp tracking
-
-**3. Market Analysis Tab:**
-- **Market Sentiment**: Real-time fundamental bias display for all 38 FX pairs and 10 global indices
-- Visual sentiment bars showing bullish/bearish/neutral positioning
-- Score and confidence metrics for each instrument
-- Removed: "Key Levels to Watch" (technical analysis, not fundamental)
-- Auto-updates every 60 seconds with latest bias calculations
-
-**4. Fundamental Strength Tab:**
-- Detailed FX pair bias breakdown with scoring methodology
-- Currency strength analysis (10 currencies)
-- Global indices fundamental bias
-- Pulsating visual effects for strong/weak signals
+### Fundamentals Page
+Provides comprehensive fundamental analysis across four tabs:
+- **Economic Calendar**: Weekly events, central bank rates, and external links.
+- **Market News**: Real-time news from Finnhub API with smart impact classification (high/medium/low) and auto-refresh.
+- **Market Analysis**: Real-time fundamental bias for FX pairs and indices.
+- **Fundamental Strength**: Detailed FX pair bias breakdown and currency strength analysis.
 
 ### Automated Fundamental Bias System
-A comprehensive automated fundamental analysis system provides real-time (30-min/hourly) bias calculations. The system has been successfully migrated from Python scripts to JavaScript ES6+ serverless functions deployed on Vercel for 100% uptime and production reliability:
+A comprehensive automated fundamental analysis system provides real-time bias calculations via JavaScript ES6+ serverless functions deployed on Vercel. It leverages RapidAPI for economic events, Yahoo Finance for market data, and manual central bank tone settings. Cron jobs run every 15 minutes (high-impact events), 30 minutes (hourly bias update), and 4 hours (full calendar refresh) to update Supabase tables (`forex_events`, `economic_scores`, `currency_scores`, `fundamental_bias`, `index_bias`).
 
-**Architecture:**
-- **RapidAPI Calendar Feed** (`lib/cron/rapidapi-calendar.js`): Fetches economic events from RapidAPI Ultimate Economic Calendar with actual/forecast/previous values
-- **Hourly Bias Calculator** (`lib/cron/hourly-bias.js`): Calculates currency scores using Yahoo Finance market data, central bank tones, and commodity correlations
-- **Vercel API Endpoints** (`api/cron/*.js`): JavaScript serverless functions called by external cron service (cron-job.org)
-
-**Data Sources:**
-- Yahoo Finance: Market data (DXY, WTI, Gold, Copper, SPX, UST10Y, VIX)
-- RapidAPI Ultimate Economic Calendar: Real economic calendar events with actual/forecast/previous values
-- Manual: Central bank tone settings (hawkish/dovish/neutral)
-
-**Cron Schedule:**
-- **Every 15 minutes**: High-impact event check → instant bias recalculation if detected
-- **Every 30 minutes**: Hourly bias update for all currencies, pairs, and indices
-- **Every 4 hours**: Full Forex Factory calendar refresh
-
-**Database Tables:**
-- `forex_events`: Economic calendar events with scores
-- `economic_scores`: Aggregated event scores by currency
-- `currency_scores`: Full scoring breakdown (CB tone, commodities, market flows, economic data)
-- `fundamental_bias`: FX pair bias calculations (38 pairs)
-- `index_bias`: Stock index bias calculations (10 indices)
-
-**Deployment Status:**
-✅ **LIVE AND OPERATIONAL** - The cron endpoints are successfully deployed on Vercel at `https://pipaura-git-main-deviltrades-projects.vercel.app/api/cron/*` with 100% uptime. All 3 cron jobs are configured in cron-job.org and actively updating the Supabase database every 15-30 minutes. See `VERCEL_CRON_SETUP.md` for configuration details.
-
-**Active Cron Schedule:**
-- Every 15 minutes: High-impact event detection → `/api/cron/ff-high-impact`
-- Every 30 minutes: Hourly bias update → `/api/cron/hourly-update`
-- Every 4 hours: Full calendar refresh → `/api/cron/ff-full-refresh`
+### Market News Integration
+Utilizes Finnhub API for real-time market news across forex, general market, and crypto. News articles are automatically classified by impact and stored in the `market_news` table. The frontend displays the latest 15 articles with auto-refresh and direct links.
 
 ### Floating DNA Core Visualization
-The analytics page features a "Trader DNA Core" visualization: an animated 3D-like double-helix structure colored by overall Edge Integrity score, with six orbiting metrics (Win Rate, Avg R:R, Risk Consistency, Emotional Control, Discipline, Session Focus) connected by dynamic glowing beams.
+The analytics page features a "Trader DNA Core" visualization: an animated 3D-like double-helix structure colored by overall Edge Integrity score, with six orbiting metrics.
 
 ### UI/UX Design and Visual Effects
-The application features a unified cyan/teal color scheme (hsl(188, 94%, 60%)) with dark blue backgrounds and steady glow effects for interactive elements:
-- **Color Theme**: Unified cyan/teal throughout with theme-aware styling for both light and dark modes
-- **Visual Feedback**: All interactive elements use steady glows for a polished, professional appearance, except fundamental bias cards which pulsate when showing Strong/Weak signals
-- **Glow Effects**: 
-  - Widget hover: Steady cyan glow
-  - Strong/Weak bias cards: **Pulsating cyan glow** (only element that pulsates)
-  - Expense cards: Steady red glow
-  - Currency cards: Steady purple glow
-  - Account cards: Steady dim cyan glow with subtle border
-  - Note cards: Steady dim cyan glow with subtle border
-  - Dashboard background: Inset steady dim cyan glow
-- **Menu Interaction**: Sidebar menu tabs display steady cyan glow on hover and when active/selected
-- **Calendar Styling**: Non-trading days show gradient logo at 40% opacity; winning days use dulled green (#00ad57); losing days use toned-down red (#e55555)
-- **Custom Logo**: Text-based logo displays in sidebar header with:
-  - Background: Matches sidebar gradient (slate-950/900)
-  - Text: Cyan/teal color matching scrollbar (hsl(188, 94%, 60%))
-  - Collapsed state: Shows "PipAura" only
-  - Expanded state: Shows "PipAura" with "Traders Hub" slogan in white
-- **Light Mode Support**: Theme-aware text classes (text-foreground dark:text-white) and backgrounds (bg-slate-200 dark:bg-slate-800) ensure visibility in both modes
+The application uses a unified cyan/teal color scheme (hsl(188, 94%, 60%)) with dark blue backgrounds. Interactive elements feature steady glow effects, except for strong/weak bias cards which pulsate. Light mode is fully supported with theme-aware styling. The custom text-based logo dynamically displays "PipAura" and "Traders Hub." Calendar styling distinguishes non-trading, winning, and losing days.
 
 ### Instrument Type Expansion
-The application supports five asset classes (FOREX, INDICES, CRYPTO, FUTURES, STOCKS) with advanced searchable dropdowns and custom instrument creation. Users can create any custom instrument not in predefined lists, with smart detection to prevent duplicates.
+Supports five asset classes (FOREX, INDICES, CRYPTO, FUTURES, STOCKS) with searchable dropdowns and custom instrument creation, including duplicate detection.
 
 ### Multi-Format Trade Upload System
-A comprehensive trade import system supporting CSV, Excel (.xls/.xlsx), and HTML formats from MT4/MT5/TradeZella platforms:
-- **Multi-Format Support**: Automatic file type detection and parsing for CSV, Excel spreadsheets, and HTML table exports.
-- **Excel Parser**: Uses SheetJS (xlsx) library with smart header detection that:
-  - Automatically finds header row by scanning first 10 rows for columns with data
-  - Skips title rows, formatting rows, and Excel artifacts (`__EMPTY` columns)
-  - Handles MT4/MT5 exports with "Trade History Report" titles and metadata
-- **Intelligent Row Filtering**: Automatically skips non-trade rows including:
-  - Balance adjustments, deposits, withdrawals (Type: "balance", "deposit", "credit", etc.)
-  - Duplicate header rows within data
-  - Completely empty rows
-  - Rows with numeric Type values (summary/malformed rows)
-  - Rows with invalid date formats (numeric values in date columns)
-- **HTML Parser**: Browser-native DOMParser extracts trade data from HTML table exports.
-- **Auto-Delimiter Detection**: CSV files automatically detect comma, semicolon, or tab delimiters.
-- **Flexible Column Mapping**: Supports multiple column name variations:
-  - Ticket ID: "Position", "Ticket", "Order", "Deal #", "Trade ID"
-  - Dates: "Time", "Time_1" (for entry/exit), standard variations
-  - SL/TP: "S / L", "T / P" (with spaces), standard variations
-  - Exit Price: "Price_1", standard close price variations
-- **Broker Compatibility**: Handles capitalized headers from MT4/MT5 exports and various broker formats.
-- **Account Association**: Links all imported trades to selected trading account.
-- **Balance Updates**: Automatically updates account balance based on closed trades.
+A comprehensive trade import system supports CSV, Excel (.xls/.xlsx), and HTML formats from MT4/MT5/TradeZella. It features automatic file type detection, smart header/row filtering, auto-delimiter detection, flexible column mapping, and broker compatibility. Trades are associated with selected accounts, and balances are updated.
 
-#### Trade Enrichment System ✅ OPERATIONAL
-An automated post-upload enrichment system that calculates and stores advanced trade analytics:
-- **Session Detection**: Identifies trading session (London/New York/Asia) based on UTC entry time.
-- **Holding Time**: Calculates duration between entry and exit in minutes.
-- **Profit Normalization**: Computes profit-per-lot for position sizing analysis.
-- **Duplicate Detection**: Prevents duplicate trades via ticket_id matching.
-
-**Database Columns**: 
-- `ticket_id` (text): Unique broker-assigned trade identifier for duplicate prevention
-- `session_tag` (text): Trading session classification (London/New York/Asia/Overlap)
-- `holding_time_minutes` (int4): Trade duration in minutes
-- `profit_per_lot` (numeric): Normalized profit per lot for position sizing analysis
-
-**Implementation**: All enrichment functions are active in `supabase-service.ts` and automatically process:
-- Individual trade creation via `createTrade()`
-- Bulk trade uploads via `uploadTrades()`
-- Trade updates via `updateTrade()` (recalculates if entry/exit dates or P&L changes)
-
-**Resolution**: Previously disabled due to Supabase PostgREST schema cache issues. Resolved by manually adding columns via Supabase Dashboard → Table Editor, which triggers immediate schema cache refresh.
+### Trade Enrichment System
+An automated post-upload system calculates and stores advanced trade analytics: session detection (London/New York/Asia), holding time, profit normalization (profit-per-lot), and duplicate prevention via `ticket_id`.
 
 ## External Dependencies
 
@@ -181,15 +65,15 @@ An automated post-upload enrichment system that calculates and stores advanced t
 - **Supabase**: Backend-as-a-service for authentication, PostgreSQL database, and file storage.
 
 ### File Upload System
-- **Uppy**: Advanced file upload library for dashboard UI, progress tracking, and drag-and-drop.
-- **SheetJS (xlsx)**: Excel file parsing library for .xls and .xlsx format support.
+- **Uppy**: File upload library for UI, progress tracking, and drag-and-drop.
+- **SheetJS (xlsx)**: Excel file parsing library for .xls and .xlsx formats.
 
 ### UI and Visualization
-- **Recharts**: Charting library for performance analytics and trading statistics.
-- **Radix UI**: Accessible component primitives for consistent user interface.
-- **Lucide Icons**: Consistent iconography throughout the application.
+- **Recharts**: Charting library for analytics.
+- **Radix UI**: Accessible component primitives.
+- **Lucide Icons**: Iconography.
 
 ### Development Tools
 - **Vite**: Fast development server and build tool.
-- **ESBuild**: High-performance bundling for production builds.
-- **TypeScript**: Type safety across the application stack.
+- **ESBuild**: High-performance bundling.
+- **TypeScript**: Type safety.
