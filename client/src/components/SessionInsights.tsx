@@ -93,7 +93,7 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
   }
 
   return (
-    <Card className="bg-[#0f1f3a] border-[#1a2f4a] transition-all hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+    <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300">
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-cyan-400" />
@@ -104,7 +104,7 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Most Active Session */}
-          <div className="space-y-3 p-4 rounded-lg bg-slate-800/50 border border-cyan-500/20">
+          <div className="space-y-3 p-4 rounded-lg bg-slate-800/50 border border-cyan-500/20 transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.6)] hover:border-cyan-500/60">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-cyan-600/20">
                 <Trophy className="h-5 w-5 text-cyan-400" />
@@ -128,7 +128,7 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
           </div>
 
           {/* Most Profitable Session */}
-          <div className="space-y-3 p-4 rounded-lg bg-slate-800/50 border border-green-500/20">
+          <div className="space-y-3 p-4 rounded-lg bg-slate-800/50 border border-green-500/20 transition-all duration-300 hover:shadow-[0_0_20px_rgba(34,197,94,0.6)] hover:border-green-500/60">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-green-600/20">
                 <DollarSign className="h-5 w-5 text-green-400" />
@@ -152,7 +152,7 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
           </div>
 
           {/* Longest Holding Session */}
-          <div className="space-y-3 p-4 rounded-lg bg-slate-800/50 border border-purple-500/20">
+          <div className="space-y-3 p-4 rounded-lg bg-slate-800/50 border border-purple-500/20 transition-all duration-300 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] hover:border-purple-500/60">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-purple-600/20">
                 <Clock className="h-5 w-5 text-purple-400" />
