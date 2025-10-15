@@ -1,0 +1,86 @@
+Hey team — amazing job so far, the system’s running perfectly.
+Now let’s move into Phase 2 optimizations to bring the FX bias model to institutional accuracy.
+
+Please implement the following 5 upgrades in order of priority 👇
+
+🟥 1. Economic Data Normalization (Z-Score + Tanh Scaling)
+
+Goal: Stop overshooting (+17 scores) and equalize currencies.
+Implementation:
+
+// current
+econ_component = clamp(rawScore / 30, -10, 10);
+
+// replace with
+const z = (actual - forecast) / sigma(event_type, currency);
+econ_component = 7 * Math.tanh(z / 2);   // bounded ±7
+
+
+Maintain a small rolling std-dev (σ) per event type for normalization.
+
+Cap at ±7.
+
+Use event_polarity map (+1 or –1) to keep direction correct.
+
+🟧 2. Economic Score Time Decay (72 h Half-Life)
+
+Goal: Old events lose impact gradually.
+
+const hoursSince = (now - event_time) / 3600;
+const lambda = Math.exp(-hoursSince / 72);
+econ_component *= lambda;
+
+
+Apply this before summing each currency’s total economic score.
+
+🟧 3. Interest-Rate Differential Component (±3 Weight)
+
+Goal: Add carry bias from central-bank policy rates.
+Implementation:
+
+const rateDiff = baseRate[base] - baseRate[quote];
+rate_component = clamp(rateDiff / 1.0, -3, 3);
+
+
+Pull baseRate from existing CB tone file or a small static JSON.
+
+Include this in currencyScore and display separately in debug logs.
+
+🟩 4. Smooth Currency Scores (EWMA 0.4)
+
+Goal: Reduce 30-min whipsaws.
+
+score_final = 0.6 * prev_score + 0.4 * new_score;
+score_final = clamp(score_final, -12, 12);
+
+
+Store previous score per currency in DB and reuse next cycle.
+
+🟩 5. Dynamic Risk Regime Scaling (VIX / SPX)
+
+Goal: Make JPY & CHF safer and NZD riskier in volatility spikes.
+Implementation:
+
+const riskOff = VIX > 20 || SPX_7d <= -3;
+if (riskOff) {
+  weights.JPY.safehaven = 3;
+  weights.CHF.safehaven = 3;
+  weights.NZD.risk = 2;
+} else {
+  weights.JPY.safehaven = 2;
+  weights.CHF.safehaven = 2;
+  weights.NZD.risk = 1;
+}
+
+✅ Expected Outcome
+
+Currency scores stay inside ±12 range (±15 absolute cap)
+
+Bias labels remain stable and realistic
+
+Scores decay and smooth naturally
+
+True macro divergence (e.g., CPI beat + rate gap) still shows clearly
+
+That’s it — these 5 refinements complete the model and make the bias engine fully professional-grade.
+Once implemented, I’ll run a post-deployment validation to confirm range balance and recalc integrity.
