@@ -1454,6 +1454,9 @@ export async function getEmotionalAnalytics(accountId: string, startDate: string
   }
   
   console.log('💹 Daily performance fetched:', dailyPerformance?.length || 0, 'trades');
+  if (dailyPerformance && dailyPerformance.length > 0) {
+    console.log('📅 Sample trade dates:', dailyPerformance.slice(0, 3).map(t => t.trade_date));
+  }
 
   // Group trades by date and calculate daily P&L
   const dailyPnLMap = new Map<string, number>();
@@ -1462,6 +1465,9 @@ export async function getEmotionalAnalytics(accountId: string, startDate: string
     const pnl = parseFloat(trade.profit_loss || '0');
     dailyPnLMap.set(date, (dailyPnLMap.get(date) || 0) + pnl);
   });
+  
+  console.log('📊 Daily P&L Map:', Object.fromEntries(dailyPnLMap));
+  console.log('📝 Emotional log dates:', emotionalLogs.map(l => l.log_date));
 
   // Correlate emotional state with performance
   const correlationData = emotionalLogs.map(log => ({
