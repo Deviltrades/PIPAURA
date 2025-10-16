@@ -1550,12 +1550,14 @@ export interface PropFirmTrackerData {
   user_id: string;
   account_id: string;
   challenge_type: 'instant' | '1-step' | '2-step' | '3-step';
+  current_phase: 'challenge' | 'verification' | 'funded' | 'scaling';
   daily_max_loss: number;
   overall_max_loss: number;
   profit_target: number;
   current_daily_loss?: number;
   current_overall_loss?: number;
   current_profit?: number;
+  phase_start_date?: string;
   is_active: number;
   created_at: string;
   updated_at: string;
@@ -1571,12 +1573,14 @@ export interface CreatePropFirmTrackerInput {
 
 export interface UpdatePropFirmTrackerInput {
   challenge_type?: 'instant' | '1-step' | '2-step' | '3-step';
+  current_phase?: 'challenge' | 'verification' | 'funded' | 'scaling';
   daily_max_loss?: number;
   overall_max_loss?: number;
   profit_target?: number;
   current_daily_loss?: number;
   current_overall_loss?: number;
   current_profit?: number;
+  phase_start_date?: string;
   is_active?: number;
 }
 
@@ -1733,5 +1737,16 @@ export async function updatePropFirmMetrics(accountId: string): Promise<PropFirm
     current_daily_loss: dailyLoss,
     current_overall_loss: overallLoss,
     current_profit: totalProfit
+  });
+}
+
+// Update funding phase for a prop firm tracker
+export async function updatePropFirmPhase(
+  trackerId: string,
+  phase: 'challenge' | 'verification' | 'funded' | 'scaling'
+): Promise<PropFirmTrackerData> {
+  return await updatePropFirmTracker(trackerId, {
+    current_phase: phase,
+    phase_start_date: new Date().toISOString()
   });
 }

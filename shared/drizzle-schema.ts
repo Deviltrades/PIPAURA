@@ -28,6 +28,7 @@ export const marketTypeEnum = pgEnum('market_type_enum', ['forex', 'futures', 's
 export const cashflowTypeEnum = pgEnum('cashflow_type', ['deposit', 'withdrawal']);
 export const expenseTypeEnum = pgEnum('expense_type', ['software', 'education', 'data', 'hardware', 'other']);
 export const challengeTypeEnum = pgEnum('challenge_type', ['instant', '1-step', '2-step', '3-step']);
+export const fundingPhaseEnum = pgEnum('funding_phase', ['challenge', 'verification', 'funded', 'scaling']);
 
 // Trade Accounts table
 export const tradeAccounts = pgTable('trade_accounts', {
@@ -229,12 +230,14 @@ export const propFirmTracker = pgTable('prop_firm_tracker', {
   user_id: uuid('user_id').notNull(),
   account_id: uuid('account_id').notNull().unique(),
   challenge_type: challengeTypeEnum('challenge_type').notNull(),
+  current_phase: fundingPhaseEnum('current_phase').default('challenge').notNull(),
   daily_max_loss: decimal('daily_max_loss', { precision: 12, scale: 2 }).notNull(),
   overall_max_loss: decimal('overall_max_loss', { precision: 12, scale: 2 }).notNull(),
   profit_target: decimal('profit_target', { precision: 12, scale: 2 }).notNull(),
   current_daily_loss: decimal('current_daily_loss', { precision: 12, scale: 2 }).default('0'),
   current_overall_loss: decimal('current_overall_loss', { precision: 12, scale: 2 }).default('0'),
   current_profit: decimal('current_profit', { precision: 12, scale: 2 }).default('0'),
+  phase_start_date: timestamp('phase_start_date', { withTimezone: true }).default(sql`now()`),
   is_active: integer('is_active').default(1).notNull(),
   created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)

@@ -5,8 +5,180 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, TrendingUp, TrendingDown, Target, DollarSign, Calendar } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertCircle, TrendingUp, TrendingDown, Target, DollarSign, Calendar, BarChart3, Trophy } from "lucide-react";
 import { demoAccounts, demoPropFirmTrackers } from "@/lib/demo-data";
+
+// Preview Funding Progress Tracker Component (Read-only)
+function PreviewFundingProgressTracker({ tracker }: { tracker: any }) {
+  const [selectedPhase] = useState<'challenge' | 'verification' | 'funded' | 'scaling'>(tracker.current_phase || 'challenge');
+
+  // Calculate drawdown buffer
+  const dailyDrawdownBuffer = tracker.daily_max_loss - (tracker.current_daily_loss || 0);
+  const overallDrawdownBuffer = tracker.overall_max_loss - (tracker.current_overall_loss || 0);
+  const dailyBufferPercentage = tracker.daily_max_loss > 0 ? (dailyDrawdownBuffer / tracker.daily_max_loss) * 100 : 0;
+  const overallBufferPercentage = tracker.overall_max_loss > 0 ? (overallDrawdownBuffer / tracker.overall_max_loss) * 100 : 0;
+
+  // Calculate profit progress
+  const profitProgress = tracker.profit_target > 0 ? ((tracker.current_profit || 0) / tracker.profit_target) * 100 : 0;
+  const profitRemaining = tracker.profit_target - (tracker.current_profit || 0);
+
+  // Calculate pass probability
+  const calculatePassProbability = () => {
+    let probability = 100;
+    const dailyDrawdownUsage = tracker.daily_max_loss > 0 ? ((tracker.current_daily_loss || 0) / tracker.daily_max_loss) * 100 : 0;
+    const overallDrawdownUsage = tracker.overall_max_loss > 0 ? ((tracker.current_overall_loss || 0) / tracker.overall_max_loss) * 100 : 0;
+    
+    if (dailyDrawdownUsage > 80) probability -= 30;
+    else if (dailyDrawdownUsage > 60) probability -= 15;
+    else if (dailyDrawdownUsage > 40) probability -= 5;
+    
+    if (overallDrawdownUsage > 80) probability -= 30;
+    else if (overallDrawdownUsage > 60) probability -= 15;
+    else if (overallDrawdownUsage > 40) probability -= 5;
+    
+    if (profitProgress >= 90) probability = Math.min(100, probability + 10);
+    else if (profitProgress >= 70) probability = Math.min(100, probability + 5);
+    
+    return Math.max(0, Math.min(100, probability));
+  };
+
+  const passProbability = calculatePassProbability();
+
+  const phaseConfig = {
+    challenge: { label: 'Challenge', color: 'bg-blue-500', ring: 'ring-blue-500' },
+    verification: { label: 'Verification', color: 'bg-purple-500', ring: 'ring-purple-500' },
+    funded: { label: 'Funded', color: 'bg-green-500', ring: 'ring-green-500' },
+    scaling: { label: 'Scaling', color: 'bg-cyan-500', ring: 'ring-cyan-500' }
+  };
+
+  const currentPhaseConfig = phaseConfig[selectedPhase];
+
+  return (
+    <div className="space-y-6">
+      <Card className="bg-[#0f1f3a] border-[#1a2f4a] p-6">
+        <h2 className="text-xl font-bold text-white mb-4">Current Phase</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Object.entries(phaseConfig).map(([phase, config]) => (
+            <div
+              key={phase}
+              className={`
+                p-4 rounded-lg border-2
+                ${selectedPhase === phase 
+                  ? `${config.color} border-current ring-2 ${config.ring}` 
+                  : 'bg-[#1a2f4a] border-cyan-500/30'}
+              `}
+            >
+              <div className="text-center">
+                <p className={`font-bold ${selectedPhase === phase ? 'text-white' : 'text-slate-400'}`}>
+                  {config.label}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="bg-gradient-to-br from-orange-600/20 to-yellow-600/20 border-orange-500/30 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm text-slate-400">Daily Drawdown Buffer</p>
+              <p className="text-3xl font-bold text-white">${dailyDrawdownBuffer.toLocaleString()}</p>
+            </div>
+            <div className={`text-2xl font-bold ${dailyBufferPercentage > 50 ? 'text-green-400' : dailyBufferPercentage > 20 ? 'text-orange-400' : 'text-red-400'}`}>
+              {dailyBufferPercentage.toFixed(0)}%
+            </div>
+          </div>
+          <Progress 
+            value={dailyBufferPercentage} 
+            className={`h-3 ${dailyBufferPercentage > 50 ? 'bg-green-900/30' : dailyBufferPercentage > 20 ? 'bg-orange-900/30' : 'bg-red-900/30'}`}
+          />
+          <p className="text-sm text-slate-400 mt-2">Buffer remaining before daily limit</p>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-red-600/20 to-pink-600/20 border-red-500/30 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm text-slate-400">Overall Drawdown Buffer</p>
+              <p className="text-3xl font-bold text-white">${overallDrawdownBuffer.toLocaleString()}</p>
+            </div>
+            <div className={`text-2xl font-bold ${overallBufferPercentage > 50 ? 'text-green-400' : overallBufferPercentage > 20 ? 'text-orange-400' : 'text-red-400'}`}>
+              {overallBufferPercentage.toFixed(0)}%
+            </div>
+          </div>
+          <Progress 
+            value={overallBufferPercentage} 
+            className={`h-3 ${overallBufferPercentage > 50 ? 'bg-green-900/30' : overallBufferPercentage > 20 ? 'bg-orange-900/30' : 'bg-red-900/30'}`}
+          />
+          <p className="text-sm text-slate-400 mt-2">Buffer remaining before overall limit</p>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border-cyan-500/30 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm text-slate-400">Pass Probability</p>
+              <p className="text-4xl font-bold text-white">{passProbability.toFixed(0)}%</p>
+            </div>
+            <Trophy className={`w-12 h-12 ${passProbability >= 80 ? 'text-green-400' : passProbability >= 50 ? 'text-yellow-400' : 'text-orange-400'}`} />
+          </div>
+          <Progress 
+            value={passProbability} 
+            className={`h-3 ${passProbability >= 80 ? 'bg-green-900/30' : passProbability >= 50 ? 'bg-yellow-900/30' : 'bg-orange-900/30'}`}
+          />
+          <p className="text-sm text-slate-400 mt-2">Based on current performance metrics</p>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border-green-500/30 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm text-slate-400">Profit Target Progress</p>
+              <p className="text-3xl font-bold text-white">${(tracker.current_profit || 0).toLocaleString()}</p>
+              <p className="text-sm text-green-400">${profitRemaining.toLocaleString()} remaining</p>
+            </div>
+            <div className="text-2xl font-bold text-green-400">
+              {profitProgress.toFixed(0)}%
+            </div>
+          </div>
+          <Progress value={profitProgress} className="h-3 bg-green-900/30" />
+          <p className="text-sm text-slate-400 mt-2">Target: ${tracker.profit_target.toLocaleString()}</p>
+        </Card>
+      </div>
+
+      <Card className="bg-[#0f1f3a] border-[#1a2f4a] p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Phase Status</h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-3 bg-[#1a2f4a]/50 rounded-lg">
+            <span className="text-slate-400">Current Phase</span>
+            <span className={`font-semibold ${currentPhaseConfig.color.replace('bg-', 'text-')}`}>
+              {currentPhaseConfig.label}
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-[#1a2f4a]/50 rounded-lg">
+            <span className="text-slate-400">Challenge Type</span>
+            <span className="text-cyan-400 font-semibold">
+              {tracker.challenge_type === '1-step' ? '1 Step' : tracker.challenge_type === '2-step' ? '2 Step' : tracker.challenge_type === '3-step' ? '3 Step' : 'Instant'}
+            </span>
+          </div>
+          {passProbability < 50 && (
+            <div className="flex items-center gap-3 p-3 bg-orange-500/20 border border-orange-500/30 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-orange-400" />
+              <span className="text-orange-400">Warning: Pass probability is low. Consider reducing risk!</span>
+            </div>
+          )}
+          {profitProgress >= 100 && (
+            <div className="flex items-center gap-3 p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
+              <Trophy className="w-5 h-5 text-green-400" />
+              <span className="text-green-400">Congratulations! You've hit your profit target! 🎉</span>
+            </div>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+}
 
 export default function PreviewPropFirm() {
   const propFirmAccounts = demoAccounts.filter(acc => acc.account_type === "proprietary_firm");
@@ -100,9 +272,23 @@ export default function PreviewPropFirm() {
             </div>
           </Card>
 
-          {/* Challenge Settings */}
-          <Card className="bg-[#0f1f3a] border-[#1a2f4a] p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Challenge Settings</h2>
+          {/* Tabs for Overview and Funding Progress */}
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-[#1a2f4a] border border-cyan-500/30">
+              <TabsTrigger value="overview" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="funding-progress" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
+                <Trophy className="w-4 h-4 mr-2" />
+                Funding Progress
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-6 mt-6">
+              {/* Challenge Settings */}
+              <Card className="bg-[#0f1f3a] border-[#1a2f4a] p-6">
+                <h2 className="text-xl font-bold text-white mb-4">Challenge Settings</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label className="text-white mb-2 block">Challenge Type</Label>
@@ -282,6 +468,20 @@ export default function PreviewPropFirm() {
               </Card>
             </>
           )}
+        </TabsContent>
+
+        <TabsContent value="funding-progress" className="space-y-6 mt-6">
+          {tracker ? (
+            <PreviewFundingProgressTracker tracker={tracker} />
+          ) : (
+            <Card className="bg-[#0f1f3a] border-[#1a2f4a] p-8">
+              <div className="text-center text-slate-400">
+                Demo data not available for funding progress tracking.
+              </div>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
         </>
       )}
     </div>

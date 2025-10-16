@@ -402,12 +402,14 @@ export interface PropFirmTracker {
   user_id: string;
   account_id: string;
   challenge_type: 'instant' | '1-step' | '2-step' | '3-step';
+  current_phase: 'challenge' | 'verification' | 'funded' | 'scaling';
   daily_max_loss: number;
   overall_max_loss: number;
   profit_target: number;
   current_daily_loss?: number;
   current_overall_loss?: number;
   current_profit?: number;
+  phase_start_date?: string;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
@@ -423,12 +425,14 @@ export interface CreatePropFirmTracker {
 
 export interface UpdatePropFirmTracker {
   challenge_type?: 'instant' | '1-step' | '2-step' | '3-step';
+  current_phase?: 'challenge' | 'verification' | 'funded' | 'scaling';
   daily_max_loss?: number;
   overall_max_loss?: number;
   profit_target?: number;
   current_daily_loss?: number;
   current_overall_loss?: number;
   current_profit?: number;
+  phase_start_date?: string;
   is_active?: boolean;
 }
 
@@ -443,12 +447,14 @@ export const createPropFirmTrackerSchema = z.object({
 
 export const updatePropFirmTrackerSchema = z.object({
   challenge_type: z.enum(['instant', '1-step', '2-step', '3-step']).optional(),
+  current_phase: z.enum(['challenge', 'verification', 'funded', 'scaling']).optional(),
   daily_max_loss: z.number().positive().optional(),
   overall_max_loss: z.number().positive().optional(),
   profit_target: z.number().positive().optional(),
   current_daily_loss: z.number().optional(),
   current_overall_loss: z.number().optional(),
   current_profit: z.number().optional(),
+  phase_start_date: z.string().optional(),
   is_active: z.boolean().optional(),
 });
 
