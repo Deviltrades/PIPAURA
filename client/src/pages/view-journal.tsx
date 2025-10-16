@@ -154,10 +154,6 @@ export default function ViewJournal() {
                 <div className="scale-75">
                   <PipAuraLogo />
                 </div>
-                <div>
-                  <span className="text-lg font-bold text-white">PipAura Journal</span>
-                  <p className="text-xs text-slate-400">Preview Mode</p>
-                </div>
               </div>
             </div>
             <Button 
