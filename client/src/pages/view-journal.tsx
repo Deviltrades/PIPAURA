@@ -23,6 +23,7 @@ import PreviewDashboard from "@/pages/preview-dashboard";
 import PreviewAnalytics from "@/pages/preview-analytics";
 import PreviewCalendar from "@/pages/preview-calendar";
 import PreviewJournal from "@/pages/preview-journal";
+import PreviewAccounts from "@/pages/preview-accounts";
 
 interface NavigationItem {
   name: string;
@@ -199,12 +200,13 @@ export default function ViewJournal() {
         <main className="flex-1 overflow-y-auto bg-slate-950">
           {/* Render the actual preview component */}
           {activeSection === "dashboard" && <PreviewDashboard />}
+          {activeSection === "accounts" && <PreviewAccounts />}
           {activeSection === "journal" && <PreviewJournal />}
           {activeSection === "analytics" && <PreviewAnalytics />}
           {activeSection === "calendar" && <PreviewCalendar />}
           
           {/* Show placeholder for sections without preview components */}
-          {!["dashboard", "journal", "analytics", "calendar"].includes(activeSection) && (
+          {!["dashboard", "accounts", "journal", "analytics", "calendar"].includes(activeSection) && (
             <div className="p-8">
               {/* Section Header */}
               <div className="mb-8">
@@ -250,7 +252,7 @@ export default function ViewJournal() {
                   💡 Live Preview Available
                 </h3>
                 <p className="text-slate-400 text-sm">
-                  Dashboard, Journal, Analytics, and Calendar pages are available as live previews with interactive components and demo data. 
+                  Dashboard, Accounts, Journal, Analytics, and Calendar pages are available as live previews with interactive components and demo data. 
                   More sections coming soon!
                 </p>
               </div>

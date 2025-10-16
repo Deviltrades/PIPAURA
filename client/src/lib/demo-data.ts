@@ -160,6 +160,58 @@ export const demoAccounts = [
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-20T11:15:00Z"
+  },
+  {
+    id: "demo-account-2",
+    user_id: "demo-user",
+    account_name: "FTMO Challenge - $100K",
+    account_type: "proprietary_firm" as const,
+    market_type: "forex" as const,
+    broker_name: "FTMO",
+    starting_balance: 100000,
+    current_balance: 112450,
+    is_active: true,
+    created_at: "2024-12-15T00:00:00Z",
+    updated_at: "2025-01-20T11:15:00Z"
+  },
+  {
+    id: "demo-account-3",
+    user_id: "demo-user",
+    account_name: "Live Forex - Personal",
+    account_type: "live_personal" as const,
+    market_type: "forex" as const,
+    broker_name: "Pepperstone",
+    starting_balance: 5000,
+    current_balance: 6780,
+    is_active: true,
+    created_at: "2024-11-01T00:00:00Z",
+    updated_at: "2025-01-20T11:15:00Z"
+  },
+  {
+    id: "demo-account-4",
+    user_id: "demo-user",
+    account_name: "Crypto Trading",
+    account_type: "live_personal" as const,
+    market_type: "crypto" as const,
+    broker_name: "Binance",
+    starting_balance: 10000,
+    current_balance: 9250,
+    is_active: true,
+    created_at: "2024-10-10T00:00:00Z",
+    updated_at: "2025-01-20T11:15:00Z"
+  },
+  {
+    id: "demo-account-5",
+    user_id: "demo-user",
+    account_name: "Inactive Demo",
+    account_type: "demo" as const,
+    market_type: "futures" as const,
+    broker_name: "NinjaTrader",
+    starting_balance: 25000,
+    current_balance: 24100,
+    is_active: false,
+    created_at: "2024-08-01T00:00:00Z",
+    updated_at: "2024-12-31T11:15:00Z"
   }
 ];
 
