@@ -1,239 +1,322 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { X, ArrowRight } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Wallet, 
+  BookOpen, 
+  BarChart3, 
+  Calendar, 
+  LineChart,
+  Newspaper,
+  MapPin,
+  StickyNote,
+  Grid3X3,
+  Brain,
+  FileText,
+  X,
+  ArrowLeft
+} from "lucide-react";
 import { PipAuraLogo } from "@/components/PipAuraLogo";
 import { useLocation } from "wouter";
+import { cn } from "@/lib/utils";
 
-interface Screenshot {
+interface NavigationItem {
+  name: string;
   id: string;
-  title: string;
+  icon: any;
+  screenshotUrl: string;
   description: string;
-  imageUrl: string;
-  category: string;
 }
 
-const screenshots: Screenshot[] = [
-  {
+const navigation: NavigationItem[] = [
+  { 
+    name: "Dashboard", 
     id: "dashboard",
-    title: "Dashboard Overview",
-    description: "Comprehensive analytics dashboard with Trader DNA Core visualization, performance metrics, and customizable widgets",
-    imageUrl: "/screenshots/dashboard.png",
-    category: "Analytics"
+    icon: LayoutDashboard,
+    screenshotUrl: "/screenshots/dashboard.png",
+    description: "Comprehensive analytics dashboard with Trader DNA Core visualization and customizable widgets"
   },
-  {
-    id: "add-trade",
-    title: "Add Trade",
-    description: "Streamlined trade entry with OCR screenshot support, multi-format import, and automated enrichment",
-    imageUrl: "/screenshots/add-trade.png",
-    category: "Trading"
+  { 
+    name: "Accounts", 
+    id: "accounts",
+    icon: Wallet,
+    screenshotUrl: "/screenshots/accounts.png",
+    description: "Manage multiple trading accounts across demo, prop firm, and live accounts"
   },
-  {
-    id: "fundamentals",
-    title: "Fundamental Bias",
-    description: "Real-time economic calendar with automated bias calculations for 38+ FX pairs and 10 global indices",
-    imageUrl: "/screenshots/fundamentals.png",
-    category: "Analysis"
+  { 
+    name: "Trades", 
+    id: "trades",
+    icon: BookOpen,
+    screenshotUrl: "/screenshots/trades.png",
+    description: "View and manage all your trades with advanced filtering and bulk operations"
   },
-  {
-    id: "tax-reports",
-    title: "Tax Reports",
-    description: "Comprehensive tax reporting with P&L statements, trade summaries, and export functionality",
-    imageUrl: "/screenshots/tax-reports.png",
-    category: "Reports"
-  },
-  {
-    id: "calendar",
-    title: "Calendar View",
-    description: "Visual P&L calendar with consistency tracking, winning/losing day highlights, and performance patterns",
-    imageUrl: "/screenshots/calendar.png",
-    category: "Tracking"
-  },
-  {
+  { 
+    name: "Analytics", 
     id: "analytics",
-    title: "Advanced Analytics",
-    description: "Deep dive into your trading edge with win rates, session analysis, emotional correlation, and DNA metrics",
-    imageUrl: "/screenshots/analytics.png",
-    category: "Analytics"
-  }
+    icon: BarChart3,
+    screenshotUrl: "/screenshots/analytics.png",
+    description: "Deep dive analytics with Trader DNA Core, emotional correlations, and session insights"
+  },
+  { 
+    name: "Calendar", 
+    id: "calendar",
+    icon: Calendar,
+    screenshotUrl: "/screenshots/calendar.png",
+    description: "Visual P&L calendar with consistency tracking and performance patterns"
+  },
+  { 
+    name: "Charts", 
+    id: "charts",
+    icon: LineChart,
+    screenshotUrl: "/screenshots/charts.png",
+    description: "Interactive charts and equity curves for visual performance analysis"
+  },
+  { 
+    name: "Fundamentals", 
+    id: "fundamentals",
+    icon: Newspaper,
+    screenshotUrl: "/screenshots/fundamentals.png",
+    description: "Real-time economic calendar and automated fundamental bias for 38+ FX pairs"
+  },
+  { 
+    name: "Strategy/Playbook", 
+    id: "strategy",
+    icon: MapPin,
+    screenshotUrl: "/screenshots/strategy.png",
+    description: "Document and refine your trading strategies and setups"
+  },
+  { 
+    name: "Notes", 
+    id: "notes",
+    icon: StickyNote,
+    screenshotUrl: "/screenshots/notes.png",
+    description: "Trading journal with notes, screenshots, and trade analysis"
+  },
+  { 
+    name: "Widgets", 
+    id: "widgets",
+    icon: Grid3X3,
+    screenshotUrl: "/screenshots/widgets.png",
+    description: "Customize your dashboard with drag-and-drop widget layouts"
+  },
+  { 
+    name: "AI Trading Mentor", 
+    id: "mentor",
+    icon: Brain,
+    screenshotUrl: "/screenshots/mentor.png",
+    description: "AI-powered trading insights and performance recommendations"
+  },
+  { 
+    name: "Tax Reports", 
+    id: "tax-reports",
+    icon: FileText,
+    screenshotUrl: "/screenshots/tax-reports.png",
+    description: "Comprehensive tax reporting with P&L statements and export functionality"
+  },
 ];
 
 export default function ViewJournal() {
   const [, setLocation] = useLocation();
-  const [selectedImage, setSelectedImage] = useState<Screenshot | null>(null);
+  const [activeSection, setActiveSection] = useState<string>("dashboard");
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  const currentSection = navigation.find(item => item.id === activeSection);
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      {/* Navigation */}
-      <nav className="border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4">
+    <div className="min-h-screen bg-slate-950 flex flex-col">
+      {/* Top Navigation Bar */}
+      <nav className="border-b border-white/10 bg-black/20 backdrop-blur-sm z-50">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div 
-              className="flex items-center gap-3 cursor-pointer"
-              onClick={() => setLocation("/landing")}
-              data-testid="link-home"
-            >
-              <div className="scale-75">
-                <PipAuraLogo />
-              </div>
-              <span className="text-lg font-bold text-white">PipAura</span>
-            </div>
             <div className="flex items-center gap-4">
               <Button 
                 variant="ghost" 
+                size="sm"
                 className="text-white hover:text-cyan-400 hover:bg-white/10"
                 onClick={() => setLocation("/landing")}
-                data-testid="button-back"
+                data-testid="button-back-to-landing"
               >
-                Back to Home
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
               </Button>
-              <Button 
-                className="bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg shadow-cyan-500/50"
-                onClick={() => setLocation("/auth")}
-                data-testid="button-get-started"
-              >
-                Get Started
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto text-center mb-16 animate-fade-in">
-          <h1 className="text-5xl lg:text-6xl font-bold text-white mb-6">
-            Preview the <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">PipAura Journal</span>
-          </h1>
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-            Explore our powerful trading journal through visual screenshots. Click any image to view it in full size.
-          </p>
-        </div>
-
-        {/* Screenshots Grid */}
-        <div className="max-w-6xl mx-auto space-y-12">
-          {screenshots.map((screenshot, index) => (
-            <div
-              key={screenshot.id}
-              className="animate-fade-in-up opacity-0"
-              style={{ 
-                animation: `fadeInUp 0.6s ease-out ${index * 0.1}s forwards` 
-              }}
-            >
-              <Card 
-                className="bg-slate-800/50 border-slate-700/50 overflow-hidden hover:border-cyan-500/50 transition-all group cursor-pointer"
-                onClick={() => setSelectedImage(screenshot)}
-                data-testid={`screenshot-${screenshot.id}`}
-              >
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <div className="inline-block px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-medium mb-3">
-                        {screenshot.category}
-                      </div>
-                      <h3 className="text-2xl font-bold text-white mb-2">
-                        {screenshot.title}
-                      </h3>
-                      <p className="text-slate-400 leading-relaxed">
-                        {screenshot.description}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Screenshot Placeholder */}
-                  <div className="relative rounded-lg overflow-hidden bg-slate-900 border border-slate-700 aspect-video group-hover:border-cyan-500/50 transition-all">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="text-6xl mb-4">📸</div>
-                        <p className="text-slate-500 text-sm">
-                          Screenshot placeholder
-                        </p>
-                        <p className="text-slate-600 text-xs mt-1">
-                          Replace with actual screenshot at:<br/>
-                          <code className="text-cyan-400">{screenshot.imageUrl}</code>
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Hover Overlay */}
-                    <div className="absolute inset-0 bg-cyan-500/0 group-hover:bg-cyan-500/10 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <div className="text-white font-medium flex items-center gap-2">
-                        Click to enlarge
-                        <ArrowRight className="w-4 h-4" />
-                      </div>
-                    </div>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="scale-75">
+                  <PipAuraLogo />
                 </div>
-              </Card>
+                <div>
+                  <span className="text-lg font-bold text-white">PipAura Journal</span>
+                  <p className="text-xs text-slate-400">Preview Mode</p>
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-
-        {/* CTA Section */}
-        <div className="max-w-4xl mx-auto mt-20 animate-fade-in">
-          <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-500/30 rounded-3xl p-12 text-center backdrop-blur-sm">
-            <h2 className="text-4xl font-bold text-white mb-4">
-              Ready to Start Your Trading Journey?
-            </h2>
-            <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-              Experience the full power of PipAura with a free trial. No credit card required.
-            </p>
             <Button 
-              size="lg" 
-              className="text-lg px-10 py-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-xl shadow-cyan-500/30"
+              className="bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg shadow-cyan-500/50"
               onClick={() => setLocation("/auth")}
-              data-testid="button-start-trial"
+              data-testid="button-start-free-trial"
             >
               Start Free Trial
             </Button>
           </div>
         </div>
+      </nav>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar */}
+        <aside className="w-64 border-r border-white/10 bg-slate-900/50 overflow-y-auto">
+          <div className="p-4">
+            <p className="text-xs text-slate-400 mb-4 px-3">NAVIGATION</p>
+            <nav className="space-y-1">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeSection === item.id;
+                
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveSection(item.id)}
+                    data-testid={`nav-${item.id}`}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
+                      isActive 
+                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/50" 
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                    )}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="truncate">{item.name}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </aside>
+
+        {/* Content Area */}
+        <main className="flex-1 overflow-y-auto bg-slate-950">
+          <div className="p-8">
+            {/* Section Header */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-white mb-2">
+                    {currentSection?.name}
+                  </h1>
+                  <p className="text-slate-400">
+                    {currentSection?.description}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
+                  onClick={() => setIsLightboxOpen(true)}
+                  data-testid="button-view-fullscreen"
+                >
+                  View Fullscreen
+                </Button>
+              </div>
+              <div className="h-px bg-gradient-to-r from-cyan-500/50 via-transparent to-transparent"></div>
+            </div>
+
+            {/* Screenshot Display */}
+            <div 
+              className="relative rounded-xl overflow-hidden border border-slate-700 bg-slate-900 cursor-pointer group"
+              onClick={() => setIsLightboxOpen(true)}
+              data-testid={`screenshot-${activeSection}`}
+            >
+              {/* Aspect Ratio Container */}
+              <div className="aspect-video relative">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-8xl mb-4">📸</div>
+                    <p className="text-slate-500 text-lg font-medium">
+                      Screenshot Preview
+                    </p>
+                    <p className="text-slate-600 text-sm mt-2">
+                      {currentSection?.name} page
+                    </p>
+                    <p className="text-slate-700 text-xs mt-4">
+                      Add screenshot at: <code className="text-cyan-500">{currentSection?.screenshotUrl}</code>
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-cyan-500/0 group-hover:bg-cyan-500/10 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <div className="text-white font-medium bg-black/50 px-6 py-3 rounded-lg">
+                    Click to view fullscreen
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Info Card */}
+            <div className="mt-8 bg-gradient-to-br from-cyan-600/10 to-blue-600/10 border border-cyan-500/20 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">
+                💡 Interactive Preview
+              </h3>
+              <p className="text-slate-400 text-sm">
+                Click on any menu item in the sidebar to preview different sections of the PipAura journal. 
+                This is a static preview - the actual app includes full interactivity, real-time data, and advanced features.
+              </p>
+            </div>
+
+            {/* CTA */}
+            <div className="mt-8 text-center">
+              <Button 
+                size="lg"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-xl shadow-cyan-500/30"
+                onClick={() => setLocation("/auth")}
+                data-testid="button-get-started-cta"
+              >
+                Start Using PipAura Journal
+              </Button>
+            </div>
+          </div>
+        </main>
       </div>
 
-      {/* Lightbox Modal */}
-      {selectedImage && (
+      {/* Fullscreen Lightbox */}
+      {isLightboxOpen && (
         <div 
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setSelectedImage(null)}
+          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setIsLightboxOpen(false)}
           data-testid="lightbox-overlay"
         >
           <div className="relative max-w-7xl w-full">
             {/* Close Button */}
             <button
               className="absolute -top-12 right-0 text-white hover:text-cyan-400 transition-colors"
-              onClick={() => setSelectedImage(null)}
+              onClick={() => setIsLightboxOpen(false)}
               data-testid="button-close-lightbox"
             >
               <X className="w-8 h-8" />
             </button>
 
-            {/* Image Info */}
+            {/* Section Info */}
             <div className="text-center mb-4">
-              <div className="inline-block px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 text-sm font-medium mb-2">
-                {selectedImage.category}
-              </div>
               <h3 className="text-2xl font-bold text-white mb-2">
-                {selectedImage.title}
+                {currentSection?.name}
               </h3>
               <p className="text-slate-400">
-                {selectedImage.description}
+                {currentSection?.description}
               </p>
             </div>
 
-            {/* Image */}
+            {/* Fullscreen Image */}
             <div 
-              className="rounded-lg overflow-hidden bg-slate-900 border border-slate-700 aspect-video"
+              className="rounded-xl overflow-hidden bg-slate-900 border border-slate-700 aspect-video"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="h-full flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-8xl mb-4">📸</div>
-                  <p className="text-slate-500">
-                    Full-size screenshot placeholder
+                  <div className="text-9xl mb-6">📸</div>
+                  <p className="text-slate-500 text-xl">
+                    Fullscreen preview: {currentSection?.name}
                   </p>
                   <p className="text-slate-600 text-sm mt-2">
                     Replace with actual screenshot at:<br/>
-                    <code className="text-cyan-400">{selectedImage.imageUrl}</code>
+                    <code className="text-cyan-400">{currentSection?.screenshotUrl}</code>
                   </p>
                 </div>
               </div>
@@ -243,19 +326,8 @@ export default function ViewJournal() {
       )}
 
       <style>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
         .animate-fade-in {
-          animation: fadeIn 0.6s ease-out;
+          animation: fadeIn 0.2s ease-out;
         }
         
         @keyframes fadeIn {
