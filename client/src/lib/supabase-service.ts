@@ -1556,6 +1556,8 @@ export interface PropFirmTrackerData {
   profit_target: number;
   daily_loss_percentage?: number;
   overall_loss_percentage?: number;
+  daily_starting_balance?: number;
+  last_balance_update?: string;
   current_daily_loss?: number;
   current_overall_loss?: number;
   current_profit?: number;
@@ -1579,6 +1581,8 @@ export interface UpdatePropFirmTrackerInput {
   daily_max_loss?: number;
   overall_max_loss?: number;
   profit_target?: number;
+  daily_starting_balance?: number;
+  last_balance_update?: string;
   current_daily_loss?: number;
   current_overall_loss?: number;
   current_profit?: number;
@@ -1696,14 +1700,14 @@ export async function updatePropFirmMetrics(accountId: string): Promise<PropFirm
   if (!tracker) throw new Error('Prop firm tracker not found');
   
   // Get today's trades for daily loss calculation
-  const today = new Date().toISOString().split('T')[0];
+  const todayDate = new Date().toISOString().split('T')[0];
   const { data: todayTrades, error: todayError } = await supabase
     .from('trades')
     .select('pnl')
     .eq('user_id', user.id)
     .eq('account_id', accountId)
-    .gte('entry_date', `${today}T00:00:00`)
-    .lte('entry_date', `${today}T23:59:59`);
+    .gte('entry_date', `${todayDate}T00:00:00`)
+    .lte('entry_date', `${todayDate}T23:59:59`);
   
   if (todayError) throw todayError;
   
@@ -1744,13 +1748,25 @@ export async function updatePropFirmMetrics(accountId: string): Promise<PropFirm
   // Calculate current balance = starting balance + net profit
   const currentBalance = startingBalance + totalProfit;
   
-  // Calculate dynamic daily max loss based on current balance
+  // Check if it's a new day - update daily starting balance if needed
+  const today = new Date().toISOString().split('T')[0];
+  const lastUpdate = tracker.last_balance_update;
+  let dailyStartingBalance = tracker.daily_starting_balance || startingBalance;
+  
+  // If it's a new day or never set, update the daily starting balance
+  if (!lastUpdate || lastUpdate !== today) {
+    dailyStartingBalance = currentBalance;
+  }
+  
+  // Calculate dynamic daily max loss based on DAILY STARTING balance (not current)
   const dailyLossPercentage = parseFloat(String(tracker.daily_loss_percentage || 5));
-  const dynamicDailyMaxLoss = currentBalance * (dailyLossPercentage / 100);
+  const dynamicDailyMaxLoss = dailyStartingBalance * (dailyLossPercentage / 100);
   
   // Update the tracker with calculated metrics and dynamic limit
   return await updatePropFirmTracker(tracker.id, {
     daily_max_loss: dynamicDailyMaxLoss,
+    daily_starting_balance: dailyStartingBalance,
+    last_balance_update: today,
     current_daily_loss: dailyLoss,
     current_overall_loss: overallLoss,
     current_profit: totalProfit
