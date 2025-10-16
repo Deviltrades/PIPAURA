@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Dialog,
@@ -14,10 +15,6 @@ import {
   LineChart, 
   Line, 
   ResponsiveContainer,
-  PolarGrid,
-  PolarAngleAxis,
-  Radar,
-  RadarChart,
   BarChart,
   Bar,
   XAxis,
@@ -31,6 +28,341 @@ import {
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 import { demoTrades, demoAnalytics, demoAccounts, demoEmotionalLogs } from "@/lib/demo-data";
+
+interface PreviewDNACoreProps {
+  metrics: {
+    winRate: number;
+    riskReward: number;
+    riskConsistency: number;
+    emotionalControl: number;
+    discipline: number;
+    sessionFocus: number;
+    edgeIntegrity: number;
+  };
+  onInfoClick: () => void;
+}
+
+function PreviewDNACore({ metrics, onInfoClick }: PreviewDNACoreProps) {
+  const [isPaused, setIsPaused] = useState(false);
+  const [rotationPhase, setRotationPhase] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const prefersReducedMotion = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion || isPaused) return;
+
+    let animationFrameId: number;
+    let lastTime = Date.now();
+
+    const animate = () => {
+      const currentTime = Date.now();
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+
+      setRotationPhase((prev) => (prev + (deltaTime / 14000) * 360) % 360);
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isPaused, prefersReducedMotion]);
+
+  const ZONE_COLORS = {
+    win: '#00E5FF',
+    rr: '#4DA3FF',
+    risk: '#8E6BFF',
+    emotion: '#FF3DF0',
+    discipline: '#FFB000',
+    session: '#2AD6C6',
+  };
+
+  const dnaZones = [
+    { name: 'Win Rate', key: 'win', value: metrics.winRate, color: ZONE_COLORS.win, yPosition: -266 },
+    { name: 'Risk:Reward', key: 'rr', value: metrics.riskReward, color: ZONE_COLORS.rr, yPosition: -160 },
+    { name: 'Risk Consistency', key: 'risk', value: metrics.riskConsistency, color: ZONE_COLORS.risk, yPosition: -53 },
+    { name: 'Emotional Control', key: 'emotion', value: metrics.emotionalControl, color: ZONE_COLORS.emotion, yPosition: 53 },
+    { name: 'Discipline', key: 'discipline', value: metrics.discipline, color: ZONE_COLORS.discipline, yPosition: 160 },
+    { name: 'Session Focus', key: 'session', value: metrics.sessionFocus, color: ZONE_COLORS.session, yPosition: 266 },
+  ];
+
+  const DNA_TOP = -320;
+  const DNA_BOTTOM = 320;
+  const DNA_HEIGHT = DNA_BOTTOM - DNA_TOP;
+
+  const getZoneColorAtY = (y: number) => {
+    const normalizedY = (y - DNA_TOP) / DNA_HEIGHT;
+    const zoneIndex = Math.floor(normalizedY * 6);
+    const clampedIndex = Math.max(0, Math.min(5, zoneIndex));
+    return dnaZones[clampedIndex].color;
+  };
+
+  const generateDNAPoints = (strandOffset: number, radius: number) => {
+    const points = [];
+    const numPoints = 80;
+    for (let i = 0; i < numPoints; i++) {
+      const t = i / (numPoints - 1);
+      const y = (t - 0.5) * 640;
+      const angle = ((t * 720) + rotationPhase + strandOffset) * Math.PI / 180;
+      const x = Math.sin(angle) * radius;
+      const z = Math.cos(angle) * radius;
+      points.push({ x, y, z });
+    }
+    return points;
+  };
+
+  const strand1Outer = generateDNAPoints(0, 110);
+  const strand1Inner = generateDNAPoints(0, 85);
+  const strand2Outer = generateDNAPoints(180, 110);
+  const strand2Inner = generateDNAPoints(180, 85);
+
+  const createSmoothPath = (points: { x: number; y: number }[]) => {
+    if (points.length < 2) return '';
+    
+    let path = `M ${points[0].x} ${points[0].y}`;
+    
+    for (let i = 1; i < points.length - 2; i++) {
+      const xc = (points[i].x + points[i + 1].x) / 2;
+      const yc = (points[i].y + points[i + 1].y) / 2;
+      path += ` Q ${points[i].x} ${points[i].y} ${xc} ${yc}`;
+    }
+    
+    const lastPoint = points[points.length - 1];
+    const secondLastPoint = points[points.length - 2];
+    path += ` Q ${secondLastPoint.x} ${secondLastPoint.y} ${lastPoint.x} ${lastPoint.y}`;
+    
+    return path;
+  };
+
+  return (
+    <div className="w-full h-[520px] md:h-screen relative overflow-hidden bg-gradient-to-b from-slate-950 via-blue-950 to-slate-950 rounded-lg">
+      <svg
+        className="w-full h-full"
+        viewBox="0 0 800 700"
+        preserveAspectRatio="xMidYMid meet"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <linearGradient id="dnaFlowGradient" x1="0" y1="-320" x2="0" y2="320" gradientUnits="userSpaceOnUse">
+            {dnaZones.map((zone, i) => {
+              const zoneStart = (i / 6) * 100;
+              const zoneEnd = ((i + 1) / 6) * 100;
+              const fillPercent = zone.value / 100;
+              const colorStart = zoneStart + (1 - fillPercent) * (zoneEnd - zoneStart);
+              
+              return [
+                <stop key={`${zone.key}-unfilled`} offset={`${zoneStart}%`} stopColor="rgba(220,230,240,0.7)" />,
+                <stop key={`${zone.key}-transition`} offset={`${colorStart}%`} stopColor="rgba(220,230,240,0.7)" />,
+                <stop key={`${zone.key}-filled`} offset={`${colorStart}%`} stopColor={zone.color} />,
+                <stop key={`${zone.key}-end`} offset={`${zoneEnd}%`} stopColor={zone.color} />
+              ];
+            }).flat()}
+          </linearGradient>
+
+          <filter id="strongGlow">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <g 
+          transform="translate(400, 300)"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          <motion.g
+            animate={{
+              scale: [1, 1.02, 1],
+              opacity: [0.95, 1, 0.95]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <path
+              d={createSmoothPath(strand1Outer)}
+              stroke="url(#dnaFlowGradient)"
+              strokeWidth="5"
+              fill="none"
+              opacity={0.95}
+              filter="url(#strongGlow)"
+              strokeLinecap="round"
+            />
+            <path
+              d={createSmoothPath(strand1Inner)}
+              stroke="url(#dnaFlowGradient)"
+              strokeWidth="5"
+              fill="none"
+              opacity={0.95}
+              filter="url(#strongGlow)"
+              strokeLinecap="round"
+            />
+            <path
+              d={createSmoothPath(strand2Outer)}
+              stroke="url(#dnaFlowGradient)"
+              strokeWidth="5"
+              fill="none"
+              opacity={0.95}
+              filter="url(#strongGlow)"
+              strokeLinecap="round"
+            />
+            <path
+              d={createSmoothPath(strand2Inner)}
+              stroke="url(#dnaFlowGradient)"
+              strokeWidth="5"
+              fill="none"
+              opacity={0.95}
+              filter="url(#strongGlow)"
+              strokeLinecap="round"
+            />
+          </motion.g>
+
+          {Array.from({ length: 18 }).map((_, i) => {
+            const yPosition = (i / 17 - 0.5) * 450;
+            
+            const point1 = strand1Inner.reduce((closest, point) => 
+              Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
+            , strand1Inner[0]);
+            
+            const point2 = strand2Inner.reduce((closest, point) => 
+              Math.abs(point.y - yPosition) < Math.abs(closest.y - yPosition) ? point : closest
+            , strand2Inner[0]);
+            
+            const zoneColor = getZoneColorAtY(yPosition);
+
+            return (
+              <line
+                key={`rung-${i}`}
+                x1={point1.x}
+                y1={point1.y}
+                x2={point2.x}
+                y2={point2.y}
+                stroke={zoneColor}
+                strokeWidth={6}
+                opacity={1}
+                strokeLinecap="round"
+              />
+            );
+          })}
+        </g>
+      </svg>
+
+      <motion.div
+        className="absolute top-2 left-2 right-2 md:top-8 md:left-8 md:right-auto bg-slate-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-2 md:p-3"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
+      >
+        <div className="grid grid-cols-2 gap-x-2 gap-y-1 md:space-y-1.5 md:flex md:flex-col">
+          {dnaZones.map((metric, index) => (
+            <motion.div
+              key={metric.key}
+              className="flex items-center gap-1 md:gap-2"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
+            >
+              <div
+                className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full flex-shrink-0"
+                style={{ backgroundColor: metric.color, boxShadow: `0 0 4px ${metric.color}` }}
+              />
+              <div className="flex items-baseline gap-1 md:gap-2 min-w-0 md:min-w-[140px]">
+                <span className="text-white text-[9px] md:text-xs font-semibold flex-1 truncate">
+                  {metric.name}
+                </span>
+                <span
+                  className="text-[10px] md:text-sm font-bold"
+                  style={{ color: metric.color }}
+                >
+                  {metric.value.toFixed(0)}%
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      <motion.div
+        className="absolute top-[90px] left-2 md:top-[260px] md:left-8 bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-2 py-1.5 md:px-4 md:py-2 text-center max-h-[60px] md:max-h-[80px] max-w-[100px] md:max-w-none"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 1.5 }}
+      >
+        <button 
+          onClick={onInfoClick}
+          className="absolute top-1 right-1 text-cyan-400/60 hover:text-cyan-400 transition-colors"
+        >
+          <Info className="w-3 h-3 md:w-3.5 md:h-3.5" />
+        </button>
+
+        <div className="text-[9px] md:text-xs font-semibold text-cyan-400 mb-0.5 leading-none mt-3 md:mt-4">
+          EDGE INTEGRITY SCORE
+        </div>
+        <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent leading-none">
+          {metrics.edgeIntegrity.toFixed(1)}%
+        </div>
+      </motion.div>
+
+      <div className="absolute top-1/2 left-1/2">
+        {dnaZones.map((metric, index) => {
+          const compressedYPosition = metric.yPosition * 0.85;
+          const mobileCompressedPosition = metric.yPosition * 0.47;
+          const topPosition = isMobile ? mobileCompressedPosition - 35 : compressedYPosition - 35;
+          
+          return (
+            <motion.div
+              key={`right-${metric.key}`}
+              className="absolute bg-slate-950/90 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-2 py-1 md:px-3 md:py-1.5 text-center"
+              style={{
+                top: `${topPosition}px`,
+                left: isMobile ? '90px' : '160px',
+                transform: 'translateY(-50%)'
+              }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
+            >
+              <div
+                className="text-[10px] md:text-sm font-bold whitespace-nowrap"
+                style={{ color: metric.color }}
+              >
+                {metric.value.toFixed(0)}%
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      <motion.div
+        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-slate-950/80 backdrop-blur-sm border border-cyan-500/20 rounded-lg px-3 py-1.5 text-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 2 }}
+      >
+        <p className="text-[9px] md:text-xs text-cyan-400/70 whitespace-nowrap">
+          {isMobile ? 'Tap to pause' : 'Hover to pause'}
+        </p>
+      </motion.div>
+    </div>
+  );
+}
 
 export default function PreviewAnalytics() {
   const [hoveredMonthIndex, setHoveredMonthIndex] = useState<number | null>(null);
@@ -170,82 +502,8 @@ export default function PreviewAnalytics() {
         </TabsList>
 
         <TabsContent value="dna" className="space-y-6">
-          {/* Trader DNA Core */}
-          <Card className="bg-slate-900/50 border-slate-700">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl text-white flex items-center gap-2">
-                  Trader DNA Core
-                  <button 
-                    onClick={() => setIsInfoDialogOpen(true)}
-                    className="text-slate-400 hover:text-cyan-400 transition-colors"
-                  >
-                    <Info className="w-5 h-5" />
-                  </button>
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col lg:flex-row gap-8 items-center">
-                {/* DNA Radar Chart */}
-                <div className="flex-1 w-full">
-                  <ResponsiveContainer width="100%" height={400}>
-                    <RadarChart data={radarData}>
-                      <PolarGrid stroke="#334155" />
-                      <PolarAngleAxis 
-                        dataKey="metric" 
-                        tick={{ fill: '#94a3b8', fontSize: 12 }}
-                      />
-                      <Radar
-                        name="Trader DNA"
-                        dataKey="value"
-                        stroke="hsl(188, 94%, 60%)"
-                        fill="hsl(188, 94%, 60%)"
-                        fillOpacity={0.5}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* DNA Metrics */}
-                <div className="flex-1 w-full space-y-4">
-                  <div className="text-center mb-6">
-                    <h3 className="text-4xl font-bold text-cyan-400 mb-2">
-                      {dnaMetrics.edgeIntegrity.toFixed(1)}%
-                    </h3>
-                    <p className="text-sm text-slate-400">Edge Integrity Score</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-slate-800/50 rounded-lg p-3">
-                      <p className="text-xs text-slate-400 mb-1">Win Rate</p>
-                      <p className="text-lg font-bold text-white">{dnaMetrics.winRate.toFixed(1)}%</p>
-                    </div>
-                    <div className="bg-slate-800/50 rounded-lg p-3">
-                      <p className="text-xs text-slate-400 mb-1">Risk/Reward</p>
-                      <p className="text-lg font-bold text-white">{dnaMetrics.riskReward.toFixed(1)}%</p>
-                    </div>
-                    <div className="bg-slate-800/50 rounded-lg p-3">
-                      <p className="text-xs text-slate-400 mb-1">Consistency</p>
-                      <p className="text-lg font-bold text-white">{dnaMetrics.riskConsistency.toFixed(1)}%</p>
-                    </div>
-                    <div className="bg-slate-800/50 rounded-lg p-3">
-                      <p className="text-xs text-slate-400 mb-1">Emotional</p>
-                      <p className="text-lg font-bold text-white">{dnaMetrics.emotionalControl.toFixed(1)}%</p>
-                    </div>
-                    <div className="bg-slate-800/50 rounded-lg p-3">
-                      <p className="text-xs text-slate-400 mb-1">Discipline</p>
-                      <p className="text-lg font-bold text-white">{dnaMetrics.discipline.toFixed(1)}%</p>
-                    </div>
-                    <div className="bg-slate-800/50 rounded-lg p-3">
-                      <p className="text-xs text-slate-400 mb-1">Session Focus</p>
-                      <p className="text-lg font-bold text-white">{dnaMetrics.sessionFocus.toFixed(1)}%</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Trader DNA Core - Full Height Helix */}
+          <PreviewDNACore metrics={dnaMetrics} onInfoClick={() => setIsInfoDialogOpen(true)} />
 
           {/* Equity Curve */}
           <Card className="bg-slate-900/50 border-slate-700">
