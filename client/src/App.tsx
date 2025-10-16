@@ -31,6 +31,20 @@ import CalendarSettings from "@/pages/CalendarSettings";
 import Journal from "@/pages/journal";
 import Layout from "@/components/Layout";
 import NotFound from "@/pages/not-found";
+import PreviewPropFirm from "@/pages/preview-prop-firm";
+import PreviewDashboard from "@/pages/preview-dashboard";
+import PreviewJournal from "@/pages/preview-journal";
+import PreviewTrades from "@/pages/preview-trades";
+import PreviewAccounts from "@/pages/preview-accounts";
+import PreviewAnalytics from "@/pages/preview-analytics";
+import PreviewCalendar from "@/pages/preview-calendar";
+import PreviewCharts from "@/pages/preview-charts";
+import PreviewFundamentals from "@/pages/preview-fundamentals";
+import PreviewStrategy from "@/pages/preview-strategy";
+import PreviewNotes from "@/pages/preview-notes";
+import PreviewMentor from "@/pages/preview-mentor";
+import PreviewMentorDashboard from "@/pages/preview-mentor-dashboard";
+import PreviewTaxReports from "@/pages/preview-tax-reports";
 
 function Router() {
   const { user, isLoading } = useAuth();
@@ -52,6 +66,20 @@ function Router() {
           <Route path="/pricing" component={Pricing} />
           <Route path="/view-journal" component={ViewJournal} />
           <Route path="/auth" component={AuthPage} />
+          <Route path="/preview/dashboard" component={PreviewDashboard} />
+          <Route path="/preview/journal" component={PreviewJournal} />
+          <Route path="/preview/trades" component={PreviewTrades} />
+          <Route path="/preview/accounts" component={PreviewAccounts} />
+          <Route path="/preview/analytics" component={PreviewAnalytics} />
+          <Route path="/preview/calendar" component={PreviewCalendar} />
+          <Route path="/preview/charts" component={PreviewCharts} />
+          <Route path="/preview/fundamentals" component={PreviewFundamentals} />
+          <Route path="/preview/strategy" component={PreviewStrategy} />
+          <Route path="/preview/notes" component={PreviewNotes} />
+          <Route path="/preview/mentor" component={PreviewMentor} />
+          <Route path="/preview/mentor-dashboard" component={PreviewMentorDashboard} />
+          <Route path="/preview/prop-firm" component={PreviewPropFirm} />
+          <Route path="/preview/tax-reports" component={PreviewTaxReports} />
         </>
       ) : (
         <Layout>
