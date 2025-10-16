@@ -19,6 +19,9 @@ import {
 import { PipAuraLogo } from "@/components/PipAuraLogo";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import PreviewDashboard from "@/pages/preview-dashboard";
+import PreviewAnalytics from "@/pages/preview-analytics";
+import PreviewCalendar from "@/pages/preview-calendar";
 
 interface NavigationItem {
   name: string;
@@ -118,7 +121,6 @@ const navigation: NavigationItem[] = [
 export default function ViewJournal() {
   const [, setLocation] = useLocation();
   const [activeSection, setActiveSection] = useState<string>("dashboard");
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const currentSection = navigation.find(item => item.id === activeSection);
 
@@ -194,136 +196,79 @@ export default function ViewJournal() {
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto bg-slate-950">
-          <div className="p-8">
-            {/* Section Header */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-white mb-2">
-                    {currentSection?.name}
-                  </h1>
-                  <p className="text-slate-400">
-                    {currentSection?.description}
-                  </p>
+          {/* Render the actual preview component */}
+          {activeSection === "dashboard" && <PreviewDashboard />}
+          {activeSection === "analytics" && <PreviewAnalytics />}
+          {activeSection === "calendar" && <PreviewCalendar />}
+          
+          {/* Show placeholder for sections without preview components */}
+          {!["dashboard", "analytics", "calendar"].includes(activeSection) && (
+            <div className="p-8">
+              {/* Section Header */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h1 className="text-3xl font-bold text-white mb-2">
+                      {currentSection?.name}
+                    </h1>
+                    <p className="text-slate-400">
+                      {currentSection?.description}
+                    </p>
+                  </div>
+                  <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-4 py-2">
+                    <p className="text-sm text-cyan-400">📸 Screenshot Coming Soon</p>
+                  </div>
                 </div>
-                <Button
-                  variant="outline"
-                  className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
-                  onClick={() => setIsLightboxOpen(true)}
-                  data-testid="button-view-fullscreen"
+                <div className="h-px bg-gradient-to-r from-cyan-500/50 via-transparent to-transparent"></div>
+              </div>
+
+              {/* Screenshot Placeholder */}
+              <div 
+                className="relative rounded-xl overflow-hidden border border-slate-700 bg-slate-900"
+                data-testid={`screenshot-${activeSection}`}
+              >
+                <div className="aspect-video relative">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-8xl mb-4">📸</div>
+                      <p className="text-slate-500 text-lg font-medium">
+                        {currentSection?.name} Preview
+                      </p>
+                      <p className="text-slate-600 text-sm mt-2">
+                        Live preview coming soon
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Info Card */}
+              <div className="mt-8 bg-gradient-to-br from-cyan-600/10 to-blue-600/10 border border-cyan-500/20 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  💡 Live Preview Available
+                </h3>
+                <p className="text-slate-400 text-sm">
+                  Dashboard, Analytics, and Calendar pages are available as live previews with interactive components and demo data. 
+                  More sections coming soon!
+                </p>
+              </div>
+
+              {/* CTA */}
+              <div className="mt-8 text-center">
+                <Button 
+                  size="lg"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-xl shadow-cyan-500/30"
+                  onClick={() => setLocation("/auth")}
+                  data-testid="button-get-started-cta"
                 >
-                  View Fullscreen
+                  Start Using PipAura Journal
                 </Button>
               </div>
-              <div className="h-px bg-gradient-to-r from-cyan-500/50 via-transparent to-transparent"></div>
             </div>
-
-            {/* Screenshot Display */}
-            <div 
-              className="relative rounded-xl overflow-hidden border border-slate-700 bg-slate-900 cursor-pointer group"
-              onClick={() => setIsLightboxOpen(true)}
-              data-testid={`screenshot-${activeSection}`}
-            >
-              {/* Aspect Ratio Container */}
-              <div className="aspect-video relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-8xl mb-4">📸</div>
-                    <p className="text-slate-500 text-lg font-medium">
-                      Screenshot Preview
-                    </p>
-                    <p className="text-slate-600 text-sm mt-2">
-                      {currentSection?.name} page
-                    </p>
-                    <p className="text-slate-700 text-xs mt-4">
-                      Add screenshot at: <code className="text-cyan-500">{currentSection?.screenshotUrl}</code>
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-cyan-500/0 group-hover:bg-cyan-500/10 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <div className="text-white font-medium bg-black/50 px-6 py-3 rounded-lg">
-                    Click to view fullscreen
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Info Card */}
-            <div className="mt-8 bg-gradient-to-br from-cyan-600/10 to-blue-600/10 border border-cyan-500/20 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-2">
-                💡 Interactive Preview
-              </h3>
-              <p className="text-slate-400 text-sm">
-                Click on any menu item in the sidebar to preview different sections of the PipAura journal. 
-                This is a static preview - the actual app includes full interactivity, real-time data, and advanced features.
-              </p>
-            </div>
-
-            {/* CTA */}
-            <div className="mt-8 text-center">
-              <Button 
-                size="lg"
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-xl shadow-cyan-500/30"
-                onClick={() => setLocation("/auth")}
-                data-testid="button-get-started-cta"
-              >
-                Start Using PipAura Journal
-              </Button>
-            </div>
-          </div>
+          )}
         </main>
       </div>
 
-      {/* Fullscreen Lightbox */}
-      {isLightboxOpen && (
-        <div 
-          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setIsLightboxOpen(false)}
-          data-testid="lightbox-overlay"
-        >
-          <div className="relative max-w-7xl w-full">
-            {/* Close Button */}
-            <button
-              className="absolute -top-12 right-0 text-white hover:text-cyan-400 transition-colors"
-              onClick={() => setIsLightboxOpen(false)}
-              data-testid="button-close-lightbox"
-            >
-              <X className="w-8 h-8" />
-            </button>
-
-            {/* Section Info */}
-            <div className="text-center mb-4">
-              <h3 className="text-2xl font-bold text-white mb-2">
-                {currentSection?.name}
-              </h3>
-              <p className="text-slate-400">
-                {currentSection?.description}
-              </p>
-            </div>
-
-            {/* Fullscreen Image */}
-            <div 
-              className="rounded-xl overflow-hidden bg-slate-900 border border-slate-700 aspect-video"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-9xl mb-6">📸</div>
-                  <p className="text-slate-500 text-xl">
-                    Fullscreen preview: {currentSection?.name}
-                  </p>
-                  <p className="text-slate-600 text-sm mt-2">
-                    Replace with actual screenshot at:<br/>
-                    <code className="text-cyan-400">{currentSection?.screenshotUrl}</code>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <style>{`
         .animate-fade-in {
