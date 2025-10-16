@@ -10,6 +10,7 @@ import MainPage from "@/pages/main";
 import Landing from "@/pages/landing";
 import Pricing from "@/pages/pricing";
 import AuthPage from "@/pages/auth";
+import ViewJournal from "@/pages/view-journal";
 import Dashboard from "@/pages/dashboard";
 import Trades from "@/pages/trades";
 import Calendar from "@/pages/calendar";
@@ -47,6 +48,7 @@ function Router() {
           <Route path="/" component={MainPage} />
           <Route path="/landing" component={Landing} />
           <Route path="/pricing" component={Pricing} />
+          <Route path="/view-journal" component={ViewJournal} />
           <Route path="/auth" component={AuthPage} />
         </>
       ) : (

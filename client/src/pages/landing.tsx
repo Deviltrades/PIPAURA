@@ -35,6 +35,14 @@ export default function Landing() {
               <Button 
                 variant="ghost" 
                 className="text-white hover:text-cyan-400 hover:bg-white/10"
+                onClick={() => setLocation("/view-journal")}
+                data-testid="button-view-journal"
+              >
+                View Journal
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-white hover:text-cyan-400 hover:bg-white/10"
                 onClick={() => setLocation("/pricing")}
                 data-testid="button-pricing"
               >
