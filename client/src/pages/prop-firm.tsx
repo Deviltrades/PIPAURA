@@ -273,18 +273,25 @@ export default function PropFirm() {
   // Create/Update tracker mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const data: CreatePropFirmTrackerInput = {
-        account_id: selectedAccountId,
-        challenge_type: challengeType as any,
-        daily_max_loss: parseFloat(dailyMaxLoss),
-        overall_max_loss: parseFloat(overallMaxLoss),
-        profit_target: parseFloat(profitTarget)
-      };
-
       if (selectedTracker) {
-        return updatePropFirmTracker(selectedTracker.id, data);
+        // For updates, don't include account_id
+        const updateData: UpdatePropFirmTrackerInput = {
+          challenge_type: challengeType as any,
+          daily_max_loss: parseFloat(dailyMaxLoss),
+          overall_max_loss: parseFloat(overallMaxLoss),
+          profit_target: parseFloat(profitTarget)
+        };
+        return updatePropFirmTracker(selectedTracker.id, updateData);
       } else {
-        return createPropFirmTracker(data);
+        // For new trackers, include account_id
+        const createData: CreatePropFirmTrackerInput = {
+          account_id: selectedAccountId,
+          challenge_type: challengeType as any,
+          daily_max_loss: parseFloat(dailyMaxLoss),
+          overall_max_loss: parseFloat(overallMaxLoss),
+          profit_target: parseFloat(profitTarget)
+        };
+        return createPropFirmTracker(createData);
       }
     },
     onSuccess: () => {
