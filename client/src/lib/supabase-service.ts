@@ -1721,7 +1721,7 @@ export async function updatePropFirmMetrics(accountId: string): Promise<PropFirm
   
   if (allError) throw allError;
   
-  // Calculate overall loss and profit
+  // Calculate overall loss and net profit
   let overallLoss = 0;
   let totalProfit = 0;
   
@@ -1729,9 +1729,9 @@ export async function updatePropFirmMetrics(accountId: string): Promise<PropFirm
     const pnl = parseFloat(trade.pnl || '0');
     if (pnl < 0) {
       overallLoss += Math.abs(pnl);
-    } else if (pnl > 0) {
-      totalProfit += pnl;
     }
+    // Net profit = all P&L (positive and negative)
+    totalProfit += pnl;
   });
   
   // Update the tracker
