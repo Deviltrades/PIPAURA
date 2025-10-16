@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -334,6 +334,22 @@ export default function PropFirm() {
       });
     }
   });
+
+  // Auto-sync metrics when account is selected and has a tracker
+  useEffect(() => {
+    const syncMetrics = async () => {
+      if (selectedAccountId && selectedTracker) {
+        try {
+          await updatePropFirmMetrics(selectedAccountId);
+          queryClient.invalidateQueries({ queryKey: ['prop-firm-trackers'] });
+        } catch (error) {
+          console.error('Auto-sync error:', error);
+        }
+      }
+    };
+    
+    syncMetrics();
+  }, [selectedAccountId, selectedTracker?.id]);
 
   // Handle account selection
   const handleAccountChange = (accountId: string) => {
