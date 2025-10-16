@@ -303,3 +303,21 @@ export const demoWidgets = [
   "recent-trades",
   "equity-curve"
 ];
+
+export const demoPropFirmTrackers = [
+  {
+    id: "demo-prop-1",
+    user_id: "demo-user",
+    account_id: "demo-account-2",
+    challenge_type: "2-step" as const,
+    daily_max_loss: 5000,
+    overall_max_loss: 10000,
+    profit_target: 10000,
+    current_daily_loss: 850,
+    current_overall_loss: 2340,
+    current_profit: 12450,
+    is_active: true,
+    created_at: "2024-12-15T00:00:00Z",
+    updated_at: "2025-01-20T11:15:00Z"
+  }
+];

@@ -59,6 +59,16 @@ A comprehensive trade import system supports CSV, Excel (.xls/.xlsx), and HTML f
 ### Trade Enrichment System
 An automated post-upload system calculates and stores advanced trade analytics: session detection (London/New York/Asia), holding time, profit normalization (profit-per-lot), and duplicate prevention via `ticket_id`.
 
+### Prop Firm Tracker
+A comprehensive proprietary firm challenge tracker enables users to monitor their prop firm account progress with real-time metrics:
+- **Challenge Types**: Instant funding, 1-step, 2-step, and 3-step challenges
+- **Risk Metrics**: Daily max loss, overall max loss, and profit target tracking with visual progress indicators
+- **Real-time Calculations**: Automatic calculation of current daily loss, overall loss, and profit based on account trades
+- **Alert System**: Visual warnings when approaching loss limits or achieving profit targets
+- **Account Integration**: Seamlessly integrates with prop firm account types for accurate balance tracking
+
+Database schema includes `prop_firm_tracker` table with challenge configuration, loss limits, profit targets, and active status tracking. The system calculates metrics automatically based on trade P&L data.
+
 ## External Dependencies
 
 ### Cloud Services

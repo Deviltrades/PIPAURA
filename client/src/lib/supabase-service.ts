@@ -1542,3 +1542,196 @@ export async function getEmotionalAnalytics(accountId: string, startDate: string
     tagAnalysis
   };
 }
+
+// ==================== Prop Firm Tracker ====================
+
+export interface PropFirmTrackerData {
+  id: string;
+  user_id: string;
+  account_id: string;
+  challenge_type: 'instant' | '1-step' | '2-step' | '3-step';
+  daily_max_loss: number;
+  overall_max_loss: number;
+  profit_target: number;
+  current_daily_loss?: number;
+  current_overall_loss?: number;
+  current_profit?: number;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatePropFirmTrackerInput {
+  account_id: string;
+  challenge_type: 'instant' | '1-step' | '2-step' | '3-step';
+  daily_max_loss: number;
+  overall_max_loss: number;
+  profit_target: number;
+}
+
+export interface UpdatePropFirmTrackerInput {
+  challenge_type?: 'instant' | '1-step' | '2-step' | '3-step';
+  daily_max_loss?: number;
+  overall_max_loss?: number;
+  profit_target?: number;
+  current_daily_loss?: number;
+  current_overall_loss?: number;
+  current_profit?: number;
+  is_active?: number;
+}
+
+// Get all prop firm trackers for the current user
+export async function getPropFirmTrackers(): Promise<PropFirmTrackerData[]> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('prop_firm_tracker')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+// Get prop firm tracker by account ID
+export async function getPropFirmTrackerByAccount(accountId: string): Promise<PropFirmTrackerData | null> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('prop_firm_tracker')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('account_id', accountId)
+    .eq('is_active', 1)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null; // No rows found
+    throw error;
+  }
+  return data;
+}
+
+// Create a new prop firm tracker
+export async function createPropFirmTracker(input: CreatePropFirmTrackerInput): Promise<PropFirmTrackerData> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('prop_firm_tracker')
+    .insert({
+      user_id: user.id,
+      account_id: input.account_id,
+      challenge_type: input.challenge_type,
+      daily_max_loss: input.daily_max_loss,
+      overall_max_loss: input.overall_max_loss,
+      profit_target: input.profit_target,
+      current_daily_loss: 0,
+      current_overall_loss: 0,
+      current_profit: 0,
+      is_active: 1
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Update prop firm tracker
+export async function updatePropFirmTracker(
+  trackerId: string,
+  input: UpdatePropFirmTrackerInput
+): Promise<PropFirmTrackerData> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('prop_firm_tracker')
+    .update({
+      ...input,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', trackerId)
+    .eq('user_id', user.id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Delete prop firm tracker (soft delete by setting is_active to 0)
+export async function deletePropFirmTracker(trackerId: string): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { error } = await supabase
+    .from('prop_firm_tracker')
+    .update({ is_active: 0 })
+    .eq('id', trackerId)
+    .eq('user_id', user.id);
+
+  if (error) throw error;
+}
+
+// Calculate and update current metrics based on trades
+export async function updatePropFirmMetrics(accountId: string): Promise<PropFirmTrackerData> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  // Get the tracker
+  const tracker = await getPropFirmTrackerByAccount(accountId);
+  if (!tracker) throw new Error('Prop firm tracker not found');
+  
+  // Get today's trades for daily loss calculation
+  const today = new Date().toISOString().split('T')[0];
+  const { data: todayTrades, error: todayError } = await supabase
+    .from('trades')
+    .select('pnl')
+    .eq('user_id', user.id)
+    .eq('account_id', accountId)
+    .gte('entry_date', `${today}T00:00:00`)
+    .lte('entry_date', `${today}T23:59:59`);
+  
+  if (todayError) throw todayError;
+  
+  // Calculate daily loss (only negative P&L)
+  const dailyLoss = (todayTrades || [])
+    .reduce((sum, trade) => {
+      const pnl = parseFloat(trade.pnl || '0');
+      return pnl < 0 ? sum + Math.abs(pnl) : sum;
+    }, 0);
+  
+  // Get all trades for overall loss and profit
+  const { data: allTrades, error: allError } = await supabase
+    .from('trades')
+    .select('pnl')
+    .eq('user_id', user.id)
+    .eq('account_id', accountId);
+  
+  if (allError) throw allError;
+  
+  // Calculate overall loss and profit
+  let overallLoss = 0;
+  let totalProfit = 0;
+  
+  (allTrades || []).forEach(trade => {
+    const pnl = parseFloat(trade.pnl || '0');
+    if (pnl < 0) {
+      overallLoss += Math.abs(pnl);
+    } else if (pnl > 0) {
+      totalProfit += pnl;
+    }
+  });
+  
+  // Update the tracker
+  return await updatePropFirmTracker(tracker.id, {
+    current_daily_loss: dailyLoss,
+    current_overall_loss: overallLoss,
+    current_profit: totalProfit
+  });
+}

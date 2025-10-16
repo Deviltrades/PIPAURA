@@ -14,7 +14,8 @@ import {
   FileText,
   Users,
   X,
-  ArrowLeft
+  ArrowLeft,
+  Target
 } from "lucide-react";
 import { PipAuraLogo } from "@/components/PipAuraLogo";
 import { useLocation } from "wouter";
@@ -32,6 +33,7 @@ import PreviewNotes from "@/pages/preview-notes";
 import PreviewMentor from "@/pages/preview-mentor";
 import PreviewTaxReports from "@/pages/preview-tax-reports";
 import PreviewMentorDashboard from "@/pages/preview-mentor-dashboard";
+import PreviewPropFirm from "@/pages/preview-prop-firm";
 
 interface NavigationItem {
   name: string;
@@ -118,6 +120,13 @@ const navigation: NavigationItem[] = [
     icon: Users,
     screenshotUrl: "/screenshots/mentor-dashboard.png",
     description: "Monitor and support your trading students as a mentor"
+  },
+  { 
+    name: "Prop Firm Tracker", 
+    id: "prop-firm",
+    icon: Target,
+    screenshotUrl: "/screenshots/prop-firm.png",
+    description: "Track and monitor your prop firm challenge progress, daily loss limits, and profit targets"
   },
   { 
     name: "Tax Reports", 
@@ -215,10 +224,11 @@ export default function ViewJournal() {
           {activeSection === "notes" && <PreviewNotes />}
           {activeSection === "mentor" && <PreviewMentor />}
           {activeSection === "mentor-dashboard" && <PreviewMentorDashboard />}
+          {activeSection === "prop-firm" && <PreviewPropFirm />}
           {activeSection === "tax-reports" && <PreviewTaxReports />}
           
           {/* Show placeholder for sections without preview components */}
-          {!["dashboard", "accounts", "journal", "trades", "analytics", "calendar", "charts", "fundamentals", "strategy", "notes", "mentor", "mentor-dashboard", "tax-reports"].includes(activeSection) && (
+          {!["dashboard", "accounts", "journal", "trades", "analytics", "calendar", "charts", "fundamentals", "strategy", "notes", "mentor", "mentor-dashboard", "prop-firm", "tax-reports"].includes(activeSection) && (
             <div className="p-8">
               {/* Section Header */}
               <div className="mb-8">

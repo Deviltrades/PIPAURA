@@ -396,6 +396,62 @@ export const updateTradeSchema = z.object({
   exit_date: z.string().optional(),
 });
 
+// Prop Firm Tracker interfaces
+export interface PropFirmTracker {
+  id: string;
+  user_id: string;
+  account_id: string;
+  challenge_type: 'instant' | '1-step' | '2-step' | '3-step';
+  daily_max_loss: number;
+  overall_max_loss: number;
+  profit_target: number;
+  current_daily_loss?: number;
+  current_overall_loss?: number;
+  current_profit?: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreatePropFirmTracker {
+  account_id: string;
+  challenge_type: 'instant' | '1-step' | '2-step' | '3-step';
+  daily_max_loss: number;
+  overall_max_loss: number;
+  profit_target: number;
+}
+
+export interface UpdatePropFirmTracker {
+  challenge_type?: 'instant' | '1-step' | '2-step' | '3-step';
+  daily_max_loss?: number;
+  overall_max_loss?: number;
+  profit_target?: number;
+  current_daily_loss?: number;
+  current_overall_loss?: number;
+  current_profit?: number;
+  is_active?: boolean;
+}
+
+// Zod schemas for PropFirmTracker validation
+export const createPropFirmTrackerSchema = z.object({
+  account_id: z.string().uuid("Invalid account ID"),
+  challenge_type: z.enum(['instant', '1-step', '2-step', '3-step']),
+  daily_max_loss: z.number().positive("Daily max loss must be positive"),
+  overall_max_loss: z.number().positive("Overall max loss must be positive"),
+  profit_target: z.number().positive("Profit target must be positive"),
+});
+
+export const updatePropFirmTrackerSchema = z.object({
+  challenge_type: z.enum(['instant', '1-step', '2-step', '3-step']).optional(),
+  daily_max_loss: z.number().positive().optional(),
+  overall_max_loss: z.number().positive().optional(),
+  profit_target: z.number().positive().optional(),
+  current_daily_loss: z.number().optional(),
+  current_overall_loss: z.number().optional(),
+  current_profit: z.number().optional(),
+  is_active: z.boolean().optional(),
+});
+
 // Types for backward compatibility
 export type User = UserProfile;
 export type InsertJournalEntry = CreateJournalEntry;

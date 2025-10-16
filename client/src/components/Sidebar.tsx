@@ -28,7 +28,8 @@ import {
   FileText,
   Newspaper,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Target
 } from "lucide-react";
 import logoImage from "@assets/pipaura-logo.png";
 import headerLogoVideo from "@assets/PipAura_1760451006076.mp4";
@@ -47,6 +48,7 @@ const navigation = [
   { name: "Notes", href: "/notes", icon: StickyNote },
   { name: "AI Trading Mentor", href: "/mentor", icon: Brain },
   { name: "Mentor Dashboard", href: "/mentor-dashboard", icon: Users },
+  { name: "Prop Firm Tracker", href: "/prop-firm", icon: Target },
   { name: "Tax Reports", href: "/tax-reports", icon: FileText },
   { name: "Settings", href: "/settings", icon: SettingsIcon },
 ];
