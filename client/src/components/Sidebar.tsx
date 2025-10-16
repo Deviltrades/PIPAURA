@@ -22,6 +22,7 @@ import {
   StickyNote,
   LineChart,
   Brain,
+  Users,
   Settings as SettingsIcon,
   LogOut,
   FileText,
@@ -45,6 +46,7 @@ const navigation = [
   { name: "Strategy/Playbook", href: "/strategy", icon: MapPin },
   { name: "Notes", href: "/notes", icon: StickyNote },
   { name: "AI Trading Mentor", href: "/mentor", icon: Brain },
+  { name: "Mentor Dashboard", href: "/mentor-dashboard", icon: Users },
   { name: "Tax Reports", href: "/tax-reports", icon: FileText },
   { name: "Settings", href: "/settings", icon: SettingsIcon },
 ];

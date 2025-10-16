@@ -12,6 +12,7 @@ import {
   StickyNote,
   Brain,
   FileText,
+  Users,
   X,
   ArrowLeft
 } from "lucide-react";
@@ -30,6 +31,7 @@ import PreviewStrategy from "@/pages/preview-strategy";
 import PreviewNotes from "@/pages/preview-notes";
 import PreviewMentor from "@/pages/preview-mentor";
 import PreviewTaxReports from "@/pages/preview-tax-reports";
+import PreviewMentorDashboard from "@/pages/preview-mentor-dashboard";
 
 interface NavigationItem {
   name: string;
@@ -109,6 +111,13 @@ const navigation: NavigationItem[] = [
     icon: Brain,
     screenshotUrl: "/screenshots/mentor.png",
     description: "AI-powered trading insights and performance recommendations"
+  },
+  { 
+    name: "Mentor Dashboard", 
+    id: "mentor-dashboard",
+    icon: Users,
+    screenshotUrl: "/screenshots/mentor-dashboard.png",
+    description: "Monitor and support your trading students as a mentor"
   },
   { 
     name: "Tax Reports", 
@@ -205,10 +214,11 @@ export default function ViewJournal() {
           {activeSection === "strategy" && <PreviewStrategy />}
           {activeSection === "notes" && <PreviewNotes />}
           {activeSection === "mentor" && <PreviewMentor />}
+          {activeSection === "mentor-dashboard" && <PreviewMentorDashboard />}
           {activeSection === "tax-reports" && <PreviewTaxReports />}
           
           {/* Show placeholder for sections without preview components */}
-          {!["dashboard", "accounts", "journal", "trades", "analytics", "calendar", "charts", "fundamentals", "strategy", "notes", "mentor", "tax-reports"].includes(activeSection) && (
+          {!["dashboard", "accounts", "journal", "trades", "analytics", "calendar", "charts", "fundamentals", "strategy", "notes", "mentor", "mentor-dashboard", "tax-reports"].includes(activeSection) && (
             <div className="p-8">
               {/* Section Header */}
               <div className="mb-8">
@@ -254,7 +264,7 @@ export default function ViewJournal() {
                   💡 Live Preview Available
                 </h3>
                 <p className="text-slate-400 text-sm">
-                  Dashboard, Accounts, Journal, Trades, Analytics, Calendar, Charts, Fundamentals, Strategy, Notes, AI Mentor, and Tax Reports pages are available as live previews with interactive components and demo data. 
+                  Dashboard, Accounts, Journal, Trades, Analytics, Calendar, Charts, Fundamentals, Strategy, Notes, AI Mentor, Mentor Dashboard, and Tax Reports pages are available as live previews with interactive components and demo data. 
                   More sections coming soon!
                 </p>
               </div>
