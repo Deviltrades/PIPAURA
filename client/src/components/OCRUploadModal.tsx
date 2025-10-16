@@ -329,11 +329,6 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
               )
             );
           }
-        },
-        // Use worker to prevent UI blocking
-        workerOptions: {
-          workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
-          corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core.wasm.js',
         }
       });
 

@@ -66,8 +66,10 @@ A comprehensive proprietary firm challenge tracker enables users to monitor thei
 - **Real-time Calculations**: Automatic calculation of current daily loss, overall loss, and profit based on account trades
 - **Alert System**: Visual warnings when approaching loss limits or achieving profit targets
 - **Account Integration**: Seamlessly integrates with prop firm account types for accurate balance tracking
+- **Funding Progress Tracker**: Phase visualization (Challenge/Verification/Funded/Scaling) with clickable transitions, drawdown buffer calculations, and pass probability metrics
+- **Automatic Sync**: When trades are added via manual entry, OCR upload, or CSV/Excel import, metrics automatically update if the account has an active prop firm tracker. Manual "Sync Metrics" button available for refreshing calculations.
 
-Database schema includes `prop_firm_tracker` table with challenge configuration, loss limits, profit targets, and active status tracking. The system calculates metrics automatically based on trade P&L data.
+Database schema includes `prop_firm_tracker` table with challenge configuration, loss limits, profit targets, active status tracking, and funding phase tracking. The system queries the `trades` table by `account_id` to calculate metrics, ensuring all trades for prop firm accounts automatically sync to the tracker.
 
 ## External Dependencies
 
