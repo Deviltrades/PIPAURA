@@ -1695,17 +1695,6 @@ export async function updatePropFirmMetrics(accountId: string): Promise<PropFirm
   const tracker = await getPropFirmTrackerByAccount(accountId);
   if (!tracker) throw new Error('Prop firm tracker not found');
   
-  // Get the account to find current balance
-  const { data: account, error: accountError } = await supabase
-    .from('trade_accounts')
-    .select('balance')
-    .eq('id', accountId)
-    .single();
-  
-  if (accountError) throw accountError;
-  
-  const currentBalance = parseFloat(account?.balance || '0');
-  
   // Get today's trades for daily loss calculation
   const today = new Date().toISOString().split('T')[0];
   const { data: todayTrades, error: todayError } = await supabase
@@ -1746,6 +1735,14 @@ export async function updatePropFirmMetrics(accountId: string): Promise<PropFirm
     // Net profit = all P&L (positive and negative)
     totalProfit += pnl;
   });
+  
+  // Calculate starting balance from overall max loss setting
+  // E.g., if overall_max_loss = $10,000 and percentage = 10%, starting balance = $100,000
+  const overallLossPercentage = parseFloat(String(tracker.overall_loss_percentage || 10));
+  const startingBalance = tracker.overall_max_loss / (overallLossPercentage / 100);
+  
+  // Calculate current balance = starting balance + net profit
+  const currentBalance = startingBalance + totalProfit;
   
   // Calculate dynamic daily max loss based on current balance
   const dailyLossPercentage = parseFloat(String(tracker.daily_loss_percentage || 5));
