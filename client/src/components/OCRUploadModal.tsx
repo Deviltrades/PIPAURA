@@ -609,6 +609,19 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
     queryClient.invalidateQueries({ queryKey: ["trades"] });
     queryClient.invalidateQueries({ queryKey: ["analytics"] });
     
+    // Update prop firm metrics if this is a prop firm account
+    if (data.account_id && successCount > 0) {
+      try {
+        const tracker = await getPropFirmTrackerByAccount(data.account_id);
+        if (tracker) {
+          await updatePropFirmMetrics(data.account_id);
+          queryClient.invalidateQueries({ queryKey: ['prop-firm-trackers'] });
+        }
+      } catch (error) {
+        console.error('Failed to update prop firm metrics:', error);
+      }
+    }
+    
     // Only close modal if ALL trades succeeded
     if (successCount === updatedTrades.length) {
       toast({
