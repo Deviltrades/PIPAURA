@@ -35,7 +35,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { createTrade, getTradeAccounts } from "@/lib/supabase-service";
+import { createTrade, getTradeAccounts, updatePropFirmMetrics, getPropFirmTrackerByAccount } from "@/lib/supabase-service";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
 
 interface OCRUploadModalProps {
@@ -135,9 +135,23 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
 
       return createTrade(tradeData);
     },
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["trades"] });
       queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      
+      // Update prop firm metrics if this is a prop firm account
+      if (variables.account_id) {
+        try {
+          const tracker = await getPropFirmTrackerByAccount(variables.account_id);
+          if (tracker) {
+            await updatePropFirmMetrics(variables.account_id);
+            queryClient.invalidateQueries({ queryKey: ['prop-firm-trackers'] });
+          }
+        } catch (error) {
+          console.error('Failed to update prop firm metrics:', error);
+        }
+      }
+      
       toast({
         title: "✅ Trade logged automatically from screenshot",
         description: "Trade has been added to your journal",

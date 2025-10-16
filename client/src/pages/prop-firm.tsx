@@ -15,6 +15,7 @@ import {
   createPropFirmTracker, 
   updatePropFirmTracker,
   updatePropFirmPhase,
+  updatePropFirmMetrics,
   type CreatePropFirmTrackerInput,
   type UpdatePropFirmTrackerInput,
   type PropFirmTrackerData
@@ -311,6 +312,29 @@ export default function PropFirm() {
     }
   });
 
+  // Refresh metrics mutation
+  const refreshMetricsMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedAccountId) throw new Error('No account selected');
+      return updatePropFirmMetrics(selectedAccountId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['prop-firm-trackers'] });
+      toast({
+        title: "Metrics Updated",
+        description: "Prop firm metrics have been synced with your trades"
+      });
+    },
+    onError: (error: any) => {
+      console.error("Refresh metrics error:", error);
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to refresh metrics",
+        variant: "destructive"
+      });
+    }
+  });
+
   // Handle account selection
   const handleAccountChange = (accountId: string) => {
     setSelectedAccountId(accountId);
@@ -497,14 +521,27 @@ export default function PropFirm() {
                 </div>
               </div>
 
-              <Button 
-                className="mt-6 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
-                onClick={() => saveMutation.mutate()}
-                disabled={!dailyMaxLoss || !overallMaxLoss || !profitTarget || saveMutation.isPending}
-                data-testid="button-save-settings"
-              >
-                {saveMutation.isPending ? "Saving..." : "Save Challenge Settings"}
-              </Button>
+              <div className="mt-6 flex gap-4">
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
+                  onClick={() => saveMutation.mutate()}
+                  disabled={!dailyMaxLoss || !overallMaxLoss || !profitTarget || saveMutation.isPending}
+                  data-testid="button-save-settings"
+                >
+                  {saveMutation.isPending ? "Saving..." : "Save Challenge Settings"}
+                </Button>
+                {selectedTracker && (
+                  <Button 
+                    variant="outline"
+                    className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-600/20"
+                    onClick={() => refreshMetricsMutation.mutate()}
+                    disabled={refreshMetricsMutation.isPending}
+                    data-testid="button-refresh-metrics"
+                  >
+                    {refreshMetricsMutation.isPending ? "Syncing..." : "Sync Metrics"}
+                  </Button>
+                )}
+              </div>
             </Card>
 
           {/* Metrics Dashboard */}
