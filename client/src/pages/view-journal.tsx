@@ -30,6 +30,7 @@ import PreviewFundamentals from "@/pages/preview-fundamentals";
 import PreviewStrategy from "@/pages/preview-strategy";
 import PreviewNotes from "@/pages/preview-notes";
 import PreviewMentor from "@/pages/preview-mentor";
+import PreviewTaxReports from "@/pages/preview-tax-reports";
 
 interface NavigationItem {
   name: string;
@@ -216,9 +217,10 @@ export default function ViewJournal() {
           {activeSection === "strategy" && <PreviewStrategy />}
           {activeSection === "notes" && <PreviewNotes />}
           {activeSection === "mentor" && <PreviewMentor />}
+          {activeSection === "tax-reports" && <PreviewTaxReports />}
           
           {/* Show placeholder for sections without preview components */}
-          {!["dashboard", "accounts", "journal", "trades", "analytics", "calendar", "charts", "fundamentals", "strategy", "notes", "mentor"].includes(activeSection) && (
+          {!["dashboard", "accounts", "journal", "trades", "analytics", "calendar", "charts", "fundamentals", "strategy", "notes", "mentor", "tax-reports"].includes(activeSection) && (
             <div className="p-8">
               {/* Section Header */}
               <div className="mb-8">
@@ -264,7 +266,7 @@ export default function ViewJournal() {
                   💡 Live Preview Available
                 </h3>
                 <p className="text-slate-400 text-sm">
-                  Dashboard, Accounts, Journal, Trades, Analytics, Calendar, Charts, Fundamentals, Strategy, Notes, and AI Mentor pages are available as live previews with interactive components and demo data. 
+                  Dashboard, Accounts, Journal, Trades, Analytics, Calendar, Charts, Fundamentals, Strategy, Notes, AI Mentor, and Tax Reports pages are available as live previews with interactive components and demo data. 
                   More sections coming soon!
                 </p>
               </div>
