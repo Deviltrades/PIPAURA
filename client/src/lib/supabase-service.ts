@@ -1630,12 +1630,14 @@ export async function createPropFirmTracker(input: CreatePropFirmTrackerInput): 
       user_id: user.id,
       account_id: input.account_id,
       challenge_type: input.challenge_type,
+      current_phase: 'challenge',
       daily_max_loss: input.daily_max_loss,
       overall_max_loss: input.overall_max_loss,
       profit_target: input.profit_target,
       current_daily_loss: 0,
       current_overall_loss: 0,
       current_profit: 0,
+      phase_start_date: new Date().toISOString(),
       is_active: 1
     })
     .select()
