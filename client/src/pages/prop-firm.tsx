@@ -301,10 +301,11 @@ export default function PropFirm() {
         description: "Challenge settings saved successfully"
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Save mutation error:", error);
       toast({
         title: "Error",
-        description: "Failed to save challenge settings",
+        description: error?.message || "Failed to save challenge settings",
         variant: "destructive"
       });
     }
