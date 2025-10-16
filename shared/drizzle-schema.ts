@@ -234,6 +234,8 @@ export const propFirmTracker = pgTable('prop_firm_tracker', {
   daily_max_loss: decimal('daily_max_loss', { precision: 12, scale: 2 }).notNull(),
   overall_max_loss: decimal('overall_max_loss', { precision: 12, scale: 2 }).notNull(),
   profit_target: decimal('profit_target', { precision: 12, scale: 2 }).notNull(),
+  daily_loss_percentage: decimal('daily_loss_percentage', { precision: 5, scale: 2 }).default('5.00'), // Default 5%
+  overall_loss_percentage: decimal('overall_loss_percentage', { precision: 5, scale: 2 }).default('10.00'), // Default 10%
   current_daily_loss: decimal('current_daily_loss', { precision: 12, scale: 2 }).default('0'),
   current_overall_loss: decimal('current_overall_loss', { precision: 12, scale: 2 }).default('0'),
   current_profit: decimal('current_profit', { precision: 12, scale: 2 }).default('0'),
