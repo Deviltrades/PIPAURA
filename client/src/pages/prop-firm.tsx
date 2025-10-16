@@ -260,11 +260,6 @@ export default function PropFirm() {
 
   // Filter prop firm accounts
   const propFirmAccounts = accounts.filter((acc: TradeAccount) => acc.account_type === "proprietary_firm");
-  
-  // Debug logging
-  console.log('📊 All accounts:', accounts);
-  console.log('🏦 Prop firm accounts:', propFirmAccounts);
-  console.log('🔍 Account types:', accounts.map(a => ({ id: a.id, name: a.account_name, type: a.account_type })));
 
   // Fetch prop firm trackers
   const { data: trackers = [], isLoading: trackersLoading } = useQuery<PropFirmTrackerData[]>({
