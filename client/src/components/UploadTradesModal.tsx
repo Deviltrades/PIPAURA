@@ -22,7 +22,7 @@ import { Upload, CheckCircle, AlertCircle, FileText } from "lucide-react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { useToast } from "@/hooks/use-toast";
-import { getTradeAccounts, uploadTrades } from "@/lib/supabase-service";
+import { getTradeAccounts, uploadTrades, updatePropFirmMetrics, getPropFirmTrackerByAccount } from "@/lib/supabase-service";
 import type { TradeAccount } from "@shared/schema";
 
 interface UploadTradesModalProps {
@@ -615,10 +615,23 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
 
       return await uploadTrades(tradesWithAccount, selectedAccountId);
     },
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       queryClient.invalidateQueries({ queryKey: ["trades"] });
       queryClient.invalidateQueries({ queryKey: ["trade-accounts"] });
       queryClient.invalidateQueries({ queryKey: ["analytics"] });
+
+      // Update prop firm metrics if this is a prop firm account
+      if (selectedAccountId) {
+        try {
+          const tracker = await getPropFirmTrackerByAccount(selectedAccountId);
+          if (tracker) {
+            await updatePropFirmMetrics(selectedAccountId);
+            queryClient.invalidateQueries({ queryKey: ['prop-firm-trackers'] });
+          }
+        } catch (error) {
+          console.error('Failed to update prop firm metrics:', error);
+        }
+      }
 
       const selectedAccount = accounts.find((acc) => acc.id === selectedAccountId);
       toast({

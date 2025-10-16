@@ -49,7 +49,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { SignedImageDisplay } from "@/components/SignedImageDisplay";
 import { PlanGate, FeatureGate } from "@/components/PlanGate";
 import { useToast } from "@/hooks/use-toast";
-import { createTrade, updateTrade, uploadFile, getTradeAccounts } from "@/lib/supabase-service";
+import { createTrade, updateTrade, uploadFile, getTradeAccounts, updatePropFirmMetrics, getPropFirmTrackerByAccount } from "@/lib/supabase-service";
 import { useQuery } from "@tanstack/react-query";
 import { getInstrumentsByType } from "@shared/instruments";
 import { cn } from "@/lib/utils";
@@ -301,7 +301,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
         return await createTrade(tradeData);
       }
     },
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
       toast({
         title: "Success",
         description: trade?.id ? "Trade updated successfully" : "Trade added successfully",
@@ -309,6 +309,20 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
       queryClient.invalidateQueries({ queryKey: ["trades"] });
       queryClient.invalidateQueries({ queryKey: ["analytics"] });
       queryClient.invalidateQueries({ queryKey: ['/api/trade-accounts'] });
+      
+      // Update prop firm metrics if this is a prop firm account
+      if (variables.account_id) {
+        try {
+          const tracker = await getPropFirmTrackerByAccount(variables.account_id);
+          if (tracker) {
+            await updatePropFirmMetrics(variables.account_id);
+            queryClient.invalidateQueries({ queryKey: ['prop-firm-trackers'] });
+          }
+        } catch (error) {
+          console.error('Failed to update prop firm metrics:', error);
+        }
+      }
+      
       form.reset();
       setUploadedImages([]); // Clear uploaded images
       onClose();
