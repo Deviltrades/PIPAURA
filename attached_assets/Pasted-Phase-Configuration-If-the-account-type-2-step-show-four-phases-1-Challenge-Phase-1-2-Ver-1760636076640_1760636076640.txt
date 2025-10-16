@@ -1,0 +1,80 @@
+Phase Configuration
+
+If the account type = 2-step, show four phases:
+1️⃣ Challenge (Phase 1)
+2️⃣ Verification (Phase 2)
+3️⃣ Funded
+4️⃣ Scaling (optional – unlocked after 3 profitable months).
+
+If the account type = 1-step, show: Challenge + Funded (+ Scaling optional).
+
+Core Rules
+
+Starting Balance: user-defined (e.g. $100,000).
+
+Daily Loss Limit (Dynamic): 5 % of the day’s starting balance
+
+dailyLimit = dailyStartBalance * 0.05
+minEquityAllowed = dailyStartBalance - dailyLimit
+
+
+Re-calculates each new day at midnight platform time.
+
+Max Overall Loss (Static Drawdown): 10 % of the initial starting balance — never moves up.
+
+const startingBalance = 100000
+const staticFloor = startingBalance * 0.9 // 10 % max loss
+
+
+Even if equity rises above $100 k, the floor stays at $90 k.
+Violation = if current equity < staticFloor.
+
+Profit Targets:
+
+Phase 1 (Challenge): +10 % → target = startingBalance × 1.10
+
+Phase 2 (Verification): +5 % → target = startingBalance × 1.05
+
+Funded / Scaling: no profit target, just consistency tracking.
+
+Example (Testing Data)
+Phase	Rule	Example Value (100 k start)
+Challenge	Profit Target +10 %	$110,000
+Verification	Profit Target +5 %	$105,000
+Daily Loss	5 % dynamic	$5,000/day
+Max Loss (Static)	10 % fixed	$90,000 floor
+Visual Display Requirements
+
+Each phase card should show:
+
+Daily Drawdown Buffer → remaining amount + % before daily limit.
+
+Overall Drawdown Buffer → remaining amount + % before static floor.
+
+Profit Target Progress → equity vs target bar.
+
+Pass Probability % → (current profit / target) × 100.
+
+Color rules:
+
+75 % buffer = green, 50–75 % = amber, < 50 % = red.
+
+Backend Handling
+
+Store starting_balance, static_floor, daily_limit, current_equity, phase, and targets in prop_accounts (Supabase).
+
+On equity update, recalculate only the remaining buffers and target progress — never move the static floor upward.
+
+✅ Summary for Replit:
+
+Daily Loss = Dynamic 5 %.
+
+Max Loss = Static 10 %.
+
+Phase 1 Target = +10 %.
+
+Phase 2 Target = +5 %.
+
+Static floor always anchored to initial balance (e.g. $90 k for a $100 k account).
+
+That’ll make Replit understand the exact distinction — static means fixed from day 1, only the remaining buffer changes as equity moves.

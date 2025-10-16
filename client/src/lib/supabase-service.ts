@@ -1727,16 +1727,10 @@ export async function updatePropFirmMetrics(accountId: string): Promise<PropFirm
   
   if (allError) throw allError;
   
-  // Calculate overall loss and net profit
-  let overallLoss = 0;
+  // Calculate net profit (all P&L - positive and negative)
   let totalProfit = 0;
-  
   (allTrades || []).forEach(trade => {
     const pnl = parseFloat(trade.pnl || '0');
-    if (pnl < 0) {
-      overallLoss += Math.abs(pnl);
-    }
-    // Net profit = all P&L (positive and negative)
     totalProfit += pnl;
   });
   
@@ -1745,8 +1739,13 @@ export async function updatePropFirmMetrics(accountId: string): Promise<PropFirm
   const overallLossPercentage = parseFloat(String(tracker.overall_loss_percentage || 10));
   const startingBalance = tracker.overall_max_loss / (overallLossPercentage / 100);
   
-  // Calculate current balance = starting balance + net profit
+  // Calculate current equity = starting balance + net profit
   const currentBalance = startingBalance + totalProfit;
+  
+  // Calculate STATIC overall loss: how far below starting balance?
+  // Static floor = startingBalance - overall_max_loss (e.g., $100k - $10k = $90k floor)
+  // Overall loss = max(0, startingBalance - currentBalance)
+  const overallLoss = Math.max(0, startingBalance - currentBalance);
   
   // Check if it's a new day - update daily starting balance if needed
   const today = new Date().toISOString().split('T')[0];
