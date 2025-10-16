@@ -10,7 +10,6 @@ import {
   Newspaper,
   MapPin,
   StickyNote,
-  Grid3X3,
   Brain,
   FileText,
   X,
@@ -103,13 +102,6 @@ const navigation: NavigationItem[] = [
     icon: StickyNote,
     screenshotUrl: "/screenshots/notes.png",
     description: "Trading journal with notes, screenshots, and trade analysis"
-  },
-  { 
-    name: "Widgets", 
-    id: "widgets",
-    icon: Grid3X3,
-    screenshotUrl: "/screenshots/widgets.png",
-    description: "Customize your dashboard with drag-and-drop widget layouts"
   },
   { 
     name: "AI Trading Mentor", 
