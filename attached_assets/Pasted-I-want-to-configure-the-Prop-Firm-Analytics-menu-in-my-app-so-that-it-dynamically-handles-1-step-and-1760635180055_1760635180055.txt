@@ -1,0 +1,89 @@
+I want to configure the Prop Firm Analytics menu in my app so that it dynamically handles 1-step and 2-step prop firm models with correct drawdown, profit target, and phase tracking logic.
+
+Here’s how it should work:
+
+Phase Configuration
+
+If the user selects a 1-step model, only show Phase 1 (Challenge) and Funded.
+
+If the user selects a 2-step model, show Phase 1 (Challenge), Phase 2 (Verification), then Funded.
+
+For firms with scaling options, include an optional Scaling tab that unlocks only after 3 consecutive profitable months.
+
+Rule Logic for Each Account
+
+Starting Balance: user-entered (e.g., $100,000).
+
+Daily Loss Limit (Dynamic): 5% of starting balance by default.
+
+Recalculates daily based on starting balance of that day.
+
+Formula:
+
+dailyLimit = dailyStartBalance * 0.05
+minEquityAllowed = dailyStartBalance - dailyLimit
+
+
+Max Overall Loss (Static): 10% of the original starting balance unless user customizes it.
+
+Formula:
+
+maxLoss = startingBalance * 0.10
+staticFloor = startingBalance - maxLoss
+
+
+Profit Target:
+
+Phase 1: +8% by default
+
+Phase 2: +5% by default
+
+For 1-step accounts, set a single profit target of +10%.
+
+Display Components (Front End)
+
+For each phase card (Challenge / Verification / Funded / Scaling), display:
+
+Daily Drawdown Buffer → show remaining buffer amount and % until violation.
+
+Overall Drawdown Buffer → show remaining static buffer amount and %.
+
+Profit Target Progress → progress bar toward target with current equity label.
+
+Pass Probability % → calculated from current equity ÷ target × 100.
+
+Each buffer card should have:
+
+Value labels ($5,000, $9,080.49, etc.)
+
+Colored bars (teal progress with red/yellow/green thresholds)
+
+Auto color shift (red when <25%, amber when <50%, green when >75%)
+
+Backend Data Handling
+
+Store all user inputs (balance, firm name, model type, % rules, etc.) in Supabase under prop_accounts.
+
+Recalculate metrics in real time whenever equity or balance updates.
+
+Allow admins to override rule percentages per firm (some use 4% / 8% instead of 5% / 10%).
+
+Example (for testing)
+
+Firm: FTMO
+
+Type: 2-Step
+
+Balance: $100,000
+
+Phase 1 Target: $108,000
+
+Phase 2 Target: $105,000
+
+Daily Limit: $5,000
+
+Max Loss Floor: $90,000
+
+User currently at $105,097 → 51% to target.
+
+The system should automatically detect which phase the user is currently in based on equity vs. target, and show that highlighted (like the “Challenge” tab in my screenshot).
