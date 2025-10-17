@@ -41,7 +41,7 @@ export default function Pricing() {
       yearlyPrice: 114,
       icon: TrendingUp,
       features: [
-        "Up to 7 Trading Accounts",
+        "Up to 5 Trading Accounts",
         "Unlimited Trade Logging",
         "Advanced Analytics Dashboard",
         "Trader DNA Core Visualization",
