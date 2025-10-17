@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,45 +17,55 @@ const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-const registerSchema = loginSchema;
+const resetPasswordSchema = z.object({
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
 
 type LoginFormData = z.infer<typeof loginSchema>;
-type RegisterFormData = z.infer<typeof registerSchema>;
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(true);
   
-  // Check for password recovery token in URL and redirect to reset password page
+  // Check for password recovery token in URL
   useEffect(() => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const type = hashParams.get('type');
+    const access_token = hashParams.get('access_token');
     
-    if (type === 'recovery') {
-      // Redirect to reset password page with the hash intact
-      setLocation(`/reset-password${window.location.hash}`);
+    if (type === 'recovery' && access_token) {
+      supabase.auth.setSession({
+        access_token,
+        refresh_token: hashParams.get('refresh_token') || '',
+      }).then(({ error }) => {
+        if (!error) {
+          setIsPasswordReset(true);
+          // Clear the hash from URL
+          window.history.replaceState(null, '', window.location.pathname);
+        } else {
+          toast({
+            title: "Invalid or expired link",
+            description: "Please request a new password reset link",
+            variant: "destructive",
+          });
+        }
+        setIsVerifying(false);
+      });
+    } else {
+      setIsVerifying(false);
     }
-  }, [setLocation]);
+  }, [toast]);
   
   // Redirect to dashboard if already logged in
   const { user, isLoading } = useAuth();
   
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-          <p className="text-slate-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  if (user) {
-    setLocation("/");
-    return null;
-  }
-
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -63,6 +73,30 @@ export default function AuthPage() {
       password: "",
     },
   });
+
+  const resetForm = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  if (isLoading || isVerifying) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">{isVerifying ? "Verifying reset link..." : "Loading..."}</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (user && !isPasswordReset) {
+    setLocation("/");
+    return null;
+  }
 
   // Get auth methods from the new Supabase Auth hook
   const { signIn } = useAuth();
@@ -107,6 +141,103 @@ export default function AuthPage() {
       });
     }
   };
+
+  const onResetPassword = async (data: ResetPasswordFormData) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: data.password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password updated!",
+        description: "Your password has been successfully reset. Redirecting to login...",
+      });
+
+      setTimeout(() => {
+        setIsPasswordReset(false);
+        setLocation("/");
+      }, 2000);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reset password",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // If this is a password reset flow, show the reset form
+  if (isPasswordReset) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950 flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="flex justify-center mb-8">
+            <PipAuraLogo />
+          </div>
+
+          <Card className="bg-slate-900/50 border-slate-700 backdrop-blur-sm">
+            <CardHeader className="text-center pb-6">
+              <h1 className="text-2xl font-bold text-white">Reset Password</h1>
+              <p className="text-slate-400 text-sm mt-2">Enter your new password</p>
+            </CardHeader>
+            <CardContent>
+              <Form {...resetForm}>
+                <form onSubmit={resetForm.handleSubmit(onResetPassword)} className="space-y-4">
+                  <FormField
+                    control={resetForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-300">New Password</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password" 
+                            placeholder="Enter new password" 
+                            className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
+                            data-testid="input-new-password"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={resetForm.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-300">Confirm Password</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password" 
+                            placeholder="Confirm new password" 
+                            className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
+                            data-testid="input-confirm-password"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/30" 
+                    data-testid="button-reset-password"
+                  >
+                    Reset Password
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950 flex items-center justify-center px-4">
