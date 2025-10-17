@@ -18,17 +18,7 @@ export default function Pricing() {
     features: [
       "1 Trading Account",
       "Unlimited Trade Logging",
-      "Advanced Analytics Dashboard",
-      "Trader DNA Core Visualization",
-      "Smart Calendar with Filters",
-      "Multi-Format Trade Import (CSV, Excel, HTML)",
-      "Automated Trade Enrichment",
-      "Session Detection (London/NY/Asia)",
-      "Prop Firm Challenge Tracker",
-      "Real-time Fundamental Analysis",
-      "Limited to 15 Image Uploads/Month",
-      "Your Trading Tax Reports (including expenses)",
-      "Email Support"
+      "All Features of the \"Core\" plan (limited to 1 Account and 1GB of image uploads per month)"
     ],
     popular: false,
     cta: "Start Lite"
