@@ -61,7 +61,7 @@ export default function Pricing() {
         "Prop firm challenge tracker with loss & profit metrics",
         "Full tax reporting system — auto-calculates profits, losses & expenses",
         "2GB image upload limit per month (~200+ screenshots)",
-        "AI Trading Mentor access for pattern recognition",
+        "AI Trading Mentor access for pattern recognition (Coming Soon)",
         "Mentor Dashboard — track personal growth cycles",
         "Secure cloud storage and data encryption",
         "Priority email support from the Pipaura team"
