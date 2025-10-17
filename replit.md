@@ -29,7 +29,7 @@ A universal account selector enables database-level filtering by `account_id` ac
 Offers comprehensive settings persistence for display options (weekends, totals, consistency tracker), view modes, and filter selections. It integrates with the account filtering system for account-specific views.
 
 ### Authentication and Authorization
-Supabase Auth manages email/password authentication, JWT tokens, session management, role-based permissions, and custom sign-up/sign-in forms with production-ready email verification.
+Supabase Auth manages email/password authentication, JWT tokens, session management, role-based permissions, and custom sign-up/sign-in forms with production-ready email verification. Password reset functionality is implemented with a dedicated `/reset-password` route that handles Supabase recovery tokens, allowing users to reset their passwords via email link.
 
 ### Fundamentals Page
 Provides comprehensive fundamental analysis across four tabs:

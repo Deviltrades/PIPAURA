@@ -23,17 +23,6 @@ export default function MainPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   
-  // Check for password recovery token in URL and redirect to reset password page
-  useEffect(() => {
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const type = hashParams.get('type');
-    
-    if (type === 'recovery') {
-      // Use window.location.replace so browser properly handles the hash
-      window.location.replace(`/reset-password${window.location.hash}`);
-    }
-  }, []);
-  
   // Redirect to dashboard if already logged in
   const { user, isLoading } = useAuth();
   

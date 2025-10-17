@@ -27,48 +27,62 @@ export default function ResetPasswordPage() {
   const [isVerifying, setIsVerifying] = useState(true);
   const [isValidToken, setIsValidToken] = useState(false);
 
-  // Handle the password reset token from the URL
+  // Check if we're in a password recovery session
   useEffect(() => {
-    const verifyResetToken = async () => {
-      // Check for hash parameters from email link
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const access_token = hashParams.get('access_token');
-      const type = hashParams.get('type');
-
-      if (access_token && type === 'recovery') {
-        try {
-          // Verify the session is valid
-          const { error } = await supabase.auth.setSession({
-            access_token,
-            refresh_token: hashParams.get('refresh_token') || '',
-          });
-
-          if (error) throw error;
-
-          setIsValidToken(true);
-          // Clear the hash from URL
+    let attempts = 0;
+    const maxAttempts = 10; // Max 5 seconds of polling (500ms * 10)
+    
+    const checkRecoverySession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          // Session exists - clear the hash to remove exposed tokens
           window.history.replaceState(null, '', window.location.pathname);
-        } catch (error: any) {
-          console.error('Token verification error:', error);
-          toast({
-            title: "Invalid or expired link",
-            description: "Please request a new password reset link",
-            variant: "destructive",
-          });
+          setIsValidToken(true);
+          setIsVerifying(false);
+        } else {
+          // No session - check if there's a hash with recovery tokens
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const type = hashParams.get('type');
+          
+          if (type === 'recovery' && attempts < maxAttempts) {
+            // Tokens are present, Supabase will process them automatically
+            // Wait for the session to be established
+            attempts++;
+            setTimeout(checkRecoverySession, 500);
+            return;
+          }
+          
+          if (attempts >= maxAttempts) {
+            toast({
+              title: "Link expired or invalid",
+              description: "Please request a new password reset link",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "No reset session found",
+              description: "Please use the link from your email",
+              variant: "destructive",
+            });
+          }
           setTimeout(() => setLocation('/'), 3000);
+          setIsVerifying(false);
         }
-      } else {
+      } catch (error: any) {
+        console.error('Session check error:', error);
         toast({
-          title: "No reset token found",
-          description: "Please use the link from your email",
+          title: "Error",
+          description: "Failed to verify reset session",
           variant: "destructive",
         });
         setTimeout(() => setLocation('/'), 3000);
+        setIsVerifying(false);
       }
-      setIsVerifying(false);
     };
 
-    verifyResetToken();
+    checkRecoverySession();
   }, [toast, setLocation]);
 
   const form = useForm<ResetPasswordFormData>({
