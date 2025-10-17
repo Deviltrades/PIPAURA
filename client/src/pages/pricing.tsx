@@ -254,7 +254,7 @@ export default function Pricing() {
                 
                 <Button 
                   size="sm" 
-                  className="w-full bg-slate-800 hover:bg-slate-700 text-white"
+                  className="w-full bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-300 border border-cyan-500/40"
                   onClick={() => setLocation("/auth")}
                   data-testid="button-cta-lite"
                 >
