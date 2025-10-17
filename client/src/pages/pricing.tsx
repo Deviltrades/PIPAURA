@@ -1,156 +1,226 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, TrendingUp, Users, Crown } from "lucide-react";
-import logoImage from "@assets/pipaura-logo.png";
+import { Check, TrendingUp, Building2, ArrowLeft } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Pricing() {
+  const [, setLocation] = useLocation();
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+
   const plans = [
     {
-      name: "Monthly",
-      price: "£15",
-      period: "month",
-      description: "Full access with the flexibility to cancel anytime",
-      icon: Users,
+      name: "Core",
+      description: "Perfect for individual traders",
+      monthlyPrice: 14,
+      yearlyPrice: 114,
+      icon: TrendingUp,
       features: [
-        "Add up to 10 Accounts",
-        "Manually enter trades",
-        "Automatically add trades",
-        "CSV Imports",
-        "1 GB File Upload",
-        "Proprietary firm friendly",
-        "Created specifically for forex, futures and crypto traders",
-        "Advanced analytics and reports",
-        "Signal sharing with the community",
-        "Custom dashboard widgets",
-        "Calendar view of trading activity",
-        "Mobile and desktop access",
-        "Priority email support",
-        "Cancel anytime"
+        "Up to 10 Trading Accounts",
+        "Unlimited Trade Logging",
+        "Advanced Analytics Dashboard",
+        "Trader DNA Core Visualization",
+        "Smart Calendar with Filters",
+        "Multi-Format Trade Import (CSV, Excel, HTML)",
+        "Automated Trade Enrichment",
+        "Session Detection (London/NY/Asia)",
+        "Prop Firm Challenge Tracker",
+        "Real-time Fundamental Analysis",
+        "Economic Calendar & News",
+        "Email Support"
       ],
       popular: true,
-      cta: "Start Monthly Plan"
+      cta: "Get Started"
     },
     {
-      name: "Lifetime",
-      price: "£275",
-      period: "one-time",
-      description: "Pay once and access PipAura forever",
-      icon: Crown,
+      name: "Institutional",
+      description: "Built for professional trading teams",
+      monthlyPrice: 24,
+      yearlyPrice: 230,
+      icon: Building2,
       features: [
-        "Add up to 10 Accounts",
-        "Manually enter trades",
-        "Automatically add trades",
-        "CSV Imports",
-        "1 GB File Upload",
-        "Proprietary firm friendly",
-        "Created specifically for forex, futures and crypto traders",
-        "Lifetime access - no recurring fees",
-        "All future feature updates included",
-        "Priority feature requests",
-        "Exclusive lifetime member benefits",
-        "Advanced export capabilities",
-        "API access for integrations",
-        "Dedicated support channel",
-        "Early access to new features",
-        "One-time payment - save over £600"
+        "Everything in Core, plus:",
+        "Unlimited Trading Accounts",
+        "Team Collaboration Tools",
+        "Custom Report Generation",
+        "Advanced Tax Reporting",
+        "API Access for Integrations",
+        "Bulk Data Export",
+        "White-label Options",
+        "Multi-user Account Management",
+        "Priority Support (24/7)",
+        "Dedicated Account Manager",
+        "Custom Feature Requests",
+        "Early Access to New Features"
       ],
       popular: false,
-      cta: "Get Lifetime Access"
+      cta: "Contact Sales"
     }
   ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
-      {/* Header */}
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <img 
-              src={logoImage} 
-              alt="PipAura Logo" 
-              className="w-12 h-12 mr-3 rounded-lg shadow-lg"
-            />
-            <span className="text-2xl font-bold text-foreground">PipAura</span>
-          </div>
-          <Button variant="outline" asChild>
-            <a href="/api/login">
-              Login
-            </a>
-          </Button>
-        </div>
-      </div>
+  const getPrice = (plan: typeof plans[0]) => {
+    return billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
+  };
 
-      <div className="container mx-auto px-4 py-12">
+  const getSavings = (plan: typeof plans[0]) => {
+    const yearlyTotal = plan.monthlyPrice * 12;
+    const savings = yearlyTotal - plan.yearlyPrice;
+    const percentage = Math.round((savings / yearlyTotal) * 100);
+    return { amount: savings, percentage };
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950">
+      {/* Header */}
+      <nav className="border-b border-white/10 bg-slate-950/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-8">
+              <button 
+                onClick={() => setLocation("/")}
+                className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition-all"
+                data-testid="link-home"
+              >
+                PipAura
+              </button>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                className="text-white hover:text-cyan-400 hover:bg-white/10"
+                onClick={() => setLocation("/")}
+                data-testid="button-back-home"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Button>
+              <Button 
+                className="bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg shadow-cyan-500/50"
+                onClick={() => setLocation("/auth")}
+                data-testid="button-sign-in"
+              >
+                Sign In
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="container mx-auto px-4 py-16 lg:py-24">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            Choose Your Plan
+          <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">
+            Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Trading Plan</span>
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-slate-300 mb-8 max-w-3xl mx-auto">
             Join thousands of traders who are elevating their performance with PipAura. 
             Select the plan that matches your trading journey.
           </p>
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Check className="h-4 w-4 text-green-500" />
-            <span>No setup fees</span>
-            <span className="mx-2">•</span>
-            <Check className="h-4 w-4 text-green-500" />
-            <span>Instant access</span>
+
+          {/* Billing Cycle Toggle */}
+          <div className="flex items-center justify-center gap-4 mb-12">
+            <span className={`text-sm ${billingCycle === "monthly" ? "text-white font-semibold" : "text-slate-400"}`}>
+              Monthly
+            </span>
+            <button
+              onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
+              className="relative w-14 h-7 bg-slate-700 rounded-full transition-colors hover:bg-slate-600"
+              data-testid="toggle-billing"
+            >
+              <div 
+                className={`absolute top-1 left-1 w-5 h-5 bg-cyan-500 rounded-full transition-transform ${
+                  billingCycle === "yearly" ? "translate-x-7" : ""
+                }`}
+              />
+            </button>
+            <span className={`text-sm ${billingCycle === "yearly" ? "text-white font-semibold" : "text-slate-400"}`}>
+              Yearly
+            </span>
+            {billingCycle === "yearly" && (
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                Save up to 32%
+              </Badge>
+            )}
           </div>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-4xl mx-auto">
-          {plans.map((plan, index) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-5xl mx-auto">
+          {plans.map((plan) => {
             const IconComponent = plan.icon;
+            const savings = getSavings(plan);
+            
             return (
               <Card 
                 key={plan.name} 
-                className={`relative border-border hover:shadow-lg transition-all duration-300 h-full flex flex-col ${
-                  plan.popular ? 'border-primary shadow-lg' : ''
+                className={`relative bg-slate-900/50 border-slate-700 hover:border-cyan-500/50 transition-all duration-300 h-full flex flex-col backdrop-blur-sm ${
+                  plan.popular ? 'border-cyan-500 shadow-xl shadow-cyan-500/20' : ''
                 }`}
+                data-testid={`card-plan-${plan.name.toLowerCase()}`}
               >
                 {plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
+                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-none">
                     Most Popular
                   </Badge>
                 )}
                 
                 <CardHeader className="text-center pb-4">
                   <div className="flex justify-center mb-4">
-                    <div className={`p-3 rounded-full ${plan.popular ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                      <IconComponent className="h-6 w-6" />
+                    <div className={`p-3 rounded-full ${
+                      plan.popular 
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600' 
+                        : 'bg-slate-800'
+                    }`}>
+                      <IconComponent className="h-6 w-6 text-white" />
                     </div>
                   </div>
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground">
-                      {plan.period === "one-time" ? " one-time" : `/${plan.period}`}
-                    </span>
+                  <CardTitle className="text-2xl text-white">{plan.name}</CardTitle>
+                  <p className="text-slate-400 text-sm mt-2">{plan.description}</p>
+                  
+                  <div className="mt-6">
+                    <div className="flex items-baseline justify-center gap-2">
+                      <span className="text-slate-400 text-lg">£</span>
+                      <span className="text-5xl font-bold text-white">{getPrice(plan)}</span>
+                      <span className="text-slate-400">
+                        /{billingCycle === "monthly" ? "month" : "year"}
+                      </span>
+                    </div>
+                    
+                    {billingCycle === "yearly" && (
+                      <div className="mt-2">
+                        <p className="text-sm text-green-400">
+                          Save £{savings.amount}/year ({savings.percentage}% off)
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          £{(plan.yearlyPrice / 12).toFixed(2)}/month when billed annually
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-muted-foreground mt-2">{plan.description}</p>
                 </CardHeader>
                 
                 <CardContent className="flex-1 flex flex-col">
                   <ul className="space-y-3 mb-6 flex-1">
                     {plan.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-start">
-                        <Check className="h-4 w-4 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-muted-foreground">{feature}</span>
+                        <Check className="h-4 w-4 text-cyan-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-slate-300">{feature}</span>
                       </li>
                     ))}
                   </ul>
                   
                   <Button 
                     size="lg" 
-                    className="w-full"
-                    asChild
+                    className={`w-full ${
+                      plan.popular 
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/30' 
+                        : 'bg-slate-800 hover:bg-slate-700 text-white'
+                    }`}
+                    onClick={() => setLocation("/auth")}
+                    data-testid={`button-cta-${plan.name.toLowerCase()}`}
                   >
-                    <a href="/auth">
-                      {plan.cta}
-                    </a>
+                    {plan.cta}
                   </Button>
                 </CardContent>
               </Card>
@@ -158,57 +228,80 @@ export default function Pricing() {
           })}
         </div>
 
+        {/* Trust Indicators */}
+        <div className="flex flex-wrap gap-6 justify-center text-sm text-slate-400 mb-16">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-400" />
+            <span>No Credit Card Required</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-400" />
+            <span>Cancel Anytime</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-400" />
+            <span>Instant Access</span>
+          </div>
+        </div>
+
         {/* FAQ Section */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-foreground mb-8">
+          <h2 className="text-3xl font-bold text-white mb-12">
             Frequently Asked Questions
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="text-left">
-              <h3 className="font-semibold text-foreground mb-2">How quickly can I get started?</h3>
-              <p className="text-muted-foreground text-sm">
-                You get instant access to all features immediately after signup. Start logging trades right away.
+            <div className="text-left bg-slate-900/50 p-6 rounded-lg border border-slate-700">
+              <h3 className="font-semibold text-white mb-2">How quickly can I get started?</h3>
+              <p className="text-slate-400 text-sm">
+                You get instant access to all features immediately after signup. Start logging trades and analyzing your performance right away.
               </p>
             </div>
-            <div className="text-left">
-              <h3 className="font-semibold text-foreground mb-2">Can I change plans later?</h3>
-              <p className="text-muted-foreground text-sm">
-                Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.
+            <div className="text-left bg-slate-900/50 p-6 rounded-lg border border-slate-700">
+              <h3 className="font-semibold text-white mb-2">Can I switch between plans?</h3>
+              <p className="text-slate-400 text-sm">
+                Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately with prorated billing.
               </p>
             </div>
-            <div className="text-left">
-              <h3 className="font-semibold text-foreground mb-2">Is my trading data secure?</h3>
-              <p className="text-muted-foreground text-sm">
-                Absolutely. We use enterprise-grade encryption and security measures to protect your data.
+            <div className="text-left bg-slate-900/50 p-6 rounded-lg border border-slate-700">
+              <h3 className="font-semibold text-white mb-2">Is my trading data secure?</h3>
+              <p className="text-slate-400 text-sm">
+                Absolutely. We use enterprise-grade encryption and Supabase's secure infrastructure to protect all your trading data.
               </p>
             </div>
-            <div className="text-left">
-              <h3 className="font-semibold text-foreground mb-2">What payment methods do you accept?</h3>
-              <p className="text-muted-foreground text-sm">
-                We accept all major credit cards and PayPal for secure and convenient payment processing.
+            <div className="text-left bg-slate-900/50 p-6 rounded-lg border border-slate-700">
+              <h3 className="font-semibold text-white mb-2">What if I need to cancel?</h3>
+              <p className="text-slate-400 text-sm">
+                You can cancel anytime with no questions asked. Your data remains accessible until the end of your billing period.
               </p>
             </div>
           </div>
         </div>
 
         {/* CTA Section */}
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
-            Ready to Get Started?
+        <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-500/30 rounded-3xl p-12 text-center backdrop-blur-sm">
+          <h2 className="text-4xl font-bold text-white mb-4">
+            Ready to Transform Your Trading?
           </h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            Get instant access today and experience the power of community-driven trading analytics.
+          <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
+            Join thousands of traders using PipAura to track, analyze, and improve their performance
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button size="lg" asChild className="text-lg px-8 py-3">
-              <a href="/auth">
-                Get Started Now
-              </a>
+            <Button 
+              size="lg" 
+              className="text-lg px-10 py-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-xl shadow-cyan-500/30"
+              onClick={() => setLocation("/auth")}
+              data-testid="button-cta-start"
+            >
+              Start Now
             </Button>
-            <Button size="lg" variant="outline" asChild className="text-lg px-8 py-3">
-              <a href="/">
-                Back to Home
-              </a>
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="text-lg px-10 py-6 border-2 border-white/30 text-white hover:bg-white/10"
+              onClick={() => setLocation("/")}
+              data-testid="button-back-to-home"
+            >
+              Back to Home
             </Button>
           </div>
         </div>
