@@ -173,43 +173,46 @@ export default function Pricing() {
         {/* Pricing Plans with Lightning Connectors */}
         <div className="relative max-w-5xl mx-auto">
           {/* Lightning SVG Connectors - Hidden on mobile, visible on desktop */}
-          <svg className="hidden md:block absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+          <svg 
+            className="hidden md:block absolute top-0 left-0 w-full pointer-events-none" 
+            style={{ height: '800px', zIndex: 0 }}
+            preserveAspectRatio="xMidYMid meet"
+          >
             <defs>
               <filter id="glow">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
                 <feMerge>
                   <feMergeNode in="coloredBlur"/>
                   <feMergeNode in="SourceGraphic"/>
                 </feMerge>
               </filter>
+              <linearGradient id="lightning-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#22d3ee" stopOpacity="1" />
+                <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
+                <stop offset="100%" stopColor="#0891b2" stopOpacity="0.8" />
+              </linearGradient>
             </defs>
             
-            {/* Lightning from Lite to Core (left side) */}
+            {/* Lightning from Lite to Core (left side) - zigzag pattern */}
             <path
-              d="M 50% 280 L 25% 350 L 28% 355 L 25% 420"
+              d="M 500 280 L 300 350 L 320 355 L 280 450"
               stroke="url(#lightning-gradient)"
-              strokeWidth="2"
+              strokeWidth="3"
               fill="none"
               filter="url(#glow)"
               className="animate-pulse"
             />
             
-            {/* Lightning from Lite to Institutional (right side) */}
+            {/* Lightning from Lite to Institutional (right side) - zigzag pattern */}
             <path
-              d="M 50% 280 L 75% 350 L 72% 355 L 75% 420"
+              d="M 500 280 L 700 350 L 680 355 L 720 450"
               stroke="url(#lightning-gradient)"
-              strokeWidth="2"
+              strokeWidth="3"
               fill="none"
               filter="url(#glow)"
               className="animate-pulse"
               style={{ animationDelay: '0.5s' }}
             />
-            
-            <linearGradient id="lightning-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.8" />
-              <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
-              <stop offset="100%" stopColor="#0891b2" stopOpacity="0.6" />
-            </linearGradient>
           </svg>
 
           {/* Lite Plan - Smaller Box */}
