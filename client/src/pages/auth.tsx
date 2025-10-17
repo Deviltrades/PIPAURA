@@ -104,7 +104,7 @@ export default function AuthPage() {
   }
   
   if (user && !isPasswordReset) {
-    setLocation("/");
+    setLocation("/dashboard");
     return null;
   }
 
