@@ -60,6 +60,9 @@ function Router() {
 
   return (
     <Switch>
+      {/* Reset password route available regardless of auth status */}
+      <Route path="/reset-password" component={ResetPasswordPage} />
+      
       {!user ? (
         <>
           <Route path="/" component={MainPage} />
@@ -67,7 +70,6 @@ function Router() {
           <Route path="/pricing" component={Pricing} />
           <Route path="/view-journal" component={ViewJournal} />
           <Route path="/auth" component={AuthPage} />
-          <Route path="/reset-password" component={ResetPasswordPage} />
           <Route path="/preview/dashboard" component={PreviewDashboard} />
           <Route path="/preview/journal" component={PreviewJournal} />
           <Route path="/preview/trades" component={PreviewTrades} />
