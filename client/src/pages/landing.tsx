@@ -72,9 +72,13 @@ export default function Landing() {
             Elevate Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Trading Edge</span>
           </h1>
           
-          <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-slate-300 mb-4 max-w-2xl mx-auto leading-relaxed">
             The comprehensive trading journal built for serious traders. Advanced analytics, 
             automated insights, and performance tracking that transforms your trading journey.
+          </p>
+          
+          <p className="text-lg text-cyan-400 mb-10 max-w-2xl mx-auto font-medium italic">
+            "Powered by elite Fundamental Scorecards — institutional precision for retail traders."
           </p>
 
           {/* Calendar Preview Image */}
