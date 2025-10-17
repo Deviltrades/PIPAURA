@@ -32,10 +32,10 @@ export default function Pricing() {
       yearlyPrice: 114,
       icon: TrendingUp,
       features: [
+        "Up to 10 trading accounts (live, demo, or prop)",
         "Includes all future updates and new releases",
         "Works for Forex, Indices, Commodities, and Crypto",
         "Syncs securely across all devices",
-        "Up to 10 trading accounts (live, demo, or prop)",
         "Unlimited trade logging with detailed stats",
         "Advanced analytics dashboard with performance metrics",
         "Trader DNA™ visualization — identify your strongest setups",
