@@ -170,57 +170,99 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Lite Plan - Smaller Box */}
-        <div className="max-w-md mx-auto mb-8">
-          <Card 
-            className="bg-slate-900/50 border-slate-700 hover:border-cyan-500/50 transition-all duration-300 backdrop-blur-sm"
-            data-testid="card-plan-lite"
-          >
-            <CardHeader className="text-center pb-3">
-              <CardTitle className="text-xl text-white">{litePlan.name}</CardTitle>
-              <p className="text-slate-400 text-xs mt-1">{litePlan.description}</p>
-              
-              <div className="mt-4">
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-slate-400 text-base">£</span>
-                  <span className="text-3xl font-bold text-white">{billingCycle === "monthly" ? litePlan.monthlyPrice : litePlan.yearlyPrice}</span>
-                  <span className="text-slate-400 text-sm">
-                    /{billingCycle === "monthly" ? "month" : "year"}
-                  </span>
-                </div>
-                
-                {billingCycle === "yearly" && (
-                  <p className="text-xs text-green-400 mt-1">
-                    Save £{((litePlan.monthlyPrice * 12) - litePlan.yearlyPrice).toFixed(2)}/year
-                  </p>
-                )}
-              </div>
-            </CardHeader>
+        {/* Pricing Plans with Lightning Connectors */}
+        <div className="relative max-w-5xl mx-auto">
+          {/* Lightning SVG Connectors - Hidden on mobile, visible on desktop */}
+          <svg className="hidden md:block absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+            <defs>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
             
-            <CardContent>
-              <ul className="space-y-2 mb-4">
-                {litePlan.features.slice(0, 5).map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-start">
-                    <Check className="h-3 w-3 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span className="text-xs text-slate-300">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              
-              <Button 
-                size="sm" 
-                className="w-full bg-slate-800 hover:bg-slate-700 text-white"
-                onClick={() => setLocation("/auth")}
-                data-testid="button-cta-lite"
-              >
-                {litePlan.cta}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+            {/* Lightning from Lite to Core (left side) */}
+            <path
+              d="M 50% 280 L 25% 350 L 28% 355 L 25% 420"
+              stroke="url(#lightning-gradient)"
+              strokeWidth="2"
+              fill="none"
+              filter="url(#glow)"
+              className="animate-pulse"
+            />
+            
+            {/* Lightning from Lite to Institutional (right side) */}
+            <path
+              d="M 50% 280 L 75% 350 L 72% 355 L 75% 420"
+              stroke="url(#lightning-gradient)"
+              strokeWidth="2"
+              fill="none"
+              filter="url(#glow)"
+              className="animate-pulse"
+              style={{ animationDelay: '0.5s' }}
+            />
+            
+            <linearGradient id="lightning-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
+              <stop offset="100%" stopColor="#0891b2" stopOpacity="0.6" />
+            </linearGradient>
+          </svg>
 
-        {/* Main Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-5xl mx-auto">
+          {/* Lite Plan - Smaller Box */}
+          <div className="max-w-md mx-auto mb-8 relative" style={{ zIndex: 1 }}>
+            <Card 
+              className="bg-slate-900/50 border-slate-700 hover:border-cyan-500/50 transition-all duration-300 backdrop-blur-sm"
+              data-testid="card-plan-lite"
+            >
+              <CardHeader className="text-center pb-3">
+                <CardTitle className="text-xl text-white">{litePlan.name}</CardTitle>
+                <p className="text-slate-400 text-xs mt-1">{litePlan.description}</p>
+                
+                <div className="mt-4">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-slate-400 text-base">£</span>
+                    <span className="text-3xl font-bold text-white">{billingCycle === "monthly" ? litePlan.monthlyPrice : litePlan.yearlyPrice}</span>
+                    <span className="text-slate-400 text-sm">
+                      /{billingCycle === "monthly" ? "month" : "year"}
+                    </span>
+                  </div>
+                  
+                  {billingCycle === "yearly" && (
+                    <p className="text-xs text-green-400 mt-1">
+                      Save £{((litePlan.monthlyPrice * 12) - litePlan.yearlyPrice).toFixed(2)}/year
+                    </p>
+                  )}
+                </div>
+              </CardHeader>
+              
+              <CardContent>
+                <ul className="space-y-2 mb-4">
+                  {litePlan.features.slice(0, 5).map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-start">
+                      <Check className="h-3 w-3 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
+                      <span className="text-xs text-slate-300">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                <Button 
+                  size="sm" 
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white"
+                  onClick={() => setLocation("/auth")}
+                  data-testid="button-cta-lite"
+                >
+                  {litePlan.cta}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Pricing Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 relative" style={{ zIndex: 1 }}>
           {plans.map((plan) => {
             const IconComponent = plan.icon;
             const savings = getSavings(plan);
@@ -300,6 +342,7 @@ export default function Pricing() {
               </Card>
             );
           })}
+          </div>
         </div>
 
         {/* Trust Indicators */}
