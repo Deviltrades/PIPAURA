@@ -92,18 +92,30 @@ export default function AuthPage() {
     },
   });
 
-  if (isLoading || isVerifying) {
+  if (isVerifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-          <p className="text-slate-400">{isVerifying ? "Verifying reset link..." : "Loading..."}</p>
+          <p className="text-slate-400">Verifying reset link...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading && !isPasswordReset) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading...</p>
         </div>
       </div>
     );
   }
   
-  if (user && !isPasswordReset) {
+  // Only redirect to dashboard if NOT in password reset mode
+  if (user && !isPasswordReset && !isVerifying) {
     setLocation("/dashboard");
     return null;
   }
