@@ -128,11 +128,11 @@ export default function MainPage() {
 
         {/* Sign Up Link */}
         <div className="text-center mt-6">
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-400 text-lg">
             New to PipAura?{" "}
             <Button
               variant="link"
-              className="text-cyan-400 hover:text-cyan-300 p-0 h-auto font-semibold"
+              className="text-cyan-400 hover:text-cyan-300 p-0 h-auto font-semibold text-lg"
               onClick={() => setLocation("/landing")}
               data-testid="button-join-here"
             >
