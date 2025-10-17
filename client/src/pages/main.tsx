@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { PipAuraLogo } from "@/components/PipAuraLogo";
+import { supabase } from "@/lib/supabase";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -58,6 +59,38 @@ export default function MainPage() {
     });
   };
 
+  const handleForgotPassword = async () => {
+    const email = loginForm.getValues("email");
+    
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Reset email sent!",
+        description: "Check your email for the password reset link",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send reset email",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -99,7 +132,18 @@ export default function MainPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-300">Password</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel className="text-slate-300">Password</FormLabel>
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="text-cyan-400 hover:text-cyan-300 p-0 h-auto text-sm"
+                          onClick={handleForgotPassword}
+                          data-testid="button-forgot-password"
+                        >
+                          Forgot password?
+                        </Button>
+                      </div>
                       <FormControl>
                         <Input 
                           type="password" 

@@ -10,6 +10,7 @@ import MainPage from "@/pages/main";
 import Landing from "@/pages/landing";
 import Pricing from "@/pages/pricing";
 import AuthPage from "@/pages/auth";
+import ResetPasswordPage from "@/pages/reset-password";
 import ViewJournal from "@/pages/view-journal";
 import Dashboard from "@/pages/dashboard";
 import Trades from "@/pages/trades";
@@ -66,6 +67,7 @@ function Router() {
           <Route path="/pricing" component={Pricing} />
           <Route path="/view-journal" component={ViewJournal} />
           <Route path="/auth" component={AuthPage} />
+          <Route path="/reset-password" component={ResetPasswordPage} />
           <Route path="/preview/dashboard" component={PreviewDashboard} />
           <Route path="/preview/journal" component={PreviewJournal} />
           <Route path="/preview/trades" component={PreviewTrades} />
