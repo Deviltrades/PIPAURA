@@ -91,17 +91,8 @@ export default function Pricing() {
         "Unlimited image uploads and secure data storage",
         "AI Trading Mentor access for pattern recognition (Coming Soon)",
         "Mentor Dashboard — track personal growth cycles",
-        "Team Collaboration Tools",
-        "Custom Report Generation",
-        "API Access for Integrations",
-        "Bulk Data Export",
-        "White-label Options",
-        "Multi-user Account Management",
-        "Priority Support (24/7)",
-        "Dedicated Account Manager",
-        "Custom Feature Requests",
-        "Early Access to New Features",
-        "Secure cloud storage and data encryption"
+        "Secure cloud storage and data encryption",
+        "Priority email support from the Pipaura team"
       ],
       popular: false,
       cta: "Start Institutional"
