@@ -79,7 +79,7 @@ export default function Landing() {
           </p>
 
           {/* Calendar Preview Image */}
-          <div className="mb-10 max-w-4xl mx-auto">
+          <div className="mb-10 mx-auto" style={{ maxWidth: '40%' }}>
             <img 
               src={calendarImage} 
               alt="PipAura Calendar Analytics Dashboard" 
