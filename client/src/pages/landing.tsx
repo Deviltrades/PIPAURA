@@ -274,7 +274,7 @@ export default function Landing() {
 
           <Card 
             className="bg-slate-800/50 border-slate-700/50 hover:border-cyan-500/50 transition-all group cursor-pointer"
-            onClick={() => setLocation("/preview/analytics")}
+            onClick={() => setLocation("/preview/analytics?tab=emotional")}
             data-testid="card-emotional-analytics"
           >
             <CardContent className="p-6">

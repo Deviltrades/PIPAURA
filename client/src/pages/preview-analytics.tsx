@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Dialog,
@@ -365,9 +366,15 @@ function PreviewDNACore({ metrics, onInfoClick }: PreviewDNACoreProps) {
 }
 
 export default function PreviewAnalytics() {
+  const [location] = useLocation();
   const [hoveredMonthIndex, setHoveredMonthIndex] = useState<number | null>(null);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const selectedAccount = demoAccounts[0].id;
+  
+  // Check URL for tab parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabParam = urlParams.get('tab');
+  const defaultTab = tabParam === 'emotional' ? 'emotional' : 'dna';
 
   const stats = {
     totalPnL: demoAnalytics.totalPnL,
@@ -485,7 +492,7 @@ export default function PreviewAnalytics() {
         </div>
       </div>
 
-      <Tabs defaultValue="dna" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-8">
           <TabsTrigger value="dna" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
