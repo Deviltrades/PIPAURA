@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,6 +22,17 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function MainPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  
+  // Check for password recovery token in URL and redirect to reset password page
+  useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const type = hashParams.get('type');
+    
+    if (type === 'recovery') {
+      // Redirect to reset password page with the hash intact
+      setLocation(`/reset-password${window.location.hash}`);
+    }
+  }, [setLocation]);
   
   // Redirect to dashboard if already logged in
   const { user, isLoading } = useAuth();
