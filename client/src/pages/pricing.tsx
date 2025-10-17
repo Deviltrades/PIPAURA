@@ -56,7 +56,7 @@ export default function Pricing() {
         "Email Support"
       ],
       popular: true,
-      cta: "Get Started"
+      cta: "Start Core"
     },
     {
       name: "Institutional",
@@ -80,7 +80,7 @@ export default function Pricing() {
         "Early Access to New Features"
       ],
       popular: false,
-      cta: "Contact Sales"
+      cta: "Start Institutional"
     }
   ];
 
