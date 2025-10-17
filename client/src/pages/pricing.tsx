@@ -243,7 +243,7 @@ export default function Pricing() {
               data-testid="card-plan-lite"
             >
               <CardHeader className="text-center pb-3">
-                <CardTitle className="text-xl text-white">{litePlan.name}</CardTitle>
+                <CardTitle className="text-xl text-cyan-400">{litePlan.name}</CardTitle>
                 <p className="text-slate-400 text-xs mt-1">{litePlan.description}</p>
                 
                 <div className="mt-4">
@@ -320,7 +320,7 @@ export default function Pricing() {
                       <IconComponent className="h-6 w-6 text-white" />
                     </div>
                   </div>
-                  <CardTitle className="text-2xl text-white">{plan.name}</CardTitle>
+                  <CardTitle className="text-2xl text-cyan-400">{plan.name}</CardTitle>
                   <p className="text-slate-400 text-sm mt-2">{plan.description}</p>
                   
                   <div className="mt-6">
