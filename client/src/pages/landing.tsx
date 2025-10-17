@@ -311,7 +311,7 @@ export default function Landing() {
               onClick={() => setLocation("/auth")}
               data-testid="button-cta-start"
             >
-              Start Free Trial
+              Start Now
             </Button>
             <Button 
               size="lg" 
@@ -320,7 +320,7 @@ export default function Landing() {
               onClick={() => setLocation("/pricing")}
               data-testid="button-cta-pricing"
             >
-              View Plans
+              View Pricing
             </Button>
           </div>
 
