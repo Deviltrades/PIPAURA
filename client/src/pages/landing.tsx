@@ -164,7 +164,11 @@ export default function Landing() {
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700/50 hover:border-cyan-500/50 transition-all group">
+          <Card 
+            className="bg-slate-800/50 border-slate-700/50 hover:border-cyan-500/50 transition-all group cursor-pointer"
+            onClick={() => setLocation("/preview/analytics")}
+            data-testid="card-advanced-analytics"
+          >
             <CardContent className="p-6">
               <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <BarChart3 className="w-6 h-6 text-white" />
