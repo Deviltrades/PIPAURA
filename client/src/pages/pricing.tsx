@@ -84,8 +84,14 @@ export default function Pricing() {
     }
   ];
 
+  const GBP_TO_USD = 1.27; // Conversion rate
+
   const getPrice = (plan: typeof plans[0]) => {
     return billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
+  };
+
+  const getPriceUSD = (gbpPrice: number) => {
+    return (gbpPrice * GBP_TO_USD).toFixed(2);
   };
 
   const getSavings = (plan: typeof plans[0]) => {
@@ -226,12 +232,17 @@ export default function Pricing() {
                 <p className="text-slate-400 text-xs mt-1">{litePlan.description}</p>
                 
                 <div className="mt-4">
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-slate-400 text-base">£</span>
-                    <span className="text-3xl font-bold text-white">{billingCycle === "monthly" ? litePlan.monthlyPrice : litePlan.yearlyPrice}</span>
-                    <span className="text-slate-400 text-sm">
-                      /{billingCycle === "monthly" ? "month" : "year"}
-                    </span>
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-slate-400 text-base">£</span>
+                      <span className="text-3xl font-bold text-white">{billingCycle === "monthly" ? litePlan.monthlyPrice : litePlan.yearlyPrice}</span>
+                      <span className="text-slate-400 text-sm">
+                        /{billingCycle === "monthly" ? "month" : "year"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">
+                      (${getPriceUSD(billingCycle === "monthly" ? litePlan.monthlyPrice : litePlan.yearlyPrice)} USD)
+                    </p>
                   </div>
                   
                   {billingCycle === "yearly" && (
@@ -298,12 +309,17 @@ export default function Pricing() {
                   <p className="text-slate-400 text-sm mt-2">{plan.description}</p>
                   
                   <div className="mt-6">
-                    <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-slate-400 text-lg">£</span>
-                      <span className="text-5xl font-bold text-white">{getPrice(plan)}</span>
-                      <span className="text-slate-400">
-                        /{billingCycle === "monthly" ? "month" : "year"}
-                      </span>
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-slate-400 text-lg">£</span>
+                        <span className="text-5xl font-bold text-white">{getPrice(plan)}</span>
+                        <span className="text-slate-400">
+                          /{billingCycle === "monthly" ? "month" : "year"}
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-500 mt-2">
+                        (${getPriceUSD(getPrice(plan))} USD)
+                      </p>
                     </div>
                     
                     {billingCycle === "yearly" && (
