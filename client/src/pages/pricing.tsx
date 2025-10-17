@@ -88,7 +88,7 @@ export default function Pricing() {
         "Live economic calendar & news integration",
         "Prop firm challenge tracker with loss & profit metrics",
         "Full tax reporting system — auto-calculates profits, losses & expenses",
-        "Unlimited image uploads and secure data storage",
+        "10GB image upload limit per month (~1,000+ screenshots)",
         "AI Trading Mentor access for pattern recognition (Coming Soon)",
         "Mentor Dashboard — track personal growth cycles",
         "Secure cloud storage and data encryption",
