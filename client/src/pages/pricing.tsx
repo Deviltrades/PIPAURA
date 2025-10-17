@@ -9,6 +9,30 @@ export default function Pricing() {
   const [, setLocation] = useLocation();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
+  const litePlan = {
+    name: "Lite",
+    description: "Perfect for getting started",
+    monthlyPrice: 4.99,
+    yearlyPrice: 49.99,
+    icon: TrendingUp,
+    features: [
+      "1 Trading Account",
+      "Unlimited Trade Logging",
+      "Advanced Analytics Dashboard",
+      "Trader DNA Core Visualization",
+      "Smart Calendar with Filters",
+      "Multi-Format Trade Import (CSV, Excel, HTML)",
+      "Automated Trade Enrichment",
+      "Session Detection (London/NY/Asia)",
+      "Prop Firm Challenge Tracker",
+      "Real-time Fundamental Analysis",
+      "Limited to 15 Image Uploads/Month",
+      "Email Support"
+    ],
+    popular: false,
+    cta: "Start Lite"
+  };
+
   const plans = [
     {
       name: "Core",
@@ -28,6 +52,7 @@ export default function Pricing() {
         "Prop Firm Challenge Tracker",
         "Real-time Fundamental Analysis",
         "Economic Calendar & News",
+        "Unlimited Image Uploads",
         "Email Support"
       ],
       popular: true,
@@ -145,7 +170,56 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Pricing Cards */}
+        {/* Lite Plan - Smaller Box */}
+        <div className="max-w-md mx-auto mb-8">
+          <Card 
+            className="bg-slate-900/50 border-slate-700 hover:border-cyan-500/50 transition-all duration-300 backdrop-blur-sm"
+            data-testid="card-plan-lite"
+          >
+            <CardHeader className="text-center pb-3">
+              <CardTitle className="text-xl text-white">{litePlan.name}</CardTitle>
+              <p className="text-slate-400 text-xs mt-1">{litePlan.description}</p>
+              
+              <div className="mt-4">
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-slate-400 text-base">£</span>
+                  <span className="text-3xl font-bold text-white">{billingCycle === "monthly" ? litePlan.monthlyPrice : litePlan.yearlyPrice}</span>
+                  <span className="text-slate-400 text-sm">
+                    /{billingCycle === "monthly" ? "month" : "year"}
+                  </span>
+                </div>
+                
+                {billingCycle === "yearly" && (
+                  <p className="text-xs text-green-400 mt-1">
+                    Save £{((litePlan.monthlyPrice * 12) - litePlan.yearlyPrice).toFixed(2)}/year
+                  </p>
+                )}
+              </div>
+            </CardHeader>
+            
+            <CardContent>
+              <ul className="space-y-2 mb-4">
+                {litePlan.features.slice(0, 5).map((feature, featureIndex) => (
+                  <li key={featureIndex} className="flex items-start">
+                    <Check className="h-3 w-3 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
+                    <span className="text-xs text-slate-300">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              
+              <Button 
+                size="sm" 
+                className="w-full bg-slate-800 hover:bg-slate-700 text-white"
+                onClick={() => setLocation("/auth")}
+                data-testid="button-cta-lite"
+              >
+                {litePlan.cta}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-5xl mx-auto">
           {plans.map((plan) => {
             const IconComponent = plan.icon;
