@@ -52,7 +52,7 @@ export default function Pricing() {
         "Prop Firm Challenge Tracker",
         "Real-time Fundamental Analysis",
         "Economic Calendar & News",
-        "Unlimited Image Uploads",
+        "2GB of Image Uploads (200+ Images per month)",
         "Email Support"
       ],
       popular: true,
