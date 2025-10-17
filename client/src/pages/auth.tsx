@@ -34,44 +34,18 @@ export default function AuthPage() {
   const [isPasswordReset, setIsPasswordReset] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
   
-  // Check for password recovery token in URL
+  // Check for password recovery token in URL - redirect to reset-password page
   useEffect(() => {
-    console.log('Full URL:', window.location.href);
-    console.log('Hash:', window.location.hash);
-    
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const type = hashParams.get('type');
-    const access_token = hashParams.get('access_token');
     
-    console.log('Type:', type);
-    console.log('Access Token exists:', !!access_token);
-    
-    if (type === 'recovery' && access_token) {
-      console.log('Setting up password reset...');
-      supabase.auth.setSession({
-        access_token,
-        refresh_token: hashParams.get('refresh_token') || '',
-      }).then(({ error }) => {
-        if (!error) {
-          console.log('Session set successfully, showing reset form');
-          setIsPasswordReset(true);
-          // Clear the hash from URL
-          window.history.replaceState(null, '', window.location.pathname);
-        } else {
-          console.error('Session error:', error);
-          toast({
-            title: "Invalid or expired link",
-            description: "Please request a new password reset link",
-            variant: "destructive",
-          });
-        }
-        setIsVerifying(false);
-      });
+    if (type === 'recovery') {
+      // Use window.location.replace so browser properly handles the hash
+      window.location.replace(`/reset-password${window.location.hash}`);
     } else {
-      console.log('No recovery token found, showing normal login');
       setIsVerifying(false);
     }
-  }, [toast]);
+  }, []);
   
   // Redirect to dashboard if already logged in
   const { user, isLoading } = useAuth();

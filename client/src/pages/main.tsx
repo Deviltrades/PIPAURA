@@ -29,10 +29,10 @@ export default function MainPage() {
     const type = hashParams.get('type');
     
     if (type === 'recovery') {
-      // Redirect to reset password page with the hash intact
-      setLocation(`/reset-password${window.location.hash}`);
+      // Use window.location.replace so browser properly handles the hash
+      window.location.replace(`/reset-password${window.location.hash}`);
     }
-  }, [setLocation]);
+  }, []);
   
   // Redirect to dashboard if already logged in
   const { user, isLoading } = useAuth();
