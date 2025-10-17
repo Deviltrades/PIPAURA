@@ -52,6 +52,7 @@ export default function Pricing() {
         "Smart filters to sort by session, pair, day, or result",
         "Equity curve & growth tracking over time",
         "Multi-format import support (CSV, XLSX, HTML)",
+        "Upload trades via AI OCR",
         "Smart calendar auto-maps trade activity",
         "Session detection: London / NY / Asia",
         "Event overlay for fundamental announcements",
