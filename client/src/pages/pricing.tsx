@@ -175,8 +175,8 @@ export default function Pricing() {
           {/* Lightning SVG Connectors - Hidden on mobile, visible on desktop */}
           <svg 
             className="hidden md:block absolute top-0 left-0 w-full pointer-events-none" 
+            viewBox="0 0 1000 800"
             style={{ height: '800px', zIndex: 0 }}
-            preserveAspectRatio="xMidYMid meet"
           >
             <defs>
               <filter id="glow">
@@ -193,21 +193,21 @@ export default function Pricing() {
               </linearGradient>
             </defs>
             
-            {/* Lightning from Lite to Core (left side) - zigzag pattern */}
+            {/* Lightning from Lite (center top) to Core (bottom left) - zigzag pattern */}
             <path
-              d="M 500 280 L 300 350 L 320 355 L 280 450"
+              d="M 500 260 L 380 310 L 400 315 L 350 360 L 370 365 L 280 420"
               stroke="url(#lightning-gradient)"
-              strokeWidth="3"
+              strokeWidth="4"
               fill="none"
               filter="url(#glow)"
               className="animate-pulse"
             />
             
-            {/* Lightning from Lite to Institutional (right side) - zigzag pattern */}
+            {/* Lightning from Lite (center top) to Institutional (bottom right) - zigzag pattern */}
             <path
-              d="M 500 280 L 700 350 L 680 355 L 720 450"
+              d="M 500 260 L 620 310 L 600 315 L 650 360 L 630 365 L 720 420"
               stroke="url(#lightning-gradient)"
-              strokeWidth="3"
+              strokeWidth="4"
               fill="none"
               filter="url(#glow)"
               className="animate-pulse"
