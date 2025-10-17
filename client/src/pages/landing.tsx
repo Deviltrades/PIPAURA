@@ -38,7 +38,7 @@ export default function Landing() {
                 onClick={() => setLocation("/view-journal")}
                 data-testid="button-view-journal"
               >
-                View Journal
+                View Demo
               </Button>
               <Button 
                 variant="ghost" 
