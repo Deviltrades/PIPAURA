@@ -256,14 +256,18 @@ export default function Landing() {
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700/50 hover:border-cyan-500/50 transition-all group">
+          <Card 
+            className="bg-slate-800/50 border-slate-700/50 hover:border-cyan-500/50 transition-all group cursor-pointer"
+            onClick={() => setLocation("/preview/tax-reports")}
+            data-testid="card-tax-reports"
+          >
             <CardContent className="p-6">
               <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Signal className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-3">Trading Signals</h3>
+              <h3 className="text-xl font-semibold text-white mb-3">Tax Reports</h3>
               <p className="text-slate-400 leading-relaxed">
-                Share and discover high-quality trading signals with detailed entry, exit, and risk parameters.
+                Generate comprehensive tax reports with detailed P&L statements and trade summaries for easy tax filing.
               </p>
             </CardContent>
           </Card>
