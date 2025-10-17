@@ -63,6 +63,38 @@ export default function AuthPage() {
     });
   };
 
+  const handleForgotPassword = async () => {
+    const email = loginForm.getValues("email");
+    
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Reset email sent!",
+        description: "Check your email for the password reset link",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send reset email",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -104,7 +136,18 @@ export default function AuthPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-300">Password</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel className="text-slate-300">Password</FormLabel>
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="text-cyan-400 hover:text-cyan-300 p-0 h-auto text-sm"
+                          onClick={handleForgotPassword}
+                          data-testid="button-forgot-password"
+                        >
+                          Forgot password?
+                        </Button>
+                      </div>
                       <FormControl>
                         <Input 
                           type="password" 
@@ -130,6 +173,21 @@ export default function AuthPage() {
             </Form>
           </CardContent>
         </Card>
+
+        {/* Sign Up Link */}
+        <div className="text-center mt-6">
+          <p className="text-slate-400 text-lg">
+            New to PipAura?{" "}
+            <Button
+              variant="link"
+              className="text-cyan-400 hover:text-cyan-300 p-0 h-auto font-semibold text-lg"
+              onClick={() => setLocation("/landing")}
+              data-testid="button-join-here"
+            >
+              Join Here
+            </Button>
+          </p>
+        </div>
       </div>
     </div>
   );
