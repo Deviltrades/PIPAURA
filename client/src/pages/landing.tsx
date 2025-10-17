@@ -79,13 +79,22 @@ export default function Landing() {
           </p>
 
           {/* Calendar Preview Image */}
-          <div className="mb-10 mx-auto" style={{ maxWidth: '40%' }}>
+          <div className="mb-10 mx-auto relative group cursor-pointer" style={{ maxWidth: '40%' }} onClick={() => setLocation("/view-journal")}>
             <img 
               src={calendarImage} 
               alt="PipAura Calendar Analytics Dashboard" 
-              className="rounded-2xl shadow-2xl shadow-cyan-500/20 border border-cyan-500/30 w-full"
+              className="rounded-2xl shadow-2xl shadow-cyan-500/20 border border-cyan-500/30 w-full transition-all group-hover:brightness-75"
               data-testid="img-calendar-preview"
             />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Button
+                size="lg"
+                className="text-lg px-8 py-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-xl shadow-cyan-500/50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                data-testid="button-view-demo"
+              >
+                View Demo
+              </Button>
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
