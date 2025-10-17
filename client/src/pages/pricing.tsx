@@ -33,6 +33,7 @@ export default function Pricing() {
       icon: TrendingUp,
       features: [
         "Up to 10 trading accounts (live, demo, or prop)",
+        "2GB image upload limit per month (~200+ screenshots)",
         "Includes all future updates and new releases",
         "Works for Forex, Indices, Commodities, and Crypto",
         "Syncs securely across all devices",
@@ -52,7 +53,6 @@ export default function Pricing() {
         "Live economic calendar & news integration",
         "Prop firm challenge tracker with loss & profit metrics",
         "Full tax reporting system — auto-calculates profits, losses & expenses",
-        "2GB image upload limit per month (~200+ screenshots)",
         "AI Trading Mentor access for pattern recognition (Coming Soon)",
         "Mentor Dashboard — track personal growth cycles",
         "Secure cloud storage and data encryption",
@@ -69,6 +69,7 @@ export default function Pricing() {
       icon: Building2,
       features: [
         "Unlimited Trading Accounts",
+        "10GB image upload limit per month (~1,000+ screenshots)",
         "Includes all future updates and new releases",
         "Works for Forex, Indices, Commodities, and Crypto",
         "Syncs securely across all devices",
@@ -88,7 +89,6 @@ export default function Pricing() {
         "Live economic calendar & news integration",
         "Prop firm challenge tracker with loss & profit metrics",
         "Full tax reporting system — auto-calculates profits, losses & expenses",
-        "10GB image upload limit per month (~1,000+ screenshots)",
         "AI Trading Mentor access for pattern recognition (Coming Soon)",
         "Mentor Dashboard — track personal growth cycles",
         "Secure cloud storage and data encryption",
