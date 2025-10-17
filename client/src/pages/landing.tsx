@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { PipAuraLogo } from "@/components/PipAuraLogo";
 import { useLocation } from "wouter";
+import calendarImage from "@assets/image_1760701750968.png";
 
 export default function Landing() {
   const [, setLocation] = useLocation();
@@ -76,6 +77,16 @@ export default function Landing() {
             The comprehensive trading journal built for serious traders. Advanced analytics, 
             automated insights, and performance tracking that transforms your trading journey.
           </p>
+
+          {/* Calendar Preview Image */}
+          <div className="mb-10 max-w-4xl mx-auto">
+            <img 
+              src={calendarImage} 
+              alt="PipAura Calendar Analytics Dashboard" 
+              className="rounded-2xl shadow-2xl shadow-cyan-500/20 border border-cyan-500/30 w-full"
+              data-testid="img-calendar-preview"
+            />
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Button 
