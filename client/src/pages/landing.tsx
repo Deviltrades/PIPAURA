@@ -30,7 +30,6 @@ export default function Landing() {
               <div className="scale-75">
                 <PipAuraLogo />
               </div>
-              <span className="text-lg font-bold text-white">PipAura</span>
             </div>
             <div className="flex items-center gap-4">
               <Button 
