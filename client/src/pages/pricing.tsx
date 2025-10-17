@@ -27,6 +27,7 @@ export default function Pricing() {
       "Prop Firm Challenge Tracker",
       "Real-time Fundamental Analysis",
       "Limited to 15 Image Uploads/Month",
+      "Your Trading Tax Reports (including expenses)",
       "Email Support"
     ],
     popular: false,
@@ -53,6 +54,7 @@ export default function Pricing() {
         "Real-time Fundamental Analysis",
         "Economic Calendar & News",
         "2GB of Image Uploads (200+ Images per month)",
+        "Your Trading Tax Reports (including expenses)",
         "Email Support"
       ],
       popular: true,
