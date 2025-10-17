@@ -11,7 +11,7 @@ export default function Pricing() {
 
   const litePlan = {
     name: "Lite",
-    description: "All of the Core plan but limited to 1 account",
+    description: "All of the core plan features but limited to 1 account",
     monthlyPrice: 4.99,
     yearlyPrice: 49.99,
     icon: TrendingUp,
