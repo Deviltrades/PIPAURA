@@ -104,7 +104,7 @@ export default function Landing() {
               onClick={() => setLocation("/auth")}
               data-testid="button-get-started"
             >
-              Get Started Free
+              What's Included
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button 
