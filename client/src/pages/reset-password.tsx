@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,6 +24,52 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 export default function ResetPasswordPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [isValidToken, setIsValidToken] = useState(false);
+
+  // Handle the password reset token from the URL
+  useEffect(() => {
+    const verifyResetToken = async () => {
+      // Check for hash parameters from email link
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const access_token = hashParams.get('access_token');
+      const type = hashParams.get('type');
+
+      if (access_token && type === 'recovery') {
+        try {
+          // Verify the session is valid
+          const { error } = await supabase.auth.setSession({
+            access_token,
+            refresh_token: hashParams.get('refresh_token') || '',
+          });
+
+          if (error) throw error;
+
+          setIsValidToken(true);
+          // Clear the hash from URL
+          window.history.replaceState(null, '', window.location.pathname);
+        } catch (error: any) {
+          console.error('Token verification error:', error);
+          toast({
+            title: "Invalid or expired link",
+            description: "Please request a new password reset link",
+            variant: "destructive",
+          });
+          setTimeout(() => setLocation('/'), 3000);
+        }
+      } else {
+        toast({
+          title: "No reset token found",
+          description: "Please use the link from your email",
+          variant: "destructive",
+        });
+        setTimeout(() => setLocation('/'), 3000);
+      }
+      setIsVerifying(false);
+    };
+
+    verifyResetToken();
+  }, [toast, setLocation]);
 
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
@@ -57,6 +104,27 @@ export default function ResetPasswordPage() {
       });
     }
   };
+
+  if (isVerifying) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950 flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">Verifying reset link...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isValidToken) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950 flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-slate-400">Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950 flex items-center justify-center px-4">
