@@ -166,11 +166,6 @@ export default function Analytics() {
         </Card>
       </div>
 
-      {/* Session Insights Section */}
-      <div className="mb-6">
-        <SessionInsights trades={trades} />
-      </div>
-
       {/* DNA Core Intelligence Visualization */}
       <div className="mb-6">
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-dna-core">
@@ -182,6 +177,11 @@ export default function Analytics() {
             <FloatingDNACore accountId={selectedAccount} />
           </CardContent>
         </Card>
+      </div>
+
+      {/* Session Insights Section */}
+      <div className="mb-6">
+        <SessionInsights trades={trades} />
       </div>
 
       {/* Bottom Visualizations Row */}
