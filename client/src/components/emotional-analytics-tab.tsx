@@ -228,15 +228,6 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
                 </DialogHeader>
                 <div className="space-y-4 text-gray-200">
                   <div>
-                    <h3 className="font-semibold text-cyan-400 mb-2">The Planet</h3>
-                    <p className="text-sm text-gray-300">
-                      Your Mood Neuron is a living visualization of your emotional state. It features 8 unique continents 
-                      that gradually change color based on your logged emotions, creating a wave-like transition effect 
-                      as 2 continents update at a time.
-                    </p>
-                  </div>
-
-                  <div>
                     <h3 className="font-semibold text-cyan-400 mb-2">Color Meanings</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
