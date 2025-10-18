@@ -356,19 +356,19 @@ export default function Accounts() {
         <>
           {/* Summary Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-            <div className="rounded-xl border-2 border-cyan-500/60 p-6" style={{ backgroundColor: "#0f172a" }}>
+            <div className="rounded-xl border-2 border-cyan-500/60 p-6 widget-hover-pulse" style={{ backgroundColor: "#0f172a" }}>
               <p className="text-gray-400 text-sm mb-2">Total Accounts</p>
               <p className="text-3xl font-bold text-white" data-testid="text-total-accounts">{totalAccounts}</p>
             </div>
-            <div className="rounded-xl border-2 border-cyan-500/60 p-6" style={{ backgroundColor: "#0f172a" }}>
+            <div className="rounded-xl border-2 border-cyan-500/60 p-6 widget-hover-pulse" style={{ backgroundColor: "#0f172a" }}>
               <p className="text-gray-400 text-sm mb-2">Active Accounts</p>
               <p className="text-3xl font-bold text-green-400" data-testid="text-active-accounts">{activeAccounts}</p>
             </div>
-            <div className="rounded-xl border-2 border-cyan-500/60 p-6" style={{ backgroundColor: "#0f172a" }}>
+            <div className="rounded-xl border-2 border-cyan-500/60 p-6 widget-hover-pulse" style={{ backgroundColor: "#0f172a" }}>
               <p className="text-gray-400 text-sm mb-2">Total Balance</p>
               <p className="text-3xl font-bold text-white" data-testid="text-total-balance">{formatCurrency(totalBalance)}</p>
             </div>
-            <div className="rounded-xl border-2 border-cyan-500/60 p-6" style={{ backgroundColor: "#0f172a" }}>
+            <div className="rounded-xl border-2 border-cyan-500/60 p-6 widget-hover-pulse" style={{ backgroundColor: "#0f172a" }}>
               <p className="text-gray-400 text-sm mb-2">Total P&L</p>
               <p className="text-3xl font-bold text-green-400" data-testid="text-total-pnl">{formatCurrency(totalPnL)}</p>
             </div>
@@ -383,7 +383,7 @@ export default function Accounts() {
                 : '0.00';
               
               return (
-                <div key={account.id} className="rounded-xl border-2 border-cyan-500/60 p-6" style={{ backgroundColor: "#0f172a" }} data-testid={`account-card-${account.id}`}>
+                <div key={account.id} className="rounded-xl border-2 border-cyan-500/60 p-6 widget-hover-pulse" style={{ backgroundColor: "#0f172a" }} data-testid={`account-card-${account.id}`}>
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
