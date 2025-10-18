@@ -1403,16 +1403,22 @@ export async function getEmotionalLogs(startDate: string, endDate: string): Prom
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
   
+  console.log('🔍 Getting emotional logs:', { user_id: user.id, startDate, endDate });
+  
   const { data, error } = await supabase
     .from('emotional_logs')
     .select('*')
     .eq('user_id', user.id)
     .gte('log_date', startDate)
     .lte('log_date', endDate)
-    .order('log_date', { ascending: false })
-    .order('log_time', { ascending: false });
+    .order('created_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    console.error('❌ Error getting emotional logs:', error);
+    throw error;
+  }
+  
+  console.log('✅ Emotional logs retrieved:', data?.length || 0, 'logs', data);
   return data || [];
 }
 
