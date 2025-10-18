@@ -11,7 +11,8 @@ import {
   Target,
   LineChart,
   ArrowRight,
-  Check
+  Check,
+  Trophy
 } from "lucide-react";
 import { PipAuraLogo } from "@/components/PipAuraLogo";
 import { useLocation } from "wouter";
@@ -296,6 +297,22 @@ export default function Landing() {
               <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 sm:mb-3">Emotional Analytics</h3>
               <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
                 Track your mood and energy levels. Discover how emotions impact your trading performance.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="bg-slate-800/50 border-slate-700/50 hover:border-cyan-500/50 transition-all group cursor-pointer"
+            onClick={() => setLocation("/preview/prop-firm")}
+            data-testid="card-prop-firm-manager"
+          >
+            <CardContent className="p-4 sm:p-6">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 sm:mb-3">Prop Firm Manager</h3>
+              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                Track your prop firm challenge progress with real-time metrics, loss limits, and profit targets.
               </p>
             </CardContent>
           </Card>
