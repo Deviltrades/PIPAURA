@@ -453,73 +453,74 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
         </CardContent>
       </Card>
 
+      {/* Mood & Energy Trend - Full Width */}
+      <Card className="bg-[#0f1f3a] border-cyan-500/30">
+        <CardHeader>
+          <CardTitle className="text-cyan-400 flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Mood & Energy Trend
+          </CardTitle>
+          <CardDescription>Track your emotional state over time</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart 
+              data={correlationData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}
+              margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis 
+                dataKey="date" 
+                stroke="#94a3b8"
+                tickFormatter={(date) => format(new Date(date), 'MMM d')}
+              />
+              <YAxis 
+                domain={[0, 10]}
+                stroke="#94a3b8"
+                label={{ value: 'Level', angle: -90, position: 'left', fill: '#94a3b8' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#0f1f3a', 
+                  border: '1px solid #22d3ee',
+                  borderRadius: '8px'
+                }}
+                labelStyle={{ color: '#22d3ee' }}
+                labelFormatter={(date) => format(new Date(date), 'MMM d, yyyy')}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="mood" 
+                stroke="#22d3ee" 
+                strokeWidth={2}
+                dot={{ fill: '#22d3ee', r: 4 }}
+                name="Mood"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="energy" 
+                stroke="#a855f7" 
+                strokeWidth={2}
+                dot={{ fill: '#a855f7', r: 4 }}
+                name="Energy"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+          <div className="flex justify-center gap-6 mt-4">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-cyan-400"></div>
+              <span className="text-sm text-cyan-400">Mood</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-purple-400"></div>
+              <span className="text-sm text-purple-400">Energy</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Mood & Energy Trend */}
-        <Card className="bg-[#0f1f3a] border-cyan-500/30">
-          <CardHeader>
-            <CardTitle className="text-cyan-400 flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Mood & Energy Trend
-            </CardTitle>
-            <CardDescription>Track your emotional state over time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart 
-                data={correlationData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}
-                margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis 
-                  dataKey="date" 
-                  stroke="#94a3b8"
-                  tickFormatter={(date) => format(new Date(date), 'MMM d')}
-                />
-                <YAxis 
-                  domain={[0, 10]}
-                  stroke="#94a3b8"
-                  label={{ value: 'Level', angle: -90, position: 'left', fill: '#94a3b8' }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#0f1f3a', 
-                    border: '1px solid #22d3ee',
-                    borderRadius: '8px'
-                  }}
-                  labelStyle={{ color: '#22d3ee' }}
-                  labelFormatter={(date) => format(new Date(date), 'MMM d, yyyy')}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="mood" 
-                  stroke="#22d3ee" 
-                  strokeWidth={2}
-                  dot={{ fill: '#22d3ee', r: 4 }}
-                  name="Mood"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="energy" 
-                  stroke="#a855f7" 
-                  strokeWidth={2}
-                  dot={{ fill: '#a855f7', r: 4 }}
-                  name="Energy"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-            <div className="flex justify-center gap-6 mt-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-cyan-400"></div>
-                <span className="text-sm text-cyan-400">Mood</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-purple-400"></div>
-                <span className="text-sm text-purple-400">Energy</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Emotional State Analysis */}
         <Card className="bg-[#0f1f3a] border-cyan-500/30">
