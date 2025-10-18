@@ -68,12 +68,12 @@ function Router() {
       {/* Public pages available regardless of auth status */}
       <Route path="/membership-agreement" component={MembershipAgreement} />
       <Route path="/checkout" component={Checkout} />
+      <Route path="/pricing" component={Pricing} />
       
       {!user ? (
         <>
           <Route path="/" component={MainPage} />
           <Route path="/landing" component={Landing} />
-          <Route path="/pricing" component={Pricing} />
           <Route path="/view-journal" component={ViewJournal} />
           <Route path="/auth" component={AuthPage} />
           <Route path="/preview/dashboard" component={PreviewDashboard} />
