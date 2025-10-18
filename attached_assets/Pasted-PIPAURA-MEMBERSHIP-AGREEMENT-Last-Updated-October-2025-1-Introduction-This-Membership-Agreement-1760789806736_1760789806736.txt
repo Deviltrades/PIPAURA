@@ -1,0 +1,131 @@
+PIPAURA MEMBERSHIP AGREEMENT
+
+Last Updated: October 2025
+
+1. Introduction
+
+This Membership Agreement (“Agreement”) governs your access to and use of the Pipaura Traders Hub, including all related products, tools, data systems, and services provided by Pipaura (“we”, “us”, or “our”).
+
+By purchasing, subscribing to, or accessing the Pipaura Journal — whether on a monthly or yearly plan — you acknowledge and agree to be bound by the terms and conditions of this Agreement.
+
+This Agreement applies to all subscription tiers including Lite, Core, and Elite, as well as any future plans introduced by Pipaura.
+
+⚠️ These terms are subject to change. Pipaura reserves the right to update, amend, or modify this Agreement at any time, with or without prior notice. Any continued use of the platform after changes take effect constitutes your acceptance of the revised terms.
+
+If you do not agree to these terms, you must not purchase, access, or use the Pipaura platform.
+
+2. Membership Plans
+
+Pipaura offers multiple subscription options to meet different trader needs:
+
+Lite Plan — Core journal functionality with limited storage and analytics.
+
+Core Plan — Full access to all tools, analytics, and ongoing feature updates.
+
+Elite Plan — Premium access including future AI modules, deeper analytics, and mentor integration.
+
+Monthly Subscription — Renews automatically each month.
+
+Yearly Subscription — Billed annually at a discounted rate, renews automatically each year.
+
+Each plan determines your available features, upload limits, and access to analytics modules.
+A detailed feature breakdown is available on our Pricing Page
+.
+
+3. Agreement to Terms
+
+By completing your purchase or renewal of any Pipaura subscription, you confirm that you:
+
+Have read, understood, and accepted this Membership Agreement in full.
+
+Acknowledge that these terms are subject to change at any time.
+
+Agree that your subscription will renew automatically unless cancelled before the renewal date.
+
+Authorize recurring payments according to your selected billing cycle.
+
+Understand that partial refunds are not issued for unused time once access has been granted.
+
+Accept that any breach of this Agreement may result in suspension or termination of access.
+
+4. Account & Access
+
+Each membership is registered to an individual user and may not be shared, transferred, or resold.
+
+You are responsible for maintaining accurate account information and safeguarding your login credentials.
+Any activity performed through your account will be treated as your own.
+
+5. Payment & Renewal
+
+All payments are processed securely through our payment provider (e.g., Stripe).
+
+Monthly plans renew automatically each month on the same date of purchase.
+
+Yearly plans renew annually unless cancelled prior to renewal.
+
+Prices are displayed in GBP (£) and may include applicable taxes.
+
+Pipaura reserves the right to adjust pricing with notice via email or website.
+
+If a payment fails or a renewal is declined, access to the platform may be suspended until the issue is resolved.
+
+6. Data Ownership & Privacy
+
+You retain full ownership of your uploaded trade data, journal entries, and attachments.
+Pipaura does not sell, disclose, or share user data with third parties without consent.
+
+By using the platform, you grant Pipaura permission to process and analyze your data solely for improving your journal experience and providing analytics.
+Full details are outlined in our Privacy Policy
+.
+
+7. Intellectual Property
+
+All software, systems, and designs — including but not limited to Trader DNA™, Fundamental Scorecards, AI Mentor, and Analytics Dashboard — remain the exclusive intellectual property of Pipaura.
+
+Users are granted a non-exclusive, non-transferable license to use these features during an active subscription.
+Copying, modifying, redistributing, or reverse-engineering Pipaura’s systems is strictly prohibited.
+
+8. Cancellations & Refunds
+
+You may cancel your membership at any time through your account settings.
+Cancellation stops future billing but does not trigger a refund for any remaining subscription period.
+
+Refunds are only issued in cases of verified technical errors or duplicate billing, and must be requested within 7 days of the charge.
+
+9. Termination
+
+Pipaura reserves the right to suspend or terminate access without prior notice if:
+
+The account is found in violation of this Agreement.
+
+The service is used fraudulently or for unauthorized purposes.
+
+Any attempt is made to resell or exploit the platform.
+
+In such cases, no refunds will be issued.
+
+10. Limitation of Liability
+
+Pipaura provides analytical tools for educational and informational purposes only.
+We do not provide financial advice and accept no responsibility for trading losses, financial decisions, or user outcomes resulting from use of the platform.
+
+You agree that Pipaura will not be liable for any indirect, incidental, or consequential damages arising from use or inability to use the service.
+
+11. Updates & Modifications
+
+Pipaura may update, revise, or replace any part of this Agreement as new features, laws, or technologies arise.
+All changes take effect immediately upon posting to the official website.
+
+We encourage you to review this page periodically to stay informed.
+Continued use of the platform after updates signifies your acceptance of the modified terms.
+
+12. Contact Information
+
+For questions about your subscription, billing, or this Agreement, contact:
+📧 support@pipaura.com
+
+🌐 www.pipaura.com
+
+Acknowledgment
+
+By purchasing or using the Pipaura Journal — whether monthly or yearly, and across any subscription tier — you acknowledge that you have read, understood, and agreed to this Membership Agreement.
