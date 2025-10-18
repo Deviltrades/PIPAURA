@@ -478,37 +478,37 @@ export default function PreviewAnalytics() {
   const currentMonth = "Jan";
 
   return (
-    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="p-3 sm:p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-3">
+      <div className="mb-4 sm:mb-6 lg:mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-1">Advanced Analytics</h1>
-            <p className="text-gray-300">Deep dive into your trading performance</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">Advanced Analytics</h1>
+            <p className="text-sm sm:text-base text-gray-300">Deep dive into your trading performance</p>
           </div>
-          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-4 py-2">
-            <p className="text-sm text-cyan-400">📊 Preview Mode - Demo Data</p>
+          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2">
+            <p className="text-xs sm:text-sm text-cyan-400">📊 Preview Mode - Demo Data</p>
           </div>
         </div>
       </div>
 
       <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-8">
-          <TabsTrigger value="dna" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            Trader DNA Core
+        <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6 lg:mb-8">
+          <TabsTrigger value="dna" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Trader </span>DNA<span className="hidden sm:inline"> Core</span>
           </TabsTrigger>
-          <TabsTrigger value="session" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            Session Insights
+          <TabsTrigger value="session" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
+            Session<span className="hidden sm:inline"> Insights</span>
           </TabsTrigger>
-          <TabsTrigger value="emotional" className="flex items-center gap-2">
-            <Heart className="w-4 h-4" />
-            Emotional Analytics
+          <TabsTrigger value="emotional" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Heart className="w-3 h-3 sm:w-4 sm:h-4" />
+            Emotional<span className="hidden lg:inline"> Analytics</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dna" className="space-y-6">
+        <TabsContent value="dna" className="space-y-4 sm:space-y-6">
           {/* Trader DNA Core - Full Height Helix */}
           <PreviewDNACore metrics={dnaMetrics} onInfoClick={() => setIsInfoDialogOpen(true)} />
 
@@ -533,7 +533,7 @@ export default function PreviewAnalytics() {
           </Card>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <Card className="bg-slate-900/50 border-slate-700">
               <CardHeader>
                 <CardTitle className="text-sm text-slate-400">Total P&L</CardTitle>
@@ -573,9 +573,9 @@ export default function PreviewAnalytics() {
           <SessionInsights trades={demoTrades} />
         </TabsContent>
 
-        <TabsContent value="emotional" className="space-y-6">
+        <TabsContent value="emotional" className="space-y-4 sm:space-y-6">
           {/* Emotional Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <Card className="bg-slate-900/50 border-slate-700">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm text-slate-400 flex items-center gap-2">
