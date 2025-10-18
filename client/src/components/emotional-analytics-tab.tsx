@@ -20,10 +20,7 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer,
-  ScatterChart,
-  Scatter,
-  Cell
+  ResponsiveContainer
 } from "recharts";
 import { format, subDays } from "date-fns";
 import { EmotionalLogModal } from "./emotional-log-modal";
@@ -125,14 +122,6 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
   const correlationData = emotionalData?.correlationData || [];
   const tagAnalysis = emotionalData?.tagAnalysis || [];
 
-  // Prepare scatter plot data
-  const scatterData = correlationData.filter(d => d.pnl !== 0);
-
-  // Get color based on P&L
-  const getScatterColor = (pnl: number) => {
-    return pnl > 0 ? '#22d3ee' : '#ef4444';
-  };
-
   // Calculate mood impact
   const moodImpact = summary.avgMoodWinning - summary.avgMoodLosing;
   const energyImpact = summary.avgEnergyWinning - summary.avgEnergyLosing;
@@ -175,12 +164,12 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
                 <DialogContent className="bg-[#0f1f3a] border-cyan-500/30 text-gray-100">
                   <DialogHeader>
                     <DialogTitle className="text-cyan-400">Total Logs</DialogTitle>
+                    <DialogDescription className="text-gray-300">
+                      The total number of emotional logs you've recorded. Each log captures your mood and energy 
+                      level at a specific moment in time. Consistent logging helps reveal patterns in your emotional 
+                      state and how it correlates with your trading performance.
+                    </DialogDescription>
                   </DialogHeader>
-                  <p className="text-sm text-gray-300">
-                    The total number of emotional logs you've recorded. Each log captures your mood and energy 
-                    level at a specific moment in time. Consistent logging helps reveal patterns in your emotional 
-                    state and how it correlates with your trading performance.
-                  </p>
                 </DialogContent>
               </Dialog>
             </div>
@@ -259,13 +248,13 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
                 <DialogContent className="bg-[#0f1f3a] border-cyan-500/30 text-gray-100">
                   <DialogHeader>
                     <DialogTitle className="text-cyan-400">Mood Impact</DialogTitle>
+                    <DialogDescription className="text-gray-300">
+                      The difference between your average mood on winning days versus losing days. A positive number 
+                      (green) means you tend to be in a better mood when you win. A negative number (red) suggests 
+                      better moods on losing days, which may indicate overconfidence or other psychological factors 
+                      affecting your trading.
+                    </DialogDescription>
                   </DialogHeader>
-                  <p className="text-sm text-gray-300">
-                    The difference between your average mood on winning days versus losing days. A positive number 
-                    (green) means you tend to be in a better mood when you win. A negative number (red) suggests 
-                    better moods on losing days, which may indicate overconfidence or other psychological factors 
-                    affecting your trading.
-                  </p>
                 </DialogContent>
               </Dialog>
             </div>
@@ -293,13 +282,13 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
                 <DialogContent className="bg-[#0f1f3a] border-cyan-500/30 text-gray-100">
                   <DialogHeader>
                     <DialogTitle className="text-cyan-400">Energy Impact</DialogTitle>
+                    <DialogDescription className="text-gray-300">
+                      The difference between your average energy level on winning days versus losing days. A positive 
+                      number (green) indicates higher energy on winning days, suggesting peak performance when you're 
+                      well-rested. A negative number (red) may indicate trading when fatigued leads to better caution, 
+                      or that wins drain your energy.
+                    </DialogDescription>
                   </DialogHeader>
-                  <p className="text-sm text-gray-300">
-                    The difference between your average energy level on winning days versus losing days. A positive 
-                    number (green) indicates higher energy on winning days, suggesting peak performance when you're 
-                    well-rested. A negative number (red) may indicate trading when fatigued leads to better caution, 
-                    or that wins drain your energy.
-                  </p>
                 </DialogContent>
               </Dialog>
             </div>
@@ -466,97 +455,69 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Mood vs Performance Scatter Plot */}
-        <Card className="bg-[#0f1f3a] border-cyan-500/30">
-          <CardHeader>
-            <CardTitle className="text-cyan-400 flex items-center gap-2">
-              <Brain className="h-5 w-5" />
-              Mood vs Performance
-            </CardTitle>
-            <CardDescription>Correlation between mood and trading results</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis 
-                  type="number" 
-                  dataKey="mood" 
-                  name="Mood" 
-                  domain={[0, 10]}
-                  stroke="#94a3b8"
-                  label={{ value: 'Mood', position: 'bottom', fill: '#94a3b8' }}
-                />
-                <YAxis 
-                  type="number" 
-                  dataKey="pnl" 
-                  name="P&L"
-                  stroke="#94a3b8"
-                  label={{ value: 'P&L', angle: -90, position: 'left', fill: '#94a3b8' }}
-                />
-                <Tooltip 
-                  cursor={{ strokeDasharray: '3 3' }}
-                  contentStyle={{ 
-                    backgroundColor: '#0f1f3a', 
-                    border: '1px solid #22d3ee',
-                    borderRadius: '8px'
-                  }}
-                  labelStyle={{ color: '#22d3ee' }}
-                />
-                <Scatter data={scatterData} fill="#22d3ee">
-                  {scatterData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={getScatterColor(entry.pnl)} />
-                  ))}
-                </Scatter>
-              </ScatterChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Energy vs Performance */}
+        {/* Mood & Energy Trend */}
         <Card className="bg-[#0f1f3a] border-cyan-500/30">
           <CardHeader>
             <CardTitle className="text-cyan-400 flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Energy vs Performance
+              Mood & Energy Trend
             </CardTitle>
-            <CardDescription>How energy levels affect your trades</CardDescription>
+            <CardDescription>Track your emotional state over time</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+              <LineChart 
+                data={correlationData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}
+                margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                 <XAxis 
-                  type="number" 
-                  dataKey="energy" 
-                  name="Energy" 
-                  domain={[0, 10]}
+                  dataKey="date" 
                   stroke="#94a3b8"
-                  label={{ value: 'Energy', position: 'bottom', fill: '#94a3b8' }}
+                  tickFormatter={(date) => format(new Date(date), 'MMM d')}
                 />
                 <YAxis 
-                  type="number" 
-                  dataKey="pnl" 
-                  name="P&L"
+                  domain={[0, 10]}
                   stroke="#94a3b8"
-                  label={{ value: 'P&L', angle: -90, position: 'left', fill: '#94a3b8' }}
+                  label={{ value: 'Level', angle: -90, position: 'left', fill: '#94a3b8' }}
                 />
                 <Tooltip 
-                  cursor={{ strokeDasharray: '3 3' }}
                   contentStyle={{ 
                     backgroundColor: '#0f1f3a', 
                     border: '1px solid #22d3ee',
                     borderRadius: '8px'
                   }}
                   labelStyle={{ color: '#22d3ee' }}
+                  labelFormatter={(date) => format(new Date(date), 'MMM d, yyyy')}
                 />
-                <Scatter data={scatterData} fill="#22d3ee">
-                  {scatterData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={getScatterColor(entry.pnl)} />
-                  ))}
-                </Scatter>
-              </ScatterChart>
+                <Line 
+                  type="monotone" 
+                  dataKey="mood" 
+                  stroke="#22d3ee" 
+                  strokeWidth={2}
+                  dot={{ fill: '#22d3ee', r: 4 }}
+                  name="Mood"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="energy" 
+                  stroke="#a855f7" 
+                  strokeWidth={2}
+                  dot={{ fill: '#a855f7', r: 4 }}
+                  name="Energy"
+                />
+              </LineChart>
             </ResponsiveContainer>
+            <div className="flex justify-center gap-6 mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-cyan-400"></div>
+                <span className="text-sm text-cyan-400">Mood</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-purple-400"></div>
+                <span className="text-sm text-purple-400">Energy</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
