@@ -127,29 +127,30 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
   const energyImpact = summary.avgEnergyWinning - summary.avgEnergyLosing;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header with Add Log Button */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-white">Emotional Analytics</h2>
-          <p className="text-gray-400">Track your trading psychology and emotional patterns</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-white">Emotional Analytics</h2>
+          <p className="text-sm sm:text-base text-gray-400">Track your trading psychology and emotional patterns</p>
         </div>
         <Button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-cyan-500 hover:bg-cyan-600"
+          className="bg-cyan-500 hover:bg-cyan-600 w-full sm:w-auto"
           data-testid="button-add-emotional-log"
         >
           <Heart className="mr-2 h-4 w-4" />
-          Add Daily Log
+          <span className="hidden sm:inline">Add Daily Log</span>
+          <span className="sm:hidden">Add Log</span>
         </Button>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60" data-testid="card-total-logs">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-start justify-between mb-1">
-              <div className="text-gray-400 text-sm">Total Logs</div>
+              <div className="text-gray-400 text-xs sm:text-sm">Total Logs</div>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button 
@@ -173,16 +174,16 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
                 </DialogContent>
               </Dialog>
             </div>
-            <div className="text-2xl font-bold text-cyan-400" data-testid="text-total-logs">
+            <div className="text-xl sm:text-2xl font-bold text-cyan-400" data-testid="text-total-logs">
               {summary.totalLogs}
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60" data-testid="card-mood-volatility">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-start justify-between mb-1">
-              <div className="text-gray-400 text-sm">Mood Volatility</div>
+              <div className="text-gray-400 text-xs sm:text-sm">Mood Volatility</div>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button 
@@ -224,16 +225,16 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
                 </DialogContent>
               </Dialog>
             </div>
-            <div className="text-2xl font-bold text-cyan-400" data-testid="text-mood-volatility">
+            <div className="text-xl sm:text-2xl font-bold text-cyan-400" data-testid="text-mood-volatility">
               {summary.moodVolatility.toFixed(2)}
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60" data-testid="card-mood-impact">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-start justify-between mb-1">
-              <div className="text-gray-400 text-sm">Mood Impact</div>
+              <div className="text-gray-400 text-xs sm:text-sm">Mood Impact</div>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button 
@@ -258,16 +259,16 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
                 </DialogContent>
               </Dialog>
             </div>
-            <div className={`text-2xl font-bold ${moodImpact > 0 ? 'text-green-400' : 'text-red-400'}`} data-testid="text-mood-impact">
+            <div className={`text-xl sm:text-2xl font-bold ${moodImpact > 0 ? 'text-green-400' : 'text-red-400'}`} data-testid="text-mood-impact">
               {moodImpact > 0 ? '+' : ''}{moodImpact.toFixed(1)}
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60" data-testid="card-energy-impact">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-start justify-between mb-1">
-              <div className="text-gray-400 text-sm">Energy Impact</div>
+              <div className="text-gray-400 text-xs sm:text-sm">Energy Impact</div>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button 
@@ -292,7 +293,7 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
                 </DialogContent>
               </Dialog>
             </div>
-            <div className={`text-2xl font-bold ${energyImpact > 0 ? 'text-green-400' : 'text-red-400'}`} data-testid="text-energy-impact">
+            <div className={`text-xl sm:text-2xl font-bold ${energyImpact > 0 ? 'text-green-400' : 'text-red-400'}`} data-testid="text-energy-impact">
               {energyImpact > 0 ? '+' : ''}{energyImpact.toFixed(1)}
             </div>
           </CardContent>
@@ -301,14 +302,14 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
 
       {/* Mood Neuron Visualization */}
       <Card className="bg-[#0f1f3a] border-cyan-500/30">
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-6">
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="text-cyan-400 flex items-center gap-2">
-                <Brain className="h-5 w-5" />
+              <CardTitle className="text-lg sm:text-xl text-cyan-400 flex items-center gap-2">
+                <Brain className="h-4 w-4 sm:h-5 sm:w-5" />
                 Mood Neuron
               </CardTitle>
-              <CardDescription>Visual representation of your emotional state</CardDescription>
+              <CardDescription className="text-xs sm:text-sm">Visual representation of your emotional state</CardDescription>
             </div>
             <Dialog>
               <DialogTrigger asChild>
@@ -404,7 +405,7 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
             </Dialog>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 sm:p-6">
           <div className="flex flex-col items-center gap-6">
             <div data-testid="section-mood-planet">
               <MoodPlanet 
@@ -422,30 +423,30 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
             </div>
             
             {correlationData.length === 0 && (
-              <p className="text-sm text-gray-400 text-center">
+              <p className="text-xs sm:text-sm text-gray-400 text-center">
                 Start logging your emotions to see your mood neuron change
               </p>
             )}
             
             {/* Color Legend */}
             <div className="w-full max-w-md space-y-2">
-              <p className="text-sm text-gray-400 text-center mb-3">Mood State Indicator</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/30 rounded">
+              <p className="text-xs sm:text-sm text-gray-400 text-center mb-3">Mood State Indicator</p>
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 p-1.5 sm:p-2 bg-green-500/10 border border-green-500/30 rounded">
                   <div className="w-3 h-3 rounded-full bg-green-500" style={{ boxShadow: '0 0 10px rgba(16, 185, 129, 0.6)' }}></div>
-                  <span className="text-sm text-green-400">Excellent (8-10)</span>
+                  <span className="text-xs sm:text-sm text-green-400">Excellent (8-10)</span>
                 </div>
-                <div className="flex items-center gap-2 p-2 bg-cyan-500/10 border border-cyan-500/30 rounded">
+                <div className="flex items-center gap-2 p-1.5 sm:p-2 bg-cyan-500/10 border border-cyan-500/30 rounded">
                   <div className="w-3 h-3 rounded-full bg-cyan-400" style={{ boxShadow: '0 0 10px rgba(6, 182, 212, 0.6)' }}></div>
-                  <span className="text-sm text-cyan-400">Good (5-7)</span>
+                  <span className="text-xs sm:text-sm text-cyan-400">Good (5-7)</span>
                 </div>
-                <div className="flex items-center gap-2 p-2 bg-orange-500/10 border border-orange-500/30 rounded">
+                <div className="flex items-center gap-2 p-1.5 sm:p-2 bg-orange-500/10 border border-orange-500/30 rounded">
                   <div className="w-3 h-3 rounded-full bg-orange-400" style={{ boxShadow: '0 0 10px rgba(251, 146, 60, 0.6)' }}></div>
-                  <span className="text-sm text-orange-400">Stable (3-4)</span>
+                  <span className="text-xs sm:text-sm text-orange-400">Stable (3-4)</span>
                 </div>
-                <div className="flex items-center gap-2 p-2 bg-red-500/10 border border-red-500/30 rounded">
+                <div className="flex items-center gap-2 p-1.5 sm:p-2 bg-red-500/10 border border-red-500/30 rounded">
                   <div className="w-3 h-3 rounded-full bg-red-500" style={{ boxShadow: '0 0 10px rgba(239, 68, 68, 0.6)' }}></div>
-                  <span className="text-sm text-red-400">Bad (1-2)</span>
+                  <span className="text-xs sm:text-sm text-red-400">Bad (1-2)</span>
                 </div>
               </div>
             </div>
@@ -455,15 +456,60 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
 
       {/* Mood & Energy Trend - Full Width */}
       <Card className="bg-[#0f1f3a] border-cyan-500/30">
-        <CardHeader>
-          <CardTitle className="text-cyan-400 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl text-cyan-400 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
             Mood & Energy Trend
           </CardTitle>
-          <CardDescription>Track your emotional state over time</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Track your emotional state over time</CardDescription>
         </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
+        <CardContent className="p-3 sm:p-6">
+          <ResponsiveContainer width="100%" height={250} className="sm:hidden">
+            <LineChart 
+              data={correlationData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}
+              margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis 
+                dataKey="date" 
+                stroke="#94a3b8"
+                tickFormatter={(date) => format(new Date(date), 'MMM d')}
+                tick={{ fontSize: 11 }}
+              />
+              <YAxis 
+                domain={[0, 10]}
+                stroke="#94a3b8"
+                tick={{ fontSize: 11 }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#0f1f3a', 
+                  border: '1px solid #22d3ee',
+                  borderRadius: '8px',
+                  fontSize: '12px'
+                }}
+                labelStyle={{ color: '#22d3ee' }}
+                labelFormatter={(date) => format(new Date(date), 'MMM d, yyyy')}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="mood" 
+                stroke="#22d3ee" 
+                strokeWidth={2}
+                dot={{ fill: '#22d3ee', r: 3 }}
+                name="Mood"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="energy" 
+                stroke="#a855f7" 
+                strokeWidth={2}
+                dot={{ fill: '#a855f7', r: 3 }}
+                name="Energy"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+          <ResponsiveContainer width="100%" height={300} className="hidden sm:block">
             <LineChart 
               data={correlationData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}
               margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
@@ -520,18 +566,18 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
       </Card>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
 
         {/* Emotional State Analysis */}
         <Card className="bg-[#0f1f3a] border-cyan-500/30">
-          <CardHeader>
-            <CardTitle className="text-cyan-400 flex items-center gap-2">
-              <CalendarIcon className="h-5 w-5" />
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl text-cyan-400 flex items-center gap-2">
+              <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5" />
               Winning vs Losing Days
             </CardTitle>
-            <CardDescription>Average mood and energy by outcome</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Average mood and energy by outcome</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6">
             <div className="space-y-6">
               <div>
                 <div className="flex justify-between mb-2">
@@ -598,14 +644,14 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
 
         {/* Top Emotional Tags */}
         <Card className="bg-[#0f1f3a] border-cyan-500/30">
-          <CardHeader>
-            <CardTitle className="text-cyan-400 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl text-cyan-400 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
               Emotional Patterns
             </CardTitle>
-            <CardDescription>Most frequent emotions and their impact</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Most frequent emotions and their impact</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6">
             <div className="space-y-3">
               {tagAnalysis.slice(0, 8).map((tag, index) => (
                 <div key={index} className="flex items-center justify-between">
@@ -631,13 +677,13 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
       {/* Behavioral Insights */}
       {summary.totalLogs > 5 && (
         <Card className="bg-[#0f1f3a] border-cyan-500/30">
-          <CardHeader>
-            <CardTitle className="text-cyan-400 flex items-center gap-2">
-              <Brain className="h-5 w-5" />
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl text-cyan-400 flex items-center gap-2">
+              <Brain className="h-4 w-4 sm:h-5 sm:w-5" />
               Behavioral Insights
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6">
             <div className="space-y-3 text-sm">
               {moodImpact > 1.5 && (
                 <div className="flex items-start gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
