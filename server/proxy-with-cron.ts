@@ -314,12 +314,11 @@ app.post("/api/create-portal-session", async (req, res) => {
 });
 
 // Proxy everything else to Vite dev server
-app.use(createProxyMiddleware({
+// API routes are already defined above, so they won't be proxied
+app.use('/', createProxyMiddleware({
   target: `http://localhost:${VITE_PORT}`,
   changeOrigin: true,
   ws: true, // Enable WebSocket proxying for HMR
-  // Don't proxy API routes
-  filter: (pathname) => !pathname.startsWith('/api/'),
 }));
 
 app.listen(PORT, '0.0.0.0', () => {
