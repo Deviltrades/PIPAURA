@@ -63,21 +63,21 @@ export default function PreviewNotes() {
   const [showNewNote, setShowNewNote] = useState(false);
 
   return (
-    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="flex justify-between items-start mb-6">
+    <div className="p-3 sm:p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3" data-testid="text-notes-title">
-            <StickyNote className="h-8 w-8 text-cyan-400" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3" data-testid="text-notes-title">
+            <StickyNote className="h-6 h-6 sm:h-8 sm:w-8 text-cyan-400" />
             Trading Notes
           </h1>
-          <p className="text-gray-300 mb-3">Document your trading thoughts and analysis</p>
-          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-4 py-2 inline-block">
-            <p className="text-sm text-cyan-400">📊 Preview Mode - Demo Data</p>
+          <p className="text-sm sm:text-base text-gray-300 mb-3">Document your trading thoughts and analysis</p>
+          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 inline-block">
+            <p className="text-xs sm:text-sm text-cyan-400">📊 Preview Mode</p>
           </div>
         </div>
         <Button 
           onClick={() => setShowNewNote(!showNewNote)}
-          className="bg-cyan-600 hover:bg-cyan-700"
+          className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700"
           data-testid="button-new-note"
         >
           {showNewNote ? "Cancel" : "New Note"}

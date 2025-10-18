@@ -116,11 +116,11 @@ const tradeTemplates = [
 
 export default function PreviewStrategy() {
   return (
-    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
+    <div className="p-3 sm:p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
           <div>
-            <h1 className="text-3xl font-bold text-white" data-testid="text-strategy-title">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white" data-testid="text-strategy-title">
               Strategy & Playbook
             </h1>
             <p className="text-gray-300">Document and track your trading strategies</p>

@@ -191,18 +191,20 @@ export default function PreviewCharts() {
   };
 
   return (
-    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-white" data-testid="text-charts-title">Trading Charts</h1>
-          <p className="text-gray-300">Professional charting powered by TradingView</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 py-1.5 mr-2">
-            <p className="text-sm text-cyan-400">📊 Preview Mode</p>
+    <div className="p-3 sm:p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white" data-testid="text-charts-title">Trading Charts</h1>
+            <p className="text-sm sm:text-base text-gray-300">Professional charting powered by TradingView</p>
           </div>
+          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2">
+            <p className="text-xs sm:text-sm text-cyan-400">📊 Preview Mode</p>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
           <Select value={symbol} onValueChange={setSymbol}>
-            <SelectTrigger className="w-40" data-testid="select-symbol">
+            <SelectTrigger className="w-full sm:w-48" data-testid="select-symbol">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -214,7 +216,7 @@ export default function PreviewCharts() {
             </SelectContent>
           </Select>
           <Select value={interval} onValueChange={setInterval}>
-            <SelectTrigger className="w-32" data-testid="select-interval">
+            <SelectTrigger className="w-full sm:w-32" data-testid="select-interval">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -229,7 +231,7 @@ export default function PreviewCharts() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="lg:col-span-3">
           <Card ref={chartCardRef} className="bg-slate-900/50 border-slate-700">
             <CardHeader className="pb-3">
