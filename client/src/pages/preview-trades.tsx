@@ -53,60 +53,44 @@ export default function PreviewTrades() {
   };
 
   return (
-    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Trade Journal</h1>
-          <p className="text-gray-300 mb-3">Manage and track all your trading positions</p>
-          <div className="flex gap-3 items-center">
-            <div className="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white">
-              📊 {demoAccounts[0].account_name}
-            </div>
-            <Select value={sessionFilter} onValueChange={setSessionFilter}>
-              <SelectTrigger className="w-[180px] bg-slate-800 border-slate-700 text-white" data-testid="select-session-filter">
-                <SelectValue placeholder="Filter by session" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Sessions</SelectItem>
-                <SelectItem value="london">London</SelectItem>
-                <SelectItem value="new york">New York</SelectItem>
-                <SelectItem value="asia">Asia</SelectItem>
-                <SelectItem value="overlap">Overlap</SelectItem>
-              </SelectContent>
-            </Select>
+    <div className="p-3 sm:p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="flex flex-col gap-4 mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">Trade Journal</h1>
+            <p className="text-sm sm:text-base text-gray-300">Manage and track all your trading positions</p>
+          </div>
+          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2">
+            <p className="text-xs sm:text-sm text-cyan-400">📊 Preview Mode</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-4 py-2 flex items-center">
-            <p className="text-sm text-cyan-400">📊 Preview Mode</p>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
+          <div className="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-xs sm:text-sm text-white">
+            📊 {demoAccounts[0].account_name}
           </div>
+          <Select value={sessionFilter} onValueChange={setSessionFilter}>
+            <SelectTrigger className="w-full sm:w-[180px] bg-slate-800 border-slate-700 text-white text-xs sm:text-sm" data-testid="select-session-filter">
+              <SelectValue placeholder="Filter by session" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sessions</SelectItem>
+              <SelectItem value="london">London</SelectItem>
+              <SelectItem value="new york">New York</SelectItem>
+              <SelectItem value="asia">Asia</SelectItem>
+              <SelectItem value="overlap">Overlap</SelectItem>
+            </SelectContent>
+          </Select>
           <Button 
-            variant="outline"
-            className="border-cyan-500/50 text-white hover:bg-cyan-600/20"
-            data-testid="button-upload-screenshot"
-          >
-            <Scan className="h-4 w-4 mr-2" />
-            Upload Trade Screenshot (AI-Read)
-          </Button>
-          <Button 
-            variant="outline"
-            className="border-cyan-500/50 text-white hover:bg-cyan-600/20"
-            data-testid="button-upload-trades"
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            Upload CSV | HTML | EXCEL
-          </Button>
-          <Button 
-            className="bg-cyan-600 hover:bg-cyan-700 text-white border-0"
+            className="bg-cyan-600 hover:bg-cyan-700 text-white border-0 text-xs sm:text-sm"
             data-testid="button-add-trade"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-3 h-3 sm:h-4 sm:w-4 mr-2" />
             Add Trade
           </Button>
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {filteredTrades.length > 0 ? (
           [...filteredTrades].reverse().map((trade) => (
             <Card 
@@ -114,7 +98,7 @@ export default function PreviewTrades() {
               className="bg-[#0f1f3a] border-[#1a2f4a] hover:border-cyan-500/50 transition-all"
               data-testid={`trade-card-${trade.id}`}
             >
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3 flex-wrap">

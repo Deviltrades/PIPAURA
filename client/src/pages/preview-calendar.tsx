@@ -28,7 +28,7 @@ export default function PreviewCalendar() {
   const [selectedStrategy, setSelectedStrategy] = useState("all");
   const [selectedDirection, setSelectedDirection] = useState("all");
   const [displayMode, setDisplayMode] = useState<"percentage" | "dollar">("percentage");
-  const [showWeekends, setShowWeekends] = useState(false);
+  const [showWeekends, setShowWeekends] = useState(true); // Mobile-friendly default
   const [showWeeklyTotals, setShowWeeklyTotals] = useState(false);
   const [showMonthlySummary, setShowMonthlySummary] = useState(false);
   const [showConsistencyTracker, setShowConsistencyTracker] = useState(false);

@@ -36,22 +36,22 @@ export default function PreviewAccounts() {
   };
 
   return (
-    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
+    <div className="p-3 sm:p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-white">Trading Accounts</h1>
-            <p className="text-gray-300 mb-3">Manage your connected trading accounts</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">Trading Accounts</h1>
+            <p className="text-sm sm:text-base text-gray-300">Manage your connected trading accounts</p>
           </div>
-          <div className="flex gap-3">
-            <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-4 py-2">
-              <p className="text-sm text-cyan-400">📊 Preview Mode - Demo Data</p>
+          <div className="flex gap-2 sm:gap-3 flex-wrap">
+            <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2">
+              <p className="text-xs sm:text-sm text-cyan-400">📊 Preview Mode</p>
             </div>
             <Button 
-              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-xs sm:text-sm"
               data-testid="button-add-account"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-3 h-3 sm:h-4 sm:w-4 mr-2" />
               Add Account
             </Button>
           </div>
@@ -59,7 +59,7 @@ export default function PreviewAccounts() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <Card className="bg-slate-900/50 border-slate-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-slate-400">Total Accounts</CardTitle>
@@ -105,7 +105,7 @@ export default function PreviewAccounts() {
       </div>
 
       {/* Accounts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {demoAccounts.map((account) => {
           const pnl = calculatePnL(account);
           const pnlPercent = calculatePnLPercent(account);
