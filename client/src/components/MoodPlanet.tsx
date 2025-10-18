@@ -183,35 +183,38 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
         ctx.fill();
         ctx.globalAlpha = 1;
 
-        // Draw lightning-like borders
+        // Draw lightning-like borders with flowing electricity
         for (let i = 0; i < rotatedPoints.length; i++) {
           const p1 = rotatedPoints[i];
           const p2 = rotatedPoints[(i + 1) % rotatedPoints.length];
           
-          // Pulsing effect based on animation time
+          // Calculate flow position (travels along the edge)
+          const flowSpeed = 0.05;
+          const flowPosition = (animationTime * flowSpeed + i * 0.5) % 1;
+          
+          // Pulsing effect that travels
           const pulseOffset = (continentIndex * 30 + i * 10);
           const pulse = Math.sin((animationTime + pulseOffset) * 0.1) * 0.5 + 0.5;
-          const intensity = 0.5 + pulse * 0.5;
           
-          // Draw main lightning line
+          // Draw main lightning line with base glow
           ctx.strokeStyle = colors.lightning;
-          ctx.lineWidth = 2 + pulse * 2;
-          ctx.shadowBlur = 15 + pulse * 10;
+          ctx.lineWidth = 1.5;
+          ctx.shadowBlur = 8;
           ctx.shadowColor = colors.lightning;
-          ctx.globalAlpha = intensity;
+          ctx.globalAlpha = 0.4;
           
           ctx.beginPath();
           ctx.moveTo(p1.x, p1.y);
           
           // Create jagged lightning effect
-          const segments = 5;
+          const segments = 8;
           const dx = (p2.x - p1.x) / segments;
           const dy = (p2.y - p1.y) / segments;
           
           for (let j = 1; j < segments; j++) {
-            const jitter = (Math.sin((animationTime + i * 20 + j * 10) * 0.2) * 5);
-            const perpX = -dy * 0.1 * jitter;
-            const perpY = dx * 0.1 * jitter;
+            const jitter = (Math.sin((animationTime + i * 20 + j * 10) * 0.2) * 3);
+            const perpX = -dy * 0.08 * jitter;
+            const perpY = dx * 0.08 * jitter;
             
             ctx.lineTo(
               p1.x + dx * j + perpX,
@@ -222,13 +225,40 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
           ctx.lineTo(p2.x, p2.y);
           ctx.stroke();
           
-          // Draw glow points at vertices
-          if (pulse > 0.7) {
+          // Draw flowing electricity pulse
+          const segmentLength = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+          const pulseX = p1.x + (p2.x - p1.x) * flowPosition;
+          const pulseY = p1.y + (p2.y - p1.y) * flowPosition;
+          
+          // Draw bright flowing pulse
+          ctx.shadowBlur = 25;
+          ctx.fillStyle = colors.lightning;
+          ctx.globalAlpha = 0.9;
+          ctx.beginPath();
+          ctx.arc(pulseX, pulseY, 4, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw trailing glow
+          const trailLength = 0.15;
+          for (let k = 0; k < 3; k++) {
+            const trailPos = (flowPosition - k * trailLength / 3 + 1) % 1;
+            const trailX = p1.x + (p2.x - p1.x) * trailPos;
+            const trailY = p1.y + (p2.y - p1.y) * trailPos;
+            const trailAlpha = (1 - k / 3) * 0.5;
+            
+            ctx.globalAlpha = trailAlpha;
+            ctx.beginPath();
+            ctx.arc(trailX, trailY, 3 - k, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          
+          // Draw glow points at vertices with pulse
+          if (pulse > 0.6) {
             ctx.fillStyle = colors.lightning;
             ctx.shadowBlur = 20;
-            ctx.globalAlpha = pulse;
+            ctx.globalAlpha = pulse * 0.8;
             ctx.beginPath();
-            ctx.arc(p1.x, p1.y, 3 + pulse * 2, 0, Math.PI * 2);
+            ctx.arc(p1.x, p1.y, 2 + pulse * 2, 0, Math.PI * 2);
             ctx.fill();
           }
           
