@@ -148,9 +148,9 @@ export default function PreviewStrategy() {
         </TabsList>
 
         <TabsContent value="strategies" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-white">My Strategies</h2>
-            <Button data-testid="button-add-strategy" className="bg-cyan-600 hover:bg-cyan-700">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <h2 className="text-lg sm:text-xl font-semibold text-white">My Strategies</h2>
+            <Button data-testid="button-add-strategy" className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700">
               Add New Strategy
             </Button>
           </div>
