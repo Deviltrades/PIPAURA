@@ -159,7 +159,31 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60" data-testid="card-total-logs">
           <CardContent className="p-4">
-            <div className="text-gray-400 text-sm mb-1">Total Logs</div>
+            <div className="flex items-start justify-between mb-1">
+              <div className="text-gray-400 text-sm">Total Logs</div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-5 w-5 p-0 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
+                    data-testid="button-info-total-logs"
+                  >
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-[#0f1f3a] border-cyan-500/30 text-gray-100">
+                  <DialogHeader>
+                    <DialogTitle className="text-cyan-400">Total Logs</DialogTitle>
+                  </DialogHeader>
+                  <p className="text-sm text-gray-300">
+                    The total number of emotional logs you've recorded. Each log captures your mood and energy 
+                    level at a specific moment in time. Consistent logging helps reveal patterns in your emotional 
+                    state and how it correlates with your trading performance.
+                  </p>
+                </DialogContent>
+              </Dialog>
+            </div>
             <div className="text-2xl font-bold text-cyan-400" data-testid="text-total-logs">
               {summary.totalLogs}
             </div>
@@ -168,7 +192,31 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
 
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60" data-testid="card-mood-volatility">
           <CardContent className="p-4">
-            <div className="text-gray-400 text-sm mb-1">Mood Volatility</div>
+            <div className="flex items-start justify-between mb-1">
+              <div className="text-gray-400 text-sm">Mood Volatility</div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-5 w-5 p-0 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
+                    data-testid="button-info-mood-volatility"
+                  >
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-[#0f1f3a] border-cyan-500/30 text-gray-100">
+                  <DialogHeader>
+                    <DialogTitle className="text-cyan-400">Mood Volatility</DialogTitle>
+                  </DialogHeader>
+                  <p className="text-sm text-gray-300">
+                    A measure of how much your mood fluctuates over time (standard deviation). Lower numbers indicate 
+                    more emotional stability, while higher numbers suggest larger mood swings. Stable emotions often 
+                    correlate with more consistent trading decisions.
+                  </p>
+                </DialogContent>
+              </Dialog>
+            </div>
             <div className="text-2xl font-bold text-cyan-400" data-testid="text-mood-volatility">
               {summary.moodVolatility.toFixed(2)}
             </div>
@@ -177,7 +225,32 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
 
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60" data-testid="card-mood-impact">
           <CardContent className="p-4">
-            <div className="text-gray-400 text-sm mb-1">Mood Impact</div>
+            <div className="flex items-start justify-between mb-1">
+              <div className="text-gray-400 text-sm">Mood Impact</div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-5 w-5 p-0 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
+                    data-testid="button-info-mood-impact"
+                  >
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-[#0f1f3a] border-cyan-500/30 text-gray-100">
+                  <DialogHeader>
+                    <DialogTitle className="text-cyan-400">Mood Impact</DialogTitle>
+                  </DialogHeader>
+                  <p className="text-sm text-gray-300">
+                    The difference between your average mood on winning days versus losing days. A positive number 
+                    (green) means you tend to be in a better mood when you win. A negative number (red) suggests 
+                    better moods on losing days, which may indicate overconfidence or other psychological factors 
+                    affecting your trading.
+                  </p>
+                </DialogContent>
+              </Dialog>
+            </div>
             <div className={`text-2xl font-bold ${moodImpact > 0 ? 'text-green-400' : 'text-red-400'}`} data-testid="text-mood-impact">
               {moodImpact > 0 ? '+' : ''}{moodImpact.toFixed(1)}
             </div>
@@ -186,7 +259,32 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
 
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60" data-testid="card-energy-impact">
           <CardContent className="p-4">
-            <div className="text-gray-400 text-sm mb-1">Energy Impact</div>
+            <div className="flex items-start justify-between mb-1">
+              <div className="text-gray-400 text-sm">Energy Impact</div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-5 w-5 p-0 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
+                    data-testid="button-info-energy-impact"
+                  >
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-[#0f1f3a] border-cyan-500/30 text-gray-100">
+                  <DialogHeader>
+                    <DialogTitle className="text-cyan-400">Energy Impact</DialogTitle>
+                  </DialogHeader>
+                  <p className="text-sm text-gray-300">
+                    The difference between your average energy level on winning days versus losing days. A positive 
+                    number (green) indicates higher energy on winning days, suggesting peak performance when you're 
+                    well-rested. A negative number (red) may indicate trading when fatigued leads to better caution, 
+                    or that wins drain your energy.
+                  </p>
+                </DialogContent>
+              </Dialog>
+            </div>
             <div className={`text-2xl font-bold ${energyImpact > 0 ? 'text-green-400' : 'text-red-400'}`} data-testid="text-energy-impact">
               {energyImpact > 0 ? '+' : ''}{energyImpact.toFixed(1)}
             </div>
