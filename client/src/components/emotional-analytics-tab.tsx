@@ -19,6 +19,7 @@ import {
 } from "recharts";
 import { format, subDays } from "date-fns";
 import { EmotionalLogModal } from "./emotional-log-modal";
+import { MoodPlanet } from "./MoodPlanet";
 
 interface EmotionalAnalyticsTabProps {
   accountId: string;
@@ -370,6 +371,19 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
           </CardContent>
         </Card>
       </div>
+
+      {/* Mood Planet Visualization */}
+      {correlationData.length > 0 && (
+        <div className="w-full flex justify-center" data-testid="section-mood-planet">
+          <MoodPlanet 
+            moodLogs={correlationData.map(d => ({
+              mood: d.mood,
+              date: d.date || 'Unknown',
+              pnl: d.pnl
+            }))}
+          />
+        </div>
+      )}
 
       {/* Behavioral Insights */}
       {summary.totalLogs > 5 && (
