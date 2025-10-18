@@ -183,107 +183,88 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
         ctx.fill();
         ctx.globalAlpha = 1;
 
-        // Draw neuron-like borders with organic signal propagation
+        // Draw lightning-like borders with flowing electricity
         for (let i = 0; i < rotatedPoints.length; i++) {
           const p1 = rotatedPoints[i];
           const p2 = rotatedPoints[(i + 1) % rotatedPoints.length];
           
-          // Draw subtle base connection (axon)
+          // Calculate flow position (travels along the edge)
+          const flowSpeed = 0.05;
+          const flowPosition = (animationTime * flowSpeed + i * 0.5) % 1;
+          
+          // Pulsing effect that travels
+          const pulseOffset = (continentIndex * 30 + i * 10);
+          const pulse = Math.sin((animationTime + pulseOffset) * 0.1) * 0.5 + 0.5;
+          
+          // Draw main lightning line with base glow
           ctx.strokeStyle = colors.lightning;
-          ctx.lineWidth = 1;
-          ctx.shadowBlur = 5;
+          ctx.lineWidth = 1.5;
+          ctx.shadowBlur = 8;
           ctx.shadowColor = colors.lightning;
-          ctx.globalAlpha = 0.2;
+          ctx.globalAlpha = 0.4;
           
           ctx.beginPath();
           ctx.moveTo(p1.x, p1.y);
+          
+          // Create jagged lightning effect
+          const segments = 8;
+          const dx = (p2.x - p1.x) / segments;
+          const dy = (p2.y - p1.y) / segments;
+          
+          for (let j = 1; j < segments; j++) {
+            const jitter = (Math.sin((animationTime + i * 20 + j * 10) * 0.2) * 3);
+            const perpX = -dy * 0.08 * jitter;
+            const perpY = dx * 0.08 * jitter;
+            
+            ctx.lineTo(
+              p1.x + dx * j + perpX,
+              p1.y + dy * j + perpY
+            );
+          }
+          
           ctx.lineTo(p2.x, p2.y);
           ctx.stroke();
           
-          // Neural signal propagation along edges
-          const signalSpeed = 0.03;
-          const signalOffset = (continentIndex * 0.3 + i * 0.7);
-          const signalProgress = (animationTime * signalSpeed + signalOffset) % 1;
+          // Draw flowing electricity pulse
+          const segmentLength = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+          const pulseX = p1.x + (p2.x - p1.x) * flowPosition;
+          const pulseY = p1.y + (p2.y - p1.y) * flowPosition;
           
-          // Only show signal if it's in "firing" state
-          const firingCycle = Math.floor((animationTime * signalSpeed + signalOffset) / 1);
-          const shouldFire = (firingCycle + i + continentIndex) % 3 === 0; // Staggered firing
+          // Draw bright flowing pulse
+          ctx.shadowBlur = 25;
+          ctx.fillStyle = colors.lightning;
+          ctx.globalAlpha = 0.9;
+          ctx.beginPath();
+          ctx.arc(pulseX, pulseY, 4, 0, Math.PI * 2);
+          ctx.fill();
           
-          if (shouldFire && signalProgress < 0.8) {
-            // Calculate signal position
-            const signalX = p1.x + (p2.x - p1.x) * signalProgress;
-            const signalY = p1.y + (p2.y - p1.y) * signalProgress;
+          // Draw trailing glow
+          const trailLength = 0.15;
+          for (let k = 0; k < 3; k++) {
+            const trailPos = (flowPosition - k * trailLength / 3 + 1) % 1;
+            const trailX = p1.x + (p2.x - p1.x) * trailPos;
+            const trailY = p1.y + (p2.y - p1.y) * trailPos;
+            const trailAlpha = (1 - k / 3) * 0.5;
             
-            // Signal intensity fades as it travels
-            const intensity = 1 - signalProgress * 0.5;
-            
-            // Draw glowing signal orb
-            ctx.shadowBlur = 20 * intensity;
-            ctx.fillStyle = colors.lightning;
-            ctx.globalAlpha = 0.9 * intensity;
+            ctx.globalAlpha = trailAlpha;
             ctx.beginPath();
-            ctx.arc(signalX, signalY, 3 * intensity, 0, Math.PI * 2);
+            ctx.arc(trailX, trailY, 3 - k, 0, Math.PI * 2);
             ctx.fill();
-            
-            // Draw trailing neural pathway
-            const trailSegments = 5;
-            for (let t = 1; t <= trailSegments; t++) {
-              const trailProgress = Math.max(0, signalProgress - t * 0.08);
-              const trailX = p1.x + (p2.x - p1.x) * trailProgress;
-              const trailY = p1.y + (p2.y - p1.y) * trailProgress;
-              const trailIntensity = intensity * (1 - t / trailSegments) * 0.6;
-              
-              ctx.globalAlpha = trailIntensity;
-              ctx.shadowBlur = 10 * trailIntensity;
-              ctx.beginPath();
-              ctx.arc(trailX, trailY, 2 * trailIntensity, 0, Math.PI * 2);
-              ctx.fill();
-            }
+          }
+          
+          // Draw glow points at vertices with pulse
+          if (pulse > 0.6) {
+            ctx.fillStyle = colors.lightning;
+            ctx.shadowBlur = 20;
+            ctx.globalAlpha = pulse * 0.8;
+            ctx.beginPath();
+            ctx.arc(p1.x, p1.y, 2 + pulse * 2, 0, Math.PI * 2);
+            ctx.fill();
           }
           
           ctx.shadowBlur = 0;
           ctx.globalAlpha = 1;
         }
-        
-        // Draw synaptic nodes at vertices (neuron cell bodies)
-        rotatedPoints.forEach((point, idx) => {
-          // Synaptic firing pattern
-          const nodeOffset = continentIndex * 50 + idx * 20;
-          const nodePulse = Math.sin((animationTime + nodeOffset) * 0.08);
-          const isFiring = nodePulse > 0.6;
-          
-          if (isFiring) {
-            const fireIntensity = (nodePulse - 0.6) / 0.4; // 0 to 1
-            
-            // Outer synaptic burst
-            ctx.fillStyle = colors.lightning;
-            ctx.shadowBlur = 25;
-            ctx.shadowColor = colors.lightning;
-            ctx.globalAlpha = fireIntensity * 0.4;
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, 8 * fireIntensity, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Inner nucleus
-            ctx.globalAlpha = fireIntensity * 0.9;
-            ctx.shadowBlur = 15;
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, 3 + fireIntensity * 2, 0, Math.PI * 2);
-            ctx.fill();
-          } else {
-            // Dormant state
-            ctx.fillStyle = colors.lightning;
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = colors.lightning;
-            ctx.globalAlpha = 0.3;
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, 2, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          
-          ctx.shadowBlur = 0;
-          ctx.globalAlpha = 1;
-        });
       });
 
       // Add grid lines across planet
