@@ -1353,6 +1353,7 @@ export interface EmotionalLog {
   id: string;
   user_id: string;
   log_date: string;
+  log_time: string;
   mood: number;
   energy: number;
   tags: string[] | null;
@@ -1368,22 +1369,20 @@ export interface SaveEmotionalLogInput {
   note: string;
 }
 
-// Save or update emotional log (upsert based on user_id and log_date)
+// Save emotional log (allows multiple logs per day)
 export async function saveEmotionalLog(input: SaveEmotionalLogInput): Promise<EmotionalLog> {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
   
   const { data, error } = await supabase
     .from('emotional_logs')
-    .upsert({
+    .insert({
       user_id: user.id,
       log_date: input.log_date,
       mood: input.mood,
       energy: input.energy,
       tags: input.tags.length > 0 ? input.tags : null,
       note: input.note || null
-    }, {
-      onConflict: 'user_id,log_date'
     })
     .select()
     .single();
@@ -1403,7 +1402,8 @@ export async function getEmotionalLogs(startDate: string, endDate: string): Prom
     .eq('user_id', user.id)
     .gte('log_date', startDate)
     .lte('log_date', endDate)
-    .order('log_date', { ascending: false });
+    .order('log_date', { ascending: false })
+    .order('log_time', { ascending: false });
 
   if (error) throw error;
   return data || [];
@@ -1426,6 +1426,32 @@ export async function getEmotionalLogByDate(date: string): Promise<EmotionalLog 
     throw error;
   }
   return data;
+}
+
+// Get yearly emotional logs for outer glow calculation
+export async function getYearlyMoodAverage(): Promise<number> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const currentYear = new Date().getFullYear();
+  const startDate = `${currentYear}-01-01`;
+  const endDate = `${currentYear}-12-31`;
+  
+  const { data, error } = await supabase
+    .from('emotional_logs')
+    .select('mood')
+    .eq('user_id', user.id)
+    .gte('log_date', startDate)
+    .lte('log_date', endDate);
+
+  if (error) throw error;
+  
+  if (!data || data.length === 0) {
+    return 6; // Default to cyan (good mood) when no logs
+  }
+  
+  const totalMood = data.reduce((sum, log) => sum + log.mood, 0);
+  return totalMood / data.length;
 }
 
 // Get emotional analytics with trade performance correlation
