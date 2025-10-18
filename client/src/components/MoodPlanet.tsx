@@ -78,16 +78,16 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
   useEffect(() => {
     const generateFixedContinents = (): Continent[] => {
       const newContinents: Continent[] = [];
-      const numContinents = 8; // More continents to fill the planet
+      const numContinents = 6; // Reduced from 8 for better performance
       
       for (let i = 0; i < numContinents; i++) {
         const baseAngle = (i / numContinents) * Math.PI * 2;
-        const baseRadius = radius * (0.65 + (i % 3) * 0.15); // Larger continents
+        const baseRadius = radius * (0.65 + (i % 3) * 0.15);
         
         const points: { x: number; y: number }[] = [];
         
-        // Create organic continent shape with more points
-        const numPoints = 18 + Math.floor(Math.random() * 12);
+        // Reduced points for better performance
+        const numPoints = 15 + Math.floor(Math.random() * 8);
         
         for (let j = 0; j < numPoints; j++) {
           const angle = baseAngle + (j / numPoints) * (Math.PI / 1.5) + Math.random() * 0.4;
@@ -96,7 +96,6 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
           const x = centerX + Math.cos(angle) * r;
           const y = centerY + Math.sin(angle) * r;
           
-          // More lenient bounds check to fill the planet
           const dist = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
           if (dist < radius - 5) {
             points.push({ x, y });
@@ -207,7 +206,7 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
           ctx.moveTo(p1.x, p1.y);
           
           // Create jagged lightning effect
-          const segments = 8;
+          const segments = 5; // Reduced from 8 for better performance
           const dx = (p2.x - p1.x) / segments;
           const dy = (p2.y - p1.y) / segments;
           
@@ -240,11 +239,11 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
           
           // Draw trailing glow
           const trailLength = 0.15;
-          for (let k = 0; k < 3; k++) {
-            const trailPos = (flowPosition - k * trailLength / 3 + 1) % 1;
+          for (let k = 0; k < 2; k++) { // Reduced from 3 for better performance
+            const trailPos = (flowPosition - k * trailLength / 2 + 1) % 1;
             const trailX = p1.x + (p2.x - p1.x) * trailPos;
             const trailY = p1.y + (p2.y - p1.y) * trailPos;
-            const trailAlpha = (1 - k / 3) * 0.5;
+            const trailAlpha = (1 - k / 2) * 0.5;
             
             ctx.globalAlpha = trailAlpha;
             ctx.beginPath();
