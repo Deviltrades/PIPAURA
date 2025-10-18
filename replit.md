@@ -71,6 +71,19 @@ A comprehensive proprietary firm challenge tracker enables users to monitor thei
 
 Database schema includes `prop_firm_tracker` table with challenge configuration, loss limits, profit targets, active status tracking, and funding phase tracking. The system queries the `trades` table by `account_id` to calculate metrics, ensuring all trades for prop firm accounts automatically sync to the tracker.
 
+### Subscription and Payment System
+A comprehensive Stripe-based subscription system with three pricing tiers:
+- **Lite Plan** (£4.99/month, £49.99/year): Entry-level tier with 1 account limit and 1GB monthly storage
+- **Core Plan** (£14/month, £114/year): Mid-tier with 10 account limit and 2GB monthly storage
+- **Elite Plan** (£24/month, £230/year): Premium tier with unlimited accounts and 10GB monthly storage
+
+**Automatic Fulfillment**: Stripe webhooks automatically update user plan types and storage limits upon successful payment. The webhook endpoint (`/api/webhooks/stripe`) handles:
+- `checkout.session.completed`: Updates user to purchased plan (lite/core/elite)
+- `customer.subscription.deleted`: Downgrades cancelled subscriptions back to lite plan
+- Automatic storage limit updates based on plan tier
+
+**Storage Enforcement**: The `useUserProfile` hook enforces storage limits client-side via the `canPerformAction` function, which checks `storage_used_mb` against `storage_limit_mb` before allowing upload operations.
+
 ## External Dependencies
 
 ### Cloud Services
