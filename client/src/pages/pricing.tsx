@@ -281,7 +281,7 @@ export default function Pricing() {
                 <Button 
                   size="sm" 
                   className="w-full bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-300 border border-cyan-500/40"
-                  onClick={() => setLocation("/auth")}
+                  onClick={() => setLocation(`/checkout?plan=lite&interval=${billingCycle}`)}
                   data-testid="button-cta-lite"
                 >
                   {litePlan.cta}
@@ -367,7 +367,7 @@ export default function Pricing() {
                         ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/30' 
                         : 'bg-slate-800 hover:bg-slate-700 text-white'
                     }`}
-                    onClick={() => setLocation("/auth")}
+                    onClick={() => setLocation(`/checkout?plan=${plan.name.toLowerCase()}&interval=${billingCycle}`)}
                     data-testid={`button-cta-${plan.name.toLowerCase()}`}
                   >
                     {plan.cta}

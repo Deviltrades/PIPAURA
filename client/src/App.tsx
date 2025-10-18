@@ -12,6 +12,7 @@ import Pricing from "@/pages/pricing";
 import AuthPage from "@/pages/auth";
 import ResetPasswordPage from "@/pages/reset-password";
 import MembershipAgreement from "@/pages/membership-agreement";
+import Checkout from "@/pages/checkout";
 import ViewJournal from "@/pages/view-journal";
 import Dashboard from "@/pages/dashboard";
 import Trades from "@/pages/trades";
@@ -65,6 +66,7 @@ function Router() {
       <Route path="/reset-password" component={ResetPasswordPage} />
       {/* Public pages available regardless of auth status */}
       <Route path="/membership-agreement" component={MembershipAgreement} />
+      <Route path="/checkout" component={Checkout} />
       
       {!user ? (
         <>
