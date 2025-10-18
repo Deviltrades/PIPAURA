@@ -273,6 +273,46 @@ app.post("/api/create-checkout-session", async (req, res) => {
   }
 });
 
+// Stripe Customer Portal session creation endpoint
+app.post("/api/create-portal-session", async (req, res) => {
+  try {
+    const { customerEmail } = req.body;
+    
+    if (!customerEmail) {
+      return res.status(400).json({ error: "Missing customer email" });
+    }
+
+    // Find or create Stripe customer by email
+    const customers = await stripe.customers.list({
+      email: customerEmail,
+      limit: 1
+    });
+
+    let customerId: string;
+
+    if (customers.data.length > 0) {
+      customerId = customers.data[0].id;
+    } else {
+      // Create new customer if doesn't exist
+      const customer = await stripe.customers.create({
+        email: customerEmail,
+      });
+      customerId = customer.id;
+    }
+
+    // Create portal session
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: `${req.headers.origin}/user`,
+    });
+
+    res.json({ url: session.url });
+  } catch (error: any) {
+    console.error('Stripe portal error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Proxy everything else to Vite dev server
 app.use(createProxyMiddleware({
   target: `http://localhost:${VITE_PORT}`,
