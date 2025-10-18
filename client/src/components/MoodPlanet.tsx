@@ -63,14 +63,21 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
       
       for (let i = 0; i < numContinents; i++) {
         const baseAngle = (i / numContinents) * Math.PI * 2;
-        const baseRadius = radius * (0.65 + (i % 3) * 0.15);
+        const baseRadius = radius * (0.6 + (i % 3) * 0.2);
         
         const points: { x: number; y: number }[] = [];
-        const numPoints = 15 + Math.floor(Math.random() * 8);
+        const numPoints = 20 + Math.floor(Math.random() * 15); // More points for smoother curves
         
         for (let j = 0; j < numPoints; j++) {
-          const angle = baseAngle + (j / numPoints) * (Math.PI / 1.5) + Math.random() * 0.4;
-          const r = baseRadius * (0.8 + Math.random() * 0.5);
+          const angleProgress = j / numPoints;
+          const angle = baseAngle + angleProgress * (Math.PI / 1.2);
+          
+          // Create organic variations using multiple sine waves
+          const variation1 = Math.sin(angleProgress * Math.PI * 4 + i) * 0.3;
+          const variation2 = Math.cos(angleProgress * Math.PI * 6 + i * 2) * 0.2;
+          const radiusVariation = 0.7 + variation1 + variation2 + Math.random() * 0.4;
+          
+          const r = baseRadius * radiusVariation;
           
           const x = centerX + Math.cos(angle) * r;
           const y = centerY + Math.sin(angle) * r;
