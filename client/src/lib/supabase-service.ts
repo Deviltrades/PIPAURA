@@ -1374,6 +1374,8 @@ export async function saveEmotionalLog(input: SaveEmotionalLogInput): Promise<Em
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
   
+  console.log('💾 Saving emotional log:', { user_id: user.id, ...input });
+  
   const { data, error } = await supabase
     .from('emotional_logs')
     .insert({
@@ -1387,7 +1389,12 @@ export async function saveEmotionalLog(input: SaveEmotionalLogInput): Promise<Em
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('❌ Error saving emotional log:', error);
+    throw error;
+  }
+  
+  console.log('✅ Emotional log saved successfully:', data);
   return data;
 }
 
