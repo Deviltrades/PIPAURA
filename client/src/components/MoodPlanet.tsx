@@ -78,27 +78,27 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
   useEffect(() => {
     const generateFixedContinents = (): Continent[] => {
       const newContinents: Continent[] = [];
-      const numContinents = 6; // Fixed number of continents
+      const numContinents = 8; // More continents to fill the planet
       
       for (let i = 0; i < numContinents; i++) {
         const baseAngle = (i / numContinents) * Math.PI * 2;
-        const baseRadius = radius * (0.5 + (i % 2) * 0.2);
+        const baseRadius = radius * (0.65 + (i % 3) * 0.15); // Larger continents
         
         const points: { x: number; y: number }[] = [];
         
-        // Create organic continent shape
-        const numPoints = 12 + Math.floor(Math.random() * 8);
+        // Create organic continent shape with more points
+        const numPoints = 18 + Math.floor(Math.random() * 12);
         
         for (let j = 0; j < numPoints; j++) {
-          const angle = baseAngle + (j / numPoints) * (Math.PI / 2) + Math.random() * 0.3;
-          const r = baseRadius * (0.7 + Math.random() * 0.6);
+          const angle = baseAngle + (j / numPoints) * (Math.PI / 1.5) + Math.random() * 0.4;
+          const r = baseRadius * (0.8 + Math.random() * 0.5);
           
           const x = centerX + Math.cos(angle) * r;
           const y = centerY + Math.sin(angle) * r;
           
-          // Only add if within planet bounds
+          // More lenient bounds check to fill the planet
           const dist = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-          if (dist < radius - 20) {
+          if (dist < radius - 5) {
             points.push({ x, y });
           }
         }
@@ -154,7 +154,7 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
       ctx.globalAlpha = 1;
 
       // Slow rotation
-      setRotation(prev => prev + 0.003);
+      setRotation(prev => prev + 0.001);
 
       // Draw fixed continents with lightning borders
       continents.forEach((continent, continentIndex) => {
