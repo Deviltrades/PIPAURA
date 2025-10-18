@@ -124,48 +124,53 @@ export default function Trades() {
 
   return (
     <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Trade Journal</h1>
-          <p className="text-gray-300 mb-3">Manage and track all your trading positions</p>
-          <div className="flex gap-3 items-center">
-            <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
-            <Select value={sessionFilter} onValueChange={setSessionFilter}>
-              <SelectTrigger className="w-[180px] bg-slate-800 border-slate-700 text-white" data-testid="select-session-filter">
-                <SelectValue placeholder="Filter by session" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Sessions</SelectItem>
-                <SelectItem value="london">London</SelectItem>
-                <SelectItem value="new york">New York</SelectItem>
-                <SelectItem value="asia">Asia</SelectItem>
-                <SelectItem value="overlap">Overlap</SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="mb-6">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-4">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-white">Trade Journal</h1>
+            <p className="text-gray-300 mb-3">Manage and track all your trading positions</p>
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+              <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
+              <Select value={sessionFilter} onValueChange={setSessionFilter}>
+                <SelectTrigger className="w-full sm:w-[180px] bg-slate-800 border-slate-700 text-white" data-testid="select-session-filter">
+                  <SelectValue placeholder="Filter by session" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sessions</SelectItem>
+                  <SelectItem value="london">London</SelectItem>
+                  <SelectItem value="new york">New York</SelectItem>
+                  <SelectItem value="asia">Asia</SelectItem>
+                  <SelectItem value="overlap">Overlap</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
           <Button 
             onClick={() => setIsOCRModalOpen(true)}
             variant="outline"
-            className="border-cyan-500/50 text-white hover:bg-cyan-600/20"
+            className="border-cyan-500/50 text-white hover:bg-cyan-600/20 flex-1 sm:flex-none"
             data-testid="button-upload-screenshot"
           >
             <Scan className="h-4 w-4 mr-2" />
-            Upload Trade Screenshot (AI-Read)
+            <span className="hidden lg:inline">Upload Trade Screenshot (AI-Read)</span>
+            <span className="lg:hidden">Upload Screenshot</span>
           </Button>
           <Button 
             onClick={() => setIsUploadModalOpen(true)}
             variant="outline"
-            className="border-cyan-500/50 text-white hover:bg-cyan-600/20"
+            className="border-cyan-500/50 text-white hover:bg-cyan-600/20 flex-1 sm:flex-none"
             data-testid="button-upload-trades"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Upload CSV | HTML | EXCEL
+            <span className="hidden lg:inline">Upload CSV | HTML | EXCEL</span>
+            <span className="lg:hidden">Upload File</span>
           </Button>
           <Button 
             onClick={() => setIsFormOpen(true)}
-            className="bg-cyan-600 hover:bg-cyan-700 text-white border-0"
+            className="bg-cyan-600 hover:bg-cyan-700 text-white border-0 flex-1 sm:flex-none"
             data-testid="button-add-trade"
           >
             <Plus className="h-4 w-4 mr-2" />
