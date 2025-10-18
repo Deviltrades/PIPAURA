@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Brain, Calendar as CalendarIcon, TrendingUp, AlertTriangle } from "lucide-react";
-import { getEmotionalAnalytics, getYearlyMoodAverage } from "@/lib/supabase-service";
+import { getEmotionalAnalytics, getYearlyMoodAverage, getMonthlyMoodAverage } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
 import { 
   LineChart, 
@@ -47,6 +47,13 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
     retry: false,
   });
 
+  // Fetch monthly mood average for inner ring
+  const { data: monthlyMoodAverage = 6 } = useQuery({
+    queryKey: ['monthly-mood-average'],
+    queryFn: getMonthlyMoodAverage,
+    retry: false,
+  });
+
   console.log('📈 Emotional Analytics Component:', { 
     isLoading, 
     hasData: !!emotionalData, 
@@ -63,6 +70,7 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
       // Invalidate all emotional analytics queries to force refetch
       await queryClient.invalidateQueries({ queryKey: ['emotional-analytics'] });
       await queryClient.invalidateQueries({ queryKey: ['yearly-mood-average'] });
+      await queryClient.invalidateQueries({ queryKey: ['monthly-mood-average'] });
       
       toast({
         title: "Emotional log saved",
@@ -200,6 +208,7 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
                   : [{ mood: 6, date: 'Default', pnl: 0 }] // Default cyan neutral state
                 }
                 yearlyMoodAverage={yearlyMoodAverage}
+                monthlyMoodAverage={monthlyMoodAverage}
               />
             </div>
             
