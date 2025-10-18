@@ -209,11 +209,29 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
                   <DialogHeader>
                     <DialogTitle className="text-cyan-400">Mood Volatility</DialogTitle>
                   </DialogHeader>
-                  <p className="text-sm text-gray-300">
-                    A measure of how much your mood fluctuates over time (standard deviation). Lower numbers indicate 
-                    more emotional stability, while higher numbers suggest larger mood swings. Stable emotions often 
-                    correlate with more consistent trading decisions.
-                  </p>
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-300">
+                      A measure of how much your mood fluctuates over time (standard deviation). Lower numbers indicate 
+                      more emotional stability, while higher numbers suggest larger mood swings. Stable emotions often 
+                      correlate with more consistent trading decisions.
+                    </p>
+                    <div className="space-y-2">
+                      <div className="bg-green-500/10 border border-green-500/30 rounded p-3">
+                        <p className="text-sm font-medium text-green-400 mb-1">Good Example: 0.5 - 1.5</p>
+                        <p className="text-sm text-gray-300">
+                          Your mood stays relatively consistent. You might range between 6-8 on most days, showing 
+                          emotional stability and balanced trading psychology.
+                        </p>
+                      </div>
+                      <div className="bg-red-500/10 border border-red-500/30 rounded p-3">
+                        <p className="text-sm font-medium text-red-400 mb-1">Concerning Example: 3.0+</p>
+                        <p className="text-sm text-gray-300">
+                          Large mood swings between extremes (e.g., 2 one day, 9 the next). This emotional rollercoaster 
+                          can lead to impulsive decisions and inconsistent trading behavior.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </DialogContent>
               </Dialog>
             </div>
