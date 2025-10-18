@@ -168,15 +168,15 @@ export default function PreviewCalendar() {
   const weeklyTotals = getWeeklyTotals();
 
   return (
-    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
+    <div className="p-3 sm:p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-white">Trading Calendar</h1>
-            <p className="text-gray-300 mb-3">Daily P&L overview and trading activity</p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">Trading Calendar</h1>
+            <p className="text-xs sm:text-sm text-gray-300">Daily P&L overview and trading activity</p>
           </div>
-          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-4 py-2">
-            <p className="text-sm text-cyan-400">📊 Preview Mode - Demo Data</p>
+          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 w-full sm:w-auto">
+            <p className="text-xs sm:text-sm text-cyan-400">📊 Preview Mode - Demo Data</p>
           </div>
         </div>
       </div>
@@ -436,21 +436,21 @@ export default function PreviewCalendar() {
             </div>
           )}
 
-          {/* Calendar Container */}
-          <div className={`flex ${showWeeklyTotals ? 'gap-4' : ''}`}>
+          {/* Calendar Container - Horizontal scroll on mobile */}
+          <div className={`flex ${showWeeklyTotals ? 'gap-4' : ''} overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0`}>
             {/* Main Calendar */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-max">
               {/* Days of Week Header */}
-              <div className={`grid grid-cols-${layout.cols} gap-0.5 mb-2`}>
+              <div className={`grid grid-cols-${layout.cols} gap-0.5 sm:gap-1 mb-2`}>
                 {layout.dayLabels.map((day) => (
-                  <div key={day} className="h-10 flex items-center justify-center">
-                    <span className="text-sm font-medium text-slate-400">{day}</span>
+                  <div key={day} className="h-8 sm:h-10 flex items-center justify-center min-w-[80px] sm:min-w-0">
+                    <span className="text-xs sm:text-sm font-medium text-slate-400">{day}</span>
                   </div>
                 ))}
               </div>
 
               {/* Calendar Grid */}
-              <div className={`grid grid-cols-${layout.cols} gap-0.5`}>
+              <div className={`grid grid-cols-${layout.cols} gap-0.5 sm:gap-1`}>
                 {calendarDays.map((day) => {
                   const dateKey = format(day, "yyyy-MM-dd");
                   const dayTrades = tradesByDate[dateKey] || [];
@@ -486,7 +486,7 @@ export default function PreviewCalendar() {
                     <div
                       key={format(day, "yyyy-MM-dd")}
                       className={`
-                        h-28 p-2 rounded-lg border transition-all cursor-pointer
+                        min-w-[80px] sm:min-w-0 h-32 sm:h-28 lg:h-32 p-2 sm:p-2.5 rounded-lg border transition-all cursor-pointer
                         ${styles.bg} ${styles.border} ${styles.shadow}
                         ${isCurrentDay ? 'ring-2 ring-cyan-500' : ''}
                         ${!isCurrentMonth ? 'opacity-40' : ''}
@@ -496,7 +496,7 @@ export default function PreviewCalendar() {
                     >
                       <div className="h-full flex flex-col">
                         <div className="flex items-center justify-between mb-1">
-                          <span className={`text-xs font-medium ${isCurrentDay ? 'text-cyan-400' : 'text-white'}`}>
+                          <span className={`text-xs sm:text-sm font-medium ${isCurrentDay ? 'text-cyan-400' : 'text-white'}`}>
                             {format(day, "d")}
                           </span>
                           {dayTrades.length > 0 && (
@@ -508,7 +508,7 @@ export default function PreviewCalendar() {
                         
                         {dayTrades.length > 0 && (
                           <div className="flex-1 flex flex-col justify-center">
-                            <div className={`text-sm font-bold mb-1 ${dailyPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            <div className={`text-xs sm:text-sm font-bold mb-1 ${dailyPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                               {displayMode === "dollar" ? formatCurrency(dailyPnL) : `${dailyPnL > 0 ? '+' : ''}${((dailyPnL / 10000) * 100).toFixed(1)}%`}
                             </div>
                             <div className="flex gap-1">
