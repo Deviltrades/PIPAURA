@@ -141,19 +141,19 @@ export default function PreviewMentorDashboard() {
   const totalPnL = demoTraders.reduce((sum, t) => sum + t.profitLoss, 0);
 
   return (
-    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-3 sm:p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white" data-testid="text-mentor-title">Mentor Dashboard</h1>
-          <p className="text-gray-300">Monitor and support your trading students</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white" data-testid="text-mentor-title">Mentor Dashboard</h1>
+          <p className="text-xs sm:text-sm text-gray-300">Monitor and support your trading students</p>
         </div>
-        <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-4 py-2">
-          <p className="text-sm text-cyan-400">📊 Preview Mode - Demo Data</p>
+        <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 w-full sm:w-auto">
+          <p className="text-xs sm:text-sm text-cyan-400">📊 Preview Mode - Demo Data</p>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <Card className="border-2 border-cyan-500/60 bg-cyan-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -211,42 +211,45 @@ export default function PreviewMentorDashboard() {
 
       {/* Traders List */}
       <Tabs defaultValue="all" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="all" data-testid="tab-all-traders">
-            All Traders ({totalTraders})
+        <TabsList className="w-full grid grid-cols-3 h-auto">
+          <TabsTrigger value="all" data-testid="tab-all-traders" className="text-xs sm:text-sm px-2 sm:px-4">
+            <span className="hidden sm:inline">All Traders</span>
+            <span className="sm:hidden">All</span> ({totalTraders})
           </TabsTrigger>
-          <TabsTrigger value="active" data-testid="tab-active-traders">
-            Active ({activeTraders})
+          <TabsTrigger value="active" data-testid="tab-active-traders" className="text-xs sm:text-sm px-2 sm:px-4">
+            <span className="hidden sm:inline">Active</span>
+            <span className="sm:hidden">Act.</span> ({activeTraders})
           </TabsTrigger>
-          <TabsTrigger value="needs-attention" data-testid="tab-needs-attention">
-            Needs Attention ({needsAttention})
+          <TabsTrigger value="needs-attention" data-testid="tab-needs-attention" className="text-xs sm:text-sm px-1 sm:px-4">
+            <span className="hidden sm:inline">Needs Attention</span>
+            <span className="sm:hidden">Alert</span> ({needsAttention})
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="space-y-4">
+        <TabsContent value="all" className="space-y-3 sm:space-y-4">
           {demoTraders.map((trader) => (
             <Card key={trader.id} className="bg-[#0f1f3a] border-[#1a2f4a]" data-testid={`card-trader-${trader.id}`}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
+              <CardContent className="p-3 sm:p-4 lg:p-6">
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                   {/* Trader Info */}
-                  <div className="flex items-start gap-4 flex-1">
-                    <Avatar className="h-12 w-12">
+                  <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                    <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
                       <AvatarImage src={trader.avatar} />
                       <AvatarFallback className="bg-cyan-600 text-white">
                         {getInitials(trader.name)}
                       </AvatarFallback>
                     </Avatar>
                     
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-white">{trader.name}</h3>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-white">{trader.name}</h3>
                         {getStatusBadge(trader.status)}
                         {getRiskBadge(trader.riskScore)}
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">{trader.email}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-3 truncate">{trader.email}</p>
                       
                       {/* Stats Grid */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-3 sm:mt-4">
                         <div>
                           <p className="text-xs text-muted-foreground">Total Trades</p>
                           <p className="text-sm font-semibold text-white">{trader.totalTrades}</p>
@@ -268,7 +271,7 @@ export default function PreviewMentorDashboard() {
                       </div>
 
                       {/* Consistency Bar */}
-                      <div className="mt-4">
+                      <div className="mt-3 sm:mt-4">
                         <div className="flex items-center justify-between mb-2">
                           <p className="text-xs text-muted-foreground">Consistency Score</p>
                           <p className="text-xs font-semibold text-cyan-400">{trader.consistency}%</p>
@@ -278,35 +281,35 @@ export default function PreviewMentorDashboard() {
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex flex-col gap-2 ml-4">
-                    <Button size="sm" variant="outline" className="border-cyan-500/50 hover:bg-cyan-600/20" data-testid={`button-view-${trader.id}`}>
-                      <Eye className="h-4 w-4 mr-2" />
-                      View
+                  {/* Actions - Full width on mobile, vertical on desktop */}
+                  <div className="grid grid-cols-3 lg:grid-cols-1 gap-2 lg:w-auto">
+                    <Button size="sm" variant="outline" className="border-cyan-500/50 hover:bg-cyan-600/20 w-full" data-testid={`button-view-${trader.id}`}>
+                      <Eye className="h-4 w-4 lg:mr-2" />
+                      <span className="hidden lg:inline">View</span>
                     </Button>
-                    <Button size="sm" variant="outline" className="border-cyan-500/50 hover:bg-cyan-600/20" data-testid={`button-message-${trader.id}`}>
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                      Message
+                    <Button size="sm" variant="outline" className="border-cyan-500/50 hover:bg-cyan-600/20 w-full" data-testid={`button-message-${trader.id}`}>
+                      <MessageCircle className="h-4 w-4 lg:mr-2" />
+                      <span className="hidden lg:inline">Message</span>
                     </Button>
-                    <Button size="sm" variant="outline" className="border-cyan-500/50 hover:bg-cyan-600/20" data-testid={`button-analytics-${trader.id}`}>
-                      <BarChart3 className="h-4 w-4 mr-2" />
-                      Analytics
+                    <Button size="sm" variant="outline" className="border-cyan-500/50 hover:bg-cyan-600/20 w-full" data-testid={`button-analytics-${trader.id}`}>
+                      <BarChart3 className="h-4 w-4 lg:mr-2" />
+                      <span className="hidden lg:inline">Analytics</span>
                     </Button>
                   </div>
                 </div>
 
-                {/* Footer Info */}
-                <div className="flex items-center gap-6 mt-4 pt-4 border-t border-cyan-500/20 text-xs text-muted-foreground">
+                {/* Footer Info - Stack on mobile */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-cyan-500/20 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-3 w-3" />
-                    Joined {new Date(trader.joinDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    <Calendar className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate">Joined {new Date(trader.joinDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="h-3 w-3" />
-                    {trader.recentTrades} trades this week
+                    <TrendingUp className="h-3 w-3 flex-shrink-0" />
+                    <span>{trader.recentTrades} trades this week</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    Last active: {trader.lastActive}
+                    <span className="truncate">Last active: {trader.lastActive}</span>
                   </div>
                 </div>
               </CardContent>
@@ -314,42 +317,42 @@ export default function PreviewMentorDashboard() {
           ))}
         </TabsContent>
 
-        <TabsContent value="active" className="space-y-4">
+        <TabsContent value="active" className="space-y-3 sm:space-y-4">
           {demoTraders.filter(t => t.status === 'active').map((trader) => (
             <Card key={trader.id} className="bg-[#0f1f3a] border-[#1a2f4a]">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
+              <CardContent className="p-3 sm:p-4 lg:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                     <AvatarFallback className="bg-cyan-600 text-white">
                       {getInitials(trader.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-white">{trader.name}</h3>
-                    <p className="text-sm text-muted-foreground">Win Rate: {trader.winRate}% • P&L: ${trader.profitLoss.toFixed(2)}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg font-semibold text-white truncate">{trader.name}</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">Win Rate: {trader.winRate}% • P&L: ${trader.profitLoss.toFixed(2)}</p>
                   </div>
-                  <Button size="sm" className="bg-cyan-600 hover:bg-cyan-700">View Details</Button>
+                  <Button size="sm" className="bg-cyan-600 hover:bg-cyan-700 w-full sm:w-auto">View Details</Button>
                 </div>
               </CardContent>
             </Card>
           ))}
         </TabsContent>
 
-        <TabsContent value="needs-attention" className="space-y-4">
+        <TabsContent value="needs-attention" className="space-y-3 sm:space-y-4">
           {demoTraders.filter(t => t.status === 'needs_attention').map((trader) => (
             <Card key={trader.id} className="bg-amber-950/20 border-amber-500/50">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
+              <CardContent className="p-3 sm:p-4 lg:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                     <AvatarFallback className="bg-amber-600 text-white">
                       {getInitials(trader.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-white">{trader.name}</h3>
-                    <p className="text-sm text-amber-400">Win Rate: {trader.winRate}% • P&L: ${trader.profitLoss.toFixed(2)}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg font-semibold text-white truncate">{trader.name}</h3>
+                    <p className="text-xs sm:text-sm text-amber-400 truncate">Win Rate: {trader.winRate}% • P&L: ${trader.profitLoss.toFixed(2)}</p>
                   </div>
-                  <Button size="sm" className="bg-amber-600 hover:bg-amber-700">Reach Out</Button>
+                  <Button size="sm" className="bg-amber-600 hover:bg-amber-700 w-full sm:w-auto">Reach Out</Button>
                 </div>
               </CardContent>
             </Card>
