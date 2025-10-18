@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { 
   LayoutDashboard, 
   Wallet, 
@@ -15,7 +16,8 @@ import {
   Users,
   X,
   ArrowLeft,
-  Target
+  Target,
+  Menu
 } from "lucide-react";
 import { PipAuraLogo } from "@/components/PipAuraLogo";
 import { useLocation } from "wouter";
@@ -140,38 +142,92 @@ const navigation: NavigationItem[] = [
 export default function ViewJournal() {
   const [, setLocation] = useLocation();
   const [activeSection, setActiveSection] = useState<string>("dashboard");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const currentSection = navigation.find(item => item.id === activeSection);
+
+  const handleNavigationClick = (itemId: string) => {
+    setActiveSection(itemId);
+    setMobileMenuOpen(false); // Close mobile menu after selection
+  };
+
+  // Navigation menu content (used in both desktop sidebar and mobile sheet)
+  const NavigationMenu = () => (
+    <div className="p-4">
+      <p className="text-xs text-slate-400 mb-4 px-3">NAVIGATION</p>
+      <nav className="space-y-1">
+        {navigation.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeSection === item.id;
+          
+          return (
+            <button
+              key={item.id}
+              onClick={() => handleNavigationClick(item.id)}
+              data-testid={`nav-${item.id}`}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
+                isActive 
+                  ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/50" 
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              <span className="truncate">{item.name}</span>
+            </button>
+          );
+        })}
+      </nav>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col">
       {/* Top Navigation Bar */}
       <nav className="border-b border-white/10 bg-black/20 backdrop-blur-sm z-50">
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              {/* Mobile Menu Button */}
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="md:hidden text-white hover:text-cyan-400 hover:bg-white/10"
+                    data-testid="button-mobile-menu"
+                  >
+                    <Menu className="w-5 h-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-64 bg-slate-900 border-white/10 p-0">
+                  <NavigationMenu />
+                </SheetContent>
+              </Sheet>
+
               <Button 
                 variant="ghost" 
                 size="sm"
-                className="text-white hover:text-cyan-400 hover:bg-white/10"
+                className="text-white hover:text-cyan-400 hover:bg-white/10 text-xs sm:text-sm"
                 onClick={() => setLocation("/landing")}
                 data-testid="button-back-to-landing"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Back</span>
               </Button>
               <div className="flex items-center gap-3">
-                <div className="scale-75">
+                <div className="scale-50 sm:scale-75">
                   <PipAuraLogo />
                 </div>
               </div>
             </div>
             <Button 
-              className="bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg shadow-cyan-500/50"
+              className="bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg shadow-cyan-500/50 text-xs sm:text-sm px-2 sm:px-4"
               onClick={() => setLocation("/auth")}
               data-testid="button-start-free-trial"
             >
-              Start Free Trial
+              <span className="hidden sm:inline">Start Free Trial</span>
+              <span className="sm:hidden">Sign Up</span>
             </Button>
           </div>
         </div>
@@ -179,34 +235,9 @@ export default function ViewJournal() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <aside className="w-64 border-r border-white/10 bg-slate-900/50 overflow-y-auto">
-          <div className="p-4">
-            <p className="text-xs text-slate-400 mb-4 px-3">NAVIGATION</p>
-            <nav className="space-y-1">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeSection === item.id;
-                
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveSection(item.id)}
-                    data-testid={`nav-${item.id}`}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
-                      isActive 
-                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/50" 
-                        : "text-slate-400 hover:text-white hover:bg-white/5"
-                    )}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span className="truncate">{item.name}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
+        {/* Desktop Sidebar - Hidden on mobile */}
+        <aside className="hidden md:block w-64 border-r border-white/10 bg-slate-900/50 overflow-y-auto">
+          <NavigationMenu />
         </aside>
 
         {/* Content Area */}
