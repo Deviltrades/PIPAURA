@@ -143,24 +143,26 @@ export default function Fundamentals() {
       </div>
 
       <Tabs defaultValue="calendar" className="space-y-3 sm:space-y-4">
-        <TabsList className="w-full grid grid-cols-4 h-auto">
-          <TabsTrigger value="calendar" data-testid="tab-calendar" className="flex-col sm:flex-row gap-1 sm:gap-2 py-2 px-1 sm:px-3">
-            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="text-[10px] sm:text-sm">Calendar</span>
-          </TabsTrigger>
-          <TabsTrigger value="news" data-testid="tab-news" className="flex-col sm:flex-row gap-1 sm:gap-2 py-2 px-1 sm:px-3">
-            <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="text-[10px] sm:text-sm">News</span>
-          </TabsTrigger>
-          <TabsTrigger value="analysis" data-testid="tab-analysis" className="flex-col sm:flex-row gap-1 sm:gap-2 py-2 px-1 sm:px-3">
-            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="text-[10px] sm:text-sm">Analysis</span>
-          </TabsTrigger>
-          <TabsTrigger value="strength" data-testid="tab-strength" className="flex-col sm:flex-row gap-1 sm:gap-2 py-2 px-1 sm:px-3">
-            <Gauge className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="text-[10px] sm:text-sm">Strength</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
+          <TabsList className="w-full inline-flex sm:grid sm:grid-cols-4 h-auto min-w-max sm:min-w-0">
+            <TabsTrigger value="calendar" data-testid="tab-calendar" className="flex-col sm:flex-row gap-1 sm:gap-2 py-2 px-3 sm:px-3 flex-1 sm:flex-auto">
+              <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="text-[10px] sm:text-sm whitespace-nowrap">Calendar</span>
+            </TabsTrigger>
+            <TabsTrigger value="news" data-testid="tab-news" className="flex-col sm:flex-row gap-1 sm:gap-2 py-2 px-3 sm:px-3 flex-1 sm:flex-auto">
+              <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="text-[10px] sm:text-sm whitespace-nowrap">News</span>
+            </TabsTrigger>
+            <TabsTrigger value="analysis" data-testid="tab-analysis" className="flex-col sm:flex-row gap-1 sm:gap-2 py-2 px-3 sm:px-3 flex-1 sm:flex-auto">
+              <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="text-[10px] sm:text-sm whitespace-nowrap">Analysis</span>
+            </TabsTrigger>
+            <TabsTrigger value="strength" data-testid="tab-strength" className="flex-col sm:flex-row gap-1 sm:gap-2 py-2 px-3 sm:px-3 flex-1 sm:flex-auto">
+              <Gauge className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="text-[10px] sm:text-sm whitespace-nowrap">Strength</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="calendar" className="space-y-3 sm:space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
