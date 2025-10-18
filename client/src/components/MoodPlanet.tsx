@@ -11,27 +11,14 @@ interface MoodPlanetProps {
   moodLogs: MoodData[];
 }
 
-interface Lightning {
-  x: number;
-  y: number;
-  intensity: number;
-  color: string;
-  angle: number;
-  branches: { x: number; y: number; angle: number }[];
-  lifetime: number;
-  maxLifetime: number;
-}
-
 interface Continent {
   points: { x: number; y: number }[];
-  color: string;
 }
 
 export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [continents, setContinents] = useState<Continent[]>([]);
   const [rotation, setRotation] = useState(0);
-  const [lightningStrikes, setLightningStrikes] = useState<Lightning[]>([]);
-  const [hoveredStorm, setHoveredStorm] = useState<{ mood: number; date: string; x: number; y: number } | null>(null);
   const animationFrameRef = useRef<number>();
 
   const size = 500;
@@ -39,117 +26,92 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
   const centerY = size / 2;
   const radius = 200;
 
-  // Get color based on mood score
-  const getMoodColor = (mood: number) => {
-    if (mood >= 8) return { 
-      storm: '#06b6d4', 
-      glow: '#22d3ee',
-      land: '#0d4d56',
-      name: 'Good' 
-    }; // Cyan (good)
-    if (mood >= 5) return { 
-      storm: '#f97316', 
-      glow: '#fb923c',
-      land: '#6b3410',
-      name: 'Neutral' 
-    }; // Orange (neutral)
-    return { 
-      storm: '#ec4899', 
-      glow: '#f43f5e',
-      land: '#5e1a3a',
-      name: 'Low' 
-    }; // Magenta/Red (bad)
+  // Calculate average mood from all logs
+  const averageMood = moodLogs.length > 0
+    ? moodLogs.reduce((sum, log) => sum + log.mood, 0) / moodLogs.length
+    : 5;
+
+  // Get planet colors based on average mood
+  const getPlanetColors = (avgMood: number) => {
+    if (avgMood >= 8) {
+      // Good mood - Blue/Cyan planet
+      return {
+        base: '#0d4d56',
+        glow: '#06b6d4',
+        lightning: '#22d3ee',
+        atmosphere: '#06b6d4',
+        name: 'Excellent'
+      };
+    } else if (avgMood >= 5) {
+      // Neutral mood - Orange planet
+      return {
+        base: '#6b3410',
+        glow: '#f97316',
+        lightning: '#fb923c',
+        atmosphere: '#f97316',
+        name: 'Neutral'
+      };
+    } else {
+      // Bad mood - Red/Magenta planet
+      return {
+        base: '#5e1a3a',
+        glow: '#ec4899',
+        lightning: '#f43f5e',
+        atmosphere: '#ec4899',
+        name: 'Stressed'
+      };
+    }
   };
 
-  // Generate organic continent shapes using random walks
-  const generateContinents = (numContinents: number): Continent[] => {
-    const continents: Continent[] = [];
-    
-    for (let i = 0; i < numContinents; i++) {
-      const mood = moodLogs[i % moodLogs.length]?.mood || 5;
-      const colors = getMoodColor(mood);
+  const colors = getPlanetColors(averageMood);
+
+  // Generate fixed continents once
+  useEffect(() => {
+    const generateFixedContinents = (): Continent[] => {
+      const newContinents: Continent[] = [];
+      const numContinents = 6; // Fixed number of continents
       
-      // Random starting position on circle
-      const startAngle = (Math.random() * Math.PI * 2);
-      const startRadius = radius * (0.4 + Math.random() * 0.5);
-      const startX = centerX + Math.cos(startAngle + rotation) * startRadius;
-      const startY = centerY + Math.sin(startAngle + rotation) * startRadius;
-      
-      const points: { x: number; y: number }[] = [{ x: startX, y: startY }];
-      
-      // Random walk to create organic shapes
-      let currentX = startX;
-      let currentY = startY;
-      let currentAngle = Math.random() * Math.PI * 2;
-      
-      const numPoints = 15 + Math.floor(Math.random() * 10);
-      
-      for (let j = 0; j < numPoints; j++) {
-        // Slight random turn
-        currentAngle += (Math.random() - 0.5) * 1.5;
-        const stepSize = 8 + Math.random() * 15;
+      for (let i = 0; i < numContinents; i++) {
+        const baseAngle = (i / numContinents) * Math.PI * 2;
+        const baseRadius = radius * (0.5 + (i % 2) * 0.2);
         
-        currentX += Math.cos(currentAngle) * stepSize;
-        currentY += Math.sin(currentAngle) * stepSize;
+        const points: { x: number; y: number }[] = [];
         
-        // Keep within planet bounds
-        const distFromCenter = Math.sqrt(
-          Math.pow(currentX - centerX, 2) + Math.pow(currentY - centerY, 2)
-        );
+        // Create organic continent shape
+        const numPoints = 12 + Math.floor(Math.random() * 8);
         
-        if (distFromCenter < radius - 10) {
-          points.push({ x: currentX, y: currentY });
+        for (let j = 0; j < numPoints; j++) {
+          const angle = baseAngle + (j / numPoints) * (Math.PI / 2) + Math.random() * 0.3;
+          const r = baseRadius * (0.7 + Math.random() * 0.6);
+          
+          const x = centerX + Math.cos(angle) * r;
+          const y = centerY + Math.sin(angle) * r;
+          
+          // Only add if within planet bounds
+          const dist = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+          if (dist < radius - 20) {
+            points.push({ x, y });
+          }
+        }
+        
+        if (points.length >= 3) {
+          newContinents.push({ points });
         }
       }
       
-      continents.push({ points, color: colors.land });
-    }
-    
-    return continents;
-  };
-
-  // Generate lightning bolt from a point
-  const createLightning = (
-    startX: number, 
-    startY: number, 
-    mood: number,
-    angle: number
-  ): Lightning => {
-    const colors = getMoodColor(mood);
-    const branches: { x: number; y: number; angle: number }[] = [];
-    
-    // Create 2-4 branches for the lightning
-    const numBranches = 2 + Math.floor(Math.random() * 3);
-    for (let i = 0; i < numBranches; i++) {
-      const branchAngle = angle + (Math.random() - 0.5) * Math.PI / 2;
-      const branchLength = 20 + Math.random() * 40;
-      branches.push({
-        x: startX + Math.cos(branchAngle) * branchLength,
-        y: startY + Math.sin(branchAngle) * branchLength,
-        angle: branchAngle
-      });
-    }
-    
-    return {
-      x: startX,
-      y: startY,
-      intensity: 0.5 + Math.random() * 0.5,
-      color: colors.storm,
-      angle,
-      branches,
-      lifetime: 0,
-      maxLifetime: 15 + Math.random() * 10
+      return newContinents;
     };
-  };
+
+    setContinents(generateFixedContinents());
+  }, []); // Only generate once on mount
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || continents.length === 0) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let continents = generateContinents(Math.min(moodLogs.length, 8));
     let animationTime = 0;
 
     const animate = () => {
@@ -159,10 +121,10 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
       ctx.fillStyle = '#0a0e1a';
       ctx.fillRect(0, 0, size, size);
 
-      // Draw planet base with gradient
+      // Draw planet base with mood-based gradient
       const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
       gradient.addColorStop(0, '#1e1b4b');
-      gradient.addColorStop(0.5, '#312e81');
+      gradient.addColorStop(0.5, colors.base);
       gradient.addColorStop(1, '#0f172a');
       
       ctx.fillStyle = gradient;
@@ -170,127 +132,148 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw atmospheric glow
-      ctx.shadowBlur = 30;
-      ctx.shadowColor = '#06b6d4';
-      ctx.strokeStyle = '#06b6d4';
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.3;
+      // Draw atmospheric glow (mood-based color)
+      ctx.shadowBlur = 40;
+      ctx.shadowColor = colors.atmosphere;
+      ctx.strokeStyle = colors.atmosphere;
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.6;
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
       ctx.stroke();
       ctx.shadowBlur = 0;
       ctx.globalAlpha = 1;
 
-      // Slowly rotate the planet
-      setRotation(prev => prev + 0.002);
+      // Slow rotation
+      setRotation(prev => prev + 0.003);
 
-      // Regenerate continents with rotation
-      if (animationTime % 3 === 0) {
-        continents = generateContinents(Math.min(moodLogs.length, 8));
-      }
-
-      // Draw continents
-      continents.forEach(continent => {
+      // Draw fixed continents with lightning borders
+      continents.forEach((continent, continentIndex) => {
         if (continent.points.length < 3) return;
         
-        ctx.fillStyle = continent.color;
-        ctx.strokeStyle = '#f97316';
-        ctx.lineWidth = 1;
-        ctx.globalAlpha = 0.6;
+        // Rotate points
+        const rotatedPoints = continent.points.map(point => {
+          const dx = point.x - centerX;
+          const dy = point.y - centerY;
+          return {
+            x: centerX + dx * Math.cos(rotation) - dy * Math.sin(rotation),
+            y: centerY + dx * Math.sin(rotation) + dy * Math.cos(rotation)
+          };
+        });
+        
+        // Draw continent fill (darker)
+        ctx.fillStyle = colors.base;
+        ctx.globalAlpha = 0.7;
         
         ctx.beginPath();
-        ctx.moveTo(continent.points[0].x, continent.points[0].y);
-        
-        for (let i = 1; i < continent.points.length; i++) {
-          ctx.lineTo(continent.points[i].x, continent.points[i].y);
+        ctx.moveTo(rotatedPoints[0].x, rotatedPoints[0].y);
+        for (let i = 1; i < rotatedPoints.length; i++) {
+          ctx.lineTo(rotatedPoints[i].x, rotatedPoints[i].y);
         }
         ctx.closePath();
         ctx.fill();
-        ctx.stroke();
         ctx.globalAlpha = 1;
-      });
 
-      // Spawn new lightning randomly
-      if (Math.random() < 0.08 && moodLogs.length > 0) {
-        const randomLog = moodLogs[Math.floor(Math.random() * moodLogs.length)];
-        const randomAngle = Math.random() * Math.PI * 2;
-        const randomRadius = radius * (0.3 + Math.random() * 0.6);
-        const stormX = centerX + Math.cos(randomAngle + rotation) * randomRadius;
-        const stormY = centerY + Math.sin(randomAngle + rotation) * randomRadius;
-        
-        // Check if within planet
-        const distFromCenter = Math.sqrt(
-          Math.pow(stormX - centerX, 2) + Math.pow(stormY - centerY, 2)
-        );
-        
-        if (distFromCenter < radius - 20) {
-          const lightning = createLightning(
-            stormX,
-            stormY,
-            randomLog.mood,
-            randomAngle
-          );
+        // Draw lightning-like borders
+        for (let i = 0; i < rotatedPoints.length; i++) {
+          const p1 = rotatedPoints[i];
+          const p2 = rotatedPoints[(i + 1) % rotatedPoints.length];
           
-          setLightningStrikes(prev => [...prev, lightning]);
-        }
-      }
-
-      // Draw and update lightning strikes
-      setLightningStrikes(prev => {
-        const updated = prev.map(strike => ({
-          ...strike,
-          lifetime: strike.lifetime + 1
-        })).filter(strike => strike.lifetime < strike.maxLifetime);
-
-        updated.forEach(strike => {
-          const alpha = 1 - (strike.lifetime / strike.maxLifetime);
+          // Pulsing effect based on animation time
+          const pulseOffset = (continentIndex * 30 + i * 10);
+          const pulse = Math.sin((animationTime + pulseOffset) * 0.1) * 0.5 + 0.5;
+          const intensity = 0.5 + pulse * 0.5;
           
-          // Main lightning bolt
-          ctx.strokeStyle = strike.color;
-          ctx.lineWidth = 3 * strike.intensity;
-          ctx.globalAlpha = alpha * strike.intensity;
-          ctx.shadowBlur = 20;
-          ctx.shadowColor = strike.color;
+          // Draw main lightning line
+          ctx.strokeStyle = colors.lightning;
+          ctx.lineWidth = 2 + pulse * 2;
+          ctx.shadowBlur = 15 + pulse * 10;
+          ctx.shadowColor = colors.lightning;
+          ctx.globalAlpha = intensity;
           
-          // Draw main bolt
           ctx.beginPath();
-          ctx.moveTo(strike.x, strike.y);
+          ctx.moveTo(p1.x, p1.y);
           
-          // Jagged lightning path
-          const boltLength = 30 + Math.random() * 30;
-          let currentX = strike.x;
-          let currentY = strike.y;
+          // Create jagged lightning effect
+          const segments = 5;
+          const dx = (p2.x - p1.x) / segments;
+          const dy = (p2.y - p1.y) / segments;
           
-          for (let i = 0; i < 5; i++) {
-            currentX += Math.cos(strike.angle + (Math.random() - 0.5) * 0.5) * (boltLength / 5);
-            currentY += Math.sin(strike.angle + (Math.random() - 0.5) * 0.5) * (boltLength / 5);
-            ctx.lineTo(currentX, currentY);
+          for (let j = 1; j < segments; j++) {
+            const jitter = (Math.sin((animationTime + i * 20 + j * 10) * 0.2) * 5);
+            const perpX = -dy * 0.1 * jitter;
+            const perpY = dx * 0.1 * jitter;
+            
+            ctx.lineTo(
+              p1.x + dx * j + perpX,
+              p1.y + dy * j + perpY
+            );
           }
+          
+          ctx.lineTo(p2.x, p2.y);
           ctx.stroke();
-
-          // Draw branches
-          strike.branches.forEach(branch => {
+          
+          // Draw glow points at vertices
+          if (pulse > 0.7) {
+            ctx.fillStyle = colors.lightning;
+            ctx.shadowBlur = 20;
+            ctx.globalAlpha = pulse;
             ctx.beginPath();
-            ctx.moveTo(strike.x, strike.y);
-            ctx.lineTo(branch.x, branch.y);
-            ctx.stroke();
-          });
-
-          // Draw glow at strike point
-          ctx.shadowBlur = 40;
-          ctx.fillStyle = strike.color;
-          ctx.globalAlpha = alpha * 0.8;
-          ctx.beginPath();
-          ctx.arc(strike.x, strike.y, 8 * strike.intensity, 0, Math.PI * 2);
-          ctx.fill();
+            ctx.arc(p1.x, p1.y, 3 + pulse * 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
           
           ctx.shadowBlur = 0;
           ctx.globalAlpha = 1;
-        });
-
-        return updated;
+        }
       });
+
+      // Add grid lines across planet
+      const gridLines = 12;
+      ctx.strokeStyle = colors.lightning;
+      ctx.lineWidth = 0.5;
+      ctx.globalAlpha = 0.2;
+      ctx.setLineDash([5, 5]);
+      
+      // Horizontal lines
+      for (let i = 1; i < gridLines; i++) {
+        const y = (i / gridLines) * (radius * 2) + centerY - radius;
+        const lineRadius = Math.sqrt(radius * radius - Math.pow(y - centerY, 2));
+        
+        if (!isNaN(lineRadius)) {
+          ctx.beginPath();
+          ctx.moveTo(centerX - lineRadius, y);
+          ctx.lineTo(centerX + lineRadius, y);
+          ctx.stroke();
+        }
+      }
+      
+      // Vertical lines
+      for (let i = 0; i < gridLines; i++) {
+        const angle = (i / gridLines) * Math.PI * 2 + rotation;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(
+          centerX + Math.cos(angle) * radius,
+          centerY + Math.sin(angle) * radius
+        );
+        ctx.stroke();
+      }
+      
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      // Add pulsing core glow
+      const coreGlow = Math.sin(animationTime * 0.05) * 0.3 + 0.7;
+      ctx.fillStyle = colors.glow;
+      ctx.globalAlpha = 0.1 * coreGlow;
+      ctx.shadowBlur = 50;
+      ctx.shadowColor = colors.glow;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 60, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
 
       animationFrameRef.current = requestAnimationFrame(animate);
     };
@@ -302,43 +285,13 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [moodLogs, rotation]);
-
-  // Handle mouse move for interactivity
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    // Check if hovering over any lightning
-    const hoveredLightning = lightningStrikes.find(strike => {
-      const dist = Math.sqrt(
-        Math.pow(mouseX - strike.x, 2) + Math.pow(mouseY - strike.y, 2)
-      );
-      return dist < 30;
-    });
-
-    if (hoveredLightning) {
-      const log = moodLogs[Math.floor(Math.random() * moodLogs.length)];
-      setHoveredStorm({
-        mood: log.mood,
-        date: log.date,
-        x: mouseX,
-        y: mouseY
-      });
-    } else {
-      setHoveredStorm(null);
-    }
-  };
+  }, [continents, colors, rotation]);
 
   return (
     <div className="relative flex flex-col items-center justify-center p-4 bg-slate-950/50 rounded-lg border border-cyan-500/30">
       <h3 className="text-lg font-bold text-cyan-400 mb-2" data-testid="title-mood-planet">Mood Planet</h3>
       <p className="text-xs text-gray-400 mb-4 text-center">
-        Watch lightning storms sweep across your emotional trading world
+        Your emotional world • Lightning flows along the continents
       </p>
       
       <div className="relative">
@@ -346,29 +299,19 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
           ref={canvasRef}
           width={size}
           height={size}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => setHoveredStorm(null)}
-          className="max-w-full h-auto cursor-pointer rounded-lg"
+          className="max-w-full h-auto rounded-lg"
           data-testid="canvas-mood-planet"
         />
+      </div>
 
-        {/* Hover tooltip */}
-        {hoveredStorm && (
-          <motion.div
-            className="absolute bg-slate-900/95 border border-cyan-500/50 rounded-lg p-3 text-xs pointer-events-none z-10"
-            style={{
-              left: hoveredStorm.x + 10,
-              top: hoveredStorm.y + 10
-            }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            data-testid="tooltip-storm"
-          >
-            <div className="text-cyan-400 font-semibold">Storm Activity</div>
-            <div className="text-gray-300">Mood: {hoveredStorm.mood}/10</div>
-            <div className="text-gray-400 text-[10px]">{hoveredStorm.date}</div>
-          </motion.div>
-        )}
+      {/* Mood Status */}
+      <div className="mt-4 text-center">
+        <div className="text-sm font-semibold" style={{ color: colors.glow }}>
+          Current Emotional State: {colors.name}
+        </div>
+        <div className="text-xs text-gray-400 mt-1">
+          Average Mood: {averageMood.toFixed(1)}/10
+        </div>
       </div>
 
       {/* Legend */}
@@ -378,27 +321,27 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
             <div className="w-3 h-3 rounded-full bg-cyan-400" style={{ boxShadow: '0 0 8px #22d3ee' }}></div>
             <div className="absolute inset-0 w-3 h-3 rounded-full bg-cyan-400 animate-ping" style={{ opacity: 0.4 }}></div>
           </div>
-          <span className="text-gray-400">Good Mood Storms (8-10)</span>
+          <span className="text-gray-400">Excellent Mood (8-10)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
             <div className="w-3 h-3 rounded-full bg-orange-400" style={{ boxShadow: '0 0 6px #f97316' }}></div>
             <div className="absolute inset-0 w-3 h-3 rounded-full bg-orange-400 animate-ping" style={{ opacity: 0.4 }}></div>
           </div>
-          <span className="text-gray-400">Neutral Storms (5-7)</span>
+          <span className="text-gray-400">Neutral Mood (5-7)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
             <div className="w-3 h-3 rounded-full bg-pink-500" style={{ boxShadow: '0 0 5px #f43f5e' }}></div>
             <div className="absolute inset-0 w-3 h-3 rounded-full bg-pink-500 animate-ping" style={{ opacity: 0.4 }}></div>
           </div>
-          <span className="text-gray-400">Low Mood Storms (1-4)</span>
+          <span className="text-gray-400">Stressed Mood (1-4)</span>
         </div>
       </div>
 
       <div className="mt-3 text-center">
         <p className="text-[10px] text-gray-500 italic">
-          Continents shift as the planet rotates • Lightning intensity reflects your emotional state
+          The planet's color reflects your overall emotional state • Lightning pulses along continent borders
         </p>
       </div>
     </div>
