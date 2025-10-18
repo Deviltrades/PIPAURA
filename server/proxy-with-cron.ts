@@ -29,6 +29,75 @@ const supabase = supabaseUrl && supabaseServiceKey
   ? createClient(supabaseUrl, supabaseServiceKey)
   : null;
 
+// Helper function to get plan config from Stripe metadata or price
+// IMPORTANT: If pricing changes, update these mappings!
+// Current pricing (as of October 2025):
+//   Lite: £4.99/month (499p) or £49.99/year (4999p)
+//   Core: £14/month (1400p) or £114/year (11400p)
+//   Elite: £24/month (2400p) or £230/year (23000p)
+function getPlanFromStripeData(metadata?: Stripe.Metadata | null, items?: Stripe.ApiList<Stripe.SubscriptionItem>): 'lite' | 'core' | 'elite' | null {
+  // First try metadata (from checkout session)
+  if (metadata?.planId) {
+    return metadata.planId as 'lite' | 'core' | 'elite';
+  }
+  
+  // Then try to infer from price amount (subscription items)
+  // This covers billing portal changes and subscription renewals
+  if (items && items.data.length > 0) {
+    const firstItem = items.data[0];
+    const price = firstItem.price;
+    
+    // Map price amounts to plans (in pence for GBP)
+    const amount = price.unit_amount || 0;
+    
+    if (amount === 499 || amount === 4999) return 'lite';
+    if (amount === 1400 || amount === 11400) return 'core';
+    if (amount === 2400 || amount === 23000) return 'elite';
+  }
+  
+  return null;
+}
+
+// Helper function to update user plan in Supabase
+async function updateUserPlan(email: string, planId: 'lite' | 'core' | 'elite') {
+  if (!supabase) {
+    console.error('❌ Supabase client not initialized');
+    throw new Error('Database connection unavailable');
+  }
+
+  const planLimits = {
+    lite: { storage_limit_mb: 1024, image_limit: 999999, account_limit: 1 },
+    core: { storage_limit_mb: 2048, image_limit: 999999, account_limit: 10 },
+    elite: { storage_limit_mb: 10240, image_limit: 999999, account_limit: 999999 }
+  };
+
+  const limits = planLimits[planId];
+
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .update({ 
+      plan_type: planId,
+      storage_limit_mb: limits.storage_limit_mb,
+      image_limit: limits.image_limit,
+      account_limit: limits.account_limit
+    })
+    .eq('email', email)
+    .select();
+
+  if (error) {
+    console.error('❌ Failed to update user plan:', error);
+    throw error;
+  }
+  
+  if (!data || data.length === 0) {
+    console.warn(`⚠️ No user found with email ${email}`);
+    throw new Error(`No user found with email ${email}`);
+  }
+
+  console.log(`✅ Updated user ${email} to ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
+  return data[0];
+}
+
 // Webhook endpoint needs raw body for signature verification
 app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async (req, res) => {
   const sig = req.headers['stripe-signature'];
@@ -36,11 +105,16 @@ app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async 
 
   if (!webhookSecret) {
     console.error('⚠️ STRIPE_WEBHOOK_SECRET not configured');
-    return res.status(500).send('Webhook secret not configured');
+    return res.status(500).json({ error: 'Webhook secret not configured' });
+  }
+
+  if (!supabase) {
+    console.error('❌ Supabase credentials missing - cannot process webhooks');
+    return res.status(500).json({ error: 'Database connection unavailable' });
   }
 
   if (!sig) {
-    return res.status(400).send('No signature');
+    return res.status(400).json({ error: 'No signature provided' });
   }
 
   let event: Stripe.Event;
@@ -49,7 +123,7 @@ app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async 
     event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err: any) {
     console.error('⚠️ Webhook signature verification failed:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).json({ error: `Webhook signature verification failed: ${err.message}` });
   }
 
   // Handle the event
@@ -61,41 +135,43 @@ app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async 
 
         // Extract customer email and plan info
         const customerEmail = session.customer_details?.email || session.customer_email;
-        const planId = session.metadata?.planId as 'lite' | 'core' | 'elite';
+        const planId = getPlanFromStripeData(session.metadata);
         
-        if (!customerEmail || !planId) {
-          console.error('Missing email or planId in session:', session.id);
-          break;
+        if (!customerEmail) {
+          console.error('Missing email in checkout session:', session.id);
+          return res.status(400).json({ error: 'Missing customer email' });
         }
 
-        // Update user plan in Supabase
-        if (supabase) {
-          const { data, error } = await supabase
-            .from('user_profiles')
-            .update({ 
-              plan_type: planId,
-              storage_limit_mb: planId === 'lite' ? 1024 : planId === 'core' ? 2048 : 10240,
-              account_limit: planId === 'lite' ? 1 : planId === 'core' ? 10 : 999999
-            })
-            .eq('email', customerEmail)
-            .select();
-
-          if (error) {
-            console.error('❌ Failed to update user plan:', error);
-          } else if (data && data.length > 0) {
-            console.log(`✅ Updated user ${customerEmail} to ${planId} plan`);
-          } else {
-            console.warn(`⚠️ No user found with email ${customerEmail}`);
-          }
+        if (!planId) {
+          console.error('Missing or invalid planId in session:', session.id);
+          return res.status(400).json({ error: 'Missing or invalid plan ID' });
         }
+
+        await updateUserPlan(customerEmail, planId);
         break;
       }
 
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
-        console.log('📋 Subscription event:', subscription.id);
-        // Handle subscription updates if needed
+        console.log(`📋 Subscription ${event.type}:`, subscription.id);
+        
+        // Get customer email
+        const customer = await stripe.customers.retrieve(subscription.customer as string);
+        if (!('email' in customer) || !customer.email) {
+          console.error('Customer has no email:', subscription.customer);
+          return res.status(400).json({ error: 'Customer has no email' });
+        }
+
+        // Determine plan from subscription items
+        const planId = getPlanFromStripeData(subscription.metadata, subscription.items);
+        
+        if (!planId) {
+          console.error('Could not determine plan from subscription:', subscription.id);
+          return res.status(400).json({ error: 'Could not determine plan type' });
+        }
+
+        await updateUserPlan(customer.email, planId);
         break;
       }
 
@@ -103,21 +179,14 @@ app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async 
         const subscription = event.data.object as Stripe.Subscription;
         console.log('❌ Subscription cancelled:', subscription.id);
         
-        // Optionally downgrade user to lite plan
-        if (supabase && subscription.customer) {
-          const customer = await stripe.customers.retrieve(subscription.customer as string);
-          if ('email' in customer && customer.email) {
-            await supabase
-              .from('user_profiles')
-              .update({ 
-                plan_type: 'lite',
-                storage_limit_mb: 1024,
-                account_limit: 1
-              })
-              .eq('email', customer.email);
-            
-            console.log(`📉 Downgraded user ${customer.email} to lite plan`);
-          }
+        // Downgrade user to lite plan
+        const customer = await stripe.customers.retrieve(subscription.customer as string);
+        if ('email' in customer && customer.email) {
+          await updateUserPlan(customer.email, 'lite');
+          console.log(`📉 Downgraded user ${customer.email} to lite plan`);
+        } else {
+          console.error('Customer has no email:', subscription.customer);
+          return res.status(400).json({ error: 'Customer has no email' });
         }
         break;
       }
@@ -128,8 +197,8 @@ app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async 
 
     res.json({ received: true });
   } catch (err: any) {
-    console.error('Error processing webhook:', err);
-    res.status(500).send(`Webhook handler error: ${err.message}`);
+    console.error('❌ Error processing webhook:', err);
+    return res.status(500).json({ error: `Webhook processing failed: ${err.message}` });
   }
 });
 
