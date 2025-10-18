@@ -211,7 +211,7 @@ export function MoodPlanet({ moodLogs, yearlyMoodAverage = 6, monthlyMoodAverage
       }
 
       // Gradually update continent moods (couple at a time)
-      const transitionSpeed = 0.015; // Slow transition
+      const transitionSpeed = 0.000005; // Extremely slow transition over hours
       const continentsToUpdate = 2; // Update 2 continents at a time
       
       for (let i = 0; i < continentsToUpdate && i < continentMoodsRef.current.length; i++) {
