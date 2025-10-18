@@ -13,8 +13,18 @@ Settings access: Settings icon next to theme toggle with dedicated logout tab.
 ### Frontend
 The client-side is a React 18 and TypeScript application using `shadcn/ui` (built on Radix UI), Tailwind CSS for styling (light/dark themes, responsiveness), React Query for server state management, Wouter for routing, and React Hook Form with Zod for form validation.
 
-### Backend
-The application uses a pure Supabase architecture for all database operations, authentication, and file storage, enabling a JAMstack approach without a separate server.
+### Backend & Deployment
+**Development (Replit)**: Express server (`server/proxy-with-cron.ts`) handles all API routes, Stripe operations, and cron endpoints. Vite dev server runs on port 5173, proxied through Express on port 5000.
+
+**Production (Vercel + Supabase)**: 
+- Frontend deployed as static Vite build to Vercel
+- Backend API routes implemented as Vercel serverless functions in `/api` directory:
+  - `/api/create-checkout-session.ts` - Stripe checkout session creation
+  - `/api/create-portal-session.ts` - Stripe Customer Portal access (auth-protected)
+  - `/api/webhooks/stripe.ts` - Stripe webhook handler for subscription events
+  - `/api/cron/*` - Scheduled serverless functions for fundamental analysis updates
+- Database operations, authentication, and file storage handled by Supabase
+- Enables true JAMstack architecture with serverless backend
 
 ### Data Storage
 Supabase PostgreSQL stores all data, including user profiles, journal entries (instrument types, position details, P&L), and Supabase Storage handles trade attachments.
@@ -83,6 +93,8 @@ A comprehensive Stripe-based subscription system with three pricing tiers:
 - Automatic storage limit updates based on plan tier
 
 **Storage Enforcement**: The `useUserProfile` hook enforces storage limits client-side via the `canPerformAction` function, which checks `storage_used_mb` against `storage_limit_mb` before allowing upload operations.
+
+**Billing Management**: Users can manage their subscriptions through the Stripe Customer Portal accessible from the `/user` page. The portal allows plan upgrades/downgrades, payment method updates, invoice viewing, and subscription cancellation (downgrades to Lite plan).
 
 ## External Dependencies
 
