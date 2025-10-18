@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { loadStripe } from "@stripe/stripe-js";
 import { Button } from "@/components/ui/button";
@@ -80,18 +80,19 @@ export default function Checkout() {
   const [selectedInterval, setSelectedInterval] = useState<Interval>("monthly");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Get plan from URL params if available
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlPlan = urlParams.get("plan") as Plan | null;
-  const urlInterval = urlParams.get("interval") as Interval | null;
+  // Read URL params once on mount to set initial plan/interval
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlPlan = urlParams.get("plan") as Plan | null;
+    const urlInterval = urlParams.get("interval") as Interval | null;
 
-  // Use URL params if available
-  if (urlPlan && !selectedPlan) {
-    setSelectedPlan(urlPlan);
-  }
-  if (urlInterval && selectedInterval === "monthly") {
-    setSelectedInterval(urlInterval);
-  }
+    if (urlPlan && (urlPlan === "lite" || urlPlan === "core" || urlPlan === "institutional")) {
+      setSelectedPlan(urlPlan);
+    }
+    if (urlInterval && (urlInterval === "monthly" || urlInterval === "yearly")) {
+      setSelectedInterval(urlInterval);
+    }
+  }, []);
 
   const handleCheckout = async () => {
     setIsProcessing(true);

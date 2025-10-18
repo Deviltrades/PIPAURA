@@ -55,7 +55,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      mode: 'payment', // One-time payment (change to 'subscription' for recurring)
+      mode: 'subscription', // Recurring subscription
       line_items: [
         {
           price_data: {
@@ -65,6 +65,9 @@ app.post("/api/create-checkout-session", async (req, res) => {
               description: `${interval.charAt(0).toUpperCase() + interval.slice(1)} subscription`,
             },
             unit_amount: amount,
+            recurring: {
+              interval: interval === 'monthly' ? 'month' : 'year',
+            },
           },
           quantity: 1,
         },
