@@ -34,31 +34,40 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
   // Get planet colors based on average mood
   const getPlanetColors = (avgMood: number) => {
     if (avgMood >= 8) {
-      // Good mood - Blue/Cyan planet
+      // Excellent mood - Green/Cyan planet (more green)
+      return {
+        base: '#065f46',
+        glow: '#10b981',
+        lightning: '#34d399',
+        atmosphere: '#10b981',
+        name: 'Excellent'
+      };
+    } else if (avgMood >= 5) {
+      // Neutral mood - Cyan planet
       return {
         base: '#0d4d56',
         glow: '#06b6d4',
         lightning: '#22d3ee',
         atmosphere: '#06b6d4',
-        name: 'Excellent'
+        name: 'Neutral'
       };
-    } else if (avgMood >= 5) {
-      // Neutral mood - Orange planet
+    } else if (avgMood >= 3) {
+      // Stressed mood - Orange planet
       return {
         base: '#6b3410',
         glow: '#f97316',
         lightning: '#fb923c',
         atmosphere: '#f97316',
-        name: 'Neutral'
+        name: 'Stressed'
       };
     } else {
-      // Bad mood - Red/Magenta planet
+      // Super stressed - Red planet
       return {
-        base: '#5e1a3a',
-        glow: '#ec4899',
-        lightning: '#f43f5e',
-        atmosphere: '#ec4899',
-        name: 'Stressed'
+        base: '#7f1d1d',
+        glow: '#ef4444',
+        lightning: '#f87171',
+        atmosphere: '#ef4444',
+        name: 'Super Stressed'
       };
     }
   };
@@ -315,27 +324,34 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
       </div>
 
       {/* Legend */}
-      <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs">
+      <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs">
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <div className="w-3 h-3 rounded-full bg-green-400" style={{ boxShadow: '0 0 8px #10b981' }}></div>
+            <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-400 animate-ping" style={{ opacity: 0.4 }}></div>
+          </div>
+          <span className="text-gray-400">Excellent (8-10)</span>
+        </div>
         <div className="flex items-center gap-2">
           <div className="relative">
             <div className="w-3 h-3 rounded-full bg-cyan-400" style={{ boxShadow: '0 0 8px #22d3ee' }}></div>
             <div className="absolute inset-0 w-3 h-3 rounded-full bg-cyan-400 animate-ping" style={{ opacity: 0.4 }}></div>
           </div>
-          <span className="text-gray-400">Excellent Mood (8-10)</span>
+          <span className="text-gray-400">Neutral (5-7)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
             <div className="w-3 h-3 rounded-full bg-orange-400" style={{ boxShadow: '0 0 6px #f97316' }}></div>
             <div className="absolute inset-0 w-3 h-3 rounded-full bg-orange-400 animate-ping" style={{ opacity: 0.4 }}></div>
           </div>
-          <span className="text-gray-400">Neutral Mood (5-7)</span>
+          <span className="text-gray-400">Stressed (3-5)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <div className="w-3 h-3 rounded-full bg-pink-500" style={{ boxShadow: '0 0 5px #f43f5e' }}></div>
-            <div className="absolute inset-0 w-3 h-3 rounded-full bg-pink-500 animate-ping" style={{ opacity: 0.4 }}></div>
+            <div className="w-3 h-3 rounded-full bg-red-500" style={{ boxShadow: '0 0 5px #ef4444' }}></div>
+            <div className="absolute inset-0 w-3 h-3 rounded-full bg-red-500 animate-ping" style={{ opacity: 0.4 }}></div>
           </div>
-          <span className="text-gray-400">Stressed Mood (1-4)</span>
+          <span className="text-gray-400">Super Stressed (1-2)</span>
         </div>
       </div>
 
