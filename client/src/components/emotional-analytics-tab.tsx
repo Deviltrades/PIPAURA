@@ -228,6 +228,16 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
                 </DialogHeader>
                 <div className="space-y-4 text-gray-200">
                   <div>
+                    <h3 className="font-semibold text-cyan-400 mb-2">Center Neurons (Continents)</h3>
+                    <p className="text-sm text-gray-300">
+                      The Mood Neuron features 8 unique continents at its center that represent your emotional state. 
+                      These continents gradually change color based on your logged emotions, with 2 continents updating 
+                      at a time to create a smooth, wave-like transition effect. Each continent's lightning borders, 
+                      pulses, and vertex glows match its current mood color.
+                    </p>
+                  </div>
+
+                  <div>
                     <h3 className="font-semibold text-cyan-400 mb-2">Color Meanings</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
