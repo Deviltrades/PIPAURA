@@ -170,11 +170,13 @@ export default function Trades() {
           </Button>
           <Button 
             onClick={() => setIsFormOpen(true)}
-            className="bg-cyan-600 hover:bg-cyan-700 text-white border-0 flex-1 sm:flex-none"
+            variant="outline"
+            className="border-cyan-500/50 text-white hover:bg-cyan-600/20 flex-1 sm:flex-none"
             data-testid="button-add-trade"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add Trade
+            <span className="hidden lg:inline">Add Trade Manually</span>
+            <span className="lg:hidden">Add Trade</span>
           </Button>
         </div>
       </div>
