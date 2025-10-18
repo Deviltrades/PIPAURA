@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 interface MoodPlanetProps {
-  averageMood: number;
+  moodLogs: Array<{ mood: number; date: string; pnl: number }>;
 }
 
 interface Continent {
@@ -36,7 +36,11 @@ const getPlanetColors = (mood: number) => {
   }
 };
 
-export function MoodPlanet({ averageMood }: MoodPlanetProps) {
+export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
+  // Calculate average mood from logs
+  const averageMood = moodLogs.length > 0
+    ? moodLogs.reduce((sum, log) => sum + log.mood, 0) / moodLogs.length
+    : 5; // Default to neutral
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [continents, setContinents] = useState<Continent[]>([]);
   const rotationRef = useRef(0);
