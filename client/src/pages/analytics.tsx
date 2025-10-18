@@ -101,35 +101,37 @@ export default function Analytics() {
   const currentMonth = currentDate.toLocaleDateString('en-US', { month: 'short' });
 
   return (
-    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="p-3 sm:p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white">Trading Analytics</h1>
-        <p className="text-gray-300 mb-3">Detailed performance analysis and metrics</p>
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">Trading Analytics</h1>
+        <p className="text-sm sm:text-base text-gray-300 mb-2 sm:mb-3">Detailed performance analysis and metrics</p>
         <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
       </div>
 
       <Tabs defaultValue="performance" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
-          <TabsTrigger value="performance" className="flex items-center gap-2" data-testid="tab-performance">
-            <BarChart3 className="h-4 w-4" />
-            Performance Metrics
+        <TabsList className="grid w-full max-w-md grid-cols-2 mb-4 sm:mb-6">
+          <TabsTrigger value="performance" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm" data-testid="tab-performance">
+            <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Performance Metrics</span>
+            <span className="sm:hidden">Performance</span>
           </TabsTrigger>
-          <TabsTrigger value="emotional" className="flex items-center gap-2" data-testid="tab-emotional">
-            <Heart className="h-4 w-4" />
-            Emotional Analytics
+          <TabsTrigger value="emotional" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm" data-testid="tab-emotional">
+            <Heart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Emotional Analytics</span>
+            <span className="sm:hidden">Emotional</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="performance" className="mt-0">{/* Performance Metrics Tab Content */}
 
       {/* Top Metrics Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
         {/* Total P&L */}
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-total-pnl">
-          <CardContent className="p-4 lg:p-6">
-            <div className="text-gray-400 text-sm mb-2">Total P&L</div>
-            <div className={`text-2xl lg:text-3xl font-bold ${stats.totalPnL >= 0 ? 'text-cyan-400' : 'text-red-500'}`} data-testid="text-total-pnl">
+          <CardContent className="p-3 sm:p-4 lg:p-6">
+            <div className="text-gray-400 text-[11px] sm:text-sm mb-1 sm:mb-2">Total P&L</div>
+            <div className={`text-lg sm:text-2xl lg:text-3xl font-bold ${stats.totalPnL >= 0 ? 'text-cyan-400' : 'text-red-500'}`} data-testid="text-total-pnl">
               {formatCurrency(stats.totalPnL)}
             </div>
           </CardContent>
@@ -137,9 +139,9 @@ export default function Analytics() {
 
         {/* Win Rate */}
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-win-rate">
-          <CardContent className="p-4 lg:p-6">
-            <div className="text-gray-400 text-sm mb-2">Win Rate</div>
-            <div className="text-2xl lg:text-3xl font-bold text-white" data-testid="text-win-rate">
+          <CardContent className="p-3 sm:p-4 lg:p-6">
+            <div className="text-gray-400 text-[11px] sm:text-sm mb-1 sm:mb-2">Win Rate</div>
+            <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-white" data-testid="text-win-rate">
               {stats.winRate.toFixed(1)}%
             </div>
           </CardContent>
@@ -147,9 +149,9 @@ export default function Analytics() {
 
         {/* Profit Factor */}
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-profit-factor">
-          <CardContent className="p-4 lg:p-6">
-            <div className="text-gray-400 text-sm mb-2">Profit Factor</div>
-            <div className="text-2xl lg:text-3xl font-bold text-white" data-testid="text-profit-factor">
+          <CardContent className="p-3 sm:p-4 lg:p-6">
+            <div className="text-gray-400 text-[11px] sm:text-sm mb-1 sm:mb-2">Profit Factor</div>
+            <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-white" data-testid="text-profit-factor">
               {stats.profitFactor >= 999 ? '∞' : stats.profitFactor.toFixed(2)}
             </div>
           </CardContent>
@@ -157,9 +159,9 @@ export default function Analytics() {
 
         {/* Max Drawdown */}
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-max-drawdown">
-          <CardContent className="p-4 lg:p-6">
-            <div className="text-gray-400 text-sm mb-2">Max Drawdown</div>
-            <div className="text-2xl lg:text-3xl font-bold text-red-500" data-testid="text-max-drawdown">
+          <CardContent className="p-3 sm:p-4 lg:p-6">
+            <div className="text-gray-400 text-[11px] sm:text-sm mb-1 sm:mb-2">Max Drawdown</div>
+            <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-red-500" data-testid="text-max-drawdown">
               +{stats.maxDrawdown.toFixed(2)}%
             </div>
           </CardContent>
@@ -167,35 +169,35 @@ export default function Analytics() {
       </div>
 
       {/* DNA Core Intelligence Visualization */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-dna-core">
-          <CardHeader>
-            <CardTitle className="text-xl text-white">Trader DNA Core</CardTitle>
-            <p className="text-sm text-gray-400">Real-time intelligence core showing your trading genome</p>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl text-white">Trader DNA Core</CardTitle>
+            <p className="text-xs sm:text-sm text-gray-400">Real-time intelligence core showing your trading genome</p>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             <FloatingDNACore accountId={selectedAccount} />
           </CardContent>
         </Card>
       </div>
 
       {/* Session Insights Section */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <SessionInsights trades={trades} />
       </div>
 
       {/* Bottom Visualizations Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Flow Curve */}
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-flow-curve">
-          <CardHeader>
-            <CardTitle className="text-xl text-white">Flow Curve</CardTitle>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl text-white">Flow Curve</CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             {stats.equityCurve.length > 0 ? (
               <div className="relative">
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={stats.equityCurve} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <ResponsiveContainer width="100%" height={250} className="sm:hidden">
+                  <LineChart data={stats.equityCurve} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                     <defs>
                       <linearGradient id="flowGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.8} />
@@ -213,24 +215,49 @@ export default function Analytics() {
                       type="monotone" 
                       dataKey="equity" 
                       stroke="url(#flowGradient)"
-                      strokeWidth={4}
+                      strokeWidth={3}
                       dot={false}
                       filter="url(#glow)"
                     />
                   </LineChart>
                 </ResponsiveContainer>
-                <div className="mt-6 text-center">
-                  <span className="text-gray-400 text-sm lg:text-base">Avg Monthly Return: </span>
-                  <span className="text-cyan-400 font-bold text-base lg:text-lg">
+                <ResponsiveContainer width="100%" height={300} className="hidden sm:block">
+                  <LineChart data={stats.equityCurve} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                    <defs>
+                      <linearGradient id="flowGradientLg" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.8} />
+                        <stop offset="100%" stopColor="#0891b2" stopOpacity={0.3} />
+                      </linearGradient>
+                      <filter id="glowLg">
+                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    <Line 
+                      type="monotone" 
+                      dataKey="equity" 
+                      stroke="url(#flowGradientLg)"
+                      strokeWidth={4}
+                      dot={false}
+                      filter="url(#glowLg)"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+                <div className="mt-3 sm:mt-6 text-center">
+                  <span className="text-gray-400 text-xs sm:text-sm lg:text-base">Avg Monthly Return: </span>
+                  <span className="text-cyan-400 font-bold text-sm sm:text-base lg:text-lg">
                     {avgMonthlyReturnPercent > 0 ? '+' : ''}{avgMonthlyReturnPercent.toFixed(1)}%
                   </span>
                 </div>
               </div>
             ) : (
-              <div className="h-[300px] flex items-center justify-center">
+              <div className="h-[250px] sm:h-[300px] flex items-center justify-center">
                 <div className="text-center text-gray-500">
-                  <p>No flow data available</p>
-                  <p className="text-sm mt-1">Add trades to see equity flow</p>
+                  <p className="text-sm sm:text-base">No flow data available</p>
+                  <p className="text-xs sm:text-sm mt-1">Add trades to see equity flow</p>
                 </div>
               </div>
             )}
@@ -239,23 +266,24 @@ export default function Analytics() {
 
         {/* Monthly Orbit Rings */}
         <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300" data-testid="card-monthly-orbit">
-          <CardHeader>
-            <CardTitle className="text-xl text-white flex items-center gap-2">
-              Monthly Orbit Rings
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl text-white flex items-center gap-2">
+              <span className="hidden sm:inline">Monthly Orbit Rings</span>
+              <span className="sm:hidden">Monthly Orbits</span>
               <button 
                 onClick={() => setIsInfoDialogOpen(true)}
                 className="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-cyan-400/20 transition-colors"
                 data-testid="button-info-orbit"
               >
-                <Info className="w-4 h-4 text-cyan-400" />
+                <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
               </button>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             {monthlyOrbitData.length > 0 ? (
               <div className="relative">
                 {/* Custom Circular Orbit Visualization */}
-                <div className="w-full h-[300px] flex items-center justify-center">
+                <div className="w-full h-[250px] sm:h-[300px] flex items-center justify-center">
                   <svg viewBox="0 0 400 400" className="w-full h-full max-w-[400px]">
                     <defs>
                       <radialGradient id="centerGlow" cx="50%" cy="50%">
