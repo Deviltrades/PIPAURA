@@ -96,7 +96,7 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
   }
 
   return (
-    <Card className="border-2 transition-all duration-300" style={{ 
+    <Card className="border-2 transition-all duration-300 widget-hover-pulse" style={{ 
       backgroundColor: bgColor,
       borderColor: "rgba(6, 182, 212, 0.6)",
       boxShadow: `0 0 15px ${textColor}20`
