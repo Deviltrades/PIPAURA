@@ -209,7 +209,7 @@ export default function ViewJournal() {
                 variant="ghost" 
                 size="sm"
                 className="text-white hover:text-cyan-400 hover:bg-white/10 text-xs sm:text-sm"
-                onClick={() => setLocation("/landing")}
+                onClick={() => setLocation("/")}
                 data-testid="button-back-to-landing"
               >
                 <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />

@@ -72,10 +72,9 @@ function Router() {
       
       {!user ? (
         <>
-          <Route path="/" component={MainPage} />
-          <Route path="/landing" component={Landing} />
+          <Route path="/" component={Landing} />
+          <Route path="/auth" component={MainPage} />
           <Route path="/view-journal" component={ViewJournal} />
-          <Route path="/auth" component={AuthPage} />
           <Route path="/preview/dashboard" component={PreviewDashboard} />
           <Route path="/preview/journal" component={PreviewJournal} />
           <Route path="/preview/trades" component={PreviewTrades} />

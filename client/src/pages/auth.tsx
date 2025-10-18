@@ -177,7 +177,7 @@ export default function AuthPage() {
             <Button
               variant="link"
               className="text-cyan-400 hover:text-cyan-300 p-0 h-auto font-semibold text-lg"
-              onClick={() => setLocation("/landing")}
+              onClick={() => setLocation("/")}
               data-testid="button-join-here"
             >
               Join Here

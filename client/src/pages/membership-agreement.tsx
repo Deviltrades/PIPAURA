@@ -10,7 +10,7 @@ export default function MembershipAgreement() {
       <div className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 py-6 flex items-center justify-between">
           <PipAuraLogo />
-          <Link href="/landing">
+          <Link href="/">
             <Button 
               variant="ghost" 
               className="text-slate-400 hover:text-white hover:bg-slate-800"
