@@ -213,11 +213,12 @@ export const marketNews = pgTable('market_news', {
   created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`)
 });
 
-// Emotional Logs table
+// Emotional Logs table (allows multiple logs per day)
 export const emotionalLogs = pgTable('emotional_logs', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   user_id: uuid('user_id').notNull(),
   log_date: date('log_date').notNull().default(sql`current_date`),
+  log_time: timestamp('log_time', { withTimezone: true }).default(sql`now()`),
   mood: integer('mood').notNull(),
   energy: integer('energy').notNull(),
   tags: text('tags').array(),
