@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, TrendingUp, Building2, ArrowLeft } from "lucide-react";
+import { Check, TrendingUp, Building2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Pricing() {
   const [, setLocation] = useLocation();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [expandedPlans, setExpandedPlans] = useState<Record<string, boolean>>({});
 
   const litePlan = {
     name: "Lite",
@@ -114,6 +115,13 @@ export default function Pricing() {
     const savings = yearlyTotal - plan.yearlyPrice;
     const percentage = Math.round((savings / yearlyTotal) * 100);
     return { amount: savings, percentage };
+  };
+
+  const togglePlanExpansion = (planName: string) => {
+    setExpandedPlans(prev => ({
+      ...prev,
+      [planName]: !prev[planName]
+    }));
   };
 
   return (
@@ -352,14 +360,44 @@ export default function Pricing() {
                 </CardHeader>
                 
                 <CardContent className="flex-1 flex flex-col p-4 sm:p-6 pt-0">
-                  <ul className="space-y-2 sm:space-y-3 mb-4 sm:mb-6 flex-1">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start">
-                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-cyan-400 mr-2 sm:mr-3 mt-0.5 flex-shrink-0" />
-                        <span className="text-xs sm:text-sm text-slate-300">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="flex-1">
+                    {/* Desktop - Show all features */}
+                    <ul className="hidden sm:flex flex-col space-y-3 mb-6">
+                      {plan.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-start">
+                          <Check className="h-4 w-4 text-cyan-400 mr-3 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-slate-300">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Mobile - Show first 3 features with expand/collapse */}
+                    <div className="sm:hidden mb-4">
+                      <ul className="space-y-2">
+                        {plan.features.slice(0, expandedPlans[plan.name] ? undefined : 3).map((feature, featureIndex) => (
+                          <li key={featureIndex} className="flex items-start">
+                            <Check className="h-3 w-3 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
+                            <span className="text-xs text-slate-300">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      
+                      {plan.features.length > 3 && (
+                        <button
+                          onClick={() => togglePlanExpansion(plan.name)}
+                          className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 mt-3 transition-colors"
+                          data-testid={`button-show-more-${plan.name.toLowerCase()}`}
+                        >
+                          <span>{expandedPlans[plan.name] ? 'Show Less' : `Show ${plan.features.length - 3} More Features`}</span>
+                          {expandedPlans[plan.name] ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                   
                   <Button 
                     size="lg" 
