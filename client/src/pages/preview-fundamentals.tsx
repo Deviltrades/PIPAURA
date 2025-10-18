@@ -135,30 +135,30 @@ export default function PreviewFundamentals() {
       </div>
 
       <Tabs defaultValue="calendar" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 h-auto gap-1">
-          <TabsTrigger value="calendar" data-testid="tab-calendar" className="text-xs sm:text-sm px-1 sm:px-3 py-2">
-            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-0 sm:mr-2" />
+        <TabsList className="grid w-full grid-cols-4 h-auto gap-0.5 sm:gap-1">
+          <TabsTrigger value="calendar" data-testid="tab-calendar" className="text-xs sm:text-sm px-0.5 sm:px-3 py-2 flex-col sm:flex-row gap-0 sm:gap-2">
+            <Calendar className="h-4 w-4 sm:h-4 sm:w-4" />
             <span className="hidden lg:inline">Economic Calendar</span>
-            <span className="hidden sm:inline lg:hidden">Econ.</span>
-            <span className="sm:hidden">Cal.</span>
+            <span className="hidden md:inline lg:hidden">Econ.</span>
+            <span className="hidden sm:inline md:hidden text-[10px]">Cal</span>
           </TabsTrigger>
-          <TabsTrigger value="news" data-testid="tab-news" className="text-xs sm:text-sm px-1 sm:px-3 py-2">
-            <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-0 sm:mr-2" />
+          <TabsTrigger value="news" data-testid="tab-news" className="text-xs sm:text-sm px-0.5 sm:px-3 py-2 flex-col sm:flex-row gap-0 sm:gap-2">
+            <AlertCircle className="h-4 w-4 sm:h-4 sm:w-4" />
             <span className="hidden lg:inline">Market News</span>
-            <span className="hidden sm:inline lg:hidden">News</span>
-            <span className="sm:hidden">Nws</span>
+            <span className="hidden md:inline lg:hidden">News</span>
+            <span className="hidden sm:inline md:hidden text-[10px]">Nws</span>
           </TabsTrigger>
-          <TabsTrigger value="analysis" data-testid="tab-analysis" className="text-xs sm:text-sm px-1 sm:px-3 py-2">
-            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-0 sm:mr-2" />
+          <TabsTrigger value="analysis" data-testid="tab-analysis" className="text-xs sm:text-sm px-0.5 sm:px-3 py-2 flex-col sm:flex-row gap-0 sm:gap-2">
+            <TrendingUp className="h-4 w-4 sm:h-4 sm:w-4" />
             <span className="hidden lg:inline">Market Analysis</span>
-            <span className="hidden sm:inline lg:hidden">Analysis</span>
-            <span className="sm:hidden">Ana.</span>
+            <span className="hidden md:inline lg:hidden">Analysis</span>
+            <span className="hidden sm:inline md:hidden text-[10px]">Ana</span>
           </TabsTrigger>
-          <TabsTrigger value="strength" data-testid="tab-strength" className="text-xs sm:text-sm px-1 sm:px-3 py-2">
-            <Gauge className="h-3 w-3 sm:h-4 sm:w-4 mr-0 sm:mr-2" />
+          <TabsTrigger value="strength" data-testid="tab-strength" className="text-xs sm:text-sm px-0.5 sm:px-3 py-2 flex-col sm:flex-row gap-0 sm:gap-2">
+            <Gauge className="h-4 w-4 sm:h-4 sm:w-4" />
             <span className="hidden lg:inline">Fundamental Strength</span>
-            <span className="hidden sm:inline lg:hidden">Strength</span>
-            <span className="sm:hidden">Str.</span>
+            <span className="hidden md:inline lg:hidden">Strength</span>
+            <span className="hidden sm:inline md:hidden text-[10px]">Str</span>
           </TabsTrigger>
         </TabsList>
 
