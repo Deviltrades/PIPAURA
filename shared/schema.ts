@@ -91,7 +91,7 @@ export interface UserProfile {
   updated_at: string;
   
   // Role-based access control fields
-  plan_type: 'demo' | 'basic' | 'premium';
+  plan_type: 'lite' | 'core' | 'elite';
   storage_used_mb: number;
   storage_limit_mb: number;
   image_count: number;
@@ -121,37 +121,18 @@ export interface PlanConfig {
 }
 
 // Plan configurations
-export const PLAN_CONFIGS: Record<'demo' | 'basic' | 'premium', PlanConfig> = {
-  demo: {
-    name: 'Demo',
-    storage_limit_mb: 0,
-    image_limit: 0,
-    account_limit: 0,
-    features: {
-      dashboard: true,
-      calendar: true,
-      notes_uploads: false,
-      charts: true,
-      strategy_playbook: true,
-      ai_mentor: true,
-      multiple_accounts: false,
-    },
-    ui_restrictions: {
-      read_only: true,
-      disabled_buttons: ['add-trade', 'upload-image', 'save', 'edit'],
-    },
-  },
-  basic: {
-    name: 'Basic',
-    storage_limit_mb: 500,
-    image_limit: 50,
+export const PLAN_CONFIGS: Record<'lite' | 'core' | 'elite', PlanConfig> = {
+  lite: {
+    name: 'Lite',
+    storage_limit_mb: 1024, // 1GB
+    image_limit: 999999,
     account_limit: 1,
     features: {
       dashboard: true,
       calendar: true,
       notes_uploads: true,
-      charts: false,
-      strategy_playbook: false,
+      charts: true,
+      strategy_playbook: true,
       ai_mentor: false,
       multiple_accounts: false,
     },
@@ -160,11 +141,30 @@ export const PLAN_CONFIGS: Record<'demo' | 'basic' | 'premium', PlanConfig> = {
       disabled_buttons: [],
     },
   },
-  premium: {
-    name: 'Premium',
-    storage_limit_mb: 5120, // 5GB
+  core: {
+    name: 'Core',
+    storage_limit_mb: 2048, // 2GB
     image_limit: 999999,
-    account_limit: 5,
+    account_limit: 10,
+    features: {
+      dashboard: true,
+      calendar: true,
+      notes_uploads: true,
+      charts: true,
+      strategy_playbook: true,
+      ai_mentor: true,
+      multiple_accounts: true,
+    },
+    ui_restrictions: {
+      read_only: false,
+      disabled_buttons: [],
+    },
+  },
+  elite: {
+    name: 'Elite',
+    storage_limit_mb: 10240, // 10GB
+    image_limit: 999999,
+    account_limit: 999999, // unlimited
     features: {
       dashboard: true,
       calendar: true,
