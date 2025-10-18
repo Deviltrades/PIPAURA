@@ -48,7 +48,7 @@ export default function PreviewAccounts() {
               <p className="text-xs sm:text-sm text-cyan-400">📊 Preview Mode</p>
             </div>
             <Button 
-              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-xs sm:text-sm"
+              className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-xs sm:text-sm"
               data-testid="button-add-account"
             >
               <Plus className="h-3 h-3 sm:h-4 sm:w-4 mr-2" />
@@ -59,7 +59,7 @@ export default function PreviewAccounts() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <Card className="bg-slate-900/50 border-slate-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-slate-400">Total Accounts</CardTitle>

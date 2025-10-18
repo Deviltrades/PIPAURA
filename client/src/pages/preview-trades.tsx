@@ -81,7 +81,7 @@ export default function PreviewTrades() {
             </SelectContent>
           </Select>
           <Button 
-            className="bg-cyan-600 hover:bg-cyan-700 text-white border-0 text-xs sm:text-sm"
+            className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white border-0 text-xs sm:text-sm"
             data-testid="button-add-trade"
           >
             <Plus className="h-3 h-3 sm:h-4 sm:w-4 mr-2" />
