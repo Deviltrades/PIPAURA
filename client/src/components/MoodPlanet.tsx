@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 interface MoodPlanetProps {
   moodLogs: Array<{ mood: number; date: string; pnl: number }>;
   yearlyMoodAverage?: number; // Yearly average for outer glow
+  monthlyMoodAverage?: number; // Monthly average for inner ring
 }
 
 interface Continent {
@@ -37,7 +38,7 @@ const getPlanetColors = (mood: number) => {
   }
 };
 
-export function MoodPlanet({ moodLogs, yearlyMoodAverage = 6 }: MoodPlanetProps) {
+export function MoodPlanet({ moodLogs, yearlyMoodAverage = 6, monthlyMoodAverage = 6 }: MoodPlanetProps) {
   // Calculate average mood from logs for continent colors
   const averageMood = moodLogs.length > 0
     ? moodLogs.reduce((sum, log) => sum + log.mood, 0) / moodLogs.length
@@ -45,6 +46,8 @@ export function MoodPlanet({ moodLogs, yearlyMoodAverage = 6 }: MoodPlanetProps)
   
   // Use yearlyMoodAverage for outer glow (defaults to 6 = cyan)
   const outerGlowMood = yearlyMoodAverage;
+  // Use monthlyMoodAverage for inner ring (defaults to 6 = cyan)
+  const innerRingMood = monthlyMoodAverage;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [continents, setContinents] = useState<Continent[]>([]);
   const rotationRef = useRef(0);
@@ -324,12 +327,23 @@ export function MoodPlanet({ moodLogs, yearlyMoodAverage = 6 }: MoodPlanetProps)
         }
       });
 
+      // Inner ring (use monthly mood average)
+      const innerRingColors = getPlanetColors(innerRingMood);
+      const innerGradient = ctx.createRadialGradient(centerX, centerY, radius - 18, centerX, centerY, radius - 8);
+      innerGradient.addColorStop(0, 'transparent');
+      innerGradient.addColorStop(0.5, innerRingColors.glow);
+      innerGradient.addColorStop(1, 'transparent');
+      ctx.fillStyle = innerGradient;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius - 8, 0, Math.PI * 2);
+      ctx.fill();
+
       // Outer glow (use yearly mood average for outer ring)
       const outerGlowColors = getPlanetColors(outerGlowMood);
-      const gradient = ctx.createRadialGradient(centerX, centerY, radius - 10, centerX, centerY, radius + 5);
-      gradient.addColorStop(0, 'transparent');
-      gradient.addColorStop(1, outerGlowColors.glow);
-      ctx.fillStyle = gradient;
+      const outerGradient = ctx.createRadialGradient(centerX, centerY, radius - 10, centerX, centerY, radius + 5);
+      outerGradient.addColorStop(0, 'transparent');
+      outerGradient.addColorStop(1, outerGlowColors.glow);
+      ctx.fillStyle = outerGradient;
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
       ctx.fill();
@@ -344,7 +358,7 @@ export function MoodPlanet({ moodLogs, yearlyMoodAverage = 6 }: MoodPlanetProps)
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [continents, averageMood, outerGlowMood]);
+  }, [continents, averageMood, outerGlowMood, innerRingMood]);
 
   return (
     <div className="flex justify-center items-center">
