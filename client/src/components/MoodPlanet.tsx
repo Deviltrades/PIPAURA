@@ -59,23 +59,23 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
   useEffect(() => {
     const generateFixedContinents = (): Continent[] => {
       const newContinents: Continent[] = [];
-      const numContinents = 6;
+      const numContinents = 8; // More continents to fill the planet
       
       for (let i = 0; i < numContinents; i++) {
         const baseAngle = (i / numContinents) * Math.PI * 2;
-        const baseRadius = radius * (0.6 + (i % 3) * 0.2);
+        const baseRadius = radius * (0.7 + (i % 3) * 0.2); // Larger base radius
         
         const points: { x: number; y: number }[] = [];
-        const numPoints = 20 + Math.floor(Math.random() * 15); // More points for smoother curves
+        const numPoints = 25 + Math.floor(Math.random() * 15); // More points for better coverage
         
         for (let j = 0; j < numPoints; j++) {
           const angleProgress = j / numPoints;
-          const angle = baseAngle + angleProgress * (Math.PI / 1.2);
+          const angle = baseAngle + angleProgress * (Math.PI / 0.9); // Wider angle spread
           
           // Create organic variations using multiple sine waves
-          const variation1 = Math.sin(angleProgress * Math.PI * 4 + i) * 0.3;
-          const variation2 = Math.cos(angleProgress * Math.PI * 6 + i * 2) * 0.2;
-          const radiusVariation = 0.7 + variation1 + variation2 + Math.random() * 0.4;
+          const variation1 = Math.sin(angleProgress * Math.PI * 4 + i) * 0.35;
+          const variation2 = Math.cos(angleProgress * Math.PI * 6 + i * 2) * 0.25;
+          const radiusVariation = 0.6 + variation1 + variation2 + Math.random() * 0.6; // More variation
           
           const r = baseRadius * radiusVariation;
           
@@ -83,7 +83,7 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
           const y = centerY + Math.sin(angle) * r;
           
           const dist = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-          if (dist < radius - 5) {
+          if (dist < radius) { // Allow closer to edge
             points.push({ x, y });
           }
         }
