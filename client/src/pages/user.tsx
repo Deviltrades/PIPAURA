@@ -16,7 +16,8 @@ import {
   TrendingUp,
   Loader2,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Infinity
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -177,9 +178,16 @@ export default function UserPage() {
                 <CheckCircle2 className="h-4 w-4 text-cyan-400" />
                 <span className="text-sm font-medium text-gray-300">Accounts</span>
               </div>
-              <p className="text-2xl font-bold text-white">
-                {profile.account_limit === 999999 ? 'Unlimited' : profile.account_limit}
-              </p>
+              <div className="flex items-center gap-2">
+                {profile.account_limit === 999999 ? (
+                  <>
+                    <Infinity className="h-8 w-8 text-white" />
+                    <p className="text-2xl font-bold text-white">Unlimited</p>
+                  </>
+                ) : (
+                  <p className="text-2xl font-bold text-white">{profile.account_limit}</p>
+                )}
+              </div>
               <p className="text-xs text-gray-400 mt-1">
                 Trading accounts
               </p>
