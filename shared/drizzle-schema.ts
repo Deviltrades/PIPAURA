@@ -75,6 +75,7 @@ export const trades = pgTable('trades', {
   session_tag: text('session_tag'),
   holding_time_minutes: integer('holding_time_minutes'),
   profit_per_lot: decimal('profit_per_lot', { precision: 10, scale: 2 }),
+  upload_source: text('upload_source'),
   created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)
 });

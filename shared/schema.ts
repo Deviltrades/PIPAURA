@@ -321,6 +321,7 @@ export interface Trade {
   session_tag?: string;
   holding_time_minutes?: number;
   profit_per_lot?: number;
+  upload_source?: 'Manual' | 'OCR AI' | 'CSV' | 'Excel' | 'HTML';
   created_at?: string;
   updated_at?: string;
 }
@@ -342,6 +343,7 @@ export interface CreateTrade {
   attachments?: string[];
   entry_date?: string;
   exit_date?: string;
+  upload_source?: 'Manual' | 'OCR AI' | 'CSV' | 'Excel' | 'HTML';
 }
 
 export interface UpdateTrade {
@@ -377,6 +379,7 @@ export const createTradeSchema = z.object({
   attachments: z.array(z.string()).default([]),
   entry_date: z.string().optional(),
   exit_date: z.string().optional(),
+  upload_source: z.enum(['Manual', 'OCR AI', 'CSV', 'Excel', 'HTML']).optional(),
 });
 
 export const updateTradeSchema = z.object({
@@ -394,6 +397,7 @@ export const updateTradeSchema = z.object({
   attachments: z.array(z.string()).optional(),
   entry_date: z.string().optional(),
   exit_date: z.string().optional(),
+  upload_source: z.enum(['Manual', 'OCR AI', 'CSV', 'Excel', 'HTML']).optional(),
 });
 
 // Prop Firm Tracker interfaces
