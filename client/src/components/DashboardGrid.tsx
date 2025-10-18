@@ -337,16 +337,16 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
   };
 
   return (
-    <div className="min-h-screen p-4 lg:p-8 dashboard-scrollbar relative" style={{ 
+    <div className="min-h-screen p-3 sm:p-4 lg:p-8 dashboard-scrollbar relative" style={{ 
       backgroundColor: bgColor, 
       color: textColor,
       boxShadow: 'inset 0 0 20px rgba(34, 211, 238, 0.1), inset 0 0 40px rgba(34, 211, 238, 0.05)'
     }}>
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header Controls */}
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold mb-2" style={{ color: textColor }}>Trading Dashboard</h1>
-          <div className="flex gap-3 items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <h1 className="text-xl sm:text-2xl font-bold" style={{ color: textColor }}>Trading Dashboard</h1>
+          <div className="flex flex-wrap gap-2 sm:gap-3 items-center w-full sm:w-auto">
             {/* Save Layout Button */}
             <Button
               variant="outline"
@@ -356,8 +356,8 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
               className="bg-slate-900/40 border-cyan-700 text-white hover:bg-slate-800/50"
               data-testid="button-save-layout"
             >
-              <Save className="w-4 h-4 mr-2" />
-              {saveLayoutMutation.isPending ? "Saving..." : "Save Layout"}
+              <Save className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">{saveLayoutMutation.isPending ? "Saving..." : "Save Layout"}</span>
             </Button>
 
             {/* Color Picker Dialog */}
@@ -369,8 +369,8 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
                   className="bg-slate-900/40 border-cyan-700 text-white hover:bg-slate-800/50"
                   data-testid="button-theme"
                 >
-                  <Palette className="w-4 h-4 mr-2" />
-                  Theme
+                  <Palette className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Theme</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-slate-950 border-cyan-700 text-white max-w-2xl">
@@ -463,8 +463,8 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
               size="sm"
               className="bg-slate-900/40 border-cyan-700 text-white hover:bg-slate-800/50"
             >
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Reset Layout
+              <RotateCcw className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Reset Layout</span>
             </Button>
             <Button
               onClick={() => setEditMode(!editMode)}
@@ -475,15 +475,15 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
                 : "bg-slate-900/40 border-cyan-700 text-white hover:bg-slate-800/50"
               }
             >
-              <Move className="w-4 h-4 mr-2" />
-              {editMode ? "Exit Edit" : "Edit Layout"}
+              <Move className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">{editMode ? "Exit Edit" : "Edit Layout"}</span>
             </Button>
           </div>
         </div>
 
         {editMode && (
           <div className="mb-4 p-3 bg-slate-900/30 rounded-lg border border-cyan-700 relative z-10">
-            <p className="text-cyan-200 text-sm">
+            <p className="text-cyan-200 text-xs sm:text-sm">
               <strong>Edit Mode:</strong> Drag widgets to move them around or drag the corner to resize. Click "Exit Edit" when finished.
             </p>
           </div>

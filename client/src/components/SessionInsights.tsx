@@ -94,31 +94,31 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
 
   return (
     <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all duration-300">
-      <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-cyan-400" />
+      <CardHeader className="pb-3 sm:pb-6">
+        <CardTitle className="text-base sm:text-lg text-white flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-cyan-400" />
           Session Insights
         </CardTitle>
-        <p className="text-sm text-gray-400">Performance breakdown by trading session</p>
+        <p className="text-xs sm:text-sm text-gray-400">Performance breakdown by trading session</p>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <CardContent className="px-3 sm:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
           {/* Most Active Session */}
-          <div className="space-y-3 p-4 rounded-lg bg-slate-800/50 border border-cyan-500/20 transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.6)] hover:border-cyan-500/60">
+          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg bg-slate-800/50 border border-cyan-500/20 transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.6)] hover:border-cyan-500/60">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-cyan-600/20">
-                <Trophy className="h-5 w-5 text-cyan-400" />
+              <div className="p-1.5 sm:p-2 rounded-lg bg-cyan-600/20">
+                <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-cyan-400" />
               </div>
               <div>
                 <p className="text-xs text-gray-400">Most Active</p>
-                <p className="text-sm font-medium text-white">Trading Session</p>
+                <p className="text-xs sm:text-sm font-medium text-white">Trading Session</p>
               </div>
             </div>
-            <div className="space-y-2">
-              <Badge className={`${getSessionColor(mostActive.name)} text-base px-3 py-1`} data-testid="badge-most-active-session">
+            <div className="space-y-1 sm:space-y-2">
+              <Badge className={`${getSessionColor(mostActive.name)} text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1`} data-testid="badge-most-active-session">
                 {mostActive.name}
               </Badge>
-              <p className="text-2xl font-bold text-cyan-400" data-testid="text-most-active-count">
+              <p className="text-xl sm:text-2xl font-bold text-cyan-400" data-testid="text-most-active-count">
                 {mostActive.count} trades
               </p>
               <p className="text-xs text-gray-400">
@@ -128,21 +128,21 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
           </div>
 
           {/* Most Profitable Session */}
-          <div className="space-y-3 p-4 rounded-lg bg-slate-800/50 border border-green-500/20 transition-all duration-300 hover:shadow-[0_0_20px_rgba(34,197,94,0.6)] hover:border-green-500/60">
+          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg bg-slate-800/50 border border-green-500/20 transition-all duration-300 hover:shadow-[0_0_20px_rgba(34,197,94,0.6)] hover:border-green-500/60">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-green-600/20">
-                <DollarSign className="h-5 w-5 text-green-400" />
+              <div className="p-1.5 sm:p-2 rounded-lg bg-green-600/20">
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
               </div>
               <div>
                 <p className="text-xs text-gray-400">Most Profitable</p>
-                <p className="text-sm font-medium text-white">Trading Session</p>
+                <p className="text-xs sm:text-sm font-medium text-white">Trading Session</p>
               </div>
             </div>
-            <div className="space-y-2">
-              <Badge className={`${getSessionColor(mostProfitable.name)} text-base px-3 py-1`} data-testid="badge-most-profitable-session">
+            <div className="space-y-1 sm:space-y-2">
+              <Badge className={`${getSessionColor(mostProfitable.name)} text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1`} data-testid="badge-most-profitable-session">
                 {mostProfitable.name}
               </Badge>
-              <p className={`text-2xl font-bold ${mostProfitable.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`} data-testid="text-most-profitable-pnl">
+              <p className={`text-xl sm:text-2xl font-bold ${mostProfitable.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`} data-testid="text-most-profitable-pnl">
                 {formatCurrency(mostProfitable.pnl)}
               </p>
               <p className="text-xs text-gray-400">
@@ -152,21 +152,21 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
           </div>
 
           {/* Longest Holding Session */}
-          <div className="space-y-3 p-4 rounded-lg bg-slate-800/50 border border-purple-500/20 transition-all duration-300 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] hover:border-purple-500/60">
+          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg bg-slate-800/50 border border-purple-500/20 transition-all duration-300 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] hover:border-purple-500/60">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-purple-600/20">
-                <Clock className="h-5 w-5 text-purple-400" />
+              <div className="p-1.5 sm:p-2 rounded-lg bg-purple-600/20">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />
               </div>
               <div>
                 <p className="text-xs text-gray-400">Longest Holding</p>
-                <p className="text-sm font-medium text-white">Trading Session</p>
+                <p className="text-xs sm:text-sm font-medium text-white">Trading Session</p>
               </div>
             </div>
-            <div className="space-y-2">
-              <Badge className={`${getSessionColor(longestHolding.name)} text-base px-3 py-1`} data-testid="badge-longest-holding-session">
+            <div className="space-y-1 sm:space-y-2">
+              <Badge className={`${getSessionColor(longestHolding.name)} text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1`} data-testid="badge-longest-holding-session">
                 {longestHolding.name}
               </Badge>
-              <p className="text-2xl font-bold text-purple-400" data-testid="text-longest-holding-time">
+              <p className="text-xl sm:text-2xl font-bold text-purple-400" data-testid="text-longest-holding-time">
                 {formatHoldingTime(longestHolding.avgHoldingTime)}
               </p>
               <p className="text-xs text-gray-400">
@@ -177,8 +177,8 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
         </div>
 
         {/* Session Performance Bars */}
-        <div className="mt-6 space-y-3">
-          <p className="text-sm font-medium text-white">Session Performance Overview</p>
+        <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
+          <p className="text-xs sm:text-sm font-medium text-white">Session Performance Overview</p>
           {sessions
             .filter(s => s.name !== "Unknown")
             .sort((a, b) => b.pnl - a.pnl)
@@ -188,7 +188,7 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
               
               return (
                 <div key={session.name} className="space-y-1">
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
                     <Badge className={`${getSessionColor(session.name)} text-xs`}>
                       {session.name}
                     </Badge>

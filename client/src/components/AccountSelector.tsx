@@ -26,7 +26,7 @@ export function AccountSelector({ value, onValueChange, className = "" }: Accoun
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger 
-        className={`w-[280px] bg-slate-800/50 border-slate-700 text-white ${className}`}
+        className={`w-full sm:w-[280px] bg-slate-800/50 border-slate-700 text-white ${className}`}
         data-testid="select-account-filter"
       >
         <SelectValue placeholder="All Accounts" />
