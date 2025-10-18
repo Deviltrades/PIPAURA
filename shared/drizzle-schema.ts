@@ -19,7 +19,7 @@ export const instrumentTypeEnum = pgEnum('instrument_type', ['FOREX', 'INDICES',
 export const tradeTypeEnum = pgEnum('trade_type', ['BUY', 'SELL']);
 export const tradeStatusEnum = pgEnum('trade_status', ['OPEN', 'CLOSED', 'CANCELLED']);
 export const accountTypeEnum = pgEnum('account_type', ['live', 'prop']);
-export const planTypeEnum = pgEnum('plan_type', ['demo', 'basic', 'premium']);
+export const planTypeEnum = pgEnum('plan_type', ['lite', 'core', 'elite']);
 export const sessionEnum = pgEnum('session', ['LONDON', 'NYC', 'TOKYO', 'SYDNEY']);
 export const tagCategoryEnum = pgEnum('tag_category', ['timeframe', 'strategy', 'session', 'custom']);
 export const journalStatusEnum = pgEnum('journal_status', ['OPEN', 'CLOSED', 'CANCELLED']);
@@ -97,7 +97,7 @@ export const userProfiles = pgTable('user_profiles', {
   dashboard_templates: jsonb('dashboard_templates'),
   calendar_settings: jsonb('calendar_settings'),
   sidebar_settings: jsonb('sidebar_settings'),
-  plan_type: planTypeEnum('plan_type').default('demo'),
+  plan_type: planTypeEnum('plan_type').default('lite'),
   storage_used_mb: integer('storage_used_mb').default(0),
   storage_limit_mb: integer('storage_limit_mb').default(0),
   image_count: integer('image_count').default(0),
