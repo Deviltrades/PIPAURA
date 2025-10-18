@@ -47,13 +47,26 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
   const animationRef = useRef<number>();
   const lastFrameTimeRef = useRef(0);
   const staticCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const targetMoodRef = useRef(averageMood);
+  const currentMoodRef = useRef(averageMood);
+  const continentMoodsRef = useRef<number[]>([]);
 
   const size = 300;
   const radius = size / 2 - 20;
   const centerX = size / 2;
   const centerY = size / 2;
 
-  const colors = getPlanetColors(averageMood);
+  // Update target mood when averageMood changes
+  useEffect(() => {
+    targetMoodRef.current = averageMood;
+  }, [averageMood]);
+
+  // Initialize continent moods
+  useEffect(() => {
+    if (continents.length > 0 && continentMoodsRef.current.length === 0) {
+      continentMoodsRef.current = continents.map(() => averageMood);
+    }
+  }, [continents, averageMood]);
 
   // Generate fixed continents once
   useEffect(() => {
@@ -109,8 +122,11 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
     const ctx = offscreenCanvas.getContext('2d');
     if (!ctx) return;
 
+    // Get grid color based on average mood
+    const gridColors = getPlanetColors(averageMood);
+
     // Draw grid lines
-    ctx.strokeStyle = colors.lightning;
+    ctx.strokeStyle = gridColors.lightning;
     ctx.lineWidth = 0.5;
     ctx.globalAlpha = 0.2;
     ctx.setLineDash([5, 5]);
@@ -143,7 +159,7 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
     ctx.globalAlpha = 1;
 
     staticCanvasRef.current = offscreenCanvas;
-  }, [continents, colors.lightning]);
+  }, [continents, averageMood]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -187,6 +203,20 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
         ctx.restore();
       }
 
+      // Gradually update continent moods (couple at a time)
+      const transitionSpeed = 0.015; // Slow transition
+      const continentsToUpdate = 2; // Update 2 continents at a time
+      
+      for (let i = 0; i < continentsToUpdate && i < continentMoodsRef.current.length; i++) {
+        const idx = Math.floor((currentTime * 0.0003) + i) % continentMoodsRef.current.length;
+        const currentMood = continentMoodsRef.current[idx];
+        const diff = targetMoodRef.current - currentMood;
+        
+        if (Math.abs(diff) > 0.01) {
+          continentMoodsRef.current[idx] += diff * transitionSpeed;
+        }
+      }
+
       // Draw continents
       continents.forEach((continent, continentIndex) => {
         const rotatedPoints = continent.points.map(p => {
@@ -201,8 +231,12 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
           };
         });
 
+        // Get colors for this specific continent
+        const continentMood = continentMoodsRef.current[continentIndex] || averageMood;
+        const continentColors = getPlanetColors(continentMood);
+
         // Draw filled continent
-        ctx.fillStyle = colors.base;
+        ctx.fillStyle = continentColors.base;
         ctx.beginPath();
         ctx.moveTo(rotatedPoints[0].x, rotatedPoints[0].y);
         rotatedPoints.forEach(p => ctx.lineTo(p.x, p.y));
@@ -220,11 +254,11 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
           const pulseOffset = (continentIndex * 30 + i * 10);
           const pulse = Math.sin((currentTime * 0.001 + pulseOffset) * 0.1) * 0.5 + 0.5;
           
-          // Draw main lightning line
-          ctx.strokeStyle = colors.lightning;
+          // Draw main lightning line (use continent-specific color)
+          ctx.strokeStyle = continentColors.lightning;
           ctx.lineWidth = 1.5;
           ctx.shadowBlur = 8;
-          ctx.shadowColor = colors.lightning;
+          ctx.shadowColor = continentColors.lightning;
           ctx.globalAlpha = 0.4;
           
           ctx.beginPath();
@@ -249,18 +283,18 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
           ctx.lineTo(p2.x, p2.y);
           ctx.stroke();
           
-          // Draw flowing pulse
+          // Draw flowing pulse (use continent-specific color)
           const pulseX = p1.x + (p2.x - p1.x) * flowPosition;
           const pulseY = p1.y + (p2.y - p1.y) * flowPosition;
           
           ctx.shadowBlur = 15;
-          ctx.fillStyle = colors.lightning;
+          ctx.fillStyle = continentColors.lightning;
           ctx.globalAlpha = 0.9;
           ctx.beginPath();
-          ctx.arc(pulseX, pulseY, 2.5, 0, Math.PI * 2); // Reduced from 4 to 2.5
+          ctx.arc(pulseX, pulseY, 2.5, 0, Math.PI * 2);
           ctx.fill();
           
-          // Draw 1 trailing particle (reduced from 2)
+          // Draw 1 trailing particle
           const trailPos = (flowPosition - 0.1 + 1) % 1;
           const trailX = p1.x + (p2.x - p1.x) * trailPos;
           const trailY = p1.y + (p2.y - p1.y) * trailPos;
@@ -268,16 +302,16 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
           ctx.globalAlpha = 0.5;
           ctx.shadowBlur = 6;
           ctx.beginPath();
-          ctx.arc(trailX, trailY, 1.5, 0, Math.PI * 2); // Reduced from 2 to 1.5
+          ctx.arc(trailX, trailY, 1.5, 0, Math.PI * 2);
           ctx.fill();
           
-          // Draw vertex glow
+          // Draw vertex glow (use continent-specific color)
           if (pulse > 0.6) {
-            ctx.fillStyle = colors.lightning;
+            ctx.fillStyle = continentColors.lightning;
             ctx.shadowBlur = 12;
             ctx.globalAlpha = pulse * 0.6;
             ctx.beginPath();
-            ctx.arc(p1.x, p1.y, 1.5 + pulse * 1.5, 0, Math.PI * 2); // Reduced from 2-4 to 1.5-3
+            ctx.arc(p1.x, p1.y, 1.5 + pulse * 1.5, 0, Math.PI * 2);
             ctx.fill();
           }
           
@@ -286,10 +320,11 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
         }
       });
 
-      // Outer glow
+      // Outer glow (use average mood for outer ring)
+      const outerGlowColors = getPlanetColors(averageMood);
       const gradient = ctx.createRadialGradient(centerX, centerY, radius - 10, centerX, centerY, radius + 5);
       gradient.addColorStop(0, 'transparent');
-      gradient.addColorStop(1, colors.glow);
+      gradient.addColorStop(1, outerGlowColors.glow);
       ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
@@ -305,7 +340,7 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [continents, colors]);
+  }, [continents, averageMood]);
 
   return (
     <div className="flex justify-center items-center">
