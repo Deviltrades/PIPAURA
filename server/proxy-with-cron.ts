@@ -41,7 +41,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
         monthly: 1400,   // £14.00
         yearly: 11400,   // £114.00
       },
-      institutional: {
+      elite: {
         monthly: 2400,   // £24.00
         yearly: 23000,   // £230.00
       },
