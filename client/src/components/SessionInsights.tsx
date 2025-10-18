@@ -96,18 +96,18 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
   }
 
   return (
-    <Card className="border-2 border-cyan-500/60 transition-all duration-300 widget-hover-pulse" style={{ 
+    <div className="rounded-xl border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300 p-4 sm:p-6" style={{ 
       backgroundColor: bgColor,
-      boxShadow: `0 0 15px ${textColor}20`
+      color: textColor
     }}>
-      <CardHeader className="pb-3 sm:pb-6">
-        <CardTitle className="text-base sm:text-lg flex items-center gap-2" style={{ color: textColor }}>
+      <div className="pb-3 sm:pb-6">
+        <h3 className="text-base sm:text-lg flex items-center gap-2 font-semibold" style={{ color: textColor }}>
           <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: textColor }} />
           Session Insights
-        </CardTitle>
-        <p className="text-xs sm:text-sm" style={{ color: `${textColor}99` }}>Performance breakdown by trading session</p>
-      </CardHeader>
-      <CardContent className="px-3 sm:px-6">
+        </h3>
+        <p className="text-xs sm:text-sm mt-1.5" style={{ color: `${textColor}99` }}>Performance breakdown by trading session</p>
+      </div>
+      <div className="px-0">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
           {/* Most Active Session */}
           <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border transition-all duration-300" style={{
@@ -221,7 +221,7 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
               );
             })}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
