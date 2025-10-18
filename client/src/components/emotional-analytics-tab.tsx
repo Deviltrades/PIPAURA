@@ -2,7 +2,15 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, Brain, Calendar as CalendarIcon, TrendingUp, AlertTriangle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Heart, Brain, Calendar as CalendarIcon, TrendingUp, AlertTriangle, Info } from "lucide-react";
 import { getEmotionalAnalytics, getYearlyMoodAverage, getMonthlyMoodAverage } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -189,11 +197,106 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
       {/* Mood Neuron Visualization */}
       <Card className="bg-[#0f1f3a] border-cyan-500/30">
         <CardHeader>
-          <CardTitle className="text-cyan-400 flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            Mood Neuron
-          </CardTitle>
-          <CardDescription>Visual representation of your emotional state</CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="text-cyan-400 flex items-center gap-2">
+                <Brain className="h-5 w-5" />
+                Mood Neuron
+              </CardTitle>
+              <CardDescription>Visual representation of your emotional state</CardDescription>
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
+                  data-testid="button-info-mood-neuron"
+                >
+                  <Info className="h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-[#0f1f3a] border-cyan-500/30 text-gray-100 max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-cyan-400 flex items-center gap-2">
+                    <Brain className="h-5 w-5" />
+                    How the Mood Neuron Works
+                  </DialogTitle>
+                  <DialogDescription className="text-gray-300">
+                    Understanding your emotional visualization
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 text-gray-200">
+                  <div>
+                    <h3 className="font-semibold text-cyan-400 mb-2">The Planet</h3>
+                    <p className="text-sm text-gray-300">
+                      Your Mood Neuron is a living visualization of your emotional state. It features 8 unique continents 
+                      that gradually change color based on your logged emotions, creating a wave-like transition effect 
+                      as 2 continents update at a time.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-cyan-400 mb-2">Color Meanings</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-green-500" style={{ boxShadow: '0 0 10px rgba(16, 185, 129, 0.6)' }}></div>
+                        <span><span className="text-green-400 font-medium">Green (8-10):</span> Excellent mood - You're in an optimal emotional state</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-cyan-400" style={{ boxShadow: '0 0 10px rgba(6, 182, 212, 0.6)' }}></div>
+                        <span><span className="text-cyan-400 font-medium">Cyan (5-7):</span> Good mood - You're feeling balanced and positive</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-orange-400" style={{ boxShadow: '0 0 10px rgba(251, 146, 60, 0.6)' }}></div>
+                        <span><span className="text-orange-400 font-medium">Orange (3-4):</span> Stable mood - You're managing but could be better</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-red-500" style={{ boxShadow: '0 0 10px rgba(239, 68, 68, 0.6)' }}></div>
+                        <span><span className="text-red-400 font-medium">Red (1-2):</span> Bad mood - Time to focus on self-care</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-cyan-400 mb-2">The Two Rings</h3>
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <span className="font-medium text-cyan-400">Outer Ring (Yearly):</span>
+                        <p className="text-gray-300 mt-1">
+                          Shows your average emotional state for the entire year. This ring gives you a big-picture 
+                          view of your overall emotional journey and long-term patterns.
+                        </p>
+                      </div>
+                      <div>
+                        <span className="font-medium text-cyan-400">Inner Ring (Monthly):</span>
+                        <p className="text-gray-300 mt-1">
+                          Reflects your average mood for the current month. This provides a more immediate snapshot 
+                          of your recent emotional trends and helps you track short-term changes.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-cyan-400 mb-2">Lightning Effects</h3>
+                    <p className="text-sm text-gray-300">
+                      The electrical borders, pulses, and vertex glows around each continent match that continent's 
+                      current mood color. Watch as the energy flows and shifts with your emotional state!
+                    </p>
+                  </div>
+
+                  <div className="bg-cyan-500/10 border border-cyan-500/30 rounded p-3">
+                    <p className="text-sm text-gray-300">
+                      <span className="font-medium text-cyan-400">Pro Tip:</span> Log your emotions regularly to see 
+                      your Mood Neuron evolve. The gradual color transitions create a mesmerizing effect as your 
+                      emotional state changes over time!
+                    </p>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center gap-6">
