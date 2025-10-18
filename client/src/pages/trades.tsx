@@ -178,120 +178,262 @@ export default function Trades() {
         {filteredTrades.length > 0 ? (
           filteredTrades.map((trade: any) => (
             <Card key={trade.id} className="bg-[#0f1f3a] border-[#1a2f4a]">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3 flex-wrap">
-                      <Badge variant={trade.trade_type === 'BUY' ? 'default' : 'secondary'} className={
-                        trade.trade_type === 'BUY' 
-                          ? 'bg-green-600 text-white hover:bg-green-700' 
-                          : 'bg-red-600 text-white hover:bg-red-700'
-                      }>
-                        {trade.trade_type}
-                      </Badge>
-                      <h3 className="text-lg font-semibold text-white">{trade.instrument}</h3>
-                      <Badge variant={trade.status === 'OPEN' ? 'default' : 
-                                   trade.status === 'CLOSED' ? 'secondary' : 'destructive'} 
-                             className="bg-cyan-600 text-white">
-                        {trade.status}
-                      </Badge>
-                      {trade.session_tag && (
-                        <Badge className={getSessionBadgeColor(trade.session_tag)} data-testid={`badge-session-${trade.id}`}>
-                          {trade.session_tag}
+              <CardContent className="p-4 sm:p-6">
+                {/* Mobile/Tablet Layout: Single column with grouped sections */}
+                <div className="lg:hidden space-y-4">
+                  {/* Header: Instrument, P&L, Badges */}
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="space-y-2 flex-1">
+                      <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">{trade.instrument}</h3>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant={trade.trade_type === 'BUY' ? 'default' : 'secondary'} className={
+                          trade.trade_type === 'BUY' 
+                            ? 'bg-green-600/20 text-green-400 border border-green-600 hover:bg-green-600/30' 
+                            : 'bg-red-600/20 text-red-400 border border-red-600 hover:bg-red-600/30'
+                        } data-testid={`badge-type-${trade.id}`}>
+                          {trade.trade_type}
                         </Badge>
-                      )}
-                      {trade.holding_time_minutes && (
-                        <Badge variant="outline" className="border-cyan-500/30 text-cyan-400 bg-transparent flex items-center gap-1" data-testid={`badge-holding-time-${trade.id}`}>
-                          <Clock className="h-3 w-3" />
-                          {formatHoldingTime(trade.holding_time_minutes)}
+                        <Badge variant="outline" className="border-cyan-500/50 text-cyan-400 bg-cyan-600/10" data-testid={`badge-instrument-${trade.id}`}>
+                          {trade.instrument_type}
                         </Badge>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <p className={`text-3xl sm:text-4xl font-bold ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`} data-testid={`text-pnl-${trade.id}`}>
+                        {formatCurrency(trade.pnl || 0)}
+                      </p>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(trade)} className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-800/50" data-testid={`button-edit-${trade.id}`}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleDelete(trade.id)} disabled={deleteMutation.isPending} className="border-red-500/30 text-red-300 hover:bg-red-800/50" data-testid={`button-delete-${trade.id}`}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Trade Stats: 2 columns on mobile, 3 on sm */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                    <div>
+                      <p className="text-gray-400 text-xs">Position Size</p>
+                      <p className="font-medium text-white">{trade.position_size} lots</p>
+                    </div>
+                    {trade.session_tag && (
+                      <div>
+                        <p className="text-gray-400 text-xs">Session</p>
+                        <p className="font-medium text-white">{trade.session_tag}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-gray-400 text-xs">Entry Price</p>
+                      <p className="font-medium text-white">{trade.entry_price}</p>
+                    </div>
+                    {trade.exit_price && (
+                      <div>
+                        <p className="text-gray-400 text-xs">Exit Price</p>
+                        <p className="font-medium text-white">{trade.exit_price}</p>
+                      </div>
+                    )}
+                    {trade.stop_loss && (
+                      <div>
+                        <p className="text-gray-400 text-xs">Stop Loss</p>
+                        <p className="font-medium text-orange-400">{trade.stop_loss}</p>
+                      </div>
+                    )}
+                    {trade.take_profit && (
+                      <div>
+                        <p className="text-gray-400 text-xs">Take Profit</p>
+                        <p className="font-medium text-cyan-400">{trade.take_profit}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Metadata row */}
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs sm:text-sm text-gray-400">
+                    {trade.entry_date && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-gray-500">📅</span>
+                        <span>{new Date(trade.entry_date).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                    {trade.holding_time_minutes && (
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-gray-500" />
+                        <span data-testid={`text-holding-time-${trade.id}`}>{formatHoldingTime(trade.holding_time_minutes)} hold</span>
+                      </div>
+                    )}
+                    {trade.profit_per_lot !== null && trade.profit_per_lot !== undefined && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-gray-500">💰</span>
+                        <span className={parseFloat(trade.profit_per_lot) >= 0 ? 'text-green-400' : 'text-red-400'} data-testid={`text-profit-per-lot-${trade.id}`}>
+                          {formatCurrency(parseFloat(trade.profit_per_lot))}/lot
+                        </span>
+                      </div>
+                    )}
+                    {trade.commission && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-gray-500">💵</span>
+                        <span>Fees: {formatCurrency(parseFloat(trade.commission))}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Notes */}
+                  {trade.notes && (
+                    <p className="text-sm text-gray-400 italic">"{trade.notes}"</p>
+                  )}
+
+                  {/* Timestamps & Upload Source */}
+                  <div className="flex flex-wrap gap-3 text-xs text-gray-500 pt-2 border-t border-gray-700">
+                    {trade.entry_date && (
+                      <p data-testid={`text-entry-${trade.id}`}>
+                        Entry: {formatTradeDateTime(trade.entry_date)}
+                      </p>
+                    )}
+                    {trade.exit_date && (
+                      <p data-testid={`text-exit-${trade.id}`}>
+                        Exit: {formatTradeDateTime(trade.exit_date)}
+                      </p>
+                    )}
+                    {trade.upload_source && (
+                      <p className="flex items-center gap-1" data-testid={`text-upload-source-${trade.id}`}>
+                        <span>Uploaded by</span>
+                        <Badge variant="outline" className="border-gray-600 text-gray-400 bg-transparent px-1.5 py-0 text-xs">
+                          {trade.upload_source}
+                        </Badge>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Desktop Layout: Multi-column grid */}
+                <div className="hidden lg:block">
+                  <div className="grid grid-cols-[240px_180px_1fr_280px_auto] gap-4 xl:gap-6 items-center">
+                    {/* Left: Instrument & Badges */}
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-bold text-white tracking-tight">{trade.instrument}</h3>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant={trade.trade_type === 'BUY' ? 'default' : 'secondary'} className={
+                          trade.trade_type === 'BUY' 
+                            ? 'bg-green-600/20 text-green-400 border border-green-600 hover:bg-green-600/30' 
+                            : 'bg-red-600/20 text-red-400 border border-red-600 hover:bg-red-600/30'
+                        } data-testid={`badge-type-${trade.id}`}>
+                          {trade.trade_type}
+                        </Badge>
+                        <Badge variant="outline" className="border-cyan-500/50 text-cyan-400 bg-cyan-600/10" data-testid={`badge-instrument-${trade.id}`}>
+                          {trade.instrument_type}
+                        </Badge>
+                      </div>
+                      {trade.notes && (
+                        <p className="text-sm text-gray-400 italic mt-2">"{trade.notes}"</p>
                       )}
                     </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm">
+
+                    {/* Center: Large P&L */}
+                    <div className="text-left">
+                      <p className={`text-4xl font-bold ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`} data-testid={`text-pnl-${trade.id}`}>
+                        {formatCurrency(trade.pnl || 0)}
+                      </p>
+                    </div>
+
+                    {/* Middle: Two-column data grid */}
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
                       <div>
-                        <p className="text-gray-400">Position Size</p>
-                        <p className="font-medium text-white">{trade.position_size}</p>
+                        <p className="text-gray-400 text-xs">Position Size</p>
+                        <p className="font-medium text-white">{trade.position_size} lots</p>
                       </div>
+                      {trade.session_tag && (
+                        <div>
+                          <p className="text-gray-400 text-xs">Session</p>
+                          <p className="font-medium text-white">{trade.session_tag}</p>
+                        </div>
+                      )}
                       <div>
-                        <p className="text-gray-400">Entry Price</p>
+                        <p className="text-gray-400 text-xs">Entry Price</p>
                         <p className="font-medium text-white">{trade.entry_price}</p>
                       </div>
                       {trade.exit_price && (
                         <div>
-                          <p className="text-gray-400">Exit Price</p>
+                          <p className="text-gray-400 text-xs">Exit Price</p>
                           <p className="font-medium text-white">{trade.exit_price}</p>
                         </div>
                       )}
                       {trade.stop_loss && (
                         <div>
-                          <p className="text-gray-400">Stop Loss</p>
+                          <p className="text-gray-400 text-xs">Stop Loss</p>
                           <p className="font-medium text-orange-400">{trade.stop_loss}</p>
                         </div>
                       )}
                       {trade.take_profit && (
                         <div>
-                          <p className="text-gray-400">Take Profit</p>
+                          <p className="text-gray-400 text-xs">Take Profit</p>
                           <p className="font-medium text-cyan-400">{trade.take_profit}</p>
                         </div>
                       )}
-                      {trade.pnl !== null && (
-                        <div>
-                          <p className="text-gray-400">P&L</p>
-                          <p className={`font-medium ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {formatCurrency(trade.pnl)}
-                          </p>
+                    </div>
+
+                    {/* Right: Metadata */}
+                    <div className="space-y-2 text-sm text-gray-400">
+                      {trade.entry_date && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500">📅</span>
+                          <span>{new Date(trade.entry_date).toLocaleDateString()}</span>
+                        </div>
+                      )}
+                      {trade.holding_time_minutes && (
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-gray-500" />
+                          <span data-testid={`text-holding-time-${trade.id}`}>{formatHoldingTime(trade.holding_time_minutes)} hold</span>
                         </div>
                       )}
                       {trade.profit_per_lot !== null && trade.profit_per_lot !== undefined && (
-                        <div>
-                          <p className="text-gray-400">P&L per Lot</p>
-                          <p className={`font-medium ${parseFloat(trade.profit_per_lot) >= 0 ? 'text-green-400' : 'text-red-400'}`} data-testid={`text-profit-per-lot-${trade.id}`}>
-                            {formatCurrency(parseFloat(trade.profit_per_lot))}
-                          </p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500">💰</span>
+                          <span className={parseFloat(trade.profit_per_lot) >= 0 ? 'text-green-400' : 'text-red-400'} data-testid={`text-profit-per-lot-${trade.id}`}>
+                            {formatCurrency(parseFloat(trade.profit_per_lot))}/lot
+                          </span>
+                        </div>
+                      )}
+                      {trade.commission && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500">💵</span>
+                          <span>Fees: {formatCurrency(parseFloat(trade.commission))}</span>
                         </div>
                       )}
                     </div>
 
-                    {trade.notes && (
-                      <div className="mt-4">
-                        <p className="text-gray-400 text-sm mb-1">Notes</p>
-                        <p className="text-sm text-gray-300">{trade.notes}</p>
-                      </div>
-                    )}
-
-                    <div className="mt-4 space-y-1">
-                      {trade.entry_date && (
-                        <p className="text-xs text-gray-500" data-testid={`text-entry-${trade.id}`}>
-                          Entry: {formatTradeDateTime(trade.entry_date)}
-                        </p>
-                      )}
-                      {trade.exit_date && (
-                        <p className="text-xs text-gray-500" data-testid={`text-exit-${trade.id}`}>
-                          Exit: {formatTradeDateTime(trade.exit_date)}
-                        </p>
-                      )}
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(trade)} className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-800/50" data-testid={`button-edit-${trade.id}`}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDelete(trade.id)} disabled={deleteMutation.isPending} className="border-red-500/30 text-red-300 hover:bg-red-800/50" data-testid={`button-delete-${trade.id}`}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
 
-                  <div className="flex gap-2 ml-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(trade)}
-                      className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-800/50"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(trade.id)}
-                      disabled={deleteMutation.isPending}
-                      className="border-red-500/30 text-red-300 hover:bg-red-800/50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  {/* Bottom: Entry/Exit Timestamps & Upload Source */}
+                  <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-500">
+                    {trade.entry_date && (
+                      <p data-testid={`text-entry-${trade.id}`}>
+                        Entry: {formatTradeDateTime(trade.entry_date)}
+                      </p>
+                    )}
+                    {trade.exit_date && (
+                      <p data-testid={`text-exit-${trade.id}`}>
+                        Exit: {formatTradeDateTime(trade.exit_date)}
+                      </p>
+                    )}
+                    {trade.upload_source && (
+                      <p className="flex items-center gap-1" data-testid={`text-upload-source-${trade.id}`}>
+                        <span>Uploaded by</span>
+                        <Badge variant="outline" className="border-gray-600 text-gray-400 bg-transparent px-1.5 py-0 text-xs">
+                          {trade.upload_source}
+                        </Badge>
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardContent>
