@@ -11,27 +11,6 @@ interface SessionInsightsProps {
 }
 
 export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#ffffff", themeColor = "slate" }: SessionInsightsProps) {
-  // Get theme-based accent colors
-  const getThemeAccentColor = () => {
-    const themeColors: Record<string, string> = {
-      slate: textColor,
-      blue: "#60a5fa",
-      purple: "#a78bfa",
-      green: "#34d399",
-      orange: "#fb923c",
-      pink: "#f472b6",
-    };
-    return themeColors[themeColor] || textColor;
-  };
-  
-  const accentColor = getThemeAccentColor();
-  
-  // Get profit/loss colors based on theme accent
-  const getProfitColor = () => accentColor + "DD"; // High opacity for profit text
-  const getLossColor = () => accentColor + "66"; // Lower opacity for loss text
-  const getProfitBarColor = () => accentColor + "CC"; // Bar fill for profit
-  const getLossBarColor = () => accentColor + "44"; // Bar fill for loss
-  
   // Calculate session statistics
   const sessionStats = (trades || []).reduce((acc: any, trade: any) => {
     const session = trade.session_tag || "Unknown";
@@ -80,22 +59,14 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
     current.avgHoldingTime > prev.avgHoldingTime ? current : prev
   , sessions[0] || { name: "N/A", avgHoldingTime: 0 });
 
-  const getSessionBadgeStyle = (session: string) => {
-    // Use theme-aware colors with different opacity levels for different sessions
-    const opacities: Record<string, string> = {
-      "london": "80",
-      "new york": "60",
-      "asia": "90",
-      "overlap": "70",
+  const getSessionColor = (session: string) => {
+    const sessionColors: Record<string, string> = {
+      "london": "bg-blue-500 text-white",
+      "new york": "bg-purple-500 text-white",
+      "asia": "bg-orange-600 text-white",
+      "overlap": "bg-cyan-500 text-white",
     };
-    
-    const opacity = opacities[session.toLowerCase()] || "50";
-    
-    return {
-      backgroundColor: `${textColor}${opacity}`,
-      color: bgColor,
-      fontWeight: "600" as const
-    };
+    return sessionColors[session.toLowerCase()] || "bg-gray-500 text-white";
   };
 
   const formatHoldingTime = (minutes: number) => {
@@ -154,7 +125,7 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
               </div>
             </div>
             <div className="space-y-1 sm:space-y-2">
-              <Badge className="text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1" style={getSessionBadgeStyle(mostActive.name)} data-testid="badge-most-active-session">
+              <Badge className={`text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1 ${getSessionColor(mostActive.name)}`} data-testid="badge-most-active-session">
                 {mostActive.name}
               </Badge>
               <p className="text-xl sm:text-2xl font-bold" style={{ color: textColor }} data-testid="text-most-active-count">
@@ -181,10 +152,10 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
               </div>
             </div>
             <div className="space-y-1 sm:space-y-2">
-              <Badge className="text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1" style={getSessionBadgeStyle(mostProfitable.name)} data-testid="badge-most-profitable-session">
+              <Badge className={`text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1 ${getSessionColor(mostProfitable.name)}`} data-testid="badge-most-profitable-session">
                 {mostProfitable.name}
               </Badge>
-              <p className="text-xl sm:text-2xl font-bold" style={{ color: mostProfitable.pnl >= 0 ? getProfitColor() : getLossColor() }} data-testid="text-most-profitable-pnl">
+              <p className={`text-xl sm:text-2xl font-bold ${mostProfitable.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`} data-testid="text-most-profitable-pnl">
                 {formatCurrency(mostProfitable.pnl)}
               </p>
               <p className="text-xs" style={{ color: `${textColor}99` }}>
@@ -208,7 +179,7 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
               </div>
             </div>
             <div className="space-y-1 sm:space-y-2">
-              <Badge className="text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1" style={getSessionBadgeStyle(longestHolding.name)} data-testid="badge-longest-holding-session">
+              <Badge className={`text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1 ${getSessionColor(longestHolding.name)}`} data-testid="badge-longest-holding-session">
                 {longestHolding.name}
               </Badge>
               <p className="text-xl sm:text-2xl font-bold" style={{ color: textColor }} data-testid="text-longest-holding-time">
@@ -234,20 +205,17 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
               return (
                 <div key={session.name} className="space-y-1">
                   <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <Badge className="text-xs" style={getSessionBadgeStyle(session.name)}>
+                    <Badge className={`text-xs ${getSessionColor(session.name)}`}>
                       {session.name}
                     </Badge>
-                    <span className="font-medium" style={{ color: session.pnl >= 0 ? getProfitColor() : getLossColor() }}>
+                    <span className={`font-medium ${session.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {formatCurrency(session.pnl)}
                     </span>
                   </div>
                   <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: `${textColor}20` }}>
                     <div 
-                      className="h-full rounded-full transition-all"
-                      style={{ 
-                        width: `${percentage}%`,
-                        backgroundColor: session.pnl >= 0 ? getProfitBarColor() : getLossBarColor()
-                      }}
+                      className={`h-full rounded-full transition-all ${session.pnl >= 0 ? 'bg-green-500' : 'bg-red-500'}`}
+                      style={{ width: `${percentage}%` }}
                     />
                   </div>
                 </div>
