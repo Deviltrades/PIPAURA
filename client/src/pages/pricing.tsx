@@ -62,7 +62,7 @@ export default function Pricing() {
       cta: "Start Core"
     },
     {
-      name: "Institutional",
+      name: "Elite",
       description: "Built for professional trading teams",
       monthlyPrice: 24,
       yearlyPrice: 230,
@@ -95,7 +95,7 @@ export default function Pricing() {
         "Priority email support from the Pipaura team"
       ],
       popular: false,
-      cta: "Start Institutional"
+      cta: "Start Elite"
     }
   ];
 
@@ -224,7 +224,7 @@ export default function Pricing() {
               className="animate-pulse"
             />
             
-            {/* Lightning from Lite (center top) to Institutional (bottom right) - zigzag pattern */}
+            {/* Lightning from Lite (center top) to Elite (bottom right) - zigzag pattern */}
             <path
               d="M 500 260 L 620 310 L 600 315 L 650 360 L 630 365 L 720 420"
               stroke="url(#lightning-gradient)"
