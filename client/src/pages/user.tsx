@@ -52,24 +52,32 @@ export default function UserPage() {
   };
 
   const handleManageBilling = async () => {
-    if (!user?.email) {
-      toast({
-        title: "Error",
-        description: "No email found. Please log in again.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setIsLoadingPortal(true);
     try {
+      // Get the session token from Supabase
+      const { data: { session } } = await import('@/lib/supabase').then(m => m.supabase.auth.getSession());
+      
+      if (!session?.access_token) {
+        toast({
+          title: "Error",
+          description: "Not authenticated. Please log in again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const response = await fetch('/api/create-portal-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ customerEmail: user.email }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create portal session');
+      }
 
       const data = await response.json();
 
@@ -82,7 +90,7 @@ export default function UserPage() {
       console.error('Error creating portal session:', error);
       toast({
         title: "Error",
-        description: "Failed to open billing portal. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to open billing portal. Please try again.",
         variant: "destructive"
       });
     } finally {

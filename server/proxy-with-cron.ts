@@ -276,11 +276,23 @@ app.post("/api/create-checkout-session", async (req, res) => {
 // Stripe Customer Portal session creation endpoint
 app.post("/api/create-portal-session", async (req, res) => {
   try {
-    const { customerEmail } = req.body;
-    
-    if (!customerEmail) {
-      return res.status(400).json({ error: "Missing customer email" });
+    // Verify authentication
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: "Unauthorized - Missing or invalid authorization header" });
     }
+
+    const token = authHeader.split(' ')[1];
+    
+    // Verify the JWT token with Supabase
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user || !user.email) {
+      console.error('Auth error:', authError);
+      return res.status(401).json({ error: "Unauthorized - Invalid token or user" });
+    }
+
+    const customerEmail = user.email;
 
     // Find or create Stripe customer by email
     const customers = await stripe.customers.list({
