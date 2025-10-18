@@ -32,6 +32,7 @@ import TaxReports from "@/pages/tax-reports";
 import Settings from "@/pages/settings";
 import CalendarSettings from "@/pages/CalendarSettings";
 import Journal from "@/pages/journal";
+import User from "@/pages/user";
 import Layout from "@/components/Layout";
 import NotFound from "@/pages/not-found";
 import PreviewPropFirm from "@/pages/preview-prop-firm";
@@ -111,6 +112,7 @@ function Router() {
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />
           <Route path="/calendar-settings" component={CalendarSettings} />
+          <Route path="/user" component={User} />
         </Layout>
       )}
       <Route component={NotFound} />

@@ -29,7 +29,8 @@ import {
   Newspaper,
   ChevronRight,
   ChevronLeft,
-  Target
+  Target,
+  User as UserIcon
 } from "lucide-react";
 import logoImage from "@assets/pipaura-logo.png";
 import headerLogoVideo from "@assets/PipAura_1760451006076.mp4";
@@ -226,6 +227,17 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               </nav>
 
               <div className="p-4 space-y-2 border-t border-white/5">
+                <Link href="/user" onClick={onClose}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-gray-300 hover:text-white hover:bg-white/5"
+                    data-testid="button-mobile-user"
+                  >
+                    <UserIcon className="h-4 w-4 mr-3 text-gray-400" />
+                    <span>User</span>
+                  </Button>
+                </Link>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -330,9 +342,31 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       </nav>
 
       <div className={cn(
-        "p-4 transition-all duration-300 border-t border-white/5",
+        "p-4 transition-all duration-300 border-t border-white/5 space-y-2",
         isCollapsed && "p-2"
       )}>
+        <Link href="/user">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              `w-full text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300`,
+              isCollapsed ? "px-2 justify-center" : "justify-start"
+            )}
+            data-testid="button-user"
+          >
+            <UserIcon className={cn(
+              "h-4 w-4 text-gray-400",
+              !isCollapsed && "mr-3"
+            )} />
+            <span className={cn(
+              "transition-all duration-300 whitespace-nowrap overflow-hidden",
+              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+            )}>
+              User
+            </span>
+          </Button>
+        </Link>
         <Button
           variant="ghost"
           size="sm"
