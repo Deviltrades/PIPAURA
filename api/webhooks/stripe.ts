@@ -27,15 +27,61 @@ async function buffer(readable: any): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
-function getPlanFromPrice(priceAmount: number): { plan_type: string; storage_limit_mb: number; account_limit: number } {
-  if (priceAmount === 499 || priceAmount === 4999) {
-    return { plan_type: 'lite', storage_limit_mb: 1024, account_limit: 1 };
-  } else if (priceAmount === 1400 || priceAmount === 11400) {
-    return { plan_type: 'core', storage_limit_mb: 2048, account_limit: 10 };
-  } else if (priceAmount === 2400 || priceAmount === 23000) {
-    return { plan_type: 'elite', storage_limit_mb: 10240, account_limit: 999999 };
+type PlanType = 'lite' | 'core' | 'elite';
+
+function getPlanFromStripeData(metadata?: Stripe.Metadata | null, items?: Stripe.ApiList<Stripe.SubscriptionItem>): PlanType | null {
+  // First try metadata (from checkout session)
+  if (metadata?.planId) {
+    const planId = metadata.planId as string;
+    if (planId === 'lite' || planId === 'core' || planId === 'elite') {
+      return planId;
+    }
   }
-  return { plan_type: 'lite', storage_limit_mb: 1024, account_limit: 1 };
+  
+  // Then try to infer from price amount (subscription items)
+  if (items && items.data.length > 0) {
+    const amount = items.data[0].price.unit_amount || 0;
+    
+    if (amount === 499 || amount === 4999) return 'lite';
+    if (amount === 1400 || amount === 11400) return 'core';
+    if (amount === 2400 || amount === 23000) return 'elite';
+  }
+  
+  return null;
+}
+
+async function updateUserPlan(email: string, planId: PlanType) {
+  const planLimits = {
+    lite: { storage_limit_mb: 1024, image_limit: 999999, account_limit: 1 },
+    core: { storage_limit_mb: 2048, image_limit: 999999, account_limit: 10 },
+    elite: { storage_limit_mb: 10240, image_limit: 999999, account_limit: 999999 }
+  };
+
+  const limits = planLimits[planId];
+
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .update({ 
+      plan_type: planId,
+      storage_limit_mb: limits.storage_limit_mb,
+      image_limit: limits.image_limit,
+      account_limit: limits.account_limit
+    })
+    .eq('email', email)
+    .select();
+
+  if (error) {
+    console.error('Failed to update user plan:', error);
+    throw error;
+  }
+  
+  if (!data || data.length === 0) {
+    console.warn(`No user found with email ${email}`);
+    throw new Error(`No user found with email ${email}`);
+  }
+
+  console.log(`Updated user ${email} to ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
+  return data[0];
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -66,41 +112,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        const customerEmail = session.customer_email || session.customer_details?.email;
+        console.log('Checkout completed:', session.id);
 
+        const customerEmail = session.customer_details?.email || session.customer_email;
+        const planId = getPlanFromStripeData(session.metadata);
+        
         if (!customerEmail) {
-          console.error('No customer email found in checkout session');
-          return res.status(400).json({ error: 'No customer email found' });
+          console.error('Missing email in checkout session:', session.id);
+          return res.status(400).json({ error: 'Missing customer email' });
         }
 
-        const subscriptionId = session.subscription as string;
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        const priceAmount = subscription.items.data[0].price.unit_amount || 0;
-
-        const { plan_type, storage_limit_mb, account_limit } = getPlanFromPrice(priceAmount);
-
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({
-            plan_type,
-            storage_limit_mb,
-            account_limit,
-            image_limit: 999999,
-          })
-          .eq('email', customerEmail);
-
-        if (updateError) {
-          console.error('Error updating user plan:', updateError);
-          return res.status(500).json({ error: 'Failed to update user plan' });
+        if (!planId) {
+          console.error('Missing or invalid planId in session:', session.id);
+          return res.status(400).json({ error: 'Missing or invalid plan ID' });
         }
 
-        console.log(`Updated user ${customerEmail} to ${plan_type} plan`);
+        await updateUserPlan(customerEmail, planId);
+        console.log(`Checkout completed for ${customerEmail}, plan: ${planId}`);
         break;
       }
 
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
+        console.log(`Subscription ${event.type}:`, subscription.id);
+
         const customerId = subscription.customer as string;
         const customer = await stripe.customers.retrieve(customerId);
 
@@ -115,30 +151,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return res.status(400).json({ error: 'No customer email found' });
         }
 
-        const priceAmount = subscription.items.data[0].price.unit_amount || 0;
-        const { plan_type, storage_limit_mb, account_limit } = getPlanFromPrice(priceAmount);
-
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({
-            plan_type,
-            storage_limit_mb,
-            account_limit,
-            image_limit: 999999,
-          })
-          .eq('email', customerEmail);
-
-        if (updateError) {
-          console.error('Error updating user plan:', updateError);
-          return res.status(500).json({ error: 'Failed to update user plan' });
+        const planId = getPlanFromStripeData(null, subscription.items);
+        
+        if (!planId) {
+          console.error('Could not determine plan from subscription:', subscription.id);
+          return res.status(400).json({ error: 'Could not determine plan' });
         }
 
-        console.log(`Updated user ${customerEmail} to ${plan_type} plan via subscription ${event.type}`);
+        await updateUserPlan(customerEmail, planId);
+        console.log(`Subscription ${event.type} for ${customerEmail}, plan: ${planId}`);
         break;
       }
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
+        console.log('Subscription cancelled:', subscription.id);
+
         const customerId = subscription.customer as string;
         const customer = await stripe.customers.retrieve(customerId);
 
@@ -153,22 +181,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return res.status(400).json({ error: 'No customer email found' });
         }
 
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({
-            plan_type: 'lite',
-            storage_limit_mb: 1024,
-            account_limit: 1,
-            image_limit: 999999,
-          })
-          .eq('email', customerEmail);
-
-        if (updateError) {
-          console.error('Error downgrading user to lite:', updateError);
-          return res.status(500).json({ error: 'Failed to downgrade user' });
-        }
-
-        console.log(`Downgraded user ${customerEmail} to lite plan after cancellation`);
+        await updateUserPlan(customerEmail, 'lite');
+        console.log(`Downgraded ${customerEmail} to lite plan after cancellation`);
         break;
       }
 
