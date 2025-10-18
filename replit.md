@@ -30,7 +30,7 @@ The client-side is a React 18 and TypeScript application using `shadcn/ui` (buil
 Supabase PostgreSQL stores all data, including user profiles, journal entries (instrument types, position details, P&L), and Supabase Storage handles trade attachments.
 
 ### Dashboard
-Features a customizable widget system with 8 types, drag-and-drop, resize functionality, and template saving for up to 5 custom layouts.
+Features a customizable widget system with 8 types, drag-and-drop, resize functionality, and template saving. Dashboard layouts are saved per breakpoint (lg, md, sm, xs, xxs) to ensure mobile and desktop layouts persist independently. Users can customize widget positions on any device, and changes are automatically saved when clicking the "Save Layout" button.
 
 ### Account Filtering System
 A universal account selector enables database-level filtering by `account_id` across all pages. React Query uses account-specific cache keys for data isolation, ensuring consistent data updates and cross-page consistency.

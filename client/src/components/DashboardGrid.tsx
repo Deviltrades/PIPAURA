@@ -78,6 +78,32 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "longshort", x: 0, y: 18, w: 4, h: 4 },
       { i: "timing", x: 0, y: 22, w: 4, h: 7 },
       { i: "calendar", x: 0, y: 29, w: 4, h: 7 },
+    ],
+    xs: [
+      { i: "profit", x: 0, y: 0, w: 2, h: 2 },
+      { i: "winrate", x: 0, y: 2, w: 2, h: 2 },
+      { i: "riskreward", x: 0, y: 4, w: 2, h: 2 },
+      { i: "average", x: 0, y: 6, w: 2, h: 2 },
+      { i: "fees", x: 0, y: 8, w: 2, h: 2 },
+      { i: "totaltrades", x: 0, y: 10, w: 2, h: 2 },
+      { i: "chart", x: 0, y: 12, w: 2, h: 6 },
+      { i: "trades", x: 0, y: 18, w: 2, h: 6 },
+      { i: "longshort", x: 0, y: 24, w: 2, h: 4 },
+      { i: "timing", x: 0, y: 28, w: 2, h: 7 },
+      { i: "calendar", x: 0, y: 35, w: 2, h: 7 },
+    ],
+    xxs: [
+      { i: "profit", x: 0, y: 0, w: 2, h: 2 },
+      { i: "winrate", x: 0, y: 2, w: 2, h: 2 },
+      { i: "riskreward", x: 0, y: 4, w: 2, h: 2 },
+      { i: "average", x: 0, y: 6, w: 2, h: 2 },
+      { i: "fees", x: 0, y: 8, w: 2, h: 2 },
+      { i: "totaltrades", x: 0, y: 10, w: 2, h: 2 },
+      { i: "chart", x: 0, y: 12, w: 2, h: 6 },
+      { i: "trades", x: 0, y: 18, w: 2, h: 6 },
+      { i: "longshort", x: 0, y: 24, w: 2, h: 4 },
+      { i: "timing", x: 0, y: 28, w: 2, h: 7 },
+      { i: "calendar", x: 0, y: 35, w: 2, h: 7 },
     ]
   };
 
@@ -494,11 +520,13 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           className="layout relative z-10"
           layouts={layouts}
           onLayoutChange={(layout, newLayouts) => {
-            // Only save the breakpoints we care about
+            // Save all breakpoints including mobile (xs, xxs)
             setLayouts({
               lg: newLayouts.lg || layouts.lg,
               md: newLayouts.md || layouts.md,
               sm: newLayouts.sm || layouts.sm,
+              xs: newLayouts.xs || layouts.xs,
+              xxs: newLayouts.xxs || layouts.xxs,
             });
           }}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
