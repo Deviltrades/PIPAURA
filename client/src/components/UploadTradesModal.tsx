@@ -166,6 +166,7 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [errors, setErrors] = useState<string[]>([]);
+  const [fileType, setFileType] = useState<'CSV' | 'Excel' | 'HTML' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -331,17 +332,20 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
   };
 
   const parseFile = async (file: File) => {
-    const fileType = detectFileType(file);
+    const detectedFileType = detectFileType(file);
     let parsedData: any[] = [];
     
     try {
-      if (fileType === 'excel') {
+      if (detectedFileType === 'excel') {
+        setFileType('Excel');
         parsedData = await parseExcel(file);
         console.log("Excel file parsed:", parsedData.length, "rows");
-      } else if (fileType === 'html') {
+      } else if (detectedFileType === 'html') {
+        setFileType('HTML');
         parsedData = await parseHTML(file);
         console.log("HTML table parsed:", parsedData.length, "rows");
-      } else if (fileType === 'csv') {
+      } else if (detectedFileType === 'csv') {
+        setFileType('CSV');
         // Use existing CSV parser
         return parseCSV(file);
       } else {
@@ -611,6 +615,7 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
         ...trade,
         account_id: selectedAccountId,
         instrument_type: determineInstrumentType(trade.instrument),
+        upload_source: fileType || 'CSV',
       }));
 
       return await uploadTrades(tradesWithAccount, selectedAccountId);
@@ -659,6 +664,7 @@ export function UploadTradesModal({ isOpen, onClose }: UploadTradesModalProps) {
     setShowPreview(false);
     setUploadProgress(0);
     setErrors([]);
+    setFileType(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }

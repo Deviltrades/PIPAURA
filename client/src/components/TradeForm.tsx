@@ -140,6 +140,7 @@ export function TradeForm({ open, onOpenChange, trade }: TradeFormProps) {
         notes: data.notes || '',
         attachments,
         entry_date: new Date().toISOString(),
+        upload_source: trade?.id ? undefined : 'Manual' as const,
       };
 
       if (trade?.id) {

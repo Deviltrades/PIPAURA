@@ -525,6 +525,7 @@ export async function uploadTrades(trades: UploadTrade[], accountId: string) {
       session_tag: sessionTag,
       holding_time_minutes: holdingTimeMinutes,
       profit_per_lot: profitPerLot?.toString(),
+      upload_source: (trade as any).upload_source,
     };
 
     if (trade.ticket_id) {

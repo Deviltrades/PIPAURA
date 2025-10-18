@@ -131,6 +131,7 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
         // commission: data.commission ? parseFloat(data.commission) : undefined,
         status: (data.exitPrice ? 'CLOSED' : 'OPEN') as 'CLOSED' | 'OPEN',
         notes: data.notes || 'Uploaded via OCR AI',
+        upload_source: 'OCR AI' as const,
       };
 
       return createTrade(tradeData);
@@ -591,6 +592,7 @@ export function OCRUploadModal({ isOpen, onClose }: OCRUploadModalProps) {
           pnl: trade.profit ? parseFloat(trade.profit) : undefined,
           status: (trade.exitPrice ? 'CLOSED' : 'OPEN') as 'CLOSED' | 'OPEN',
           notes: trade.notes || 'Uploaded via OCR AI',
+          upload_source: 'OCR AI' as const,
         };
 
         await createTrade(tradeData);
