@@ -15,7 +15,8 @@ import {
   FileText,
   TrendingUp,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  XCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -258,6 +259,19 @@ export default function UserPage() {
               View All Plans
             </Button>
           </div>
+
+          {/* Cancel Plan Button */}
+          <Button
+            onClick={handleManageBilling}
+            disabled={isLoadingPortal}
+            variant="ghost"
+            size="sm"
+            className="w-full text-gray-400 hover:text-red-400 hover:bg-red-500/10"
+            data-testid="button-cancel-plan"
+          >
+            <XCircle className="mr-2 h-3 w-3" />
+            Cancel Plan
+          </Button>
 
           <Separator className="bg-white/10" />
 
