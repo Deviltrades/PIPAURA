@@ -372,17 +372,53 @@ export function EmotionalAnalyticsTab({ accountId }: EmotionalAnalyticsTabProps)
         </Card>
       </div>
 
-      {/* Mood Planet Visualization */}
+      {/* Mood Neuron Visualization */}
       {correlationData.length > 0 && (
-        <div className="w-full flex justify-center" data-testid="section-mood-planet">
-          <MoodPlanet 
-            moodLogs={correlationData.map(d => ({
-              mood: d.mood,
-              date: d.date || 'Unknown',
-              pnl: d.pnl
-            }))}
-          />
-        </div>
+        <Card className="bg-[#0f1f3a] border-cyan-500/30">
+          <CardHeader>
+            <CardTitle className="text-cyan-400 flex items-center gap-2">
+              <Brain className="h-5 w-5" />
+              Mood Neuron
+            </CardTitle>
+            <CardDescription>Visual representation of your emotional state</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center gap-6">
+              <div data-testid="section-mood-planet">
+                <MoodPlanet 
+                  moodLogs={correlationData.map(d => ({
+                    mood: d.mood,
+                    date: d.date || 'Unknown',
+                    pnl: d.pnl
+                  }))}
+                />
+              </div>
+              
+              {/* Color Legend */}
+              <div className="w-full max-w-md space-y-2">
+                <p className="text-sm text-gray-400 text-center mb-3">Mood State Indicator</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/30 rounded">
+                    <div className="w-3 h-3 rounded-full bg-green-500" style={{ boxShadow: '0 0 10px rgba(16, 185, 129, 0.6)' }}></div>
+                    <span className="text-sm text-green-400">Excellent (8-10)</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 bg-cyan-500/10 border border-cyan-500/30 rounded">
+                    <div className="w-3 h-3 rounded-full bg-cyan-400" style={{ boxShadow: '0 0 10px rgba(6, 182, 212, 0.6)' }}></div>
+                    <span className="text-sm text-cyan-400">Good (5-7)</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 bg-orange-500/10 border border-orange-500/30 rounded">
+                    <div className="w-3 h-3 rounded-full bg-orange-400" style={{ boxShadow: '0 0 10px rgba(251, 146, 60, 0.6)' }}></div>
+                    <span className="text-sm text-orange-400">Stable (3-4)</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 bg-red-500/10 border border-red-500/30 rounded">
+                    <div className="w-3 h-3 rounded-full bg-red-500" style={{ boxShadow: '0 0 10px rgba(239, 68, 68, 0.6)' }}></div>
+                    <span className="text-sm text-red-400">Bad (1-2)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Behavioral Insights */}
