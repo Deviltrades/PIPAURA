@@ -64,13 +64,13 @@ export function TimezoneSelector() {
 
   return (
     <div className="flex items-center gap-2" data-testid="timezone-selector">
-      <Globe className="h-4 w-4 text-muted-foreground" />
+      <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
       <Select
         value={userProfile?.timezone || "UTC"}
         onValueChange={handleTimezoneChange}
         disabled={updateTimezoneMutation.isPending}
       >
-        <SelectTrigger className="w-[280px] border-cyan-600/50 bg-slate-800/50 hover:bg-cyan-600/20 hover:border-cyan-500">
+        <SelectTrigger className="w-[140px] sm:w-[200px] lg:w-[280px] border-cyan-600/50 bg-slate-800/50 hover:bg-cyan-600/20 hover:border-cyan-500 text-xs sm:text-sm">
           <SelectValue placeholder="Select timezone" />
         </SelectTrigger>
         <SelectContent>

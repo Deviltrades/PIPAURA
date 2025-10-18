@@ -113,7 +113,7 @@ export default function Fundamentals() {
 
   return (
     <div className="p-3 sm:p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white" data-testid="text-fundamentals-title">
             Fundamental Analysis
@@ -122,17 +122,17 @@ export default function Fundamentals() {
             Economic calendar, news events, and market-moving fundamentals
           </p>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+        <div className="flex items-center gap-1.5 sm:gap-3 lg:gap-4 w-full sm:w-auto shrink-0">
           <TimezoneSelector />
           <Button
             onClick={handleManualRefresh}
             variant="outline"
-            className="group border-cyan-600/50 bg-slate-800/50 hover:bg-cyan-600/20 hover:border-cyan-500 transition-all duration-300 flex-1 sm:flex-initial"
+            className="group border-cyan-600/50 bg-slate-800/50 hover:bg-cyan-600/20 hover:border-cyan-500 transition-all duration-300 shrink-0"
             disabled={isRefreshing}
             data-testid="button-refresh-fundamentals"
           >
             <RefreshCw 
-              className={`h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2 text-cyan-400 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} 
+              className={`h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 text-cyan-400 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} 
             />
             <div className="flex flex-col items-start">
               <span className="text-xs sm:text-sm font-medium text-white">Refresh<span className="hidden sm:inline"> Data</span></span>
