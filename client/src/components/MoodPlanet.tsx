@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 interface MoodPlanetProps {
   moodLogs: Array<{ mood: number; date: string; pnl: number }>;
+  yearlyMoodAverage?: number; // Yearly average for outer glow
 }
 
 interface Continent {
@@ -36,11 +37,14 @@ const getPlanetColors = (mood: number) => {
   }
 };
 
-export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
-  // Calculate average mood from logs
+export function MoodPlanet({ moodLogs, yearlyMoodAverage = 6 }: MoodPlanetProps) {
+  // Calculate average mood from logs for continent colors
   const averageMood = moodLogs.length > 0
     ? moodLogs.reduce((sum, log) => sum + log.mood, 0) / moodLogs.length
     : 5; // Default to neutral
+  
+  // Use yearlyMoodAverage for outer glow (defaults to 6 = cyan)
+  const outerGlowMood = yearlyMoodAverage;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [continents, setContinents] = useState<Continent[]>([]);
   const rotationRef = useRef(0);
@@ -320,8 +324,8 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
         }
       });
 
-      // Outer glow (use average mood for outer ring)
-      const outerGlowColors = getPlanetColors(averageMood);
+      // Outer glow (use yearly mood average for outer ring)
+      const outerGlowColors = getPlanetColors(outerGlowMood);
       const gradient = ctx.createRadialGradient(centerX, centerY, radius - 10, centerX, centerY, radius + 5);
       gradient.addColorStop(0, 'transparent');
       gradient.addColorStop(1, outerGlowColors.glow);
@@ -340,7 +344,7 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [continents, averageMood]);
+  }, [continents, averageMood, outerGlowMood]);
 
   return (
     <div className="flex justify-center items-center">
