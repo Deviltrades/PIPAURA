@@ -32,7 +32,7 @@ const planDetails: Record<Plan, PlanDetails> = {
     monthlyPrice: "£4.99",
     yearlyPrice: "£49.99",
     storage: "1GB Storage",
-    accounts: "Up to 5 accounts",
+    accounts: "1 Account",
     features: [
       "Core trading journal",
       "Basic analytics",
