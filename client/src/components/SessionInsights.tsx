@@ -5,9 +5,33 @@ import { formatCurrency } from "@/lib/utils";
 
 interface SessionInsightsProps {
   trades: any[];
+  bgColor?: string;
+  textColor?: string;
+  themeColor?: string;
 }
 
-export function SessionInsights({ trades }: SessionInsightsProps) {
+export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#ffffff", themeColor = "slate" }: SessionInsightsProps) {
+  // Get theme-based accent colors
+  const getThemeAccentColor = () => {
+    const themeColors: Record<string, string> = {
+      slate: textColor,
+      blue: "#60a5fa",
+      purple: "#a78bfa",
+      green: "#34d399",
+      orange: "#fb923c",
+      pink: "#f472b6",
+    };
+    return themeColors[themeColor] || textColor;
+  };
+  
+  const accentColor = getThemeAccentColor();
+  
+  // Get profit/loss colors based on theme accent
+  const getProfitColor = () => accentColor + "DD"; // High opacity for profit text
+  const getLossColor = () => accentColor + "66"; // Lower opacity for loss text
+  const getProfitBarColor = () => accentColor + "CC"; // Bar fill for profit
+  const getLossBarColor = () => accentColor + "44"; // Bar fill for loss
+  
   // Calculate session statistics
   const sessionStats = (trades || []).reduce((acc: any, trade: any) => {
     const session = trade.session_tag || "Unknown";
@@ -56,14 +80,22 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
     current.avgHoldingTime > prev.avgHoldingTime ? current : prev
   , sessions[0] || { name: "N/A", avgHoldingTime: 0 });
 
-  const getSessionColor = (session: string) => {
-    switch (session.toLowerCase()) {
-      case "london": return "bg-blue-600 text-white";
-      case "new york": return "bg-purple-600 text-white";
-      case "asia": return "bg-orange-600 text-white";
-      case "overlap": return "bg-pink-600 text-white";
-      default: return "bg-gray-600 text-white";
-    }
+  const getSessionBadgeStyle = (session: string) => {
+    // Use theme-aware colors with different opacity levels for different sessions
+    const opacities: Record<string, string> = {
+      "london": "80",
+      "new york": "60",
+      "asia": "90",
+      "overlap": "70",
+    };
+    
+    const opacity = opacities[session.toLowerCase()] || "50";
+    
+    return {
+      backgroundColor: `${textColor}${opacity}`,
+      color: bgColor,
+      fontWeight: "600" as const
+    };
   };
 
   const formatHoldingTime = (minutes: number) => {
@@ -76,15 +108,15 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
 
   if (!trades || trades.length === 0) {
     return (
-      <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
+      <Card className="border" style={{ backgroundColor: bgColor, borderColor: `${textColor}30` }}>
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-cyan-400" />
+          <CardTitle className="flex items-center gap-2" style={{ color: textColor }}>
+            <TrendingUp className="h-5 w-5" style={{ color: textColor }} />
             Session Insights
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-400 text-center py-8">
+          <p className="text-center py-8" style={{ color: `${textColor}99` }}>
             No session data available yet. Start trading to see insights!
           </p>
         </CardContent>
@@ -93,83 +125,96 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
   }
 
   return (
-    <Card className="bg-[#0f1f3a] border-2 border-cyan-500/60 shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all duration-300">
+    <Card className="border-2 transition-all duration-300" style={{ 
+      backgroundColor: bgColor,
+      borderColor: `${textColor}60`,
+      boxShadow: `0 0 15px ${textColor}20`
+    }}>
       <CardHeader className="pb-3 sm:pb-6">
-        <CardTitle className="text-base sm:text-lg text-white flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-cyan-400" />
+        <CardTitle className="text-base sm:text-lg flex items-center gap-2" style={{ color: textColor }}>
+          <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: textColor }} />
           Session Insights
         </CardTitle>
-        <p className="text-xs sm:text-sm text-gray-400">Performance breakdown by trading session</p>
+        <p className="text-xs sm:text-sm" style={{ color: `${textColor}99` }}>Performance breakdown by trading session</p>
       </CardHeader>
       <CardContent className="px-3 sm:px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
           {/* Most Active Session */}
-          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg bg-slate-800/50 border border-cyan-500/20 transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.6)] hover:border-cyan-500/60">
+          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border transition-all duration-300" style={{
+            backgroundColor: `${textColor}05`,
+            borderColor: `${textColor}30`
+          }}>
             <div className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-cyan-600/20">
-                <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-cyan-400" />
+              <div className="p-1.5 sm:p-2 rounded-lg" style={{ backgroundColor: `${textColor}20` }}>
+                <Trophy className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: textColor }} />
               </div>
               <div>
-                <p className="text-xs text-gray-400">Most Active</p>
-                <p className="text-xs sm:text-sm font-medium text-white">Trading Session</p>
+                <p className="text-xs" style={{ color: `${textColor}99` }}>Most Active</p>
+                <p className="text-xs sm:text-sm font-medium" style={{ color: textColor }}>Trading Session</p>
               </div>
             </div>
             <div className="space-y-1 sm:space-y-2">
-              <Badge className={`${getSessionColor(mostActive.name)} text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1`} data-testid="badge-most-active-session">
+              <Badge className="text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1" style={getSessionBadgeStyle(mostActive.name)} data-testid="badge-most-active-session">
                 {mostActive.name}
               </Badge>
-              <p className="text-xl sm:text-2xl font-bold text-cyan-400" data-testid="text-most-active-count">
+              <p className="text-xl sm:text-2xl font-bold" style={{ color: textColor }} data-testid="text-most-active-count">
                 {mostActive.count} trades
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs" style={{ color: `${textColor}99` }}>
                 {((mostActive.count / trades.length) * 100).toFixed(1)}% of all trades
               </p>
             </div>
           </div>
 
           {/* Most Profitable Session */}
-          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg bg-slate-800/50 border border-green-500/20 transition-all duration-300 hover:shadow-[0_0_20px_rgba(34,197,94,0.6)] hover:border-green-500/60">
+          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border transition-all duration-300" style={{
+            backgroundColor: `${textColor}05`,
+            borderColor: `${textColor}30`
+          }}>
             <div className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-green-600/20">
-                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
+              <div className="p-1.5 sm:p-2 rounded-lg" style={{ backgroundColor: `${textColor}20` }}>
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: textColor }} />
               </div>
               <div>
-                <p className="text-xs text-gray-400">Most Profitable</p>
-                <p className="text-xs sm:text-sm font-medium text-white">Trading Session</p>
+                <p className="text-xs" style={{ color: `${textColor}99` }}>Most Profitable</p>
+                <p className="text-xs sm:text-sm font-medium" style={{ color: textColor }}>Trading Session</p>
               </div>
             </div>
             <div className="space-y-1 sm:space-y-2">
-              <Badge className={`${getSessionColor(mostProfitable.name)} text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1`} data-testid="badge-most-profitable-session">
+              <Badge className="text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1" style={getSessionBadgeStyle(mostProfitable.name)} data-testid="badge-most-profitable-session">
                 {mostProfitable.name}
               </Badge>
-              <p className={`text-xl sm:text-2xl font-bold ${mostProfitable.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`} data-testid="text-most-profitable-pnl">
+              <p className="text-xl sm:text-2xl font-bold" style={{ color: mostProfitable.pnl >= 0 ? getProfitColor() : getLossColor() }} data-testid="text-most-profitable-pnl">
                 {formatCurrency(mostProfitable.pnl)}
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs" style={{ color: `${textColor}99` }}>
                 Total session P&L
               </p>
             </div>
           </div>
 
           {/* Longest Holding Session */}
-          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg bg-slate-800/50 border border-purple-500/20 transition-all duration-300 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] hover:border-purple-500/60">
+          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border transition-all duration-300" style={{
+            backgroundColor: `${textColor}05`,
+            borderColor: `${textColor}30`
+          }}>
             <div className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-purple-600/20">
-                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />
+              <div className="p-1.5 sm:p-2 rounded-lg" style={{ backgroundColor: `${textColor}20` }}>
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: textColor }} />
               </div>
               <div>
-                <p className="text-xs text-gray-400">Longest Holding</p>
-                <p className="text-xs sm:text-sm font-medium text-white">Trading Session</p>
+                <p className="text-xs" style={{ color: `${textColor}99` }}>Longest Holding</p>
+                <p className="text-xs sm:text-sm font-medium" style={{ color: textColor }}>Trading Session</p>
               </div>
             </div>
             <div className="space-y-1 sm:space-y-2">
-              <Badge className={`${getSessionColor(longestHolding.name)} text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1`} data-testid="badge-longest-holding-session">
+              <Badge className="text-sm sm:text-base px-2 sm:px-3 py-0.5 sm:py-1" style={getSessionBadgeStyle(longestHolding.name)} data-testid="badge-longest-holding-session">
                 {longestHolding.name}
               </Badge>
-              <p className="text-xl sm:text-2xl font-bold text-purple-400" data-testid="text-longest-holding-time">
+              <p className="text-xl sm:text-2xl font-bold" style={{ color: textColor }} data-testid="text-longest-holding-time">
                 {formatHoldingTime(longestHolding.avgHoldingTime)}
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs" style={{ color: `${textColor}99` }}>
                 Average trade duration
               </p>
             </div>
@@ -178,7 +223,7 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
 
         {/* Session Performance Bars */}
         <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
-          <p className="text-xs sm:text-sm font-medium text-white">Session Performance Overview</p>
+          <p className="text-xs sm:text-sm font-medium" style={{ color: textColor }}>Session Performance Overview</p>
           {sessions
             .filter(s => s.name !== "Unknown")
             .sort((a, b) => b.pnl - a.pnl)
@@ -189,17 +234,20 @@ export function SessionInsights({ trades }: SessionInsightsProps) {
               return (
                 <div key={session.name} className="space-y-1">
                   <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <Badge className={`${getSessionColor(session.name)} text-xs`}>
+                    <Badge className="text-xs" style={getSessionBadgeStyle(session.name)}>
                       {session.name}
                     </Badge>
-                    <span className={`font-medium ${session.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <span className="font-medium" style={{ color: session.pnl >= 0 ? getProfitColor() : getLossColor() }}>
                       {formatCurrency(session.pnl)}
                     </span>
                   </div>
-                  <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: `${textColor}20` }}>
                     <div 
-                      className={`h-full rounded-full transition-all ${session.pnl >= 0 ? 'bg-green-500' : 'bg-red-500'}`}
-                      style={{ width: `${percentage}%` }}
+                      className="h-full rounded-full transition-all"
+                      style={{ 
+                        width: `${percentage}%`,
+                        backgroundColor: session.pnl >= 0 ? getProfitBarColor() : getLossBarColor()
+                      }}
                     />
                   </div>
                 </div>

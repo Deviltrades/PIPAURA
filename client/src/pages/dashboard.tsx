@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import TradingAnalytics from "@/components/TradingAnalytics";
 import { AccountSelector } from "@/components/AccountSelector";
-import { SessionInsights } from "@/components/SessionInsights";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
 import { getTrades } from "@/lib/supabase-service";
 
@@ -22,12 +21,7 @@ export default function Dashboard() {
         <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
       </div>
       
-      {/* Session Insights Section */}
-      <div className="mb-4 sm:mb-6">
-        <SessionInsights trades={trades} />
-      </div>
-      
-      <TradingAnalytics selectedAccount={selectedAccount} />
+      <TradingAnalytics selectedAccount={selectedAccount} trades={trades} />
     </div>
   );
 }

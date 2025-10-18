@@ -23,20 +23,24 @@ interface Trade {
 
 interface TradingAnalyticsProps {
   selectedAccount: string;
+  trades?: Trade[];
 }
 
-export default function TradingAnalytics({ selectedAccount }: TradingAnalyticsProps) {
+export default function TradingAnalytics({ selectedAccount, trades: propTrades }: TradingAnalyticsProps) {
   const { data: analytics } = useQuery<AnalyticsData>({
     queryKey: ["analytics", selectedAccount],
     queryFn: () => getAnalytics(selectedAccount),
     retry: false,
   });
 
-  const { data: trades } = useQuery<Trade[]>({
+  const { data: fetchedTrades } = useQuery<Trade[]>({
     queryKey: ["trades", selectedAccount],
     queryFn: () => getTrades(selectedAccount),
     retry: false,
+    enabled: !propTrades,
   });
 
-  return <DashboardGrid analytics={analytics} trades={trades || []} selectedAccount={selectedAccount} />;
+  const trades = propTrades || fetchedTrades || [];
+
+  return <DashboardGrid analytics={analytics} trades={trades} selectedAccount={selectedAccount} />;
 }

@@ -12,6 +12,7 @@ import { getUserProfile, updateUserProfile } from "@/lib/supabase-service";
 import DraggableWidget from "./DraggableWidget";
 import CalendarWidget from "./CalendarWidget";
 import TimingInsights from "./TimingInsights";
+import { SessionInsights } from "./SessionInsights";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -488,6 +489,11 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
             </p>
           </div>
         )}
+
+        {/* Session Insights */}
+        <div className="mb-4 sm:mb-6 relative z-10">
+          <SessionInsights trades={trades} bgColor={bgColor} textColor={textColor} themeColor={themeColor} />
+        </div>
 
         <ResponsiveGridLayout
           className="layout relative z-10"
