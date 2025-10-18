@@ -490,11 +490,6 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           </div>
         )}
 
-        {/* Session Insights */}
-        <div className="mb-4 sm:mb-6 relative z-10">
-          <SessionInsights trades={trades} bgColor={bgColor} textColor={textColor} themeColor={themeColor} />
-        </div>
-
         <ResponsiveGridLayout
           className="layout relative z-10"
           layouts={layouts}
@@ -1055,6 +1050,11 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
             </DraggableWidget>
           </div>
         </ResponsiveGridLayout>
+
+        {/* Session Insights */}
+        <div className="mt-4 sm:mt-6 relative z-10">
+          <SessionInsights trades={trades} bgColor={bgColor} textColor={textColor} themeColor={themeColor} />
+        </div>
       </div>
     </div>
   );
