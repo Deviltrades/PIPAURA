@@ -3,6 +3,7 @@ import express from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { setupCronRoutes } from './cron-routes.js';
 import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 const app = express();
 const PORT = 5000;
@@ -13,10 +14,126 @@ if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-10-28.acacia",
+  apiVersion: "2025-09-30.clover",
 });
 
-// Parse JSON bodies for cron endpoints and Stripe
+// Initialize Supabase for webhook handler
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.warn('⚠️ Supabase credentials missing - webhooks will not work');
+}
+
+const supabase = supabaseUrl && supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : null;
+
+// Webhook endpoint needs raw body for signature verification
+app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!webhookSecret) {
+    console.error('⚠️ STRIPE_WEBHOOK_SECRET not configured');
+    return res.status(500).send('Webhook secret not configured');
+  }
+
+  if (!sig) {
+    return res.status(400).send('No signature');
+  }
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  } catch (err: any) {
+    console.error('⚠️ Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        console.log('💳 Checkout completed:', session.id);
+
+        // Extract customer email and plan info
+        const customerEmail = session.customer_details?.email || session.customer_email;
+        const planId = session.metadata?.planId as 'lite' | 'core' | 'elite';
+        
+        if (!customerEmail || !planId) {
+          console.error('Missing email or planId in session:', session.id);
+          break;
+        }
+
+        // Update user plan in Supabase
+        if (supabase) {
+          const { data, error } = await supabase
+            .from('user_profiles')
+            .update({ 
+              plan_type: planId,
+              storage_limit_mb: planId === 'lite' ? 1024 : planId === 'core' ? 2048 : 10240,
+              account_limit: planId === 'lite' ? 1 : planId === 'core' ? 10 : 999999
+            })
+            .eq('email', customerEmail)
+            .select();
+
+          if (error) {
+            console.error('❌ Failed to update user plan:', error);
+          } else if (data && data.length > 0) {
+            console.log(`✅ Updated user ${customerEmail} to ${planId} plan`);
+          } else {
+            console.warn(`⚠️ No user found with email ${customerEmail}`);
+          }
+        }
+        break;
+      }
+
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription;
+        console.log('📋 Subscription event:', subscription.id);
+        // Handle subscription updates if needed
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription;
+        console.log('❌ Subscription cancelled:', subscription.id);
+        
+        // Optionally downgrade user to lite plan
+        if (supabase && subscription.customer) {
+          const customer = await stripe.customers.retrieve(subscription.customer as string);
+          if ('email' in customer && customer.email) {
+            await supabase
+              .from('user_profiles')
+              .update({ 
+                plan_type: 'lite',
+                storage_limit_mb: 1024,
+                account_limit: 1
+              })
+              .eq('email', customer.email);
+            
+            console.log(`📉 Downgraded user ${customer.email} to lite plan`);
+          }
+        }
+        break;
+      }
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    res.json({ received: true });
+  } catch (err: any) {
+    console.error('Error processing webhook:', err);
+    res.status(500).send(`Webhook handler error: ${err.message}`);
+  }
+});
+
+// Parse JSON bodies for cron endpoints and Stripe (except webhook)
 app.use(express.json());
 
 // Setup cron API routes first (these take priority)
