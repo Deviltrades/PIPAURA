@@ -96,8 +96,7 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
   }
 
   return (
-    <Card className="border-2 transition-all duration-300" style={{ 
-      backgroundColor: bgColor,
+    <Card className="border-2 transition-all duration-300 bg-slate-800/60" style={{ 
       borderColor: "rgba(6, 182, 212, 0.3)",
       boxShadow: `0 0 15px ${textColor}20`
     }}>
@@ -112,7 +111,7 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
           {/* Most Active Session */}
           <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border transition-all duration-300" style={{
-            backgroundColor: "#1e293b",
+            backgroundColor: `${textColor}05`,
             borderColor: `${textColor}30`
           }}>
             <div className="flex items-center gap-2">
@@ -139,7 +138,7 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
 
           {/* Most Profitable Session */}
           <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border transition-all duration-300" style={{
-            backgroundColor: "#1e293b",
+            backgroundColor: `${textColor}05`,
             borderColor: `${textColor}30`
           }}>
             <div className="flex items-center gap-2">
@@ -166,7 +165,7 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
 
           {/* Longest Holding Session */}
           <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border transition-all duration-300" style={{
-            backgroundColor: "#1e293b",
+            backgroundColor: `${textColor}05`,
             borderColor: `${textColor}30`
           }}>
             <div className="flex items-center gap-2">
