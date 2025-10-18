@@ -1454,6 +1454,39 @@ export async function getYearlyMoodAverage(): Promise<number> {
   return totalMood / data.length;
 }
 
+// Get monthly emotional logs for inner ring calculation
+export async function getMonthlyMoodAverage(): Promise<number> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1; // JavaScript months are 0-indexed
+  
+  // First day of current month
+  const startDate = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
+  
+  // Last day of current month
+  const lastDay = new Date(currentYear, currentMonth, 0).getDate();
+  const endDate = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  
+  const { data, error } = await supabase
+    .from('emotional_logs')
+    .select('mood')
+    .eq('user_id', user.id)
+    .gte('log_date', startDate)
+    .lte('log_date', endDate);
+
+  if (error) throw error;
+  
+  if (!data || data.length === 0) {
+    return 6; // Default to cyan (good mood) when no logs
+  }
+  
+  const totalMood = data.reduce((sum, log) => sum + log.mood, 0);
+  return totalMood / data.length;
+}
+
 // Get emotional analytics with trade performance correlation
 export async function getEmotionalAnalytics(accountId: string, startDate: string, endDate: string) {
   const user = await getCurrentUser();
