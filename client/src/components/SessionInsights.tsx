@@ -69,6 +69,16 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
     return sessionColors[session.toLowerCase()] || "bg-gray-500 text-white";
   };
 
+  const getSessionBorderColor = (session: string) => {
+    const borderColors: Record<string, string> = {
+      "london": "rgba(59, 130, 246, 0.6)", // blue-500
+      "new york": "rgba(168, 85, 247, 0.6)", // purple-500
+      "asia": "rgba(234, 88, 12, 0.6)", // orange-600
+      "overlap": "rgba(6, 182, 212, 0.6)", // cyan-500
+    };
+    return borderColors[session.toLowerCase()] || "rgba(107, 114, 128, 0.6)"; // gray-500
+  };
+
   const formatHoldingTime = (minutes: number) => {
     if (!minutes) return "N/A";
     if (minutes < 60) return `${Math.round(minutes)}m`;
@@ -110,9 +120,9 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
       <div className="px-0">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
           {/* Most Active Session */}
-          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border transition-all duration-300" style={{
+          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border-2 transition-all duration-300" style={{
             backgroundColor: `${textColor}05`,
-            borderColor: `${textColor}30`
+            borderColor: getSessionBorderColor(mostActive.name)
           }}>
             <div className="flex items-center gap-2">
               <div className="p-1.5 sm:p-2 rounded-lg" style={{ backgroundColor: `${textColor}20` }}>
@@ -137,9 +147,9 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
           </div>
 
           {/* Most Profitable Session */}
-          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border transition-all duration-300" style={{
+          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border-2 transition-all duration-300" style={{
             backgroundColor: `${textColor}05`,
-            borderColor: `${textColor}30`
+            borderColor: getSessionBorderColor(mostProfitable.name)
           }}>
             <div className="flex items-center gap-2">
               <div className="p-1.5 sm:p-2 rounded-lg" style={{ backgroundColor: `${textColor}20` }}>
@@ -164,9 +174,9 @@ export function SessionInsights({ trades, bgColor = "#0f1f3a", textColor = "#fff
           </div>
 
           {/* Longest Holding Session */}
-          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border transition-all duration-300" style={{
+          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 rounded-lg border-2 transition-all duration-300" style={{
             backgroundColor: `${textColor}05`,
-            borderColor: `${textColor}30`
+            borderColor: getSessionBorderColor(longestHolding.name)
           }}>
             <div className="flex items-center gap-2">
               <div className="p-1.5 sm:p-2 rounded-lg" style={{ backgroundColor: `${textColor}20` }}>
