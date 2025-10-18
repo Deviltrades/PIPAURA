@@ -66,7 +66,7 @@ export default function MembershipAgreement() {
                 <ul className="list-disc list-inside space-y-2 ml-4">
                   <li><strong className="text-white">Lite Plan</strong> — Core journal functionality with limited storage and analytics.</li>
                   <li><strong className="text-white">Core Plan</strong> — Full access to all tools, analytics, and ongoing feature updates.</li>
-                  <li><strong className="text-white">Institutional Plan</strong> — Premium access including future AI modules, deeper analytics, and mentor integration.</li>
+                  <li><strong className="text-white">Elite Plan</strong> — Premium access including future AI modules, deeper analytics, and mentor integration.</li>
                   <li><strong className="text-white">Monthly Subscription</strong> — Renews automatically each month.</li>
                   <li><strong className="text-white">Yearly Subscription</strong> — Billed annually at a discounted rate, renews automatically each year.</li>
                 </ul>
