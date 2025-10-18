@@ -56,9 +56,9 @@ function PreviewFundingProgressTracker({ tracker }: { tracker: any }) {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-[#0f1f3a] border-[#1a2f4a] p-6">
-        <h2 className="text-xl font-bold text-white mb-4">Current Phase</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Card className="bg-[#0f1f3a] border-[#1a2f4a] p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Current Phase</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {Object.entries(phaseConfig).map(([phase, config]) => (
             <div
               key={phase}
@@ -79,8 +79,8 @@ function PreviewFundingProgressTracker({ tracker }: { tracker: any }) {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="bg-gradient-to-br from-orange-600/20 to-yellow-600/20 border-orange-500/30 p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <Card className="bg-gradient-to-br from-orange-600/20 to-yellow-600/20 border-orange-500/30 p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm text-slate-400">Daily Drawdown Buffer</p>
@@ -97,7 +97,7 @@ function PreviewFundingProgressTracker({ tracker }: { tracker: any }) {
           <p className="text-sm text-slate-400 mt-2">Buffer remaining before daily limit</p>
         </Card>
 
-        <Card className="bg-gradient-to-br from-red-600/20 to-pink-600/20 border-red-500/30 p-6">
+        <Card className="bg-gradient-to-br from-red-600/20 to-pink-600/20 border-red-500/30 p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm text-slate-400">Overall Drawdown Buffer</p>
@@ -115,8 +115,8 @@ function PreviewFundingProgressTracker({ tracker }: { tracker: any }) {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border-cyan-500/30 p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <Card className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border-cyan-500/30 p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm text-slate-400">Pass Probability</p>
@@ -131,7 +131,7 @@ function PreviewFundingProgressTracker({ tracker }: { tracker: any }) {
           <p className="text-sm text-slate-400 mt-2">Based on current performance metrics</p>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border-green-500/30 p-6">
+        <Card className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border-green-500/30 p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm text-slate-400">Profit Target Progress</p>

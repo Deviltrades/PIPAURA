@@ -119,43 +119,43 @@ export default function PreviewFundamentals() {
   };
 
   return (
-    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-3 sm:p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white" data-testid="text-fundamentals-title">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white" data-testid="text-fundamentals-title">
             Fundamental Analysis
           </h1>
-          <p className="text-gray-300">
+          <p className="text-sm sm:text-base text-gray-300">
             Economic calendar, news events, and market-moving fundamentals
           </p>
         </div>
-        <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-4 py-2">
-          <p className="text-sm text-cyan-400">📊 Preview Mode - Demo Data</p>
+        <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2">
+          <p className="text-xs sm:text-sm text-cyan-400">📊 Preview Mode</p>
         </div>
       </div>
 
       <Tabs defaultValue="calendar" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="calendar" data-testid="tab-calendar">
-            <Calendar className="h-4 w-4 mr-2" />
-            Economic Calendar
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+          <TabsTrigger value="calendar" data-testid="tab-calendar" className="text-xs sm:text-sm">
+            <Calendar className="h-3 h-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Economic </span>Calendar
           </TabsTrigger>
-          <TabsTrigger value="news" data-testid="tab-news">
-            <AlertCircle className="h-4 w-4 mr-2" />
-            Market News
+          <TabsTrigger value="news" data-testid="tab-news" className="text-xs sm:text-sm">
+            <AlertCircle className="h-3 h-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Market </span>News
           </TabsTrigger>
-          <TabsTrigger value="analysis" data-testid="tab-analysis">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Market Analysis
+          <TabsTrigger value="analysis" data-testid="tab-analysis" className="text-xs sm:text-sm">
+            <TrendingUp className="h-3 h-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            Analysis
           </TabsTrigger>
-          <TabsTrigger value="strength" data-testid="tab-strength">
-            <Gauge className="h-4 w-4 mr-2" />
-            Fundamental Strength
+          <TabsTrigger value="strength" data-testid="tab-strength" className="text-xs sm:text-sm">
+            <Gauge className="h-3 h-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            Strength
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="calendar" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <div className="lg:col-span-2">
               <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
                 <CardHeader>
