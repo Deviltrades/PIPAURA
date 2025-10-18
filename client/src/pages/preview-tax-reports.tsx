@@ -60,7 +60,7 @@ export default function PreviewTaxReports() {
 
       <div className="flex flex-col sm:flex-row gap-3 mb-4 sm:mb-6">
         <Select value={selectedYear} onValueChange={setSelectedYear}>
-          <SelectTrigger className="w-40" data-testid="select-tax-year">
+          <SelectTrigger className="w-full sm:w-40" data-testid="select-tax-year">
             <SelectValue placeholder="Select Year" />
           </SelectTrigger>
           <SelectContent>
@@ -73,7 +73,7 @@ export default function PreviewTaxReports() {
         </Select>
 
         <Select defaultValue="all">
-          <SelectTrigger className="w-48" data-testid="select-tax-account">
+          <SelectTrigger className="w-full sm:w-48" data-testid="select-tax-account">
             <SelectValue placeholder="Select Account" />
           </SelectTrigger>
           <SelectContent>
@@ -85,17 +85,17 @@ export default function PreviewTaxReports() {
       </div>
 
       <Tabs defaultValue="receipts" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="receipts" data-testid="tab-receipts">
-            <Receipt className="h-4 w-4 mr-2" />
-            Receipts/Expenses
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="receipts" data-testid="tab-receipts" className="text-xs sm:text-sm">
+            <Receipt className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Receipts/</span>Expenses
           </TabsTrigger>
-          <TabsTrigger value="summary" data-testid="tab-summary">
-            <DollarSign className="h-4 w-4 mr-2" />
-            Tax Summary
+          <TabsTrigger value="summary" data-testid="tab-summary" className="text-xs sm:text-sm">
+            <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Tax </span>Summary
           </TabsTrigger>
-          <TabsTrigger value="reports" data-testid="tab-reports">
-            <FileText className="h-4 w-4 mr-2" />
+          <TabsTrigger value="reports" data-testid="tab-reports" className="text-xs sm:text-sm">
+            <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             Reports
           </TabsTrigger>
         </TabsList>
@@ -105,12 +105,12 @@ export default function PreviewTaxReports() {
           <div className="grid gap-6">
             <Card className="bg-[#0f1f3a] border-[#1a2f4a]">
               <CardHeader>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
                     <CardTitle className="text-white">Trading Expenses</CardTitle>
                     <CardDescription>Track deductible expenses for tax purposes</CardDescription>
                   </div>
-                  <Button className="bg-cyan-600 hover:bg-cyan-700" data-testid="button-add-expense">
+                  <Button className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700" data-testid="button-add-expense">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Expense
                   </Button>
@@ -118,7 +118,7 @@ export default function PreviewTaxReports() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-3">
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     <Card className="border-2 border-red-500/60 bg-red-950/20">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Total Expenses</CardTitle>
@@ -190,7 +190,7 @@ export default function PreviewTaxReports() {
 
         {/* Tax Summary Tab */}
         <TabsContent value="summary" className="space-y-4">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="border-2 border-cyan-500/60 bg-cyan-950/20">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Trading Income</CardTitle>
@@ -240,7 +240,7 @@ export default function PreviewTaxReports() {
             </Card>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
             <Card className="border-2 border-cyan-500/60 bg-[#0f1f3a]">
               <CardHeader>
                 <CardTitle className="text-white">Monthly Breakdown</CardTitle>
