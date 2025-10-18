@@ -108,7 +108,8 @@ export default function Checkout() {
         interval: selectedInterval,
       });
 
-      const { url } = response;
+      const data = await response.json();
+      const { url } = data;
 
       if (url) {
         // Redirect to Stripe checkout
