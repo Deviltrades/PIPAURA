@@ -14,7 +14,7 @@ if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-type Plan = "lite" | "core" | "institutional";
+type Plan = "lite" | "core" | "elite";
 type Interval = "monthly" | "yearly";
 
 interface PlanDetails {
@@ -56,8 +56,8 @@ const planDetails: Record<Plan, PlanDetails> = {
       "Priority support",
     ],
   },
-  institutional: {
-    name: "Institutional",
+  elite: {
+    name: "Elite",
     monthlyPrice: "£24",
     yearlyPrice: "£230",
     storage: "10GB Storage",
@@ -86,7 +86,7 @@ export default function Checkout() {
     const urlPlan = urlParams.get("plan") as Plan | null;
     const urlInterval = urlParams.get("interval") as Interval | null;
 
-    if (urlPlan && (urlPlan === "lite" || urlPlan === "core" || urlPlan === "institutional")) {
+    if (urlPlan && (urlPlan === "lite" || urlPlan === "core" || urlPlan === "elite")) {
       setSelectedPlan(urlPlan);
     }
     if (urlInterval && (urlInterval === "monthly" || urlInterval === "yearly")) {
