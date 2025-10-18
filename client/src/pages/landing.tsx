@@ -333,24 +333,15 @@ export default function Landing() {
             <Button 
               size="lg" 
               className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-10 py-5 sm:py-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-xl shadow-cyan-500/30"
-              onClick={() => setLocation("/auth")}
+              onClick={() => setLocation("/pricing")}
               data-testid="button-cta-start"
             >
               Start Now
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-10 py-5 sm:py-6 border-2 border-white/30 text-white hover:bg-white/10"
-              onClick={() => setLocation("/pricing")}
-              data-testid="button-cta-pricing"
-            >
-              View Pricing
-            </Button>
           </div>
 
           <p className="text-xs sm:text-sm text-slate-400 px-4">
-            Starting at £7.99/month • No credit card required • Cancel anytime
+            £4.99/month • No credit card required • Cancel anytime
           </p>
         </div>
       </div>
