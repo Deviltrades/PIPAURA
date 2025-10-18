@@ -253,11 +253,11 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
           const pulseX = p1.x + (p2.x - p1.x) * flowPosition;
           const pulseY = p1.y + (p2.y - p1.y) * flowPosition;
           
-          ctx.shadowBlur = 20;
+          ctx.shadowBlur = 15;
           ctx.fillStyle = colors.lightning;
           ctx.globalAlpha = 0.9;
           ctx.beginPath();
-          ctx.arc(pulseX, pulseY, 4, 0, Math.PI * 2);
+          ctx.arc(pulseX, pulseY, 2.5, 0, Math.PI * 2); // Reduced from 4 to 2.5
           ctx.fill();
           
           // Draw 1 trailing particle (reduced from 2)
@@ -266,18 +266,18 @@ export function MoodPlanet({ moodLogs }: MoodPlanetProps) {
           const trailY = p1.y + (p2.y - p1.y) * trailPos;
           
           ctx.globalAlpha = 0.5;
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = 6;
           ctx.beginPath();
-          ctx.arc(trailX, trailY, 2, 0, Math.PI * 2);
+          ctx.arc(trailX, trailY, 1.5, 0, Math.PI * 2); // Reduced from 2 to 1.5
           ctx.fill();
           
           // Draw vertex glow
           if (pulse > 0.6) {
             ctx.fillStyle = colors.lightning;
-            ctx.shadowBlur = 15;
+            ctx.shadowBlur = 12;
             ctx.globalAlpha = pulse * 0.6;
             ctx.beginPath();
-            ctx.arc(p1.x, p1.y, 2 + pulse * 2, 0, Math.PI * 2);
+            ctx.arc(p1.x, p1.y, 1.5 + pulse * 1.5, 0, Math.PI * 2); // Reduced from 2-4 to 1.5-3
             ctx.fill();
           }
           
