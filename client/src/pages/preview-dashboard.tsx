@@ -28,21 +28,21 @@ export default function PreviewDashboard() {
   const recentTrades = [...demoTrades].reverse().slice(0, 5);
 
   return (
-    <div className="p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
+    <div className="p-3 sm:p-4 lg:p-8 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-            <p className="text-gray-300 mb-3">Your trading overview and performance metrics</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">Dashboard</h1>
+            <p className="text-sm sm:text-base text-gray-300 mb-0">Your trading overview and performance metrics</p>
           </div>
-          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-4 py-2">
-            <p className="text-sm text-cyan-400">📊 Preview Mode - Demo Data</p>
+          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2">
+            <p className="text-xs sm:text-sm text-cyan-400">📊 Preview Mode - Demo Data</p>
           </div>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <Card className="bg-slate-900/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-400">Total P&L</CardTitle>
@@ -93,7 +93,7 @@ export default function PreviewDashboard() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
         {/* Equity Curve */}
         <Card className="bg-slate-900/50 border-slate-700">
           <CardHeader>
@@ -177,16 +177,16 @@ export default function PreviewDashboard() {
           <CardTitle className="text-white">Recent Trades</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full" data-testid="trades-table">
+          <div className="overflow-x-auto -mx-3 sm:mx-0">
+            <table className="w-full min-w-[600px]" data-testid="trades-table">
               <thead>
                 <tr className="border-b border-slate-700">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-slate-400">Date</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-slate-400">Instrument</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-slate-400">Type</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-slate-400">Size</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-slate-400">Session</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-slate-400">P&L</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-slate-400">Date</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-slate-400">Instrument</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-slate-400">Type</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-slate-400">Size</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-slate-400">Session</th>
+                  <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-slate-400">P&L</th>
                 </tr>
               </thead>
               <tbody>
@@ -196,12 +196,12 @@ export default function PreviewDashboard() {
                     className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors"
                     data-testid={`trade-row-${trade.id}`}
                   >
-                    <td className="py-3 px-4 text-sm text-slate-300">
+                    <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm text-slate-300">
                       {new Date(trade.entry_date).toLocaleDateString()}
                     </td>
-                    <td className="py-3 px-4 text-sm text-white font-medium">{trade.instrument}</td>
-                    <td className="py-3 px-4">
-                      <span className={`inline-flex items-center gap-1 text-sm ${
+                    <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm text-white font-medium">{trade.instrument}</td>
+                    <td className="py-2 sm:py-3 px-2 sm:px-4">
+                      <span className={`inline-flex items-center gap-1 text-xs sm:text-sm ${
                         trade.trade_type === "BUY" ? "text-green-400" : "text-red-400"
                       }`}>
                         {trade.trade_type === "BUY" ? (
@@ -212,9 +212,9 @@ export default function PreviewDashboard() {
                         {trade.trade_type}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-sm text-slate-300">{trade.position_size}</td>
-                    <td className="py-3 px-4 text-sm text-slate-400">{trade.session_tag}</td>
-                    <td className={`py-3 px-4 text-sm text-right font-semibold ${
+                    <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm text-slate-300">{trade.position_size}</td>
+                    <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm text-slate-400">{trade.session_tag}</td>
+                    <td className={`py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm text-right font-semibold ${
                       trade.pnl >= 0 ? "text-green-400" : "text-red-400"
                     }`}>
                       {formatCurrency(trade.pnl)}
