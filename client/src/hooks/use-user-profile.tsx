@@ -64,8 +64,8 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
   const canPerformAction = (action: string, requirements?: { storage_mb?: number; image_count?: number }): boolean => {
     if (!profile || !planConfig) return false;
 
-    // Demo plan restrictions
-    if (profile.plan_type === 'demo') {
+    // Lite plan restrictions (same as old demo plan - read-only for certain actions)
+    if (profile.plan_type === 'lite' && planConfig.ui_restrictions.read_only) {
       if (['upload', 'save', 'add', 'create', 'edit', 'delete'].some(keyword => action.toLowerCase().includes(keyword))) {
         return false;
       }
@@ -99,9 +99,9 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     error: error as Error | null,
     canPerformAction,
     updateStorage,
-    isDemo: profile?.plan_type === 'demo',
-    isBasic: profile?.plan_type === 'basic',
-    isPremium: profile?.plan_type === 'premium',
+    isDemo: profile?.plan_type === 'lite',
+    isBasic: profile?.plan_type === 'core',
+    isPremium: profile?.plan_type === 'elite',
     hasFeature: (feature) => planConfig?.features[feature] ?? false,
     isReadOnly: planConfig?.ui_restrictions.read_only ?? false,
     isButtonDisabled: (buttonId) => planConfig?.ui_restrictions.disabled_buttons.includes(buttonId) ?? false,

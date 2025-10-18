@@ -203,7 +203,7 @@ export async function getUserProfile() {
         email: user.email!,
         account_type: 'live',
         timezone: 'UTC',
-        plan_type: 'demo',
+        plan_type: 'lite',
         preferences: {},
       }])
       .select()

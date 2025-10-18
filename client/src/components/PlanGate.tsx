@@ -13,7 +13,7 @@ import {
 interface PlanGateProps {
   children: React.ReactNode;
   requiredFeature?: keyof PlanConfig['features'];
-  requiredPlan?: 'basic' | 'premium';
+  requiredPlan?: 'core' | 'elite';
   buttonId?: string;
   action?: string;
   fallback?: React.ReactNode;
@@ -25,11 +25,11 @@ interface PlanGateProps {
 function PlanUpgrade({ requiredPlan, feature }: { requiredPlan?: string; feature?: string }) {
   const { planConfig, profile } = useUserProfile();
   
-  const currentPlan = profile?.plan_type || 'demo';
-  const planIcons = {
-    demo: <Lock className="w-4 h-4" />,
-    basic: <Zap className="w-4 h-4" />,
-    premium: <Crown className="w-4 h-4" />
+  const currentPlan = profile?.plan_type || 'lite';
+  const planIcons: Record<string, React.ReactNode> = {
+    lite: <Lock className="w-4 h-4" />,
+    core: <Zap className="w-4 h-4" />,
+    elite: <Crown className="w-4 h-4" />
   };
 
   return (
@@ -97,7 +97,7 @@ export function PlanGate({
       <>
         {fallback || (
           <PlanUpgrade 
-            requiredPlan={requiredFeature === 'charts' || requiredFeature === 'strategy_playbook' || requiredFeature === 'ai_mentor' ? 'premium' : 'basic'} 
+            requiredPlan={requiredFeature === 'charts' || requiredFeature === 'strategy_playbook' || requiredFeature === 'ai_mentor' ? 'elite' : 'core'} 
             feature={String(requiredFeature).replace('_', ' ')}
           />
         )}
@@ -107,8 +107,8 @@ export function PlanGate({
 
   // Check plan requirement
   if (requiredPlan && 
-      ((requiredPlan === 'basic' && isDemo) || 
-       (requiredPlan === 'premium' && (isDemo || isBasic)))) {
+      ((requiredPlan === 'core' && isDemo) || 
+       (requiredPlan === 'elite' && (isDemo || isBasic)))) {
     if (!showUpgrade) return null;
     return (
       <>
@@ -128,7 +128,7 @@ export function PlanGate({
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Demo mode - read only access</p>
+            <p>Lite plan - read only access</p>
           </TooltipContent>
         </Tooltip>
       );
@@ -176,7 +176,7 @@ export function PlanGate({
           <div>{childrenWithProps}</div>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Demo mode - read only access. Upgrade to interact with features.</p>
+          <p>Lite plan - read only access. Upgrade to interact with features.</p>
         </TooltipContent>
       </Tooltip>
     );
@@ -193,7 +193,7 @@ export function DemoGate({ children, fallback, showUpgrade = true }: {
 }) {
   return (
     <PlanGate 
-      requiredPlan="basic" 
+      requiredPlan="core" 
       fallback={fallback}
       showUpgrade={showUpgrade}
     >
@@ -209,7 +209,7 @@ export function BasicGate({ children, fallback, showUpgrade = true }: {
 }) {
   return (
     <PlanGate 
-      requiredPlan="premium" 
+      requiredPlan="elite" 
       fallback={fallback}
       showUpgrade={showUpgrade}
     >
