@@ -189,6 +189,9 @@ export async function handleConnect(req: any, res: any) {
 
     // Use direct SQL to bypass schema cache
     const dbClient = await getDbClient();
+    let linkedAccount: any;
+    let accounts: any[];
+    
     try {
       const result = await dbClient.query(`
         INSERT INTO myfxbook_linked_accounts 
@@ -208,12 +211,12 @@ export async function handleConnect(req: any, res: any) {
         RETURNING *
       `, [user.id, email, encryptedPassword, sessionId, expiresAt.toISOString()]);
 
-      const linkedAccount = result.rows[0];
+      linkedAccount = result.rows[0];
       if (!linkedAccount) {
         throw new Error('Failed to create linked account');
       }
 
-      const accounts = await fetchMyFxBookAccounts(sessionId);
+      accounts = await fetchMyFxBookAccounts(sessionId);
 
       for (const account of accounts) {
         await dbClient.query(`
