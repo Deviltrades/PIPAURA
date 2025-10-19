@@ -2,7 +2,7 @@
 import express from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { setupCronRoutes } from './cron-routes.js';
-import { handleConnect, handleStatus, handleSyncUser } from './myfxbook-handlers.js';
+import { handleConnect, handleStatus, handleSyncUser, handleDisconnect } from './myfxbook-handlers.js';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
@@ -278,6 +278,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
 app.post("/api/myfxbook/connect", handleConnect);
 app.get("/api/myfxbook/status", handleStatus);
 app.post("/api/myfxbook/sync-user", handleSyncUser);
+app.post("/api/myfxbook/disconnect", handleDisconnect);
 
 // Stripe Customer Portal session creation endpoint
 app.post("/api/create-portal-session", async (req, res) => {
