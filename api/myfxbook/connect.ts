@@ -33,17 +33,15 @@ function decrypt(encryptedData: string, passphrase: string): string {
 // MyFxBook API login function
 async function loginToMyFxBook(email: string, password: string) {
   try {
-    // MyFxBook API endpoint for login
+    // MyFxBook API endpoint for login - uses GET with query parameters
     // Documentation: https://www.myfxbook.com/api
-    const response = await fetch('https://www.myfxbook.com/api/login.json', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        email,
-        password,
-      }),
+    const params = new URLSearchParams({
+      email,
+      password,
+    });
+    
+    const response = await fetch(`https://www.myfxbook.com/api/login.json?${params.toString()}`, {
+      method: 'GET',
     });
 
     if (!response.ok) {
