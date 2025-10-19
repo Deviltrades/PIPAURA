@@ -335,6 +335,8 @@ export async function handleStatus(req: any, res: any) {
 }
 
 export async function handleSyncUser(req: any, res: any) {
+  const dbClient = await getDbClient();
+  
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -353,14 +355,17 @@ export async function handleSyncUser(req: any, res: any) {
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
-    const { data: linkedAccount, error: linkedError } = await supabase
-      .from('myfxbook_linked_accounts')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('is_active', 1)
-      .single();
+    // Use direct SQL to bypass schema cache
+    const linkedResult = await dbClient.query(`
+      SELECT *
+      FROM myfxbook_linked_accounts
+      WHERE user_id = $1 AND is_active = 1
+      LIMIT 1
+    `, [user.id]);
 
-    if (linkedError || !linkedAccount) {
+    const linkedAccount = linkedResult.rows[0];
+
+    if (!linkedAccount) {
       return res.status(404).json({ error: 'No MyFxBook account linked' });
     }
 
@@ -375,25 +380,20 @@ export async function handleSyncUser(req: any, res: any) {
       );
       sessionId = newSessionId;
 
-      await supabase
-        .from('myfxbook_linked_accounts')
-        .update({
-          session_id: newSessionId,
-          session_expires_at: expiresAt.toISOString(),
-        })
-        .eq('id', linkedAccount.id);
+      await dbClient.query(`
+        UPDATE myfxbook_linked_accounts
+        SET session_id = $1, session_expires_at = $2, updated_at = NOW()
+        WHERE id = $3
+      `, [newSessionId, expiresAt.toISOString(), linkedAccount.id]);
     }
 
-    const { data: myfxbookAccounts, error: accountsError } = await supabase
-      .from('myfxbook_accounts')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('is_active', 1)
-      .eq('auto_sync_enabled', 1);
+    const accountsResult = await dbClient.query(`
+      SELECT *
+      FROM myfxbook_accounts
+      WHERE user_id = $1 AND is_active = 1 AND auto_sync_enabled = 1
+    `, [user.id]);
 
-    if (accountsError) {
-      throw accountsError;
-    }
+    const myfxbookAccounts = accountsResult.rows;
 
     if (!myfxbookAccounts || myfxbookAccounts.length === 0) {
       return res.status(404).json({ error: 'No MyFxBook accounts to sync' });
@@ -404,6 +404,7 @@ export async function handleSyncUser(req: any, res: any) {
     for (const account of myfxbookAccounts) {
       try {
         const trades = await fetchMyFxBookTrades(sessionId, account.myfxbook_account_id);
+        console.log(`Fetched ${trades.length} trades for account ${account.myfxbook_account_id}`);
 
         for (const trade of trades) {
           const mappedTrade = mapMyFxBookTrade(
@@ -412,14 +413,47 @@ export async function handleSyncUser(req: any, res: any) {
             account.pipaura_account_id
           );
 
-          const { error: insertError } = await supabase
-            .from('trades')
-            .insert(mappedTrade)
-            .select()
-            .single();
-
-          if (!insertError || insertError.code === '23505') {
+          try {
+            // Use direct SQL with ON CONFLICT to handle duplicates
+            await dbClient.query(`
+              INSERT INTO trades (
+                user_id, account_id, ticket_id, instrument, instrument_type, trade_type,
+                position_size, entry_price, exit_price, stop_loss, take_profit,
+                pnl, swap, commission, currency, status, entry_date, exit_date,
+                upload_source, created_at, updated_at
+              ) VALUES (
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
+              )
+              ON CONFLICT (user_id, ticket_id) DO NOTHING
+            `, [
+              mappedTrade.user_id,
+              mappedTrade.account_id,
+              mappedTrade.ticket_id,
+              mappedTrade.instrument,
+              mappedTrade.instrument_type,
+              mappedTrade.trade_type,
+              mappedTrade.position_size,
+              mappedTrade.entry_price,
+              mappedTrade.exit_price,
+              mappedTrade.stop_loss,
+              mappedTrade.take_profit,
+              mappedTrade.pnl,
+              mappedTrade.swap,
+              mappedTrade.commission,
+              mappedTrade.currency,
+              mappedTrade.status,
+              mappedTrade.entry_date,
+              mappedTrade.exit_date,
+              mappedTrade.upload_source,
+              mappedTrade.created_at,
+              mappedTrade.updated_at
+            ]);
             totalImported++;
+          } catch (insertError: any) {
+            // Ignore duplicate key errors, log others
+            if (insertError.code !== '23505') {
+              console.error(`Error inserting trade ${mappedTrade.ticket_id}:`, insertError.message);
+            }
           }
         }
       } catch (err) {
@@ -428,14 +462,12 @@ export async function handleSyncUser(req: any, res: any) {
       }
     }
 
-    await supabase
-      .from('myfxbook_linked_accounts')
-      .update({
-        last_sync_at: new Date().toISOString(),
-        sync_status: 'synced',
-        sync_error_message: null,
-      })
-      .eq('id', linkedAccount.id);
+    // Update last sync timestamp
+    await dbClient.query(`
+      UPDATE myfxbook_linked_accounts
+      SET last_sync_at = NOW(), sync_status = 'synced', sync_error_message = NULL, updated_at = NOW()
+      WHERE id = $1
+    `, [linkedAccount.id]);
 
     console.log(`Successfully synced ${totalImported} trades for user ${user.id}`);
 
@@ -449,5 +481,7 @@ export async function handleSyncUser(req: any, res: any) {
     return res.status(500).json({
       error: error.message || 'Failed to sync MyFxBook trades',
     });
+  } finally {
+    await dbClient.end();
   }
 }
