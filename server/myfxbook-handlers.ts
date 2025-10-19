@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import pkg from 'pg';
+const { Client } = pkg;
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -9,6 +11,15 @@ if (!supabaseUrl || !supabaseServiceKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Direct database connection to bypass schema cache
+async function getDbClient() {
+  const client = new Client({
+    connectionString: process.env.DATABASE_URL,
+  });
+  await client.connect();
+  return client;
+}
 
 // Encryption/Decryption functions
 export function encrypt(text: string, passphrase: string): string {
@@ -176,49 +187,62 @@ export async function handleConnect(req: any, res: any) {
 
     const encryptedPassword = encrypt(password, encryptionPassphrase);
 
-    const { data: linkedAccount, error: linkedError } = await supabase
-      .from('myfxbook_linked_accounts')
-      .upsert(
-        {
-          user_id: user.id,
-          email,
-          encrypted_password: encryptedPassword,
-          session_id: sessionId,
-          session_expires_at: expiresAt.toISOString(),
-          sync_status: 'connected',
-          sync_error_message: null,
-          is_active: 1,
-          last_sync_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id' }
-      )
-      .select()
-      .single();
+    // Use direct SQL to bypass schema cache
+    const dbClient = await getDbClient();
+    try {
+      const result = await dbClient.query(`
+        INSERT INTO myfxbook_linked_accounts 
+          (user_id, email, encrypted_password, session_id, session_expires_at, sync_status, is_active, last_sync_at)
+        VALUES 
+          ($1, $2, $3, $4, $5, 'connected', 1, NOW())
+        ON CONFLICT (user_id) 
+        DO UPDATE SET 
+          email = EXCLUDED.email,
+          encrypted_password = EXCLUDED.encrypted_password,
+          session_id = EXCLUDED.session_id,
+          session_expires_at = EXCLUDED.session_expires_at,
+          sync_status = 'connected',
+          sync_error_message = NULL,
+          last_sync_at = NOW(),
+          updated_at = NOW()
+        RETURNING *
+      `, [user.id, email, encryptedPassword, sessionId, expiresAt.toISOString()]);
 
-    if (linkedError) {
-      throw linkedError;
-    }
+      const linkedAccount = result.rows[0];
+      if (!linkedAccount) {
+        throw new Error('Failed to create linked account');
+      }
 
-    const accounts = await fetchMyFxBookAccounts(sessionId);
+      const accounts = await fetchMyFxBookAccounts(sessionId);
 
-    for (const account of accounts) {
-      await supabase.from('myfxbook_accounts').upsert(
-        {
-          linked_account_id: linkedAccount.id,
-          user_id: user.id,
-          myfxbook_account_id: String(account.id),
-          account_name: account.name,
-          broker: account.broker || null,
-          currency: account.currency || 'USD',
-          balance: parseFloat(account.balance) || 0,
-          equity: parseFloat(account.equity) || 0,
-          gain: parseFloat(account.gain) || 0,
-          pipaura_account_id: null,
-          auto_sync_enabled: 1,
-          is_active: 1,
-        },
-        { onConflict: 'myfxbook_account_id' }
-      );
+      for (const account of accounts) {
+        await dbClient.query(`
+          INSERT INTO myfxbook_accounts 
+            (linked_account_id, user_id, myfxbook_account_id, account_name, broker, currency, balance, equity, gain, pipaura_account_id, auto_sync_enabled, is_active)
+          VALUES 
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9, NULL, 1, 1)
+          ON CONFLICT (myfxbook_account_id) 
+          DO UPDATE SET 
+            account_name = EXCLUDED.account_name,
+            broker = EXCLUDED.broker,
+            balance = EXCLUDED.balance,
+            equity = EXCLUDED.equity,
+            gain = EXCLUDED.gain,
+            updated_at = NOW()
+        `, [
+          linkedAccount.id,
+          user.id,
+          String(account.id),
+          account.name,
+          account.broker || null,
+          account.currency || 'USD',
+          parseFloat(account.balance) || 0,
+          parseFloat(account.equity) || 0,
+          parseFloat(account.gain) || 0
+        ]);
+      }
+    } finally {
+      await dbClient.end();
     }
 
     return res.status(200).json({
