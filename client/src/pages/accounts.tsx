@@ -246,6 +246,53 @@ export default function Accounts() {
     },
   });
 
+  // MyFxBook disconnect mutation
+  const disconnectMyfxbookMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error('User not authenticated');
+      
+      // Get the session token
+      const { createClient} = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL!,
+        import.meta.env.VITE_SUPABASE_ANON_KEY!
+      );
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await fetch('/api/myfxbook/disconnect', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Disconnect failed');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchMyfxbook();
+      queryClient.invalidateQueries({ queryKey: ['/api/trade-accounts'] });
+      toast({
+        title: "Disconnected",
+        description: "MyFxBook account has been disconnected successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Disconnect Failed",
+        description: error.message || "Failed to disconnect MyFxBook account",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Auto-migrate legacy trades on first load
   useEffect(() => {
     const runMigration = async () => {
@@ -640,25 +687,46 @@ export default function Accounts() {
                       <p className="text-sm font-medium text-green-400 capitalize">{myfxbookStatus.account?.sync_status}</p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => syncMyfxbookMutation.mutate()}
-                      disabled={syncMyfxbookMutation.isPending}
-                      className="bg-purple-600 hover:bg-purple-700"
-                      data-testid="button-sync-now"
-                    >
-                      {syncMyfxbookMutation.isPending ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Syncing...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Sync Now
-                        </>
-                      )}
-                    </Button>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => syncMyfxbookMutation.mutate()}
+                        disabled={syncMyfxbookMutation.isPending}
+                        className="bg-purple-600 hover:bg-purple-700"
+                        data-testid="button-sync-now"
+                      >
+                        {syncMyfxbookMutation.isPending ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            Syncing...
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Sync Now
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        onClick={() => disconnectMyfxbookMutation.mutate()}
+                        disabled={disconnectMyfxbookMutation.isPending}
+                        variant="outline"
+                        className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                        data-testid="button-disconnect-myfxbook"
+                      >
+                        {disconnectMyfxbookMutation.isPending ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            Disconnecting...
+                          </>
+                        ) : (
+                          <>
+                            <X className="h-4 w-4 mr-2" />
+                            Disconnect
+                          </>
+                        )}
+                      </Button>
+                    </div>
                     <p className="text-xs text-gray-400 flex items-center">
                       Auto-sync runs every 3 hours
                     </p>
