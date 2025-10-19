@@ -294,35 +294,38 @@ export async function handleStatus(req: any, res: any) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
-    const { data: linkedAccount, error: linkedError } = await supabase
-      .from('myfxbook_linked_accounts')
-      .select('id, email, last_sync_at, sync_status, sync_error_message, is_active')
-      .eq('user_id', user.id)
-      .eq('is_active', 1)
-      .maybeSingle();
+    // Use direct SQL to bypass schema cache issues
+    const dbClient = await getDbClient();
+    
+    try {
+      const linkedResult = await dbClient.query(`
+        SELECT id, email, last_sync_at, sync_status, sync_error_message, is_active
+        FROM myfxbook_linked_accounts
+        WHERE user_id = $1 AND is_active = 1
+        LIMIT 1
+      `, [user.id]);
 
-    if (linkedError && linkedError.code !== 'PGRST116') {
-      throw linkedError;
-    }
+      const linkedAccount = linkedResult.rows[0] || null;
+      let accountCount = 0;
 
-    let accountCount = 0;
-    if (linkedAccount) {
-      const { count, error: countError } = await supabase
-        .from('myfxbook_accounts')
-        .select('*', { count: 'exact', head: true })
-        .eq('linked_account_id', linkedAccount.id)
-        .eq('is_active', 1);
+      if (linkedAccount) {
+        const countResult = await dbClient.query(`
+          SELECT COUNT(*) as count
+          FROM myfxbook_accounts
+          WHERE linked_account_id = $1 AND is_active = 1
+        `, [linkedAccount.id]);
 
-      if (!countError) {
-        accountCount = count || 0;
+        accountCount = parseInt(countResult.rows[0]?.count || '0', 10);
       }
-    }
 
-    return res.status(200).json({
-      linked: !!linkedAccount,
-      account: linkedAccount || null,
-      accountCount,
-    });
+      return res.status(200).json({
+        linked: !!linkedAccount,
+        account: linkedAccount || null,
+        accountCount,
+      });
+    } finally {
+      await dbClient.end();
+    }
   } catch (error: any) {
     console.error('MyFxBook status error:', error);
     return res.status(500).json({
