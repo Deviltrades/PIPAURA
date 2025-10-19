@@ -314,6 +314,48 @@ export async function handleStatus(req: any, res: any) {
   }
 }
 
+export async function handleDisconnect(req: any, res: any) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    // Deactivate linked account
+    const { error: deactivateError } = await supabase
+      .from('myfxbook_linked_accounts')
+      .update({ is_active: 0, sync_status: 'disconnected' })
+      .eq('user_id', user.id);
+
+    if (deactivateError) {
+      throw new Error('Failed to disconnect account: ' + deactivateError.message);
+    }
+
+    // Deactivate all associated MyFxBook accounts
+    await supabase
+      .from('myfxbook_accounts')
+      .update({ is_active: 0, auto_sync_enabled: 0 })
+      .eq('user_id', user.id);
+
+    return res.status(200).json({
+      success: true,
+      message: 'MyFxBook account disconnected successfully',
+    });
+  } catch (error: any) {
+    console.error('MyFxBook disconnect error:', error);
+    return res.status(500).json({
+      error: error.message || 'Failed to disconnect MyFxBook account',
+    });
+  }
+}
+
 export async function handleSyncUser(req: any, res: any) {
   try {
     const authHeader = req.headers.authorization;
