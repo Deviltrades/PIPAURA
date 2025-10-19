@@ -414,9 +414,9 @@ export async function handleSyncUser(req: any, res: any) {
           );
 
           try {
-            // Use direct SQL to bypass Supabase schema cache issues
+            // Use direct SQL to bypass Supabase schema cache issues - explicitly specify public schema
             await dbClient.query(`
-              INSERT INTO trades (
+              INSERT INTO public.trades (
                 user_id, account_id, ticket_id, instrument, instrument_type, trade_type,
                 position_size, entry_price, exit_price, stop_loss, take_profit,
                 pnl, swap, commission, currency, status, entry_date, exit_date,
