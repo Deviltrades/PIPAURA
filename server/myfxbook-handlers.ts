@@ -444,18 +444,25 @@ export async function handleSyncUser(req: any, res: any) {
             account.pipaura_account_id
           );
 
-          // Use Supabase upsert with conflict handling
-          const { error: insertError } = await supabase
+          // Check if trade already exists
+          const { data: existingTrade } = await supabase
             .from('trades')
-            .upsert(mappedTrade, {
-              onConflict: 'user_id,ticket_id',
-              ignoreDuplicates: true
-            });
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('ticket_id', mappedTrade.ticket_id)
+            .single();
 
-          if (!insertError) {
-            totalImported++;
-          } else if (insertError.code !== '23505') {
-            console.error(`Error inserting trade ${mappedTrade.ticket_id}:`, insertError);
+          // Only insert if it doesn't exist
+          if (!existingTrade) {
+            const { error: insertError } = await supabase
+              .from('trades')
+              .insert(mappedTrade);
+
+            if (!insertError) {
+              totalImported++;
+            } else {
+              console.error(`Error inserting trade ${mappedTrade.ticket_id}:`, insertError);
+            }
           }
         }
       } catch (err) {
