@@ -1,0 +1,410 @@
+import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing Supabase credentials for MyFxBook handlers');
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Encryption/Decryption functions
+export function encrypt(text: string, passphrase: string): string {
+  const algorithm = 'aes-256-cbc';
+  const key = crypto.scryptSync(passphrase, 'salt', 32);
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv(algorithm, key, iv);
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  return iv.toString('hex') + ':' + encrypted;
+}
+
+export function decrypt(encryptedData: string, passphrase: string): string {
+  const algorithm = 'aes-256-cbc';
+  const key = crypto.scryptSync(passphrase, 'salt', 32);
+  const parts = encryptedData.split(':');
+  const iv = Buffer.from(parts[0], 'hex');
+  const encrypted = parts[1];
+  const decipher = crypto.createDecipheriv(algorithm, key, iv);
+  let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  return decrypted;
+}
+
+// MyFxBook API functions
+export async function loginToMyFxBook(email: string, password: string) {
+  const response = await fetch('https://www.myfxbook.com/api/login.json', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      email,
+      password,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`MyFxBook API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (!data.session) {
+    throw new Error('Failed to get session from MyFxBook');
+  }
+
+  return {
+    sessionId: data.session,
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+  };
+}
+
+export async function fetchMyFxBookAccounts(sessionId: string) {
+  const response = await fetch(
+    `https://www.myfxbook.com/api/get-my-accounts.json?session=${sessionId}`
+  );
+
+  if (!response.ok) {
+    throw new Error(`MyFxBook API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (!data.accounts || !Array.isArray(data.accounts)) {
+    return [];
+  }
+
+  return data.accounts;
+}
+
+export async function fetchMyFxBookTrades(sessionId: string, accountId: string, lastTradeId?: string) {
+  const url = lastTradeId
+    ? `https://www.myfxbook.com/api/get-history.json?session=${sessionId}&id=${accountId}&startId=${lastTradeId}`
+    : `https://www.myfxbook.com/api/get-history.json?session=${sessionId}&id=${accountId}`;
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`MyFxBook API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (!data.history || !Array.isArray(data.history)) {
+    return [];
+  }
+
+  return data.history;
+}
+
+export function inferInstrumentType(symbol: string): 'FOREX' | 'INDICES' | 'CRYPTO' | 'FUTURES' | 'STOCKS' {
+  const sym = symbol.toUpperCase();
+  
+  if (sym.includes('BTC') || sym.includes('ETH') || sym.includes('USDT')) {
+    return 'CRYPTO';
+  }
+  
+  if (sym.includes('US30') || sym.includes('NAS100') || sym.includes('SPX500') || sym.includes('UK100')) {
+    return 'INDICES';
+  }
+  
+  if (sym.length === 6 && /^[A-Z]{6}$/.test(sym)) {
+    return 'FOREX';
+  }
+  
+  return 'FOREX';
+}
+
+export function mapMyFxBookTrade(trade: any, userId: string, pipAuraAccountId?: string) {
+  return {
+    user_id: userId,
+    account_id: pipAuraAccountId || null,
+    ticket_id: String(trade.id),
+    instrument: trade.symbol || 'UNKNOWN',
+    instrument_type: inferInstrumentType(trade.symbol),
+    trade_type: trade.action === 'buy' ? 'BUY' : 'SELL',
+    position_size: parseFloat(trade.sizing) || 0,
+    entry_price: parseFloat(trade.openPrice) || 0,
+    exit_price: parseFloat(trade.closePrice) || null,
+    stop_loss: parseFloat(trade.sl) || null,
+    take_profit: parseFloat(trade.tp) || null,
+    pnl: parseFloat(trade.profit) || 0,
+    swap: parseFloat(trade.swap) || 0,
+    commission: parseFloat(trade.commission) || 0,
+    currency: trade.currency || 'USD',
+    status: trade.closeTime ? 'CLOSED' : 'OPEN',
+    entry_date: trade.openTime ? new Date(trade.openTime).toISOString() : null,
+    exit_date: trade.closeTime ? new Date(trade.closeTime).toISOString() : null,
+    upload_source: 'myfxbook',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+}
+
+// Route handlers
+export async function handleConnect(req: any, res: any) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Missing required fields: email, password' });
+    }
+
+    const encryptionPassphrase = process.env.ENC_PASSPHRASE;
+    if (!encryptionPassphrase) {
+      console.error('ENC_PASSPHRASE not configured');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    console.log(`Connecting MyFxBook account for user ${user.id}`);
+    const { sessionId, expiresAt } = await loginToMyFxBook(email, password);
+
+    const encryptedPassword = encrypt(password, encryptionPassphrase);
+
+    const { data: linkedAccount, error: linkedError } = await supabase
+      .from('myfxbook_linked_accounts')
+      .upsert(
+        {
+          user_id: user.id,
+          email,
+          encrypted_password: encryptedPassword,
+          session_id: sessionId,
+          session_expires_at: expiresAt.toISOString(),
+          sync_status: 'connected',
+          sync_error_message: null,
+          is_active: 1,
+          last_sync_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' }
+      )
+      .select()
+      .single();
+
+    if (linkedError) {
+      throw linkedError;
+    }
+
+    const accounts = await fetchMyFxBookAccounts(sessionId);
+
+    for (const account of accounts) {
+      await supabase.from('myfxbook_accounts').upsert(
+        {
+          linked_account_id: linkedAccount.id,
+          user_id: user.id,
+          myfxbook_account_id: String(account.id),
+          account_name: account.name,
+          broker: account.broker || null,
+          currency: account.currency || 'USD',
+          balance: parseFloat(account.balance) || 0,
+          equity: parseFloat(account.equity) || 0,
+          gain: parseFloat(account.gain) || 0,
+          pipaura_account_id: null,
+          auto_sync_enabled: 1,
+          is_active: 1,
+        },
+        { onConflict: 'myfxbook_account_id' }
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      linkedAccountId: linkedAccount.id,
+      accounts: accounts.map((acc: any) => ({
+        id: acc.id,
+        name: acc.name,
+        broker: acc.broker,
+        balance: acc.balance,
+        currency: acc.currency,
+      })),
+    });
+  } catch (error: any) {
+    console.error('MyFxBook connect error:', error);
+    return res.status(500).json({ 
+      error: error.message || 'Failed to connect MyFxBook account' 
+    });
+  }
+}
+
+export async function handleStatus(req: any, res: any) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    const { data: linkedAccount, error: linkedError } = await supabase
+      .from('myfxbook_linked_accounts')
+      .select('id, email, last_sync_at, sync_status, sync_error_message, is_active')
+      .eq('user_id', user.id)
+      .eq('is_active', 1)
+      .maybeSingle();
+
+    if (linkedError && linkedError.code !== 'PGRST116') {
+      throw linkedError;
+    }
+
+    let accountCount = 0;
+    if (linkedAccount) {
+      const { count, error: countError } = await supabase
+        .from('myfxbook_accounts')
+        .select('*', { count: 'exact', head: true })
+        .eq('linked_account_id', linkedAccount.id)
+        .eq('is_active', 1);
+
+      if (!countError) {
+        accountCount = count || 0;
+      }
+    }
+
+    return res.status(200).json({
+      linked: !!linkedAccount,
+      account: linkedAccount || null,
+      accountCount,
+    });
+  } catch (error: any) {
+    console.error('MyFxBook status error:', error);
+    return res.status(500).json({
+      error: error.message || 'Failed to fetch MyFxBook status',
+    });
+  }
+}
+
+export async function handleSyncUser(req: any, res: any) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    const encryptionPassphrase = process.env.ENC_PASSPHRASE;
+    if (!encryptionPassphrase) {
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    const { data: linkedAccount, error: linkedError } = await supabase
+      .from('myfxbook_linked_accounts')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('is_active', 1)
+      .single();
+
+    if (linkedError || !linkedAccount) {
+      return res.status(404).json({ error: 'No MyFxBook account linked' });
+    }
+
+    let sessionId = linkedAccount.session_id;
+    const sessionExpiry = new Date(linkedAccount.session_expires_at);
+
+    if (new Date() >= sessionExpiry) {
+      const decryptedPassword = decrypt(linkedAccount.encrypted_password, encryptionPassphrase);
+      const { sessionId: newSessionId, expiresAt } = await loginToMyFxBook(
+        linkedAccount.email,
+        decryptedPassword
+      );
+      sessionId = newSessionId;
+
+      await supabase
+        .from('myfxbook_linked_accounts')
+        .update({
+          session_id: newSessionId,
+          session_expires_at: expiresAt.toISOString(),
+        })
+        .eq('id', linkedAccount.id);
+    }
+
+    const { data: myfxbookAccounts, error: accountsError } = await supabase
+      .from('myfxbook_accounts')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('is_active', 1)
+      .eq('auto_sync_enabled', 1);
+
+    if (accountsError) {
+      throw accountsError;
+    }
+
+    if (!myfxbookAccounts || myfxbookAccounts.length === 0) {
+      return res.status(404).json({ error: 'No MyFxBook accounts to sync' });
+    }
+
+    let totalImported = 0;
+
+    for (const account of myfxbookAccounts) {
+      try {
+        const trades = await fetchMyFxBookTrades(sessionId, account.myfxbook_account_id);
+
+        for (const trade of trades) {
+          const mappedTrade = mapMyFxBookTrade(
+            trade,
+            user.id,
+            account.pipaura_account_id
+          );
+
+          const { error: insertError } = await supabase
+            .from('trades')
+            .insert(mappedTrade)
+            .select()
+            .single();
+
+          if (!insertError || insertError.code === '23505') {
+            totalImported++;
+          }
+        }
+      } catch (err) {
+        console.error(`Error syncing account ${account.myfxbook_account_id}:`, err);
+        continue;
+      }
+    }
+
+    await supabase
+      .from('myfxbook_linked_accounts')
+      .update({
+        last_sync_at: new Date().toISOString(),
+        sync_status: 'synced',
+        sync_error_message: null,
+      })
+      .eq('id', linkedAccount.id);
+
+    console.log(`Successfully synced ${totalImported} trades for user ${user.id}`);
+
+    return res.status(200).json({
+      success: true,
+      importedCount: totalImported,
+      accountsProcessed: myfxbookAccounts.length,
+    });
+  } catch (error: any) {
+    console.error('MyFxBook sync error:', error);
+    return res.status(500).json({
+      error: error.message || 'Failed to sync MyFxBook trades',
+    });
+  }
+}

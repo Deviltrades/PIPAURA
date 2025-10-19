@@ -2,6 +2,7 @@
 import express from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { setupCronRoutes } from './cron-routes.js';
+import { handleConnect, handleStatus, handleSyncUser } from './myfxbook-handlers.js';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
@@ -273,6 +274,11 @@ app.post("/api/create-checkout-session", async (req, res) => {
   }
 });
 
+// MyFxBook API endpoints
+app.post("/api/myfxbook/connect", handleConnect);
+app.get("/api/myfxbook/status", handleStatus);
+app.post("/api/myfxbook/sync-user", handleSyncUser);
+
 // Stripe Customer Portal session creation endpoint
 app.post("/api/create-portal-session", async (req, res) => {
   try {
@@ -283,6 +289,10 @@ app.post("/api/create-portal-session", async (req, res) => {
     }
 
     const token = authHeader.split(' ')[1];
+    
+    if (!supabase) {
+      return res.status(500).json({ error: 'Database connection unavailable' });
+    }
     
     // Verify the JWT token with Supabase
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
@@ -337,5 +347,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 Proxy server with Cron API running on port ${PORT}`);
   console.log(`📡 Cron endpoints ready on /api/cron/*`);
   console.log(`💳 Stripe checkout endpoint ready on /api/create-checkout-session`);
+  console.log(`📊 MyFxBook endpoints ready on /api/myfxbook/*`);
   console.log(`🔄 Proxying all other requests to Vite on port ${VITE_PORT}\n`);
 });
