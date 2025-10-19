@@ -414,46 +414,18 @@ export async function handleSyncUser(req: any, res: any) {
           );
 
           try {
-            // Use direct SQL with ON CONFLICT to handle duplicates
-            await dbClient.query(`
-              INSERT INTO trades (
-                user_id, account_id, ticket_id, instrument, instrument_type, trade_type,
-                position_size, entry_price, exit_price, stop_loss, take_profit,
-                pnl, swap, commission, currency, status, entry_date, exit_date,
-                upload_source, created_at, updated_at
-              ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
-              )
-              ON CONFLICT (user_id, ticket_id) DO NOTHING
-            `, [
-              mappedTrade.user_id,
-              mappedTrade.account_id,
-              mappedTrade.ticket_id,
-              mappedTrade.instrument,
-              mappedTrade.instrument_type,
-              mappedTrade.trade_type,
-              mappedTrade.position_size,
-              mappedTrade.entry_price,
-              mappedTrade.exit_price,
-              mappedTrade.stop_loss,
-              mappedTrade.take_profit,
-              mappedTrade.pnl,
-              mappedTrade.swap,
-              mappedTrade.commission,
-              mappedTrade.currency,
-              mappedTrade.status,
-              mappedTrade.entry_date,
-              mappedTrade.exit_date,
-              mappedTrade.upload_source,
-              mappedTrade.created_at,
-              mappedTrade.updated_at
-            ]);
-            totalImported++;
-          } catch (insertError: any) {
-            // Ignore duplicate key errors, log others
-            if (insertError.code !== '23505') {
-              console.error(`Error inserting trade ${mappedTrade.ticket_id}:`, insertError.message);
+            // Use Supabase service client to insert trades (trades table is in Supabase)
+            const { error: insertError } = await supabase
+              .from('trades')
+              .insert(mappedTrade);
+
+            if (!insertError || insertError.code === '23505') {
+              totalImported++;
+            } else {
+              console.error(`Error inserting trade ${mappedTrade.ticket_id}:`, insertError);
             }
+          } catch (insertError: any) {
+            console.error(`Error inserting trade ${mappedTrade.ticket_id}:`, insertError);
           }
         }
       } catch (err) {
