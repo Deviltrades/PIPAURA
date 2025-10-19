@@ -58,13 +58,21 @@ export async function loginToMyFxBook(email: string, password: string) {
   });
 
   if (!response.ok) {
+    console.error('MyFxBook API HTTP error:', response.status, response.statusText);
     throw new Error(`MyFxBook API error: ${response.status}`);
   }
 
   const data = await response.json();
+  console.log('MyFxBook login response:', JSON.stringify(data, null, 2));
 
   if (!data.session) {
-    throw new Error('Failed to get session from MyFxBook');
+    console.error('MyFxBook response missing session. Full response:', data);
+    
+    if (data.error) {
+      throw new Error(`MyFxBook: ${data.message || data.error}`);
+    }
+    
+    throw new Error('Failed to get session from MyFxBook. Check your credentials.');
   }
 
   return {
