@@ -10,12 +10,14 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, TrendingUp, Trash2, DollarSign, BarChart3, Power } from "lucide-react";
+import { Plus, TrendingUp, Trash2, DollarSign, BarChart3, Power, CloudUpload, RefreshCw, Check, X } from "lucide-react";
 import { getTradeAccounts, createTradeAccount, deleteTradeAccount, toggleAccountStatus, getAccountAnalytics, migrateLegacyTrades } from "@/lib/supabase-service";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import type { TradeAccount } from "@shared/schema";
+import { useAuth } from "@/hooks/use-auth";
+import { apiRequest } from "@/lib/queryClient";
 
 const createAccountSchema = z.object({
   account_type: z.enum(['demo', 'proprietary_firm', 'live_personal', 'live_company']),
@@ -27,8 +29,14 @@ const createAccountSchema = z.object({
 
 export default function Accounts() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<TradeAccount | null>(null);
+  
+  // MyFxBook state
+  const [myfxbookEmail, setMyfxbookEmail] = useState("");
+  const [myfxbookPassword, setMyfxbookPassword] = useState("");
+  const [showMyfxbookForm, setShowMyfxbookForm] = useState(false);
 
   const { data: accounts, isLoading } = useQuery({
     queryKey: ['/api/trade-accounts'],
@@ -39,6 +47,40 @@ export default function Accounts() {
     queryKey: ['/api/account-analytics', selectedAccount?.id],
     queryFn: () => selectedAccount ? getAccountAnalytics(selectedAccount.id) : null,
     enabled: !!selectedAccount,
+  });
+
+  // MyFxBook linked account query - uses secure backend endpoint
+  const { data: myfxbookStatus, refetch: refetchMyfxbook } = useQuery({
+    queryKey: ['/api/myfxbook/status', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      // Get the session token
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL!,
+        import.meta.env.VITE_SUPABASE_ANON_KEY!
+      );
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Not authenticated');
+      }
+
+      // Call secure backend endpoint with auth token
+      const response = await fetch('/api/myfxbook/status', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch MyFxBook status');
+      }
+
+      return response.json();
+    },
+    enabled: !!user?.id,
   });
 
   const form = useForm({
@@ -98,6 +140,108 @@ export default function Accounts() {
       toast({
         title: "Success",
         description: "Account status updated",
+      });
+    },
+  });
+
+  // MyFxBook connect mutation
+  const connectMyfxbookMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error('User not authenticated');
+      
+      // Get the session token
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL!,
+        import.meta.env.VITE_SUPABASE_ANON_KEY!
+      );
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await fetch('/api/myfxbook/connect', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          email: myfxbookEmail,
+          password: myfxbookPassword,
+        }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Connection failed');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      refetchMyfxbook();
+      queryClient.invalidateQueries({ queryKey: ['/api/trade-accounts'] });
+      toast({
+        title: "MyFxBook Connected",
+        description: `Successfully linked ${data.accountCount} trading account(s)`,
+      });
+      setMyfxbookEmail("");
+      setMyfxbookPassword("");
+      setShowMyfxbookForm(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Connection Failed",
+        description: error.message || "Failed to connect MyFxBook account",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // MyFxBook sync mutation
+  const syncMyfxbookMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error('User not authenticated');
+      
+      // Get the session token
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL!,
+        import.meta.env.VITE_SUPABASE_ANON_KEY!
+      );
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await fetch('/api/myfxbook/sync-user', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({}),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Sync failed');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      refetchMyfxbook();
+      queryClient.invalidateQueries({ queryKey: ['/api/trade-accounts'] });
+      toast({
+        title: "Sync Complete",
+        description: `Imported ${data.importedCount} new trade(s) from ${data.accountsProcessed} account(s)`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Sync Failed",
+        description: error.message || "Failed to sync MyFxBook trades",
+        variant: "destructive",
       });
     },
   });
@@ -373,6 +517,156 @@ export default function Accounts() {
               <p className="text-xl sm:text-3xl font-bold text-green-400" data-testid="text-total-pnl">{formatCurrency(totalPnL)}</p>
             </div>
           </div>
+
+          {/* MyFxBook Auto-Sync Integration */}
+          <Card className="mb-4 sm:mb-6 bg-gradient-to-br from-purple-900/20 to-blue-900/20 border-purple-500/30">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CloudUpload className="h-6 w-6 text-purple-400" />
+                  <div>
+                    <CardTitle className="text-white">MyFxBook Auto-Sync</CardTitle>
+                    <CardDescription>Automatically import your trades from MyFxBook</CardDescription>
+                  </div>
+                </div>
+                {myfxbookStatus?.linked && (
+                  <Badge className="bg-green-600/50 text-green-200 border-green-500/50">
+                    <Check className="h-3 w-3 mr-1" />
+                    Connected
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {!myfxbookStatus?.linked ? (
+                <>
+                  {!showMyfxbookForm ? (
+                    <div className="text-center py-6">
+                      <p className="text-sm text-gray-300 mb-4">
+                        Connect your MyFxBook account to automatically sync trades every 3 hours
+                      </p>
+                      <Button 
+                        onClick={() => setShowMyfxbookForm(true)}
+                        className="bg-purple-600 hover:bg-purple-700"
+                        data-testid="button-connect-myfxbook"
+                      >
+                        <CloudUpload className="h-4 w-4 mr-2" />
+                        Connect MyFxBook
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          MyFxBook Email
+                        </label>
+                        <Input
+                          type="email"
+                          placeholder="your@email.com"
+                          value={myfxbookEmail}
+                          onChange={(e) => setMyfxbookEmail(e.target.value)}
+                          data-testid="input-myfxbook-email"
+                          className="bg-slate-800/50 border-slate-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          MyFxBook Password
+                        </label>
+                        <Input
+                          type="password"
+                          placeholder="••••••••"
+                          value={myfxbookPassword}
+                          onChange={(e) => setMyfxbookPassword(e.target.value)}
+                          data-testid="input-myfxbook-password"
+                          className="bg-slate-800/50 border-slate-600"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-400">
+                        🔒 Your credentials are encrypted and never shared. We use them only to sync your trades.
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setShowMyfxbookForm(false);
+                            setMyfxbookEmail("");
+                            setMyfxbookPassword("");
+                          }}
+                          data-testid="button-cancel-myfxbook"
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={() => connectMyfxbookMutation.mutate()}
+                          disabled={connectMyfxbookMutation.isPending || !myfxbookEmail || !myfxbookPassword}
+                          className="bg-purple-600 hover:bg-purple-700"
+                          data-testid="button-submit-myfxbook"
+                        >
+                          {connectMyfxbookMutation.isPending ? (
+                            <>
+                              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                              Connecting...
+                            </>
+                          ) : (
+                            <>
+                              <CloudUpload className="h-4 w-4 mr-2" />
+                              Connect
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                      <p className="text-xs text-gray-400 mb-1">Linked Email</p>
+                      <p className="text-sm font-medium text-white">{myfxbookStatus.account?.email}</p>
+                    </div>
+                    <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                      <p className="text-xs text-gray-400 mb-1">Last Sync</p>
+                      <p className="text-sm font-medium text-white">
+                        {myfxbookStatus.account?.last_sync_at 
+                          ? new Date(myfxbookStatus.account.last_sync_at).toLocaleString()
+                          : 'Never'}
+                      </p>
+                    </div>
+                    <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                      <p className="text-xs text-gray-400 mb-1">Status</p>
+                      <p className="text-sm font-medium text-green-400 capitalize">{myfxbookStatus.account?.sync_status}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => syncMyfxbookMutation.mutate()}
+                      disabled={syncMyfxbookMutation.isPending}
+                      className="bg-purple-600 hover:bg-purple-700"
+                      data-testid="button-sync-now"
+                    >
+                      {syncMyfxbookMutation.isPending ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Syncing...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Sync Now
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-gray-400 flex items-center">
+                      Auto-sync runs every 3 hours
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Account Cards */}
           <div className="grid gap-4 sm:gap-6 md:grid-cols-2">

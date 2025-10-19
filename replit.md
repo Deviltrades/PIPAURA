@@ -69,6 +69,35 @@ A comprehensive trade import system supports CSV, Excel (.xls/.xlsx), and HTML f
 ### Trade Enrichment System
 An automated post-upload system calculates and stores advanced trade analytics: session detection (London/New York/Asia), holding time, profit normalization (profit-per-lot), and duplicate prevention via `ticket_id`.
 
+### MyFxBook Auto-Sync Integration
+A comprehensive automated trade import system that syncs trades directly from MyFxBook accounts:
+- **Encrypted Credentials**: User MyFxBook credentials stored with AES-256 encryption using Node.js crypto module
+- **Automatic Syncing**: Vercel Cron jobs run every 3 hours to fetch new trades from all connected MyFxBook accounts
+- **Manual Sync**: Users can trigger immediate sync from the accounts page
+- **Session Management**: Automatic re-authentication when MyFxBook sessions expire (24-hour validity)
+- **Multi-Account Support**: Supports multiple MyFxBook trading accounts per user
+- **Duplicate Prevention**: Uses `ticket_id` to prevent duplicate trade imports
+- **Intelligent Mapping**: Automatically maps MyFxBook trade data to PipAura format with instrument type inference
+
+**Database Schema**: 
+- `myfxbook_linked_accounts` - Stores encrypted credentials, session tokens, sync status, and last sync timestamps per user
+- `myfxbook_accounts` - Stores individual MyFxBook trading account details with optional mapping to PipAura accounts
+
+**Backend Implementation** (Vercel Serverless):
+- `/api/myfxbook/connect.ts` - Connects MyFxBook account, encrypts credentials, fetches account list
+- `/api/myfxbook/sync-user.ts` - Manual sync endpoint for authenticated users
+- `/api/myfxbook/sync.ts` - Global cron-triggered sync for all active linked accounts (protected by `x-cron-secret` header)
+
+**Frontend UI**: Integrated into the Accounts page with connection status, linked email display, last sync timestamp, and manual "Sync Now" button. Users enter MyFxBook credentials once, which are encrypted before storage.
+
+**Environment Variables** (Production):
+- `ENC_PASSPHRASE` - Passphrase for AES-256 credential encryption
+- `CRON_SECRET` - Secret header for authenticating cron requests
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role key for database operations
+- `VITE_SUPABASE_URL` - Supabase project URL
+
+**Cron Schedule**: Configured in `vercel.json` to run every 3 hours (`0 */3 * * *`), automatically syncing trades for all users with active MyFxBook connections.
+
 ### Prop Firm Tracker
 A comprehensive proprietary firm challenge tracker enables users to monitor their prop firm account progress with real-time metrics:
 - **Challenge Types**: Instant funding, 1-step, 2-step, and 3-step challenges

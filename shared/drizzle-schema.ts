@@ -248,3 +248,39 @@ export const propFirmTracker = pgTable('prop_firm_tracker', {
   created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)
 });
+
+// MyFxBook Linked Accounts table (stores encrypted credentials per user)
+export const myfxbookLinkedAccounts = pgTable('myfxbook_linked_accounts', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').notNull().unique(), // One MyFxBook connection per user
+  email: text('email').notNull(),
+  encrypted_password: text('encrypted_password').notNull(), // Encrypted with pgcrypto or backend encryption
+  session_id: text('session_id'), // MyFxBook session token
+  session_expires_at: timestamp('session_expires_at', { withTimezone: true }),
+  last_sync_at: timestamp('last_sync_at', { withTimezone: true }),
+  sync_status: text('sync_status').default('active'), // active, error, paused
+  sync_error_message: text('sync_error_message'),
+  is_active: integer('is_active').default(1).notNull(),
+  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+  updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)
+});
+
+// MyFxBook Accounts table (stores individual trading accounts from MyFxBook)
+export const myfxbookAccounts = pgTable('myfxbook_accounts', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  linked_account_id: uuid('linked_account_id').notNull(), // References myfxbook_linked_accounts
+  user_id: uuid('user_id').notNull(),
+  pipaura_account_id: uuid('pipaura_account_id'), // Maps to trade_accounts.id (optional)
+  myfxbook_account_id: text('myfxbook_account_id').notNull().unique(), // MyFxBook's account ID
+  account_name: text('account_name').notNull(),
+  broker: text('broker'),
+  currency: text('currency').default('USD'),
+  balance: decimal('balance', { precision: 12, scale: 2 }),
+  equity: decimal('equity', { precision: 12, scale: 2 }),
+  gain: decimal('gain', { precision: 10, scale: 2 }), // Percentage gain
+  is_active: integer('is_active').default(1).notNull(),
+  auto_sync_enabled: integer('auto_sync_enabled').default(1).notNull(),
+  last_trade_id: text('last_trade_id'), // Track last synced trade to avoid duplicates
+  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+  updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)
+});

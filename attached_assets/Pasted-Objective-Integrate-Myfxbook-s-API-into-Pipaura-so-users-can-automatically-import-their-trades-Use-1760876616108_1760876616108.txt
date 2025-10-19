@@ -1,0 +1,107 @@
+Objective:
+Integrate Myfxbook’s API into Pipaura so users can automatically import their trades.
+Users log in with Myfxbook credentials once, and a scheduled function keeps syncing new trades into Supabase automatically via Vercel Cron.
+
+⚙️ 2️⃣ Tell Them What Tech Stack to Use
+
+Use:
+
+Next.js API Routes (Vercel) → for backend endpoints
+
+Supabase → store linked accounts + trades
+
+pgcrypto or AES encryption → secure passwords
+
+Vercel Cron → auto-sync every 3 hours
+
+Frontend (existing Pipaura) → add a “Connect Myfxbook” modal
+
+And remind them:
+
+🚫 Replit is for development only — not hosting production backend.
+✅ Vercel hosts the production functions.
+✅ Supabase handles all database + auth.
+
+🧩 3️⃣ Give Them the Build Plan
+
+You can literally paste this in your Replit chat or task brief:
+
+PIPAURA – MYFXBOOK AUTO-SYNC INTEGRATION
+
+Phase 1 – Database Setup (Supabase)
+
+Create tables:
+
+linked_accounts
+
+myfxbook_accounts
+
+trades
+
+Enable RLS (Row Level Security).
+
+Add policies so users can only read their own data.
+
+Add encryption functions (pgcrypto, set_config, exec_sql).
+
+Phase 2 – Serverless Backend (Vercel Functions)
+Create these routes inside /pages/api/myfxbook/:
+
+connect.ts → Save encrypted Myfxbook credentials, fetch & store account list.
+
+sync-user.ts → Manual “Sync now” trigger for logged-in user.
+
+sync.ts → Global sync (triggered by Vercel Cron).
+
+Protected by header x-cron-secret.
+
+Re-logins users, refresh tokens, fetch trade history, upsert into Supabase.
+
+Phase 3 – Cron Setup
+In vercel.json add:
+
+{
+  "cron": [
+    {
+      "path": "/api/myfxbook/sync",
+      "schedule": "0 */3 * * *",
+      "headers": { "x-cron-secret": "@cron_secret" }
+    }
+  ]
+}
+
+
+Set env vars:
+
+SUPABASE_URL
+
+SUPABASE_SERVICE_ROLE_KEY
+
+ENC_PASSPHRASE
+
+CRON_SECRET
+
+Phase 4 – Frontend (within Pipaura)
+Add “Connect Myfxbook” section:
+
+Input: Email + Password
+
+Button: “Connect Myfxbook” → calls /api/myfxbook/connect
+
+Show “Linked ✅”, account count, last sync time, and a “Sync Now” button.
+
+Optional disclaimer:
+
+“Your Myfxbook credentials are encrypted and never shared.”
+
+Phase 5 – Test Cases
+
+Connect test Myfxbook account.
+
+Check Supabase tables populate correctly.
+
+Run /api/myfxbook/sync manually.
+
+Verify trades appear in trades table.
+
+Wait 3 hours → confirm Vercel Cron triggers automatically.
