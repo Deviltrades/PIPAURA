@@ -728,9 +728,25 @@ export default function Accounts() {
                       </Button>
                     </div>
                     <p className="text-xs text-gray-400 flex items-center">
-                      Auto-sync runs every 3 hours
+                      Auto-sync runs daily
                     </p>
                   </div>
+                  {myfxbookStatus.myfxbookAccounts && myfxbookStatus.myfxbookAccounts.length > 0 && (
+                    <div className="mt-4 space-y-3">
+                      <h4 className="text-sm font-semibold text-white">MyFxBook Accounts</h4>
+                      {myfxbookStatus.myfxbookAccounts.map((mfxAccount: any) => (
+                        <MyFxBookAccountMapping
+                          key={mfxAccount.id}
+                          mfxAccount={mfxAccount}
+                          pipauraAccounts={accounts || []}
+                          onMappingUpdate={() => {
+                            refetchMyfxbook();
+                            queryClient.invalidateQueries({ queryKey: ['/api/trade-accounts'] });
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
