@@ -221,8 +221,43 @@ export async function handleConnect(req: any, res: any) {
     // Fetch MyFxBook accounts
     const accounts = await fetchMyFxBookAccounts(sessionId);
 
-    // Upsert each MyFxBook account
+    // Create PipAura trading accounts and save MyFxBook accounts
     for (const account of accounts) {
+      // Check if this MyFxBook account already has a PipAura account
+      const { data: existingMfxAccount } = await supabase
+        .from('myfxbook_accounts')
+        .select('pipaura_account_id')
+        .eq('myfxbook_account_id', String(account.id))
+        .maybeSingle();
+
+      let pipauraAccountId = existingMfxAccount?.pipaura_account_id;
+
+      // Create PipAura trading account if it doesn't exist
+      if (!pipauraAccountId) {
+        const { data: newPipauraAccount, error: pipauraError } = await supabase
+          .from('trade_accounts')
+          .insert({
+            user_id: user.id,
+            account_name: account.name || `MyFxBook #${account.id}`,
+            broker_name: account.broker || 'Unknown Broker',
+            account_type: 'live_personal',
+            market_type: 'forex',
+            starting_balance: parseFloat(account.balance) || 0,
+            current_balance: parseFloat(account.balance) || 0,
+            currency: account.currency || 'USD',
+          })
+          .select('id')
+          .single();
+
+        if (pipauraError || !newPipauraAccount) {
+          console.error(`Failed to create PipAura account for ${account.name}:`, pipauraError);
+          throw new Error(`Failed to create PipAura account: ${pipauraError?.message}`);
+        }
+
+        pipauraAccountId = newPipauraAccount.id;
+      }
+
+      // Upsert MyFxBook account with PipAura account link
       const { error: accountError } = await supabase
         .from('myfxbook_accounts')
         .upsert({
@@ -235,7 +270,7 @@ export async function handleConnect(req: any, res: any) {
           balance: parseFloat(account.balance) || 0,
           equity: parseFloat(account.equity) || 0,
           gain: parseFloat(account.gain) || 0,
-          pipaura_account_id: null,
+          pipaura_account_id: pipauraAccountId,
           auto_sync_enabled: 1,
           is_active: 1,
         }, {
