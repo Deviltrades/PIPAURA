@@ -223,7 +223,7 @@ export async function handleConnect(req: any, res: any) {
 
     // Upsert each MyFxBook account
     for (const account of accounts) {
-      await supabase
+      const { error: accountError } = await supabase
         .from('myfxbook_accounts')
         .upsert({
           linked_account_id: linkedAccount.id,
@@ -241,6 +241,11 @@ export async function handleConnect(req: any, res: any) {
         }, {
           onConflict: 'myfxbook_account_id'
         });
+      
+      if (accountError) {
+        console.error(`Failed to save MyFxBook account ${account.name}:`, accountError);
+        throw new Error(`Failed to save account ${account.name}: ${accountError.message}`);
+      }
     }
 
     return res.status(200).json({

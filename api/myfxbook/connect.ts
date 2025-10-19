@@ -160,7 +160,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Step 5: Store MyFxBook accounts in database
     for (const account of accounts) {
-      await supabase.from('myfxbook_accounts').upsert(
+      const { error: accountError } = await supabase.from('myfxbook_accounts').upsert(
         {
           linked_account_id: linkedAccount.id,
           user_id: user.id,
@@ -179,6 +179,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           onConflict: 'myfxbook_account_id',
         }
       );
+      
+      if (accountError) {
+        console.error(`Failed to save MyFxBook account ${account.name}:`, accountError);
+        return res.status(500).json({ 
+          error: `Failed to save account ${account.name}: ${accountError.message}` 
+        });
+      }
     }
 
     console.log(`Successfully connected MyFxBook account with ${accounts.length} trading accounts`);
