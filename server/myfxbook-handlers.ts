@@ -81,20 +81,26 @@ export async function loginToMyFxBook(email: string, password: string) {
 }
 
 export async function fetchMyFxBookAccounts(sessionId: string) {
+  console.log(`Fetching MyFxBook accounts with session: ${sessionId.substring(0, 20)}...`);
+  
   const response = await fetch(
     `https://www.myfxbook.com/api/get-my-accounts.json?session=${sessionId}`
   );
 
   if (!response.ok) {
+    console.error('MyFxBook get-my-accounts HTTP error:', response.status, response.statusText);
     throw new Error(`MyFxBook API error: ${response.status}`);
   }
 
   const data = await response.json();
+  console.log('MyFxBook accounts response:', JSON.stringify(data, null, 2));
 
   if (!data.accounts || !Array.isArray(data.accounts)) {
+    console.warn('No accounts array in response or not an array');
     return [];
   }
 
+  console.log(`Found ${data.accounts.length} MyFxBook accounts`);
   return data.accounts;
 }
 
