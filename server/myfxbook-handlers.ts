@@ -513,6 +513,13 @@ export async function handleSyncUser(req: any, res: any) {
             user.id,
             account.pipaura_account_id
           );
+          
+          // DEBUG: Log the mapped trade to see what's being inserted
+          console.log('=== MAPPED TRADE BEFORE INSERT ===');
+          console.log('position_size:', mappedTrade.position_size);
+          console.log('entry_price:', mappedTrade.entry_price);
+          console.log('instrument:', mappedTrade.instrument);
+          console.log('===================================');
 
           // Check if trade already exists
           const { data: existingTrade } = await supabase
