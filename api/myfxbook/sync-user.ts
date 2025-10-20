@@ -47,6 +47,25 @@ async function refreshMyFxBookSession(email: string, password: string) {
   };
 }
 
+// Fetch MyFxBook accounts for a user
+async function fetchMyFxBookAccounts(sessionId: string) {
+  const response = await fetch(
+    `https://www.myfxbook.com/api/get-my-accounts.json?session=${sessionId}`
+  );
+
+  if (!response.ok) {
+    throw new Error(`MyFxBook API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (!data.accounts || !Array.isArray(data.accounts)) {
+    return [];
+  }
+
+  return data.accounts;
+}
+
 // Fetch trades from MyFxBook
 async function fetchMyFxBookTrades(sessionId: string, accountId: string, lastTradeId?: string) {
   const url = lastTradeId
@@ -179,7 +198,104 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .eq('id', linkedAccount.id);
     }
 
-    // Step 3: Get all MyFxBook accounts for this user
+    // Step 3: Fetch current accounts from MyFxBook API
+    const currentMyFxBookAccounts = await fetchMyFxBookAccounts(sessionId);
+    const currentAccountIds = new Set(currentMyFxBookAccounts.map((acc: any) => String(acc.id)));
+
+    // Step 4: Get existing MyFxBook accounts from database
+    const { data: existingAccounts, error: existingError } = await supabase
+      .from('myfxbook_accounts')
+      .select('*')
+      .eq('user_id', user.id);
+
+    if (existingError) {
+      throw new Error('Failed to fetch existing MyFxBook accounts');
+    }
+
+    // Step 5: Mark removed accounts as inactive
+    const existingAccountIds = new Set(existingAccounts?.map((acc: any) => acc.myfxbook_account_id) || []);
+    
+    for (const existingAccount of (existingAccounts || [])) {
+      if (!currentAccountIds.has(existingAccount.myfxbook_account_id)) {
+        console.log(`Marking account ${existingAccount.account_name} as inactive (removed from MyFxBook)`);
+        await supabase
+          .from('myfxbook_accounts')
+          .update({ is_active: 0, updated_at: new Date().toISOString() })
+          .eq('id', existingAccount.id);
+      }
+    }
+
+    // Step 6: Get user profile ID (required for trade_accounts)
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('supabase_user_id', user.id)
+      .single();
+
+    if (!profile) {
+      throw new Error('User profile not found');
+    }
+
+    // Step 7: Create or update MyFxBook accounts and PipAura trade accounts
+    for (const account of currentMyFxBookAccounts) {
+      // Check if this MyFxBook account already has a PipAura account
+      const { data: existingMfxAccount } = await supabase
+        .from('myfxbook_accounts')
+        .select('pipaura_account_id')
+        .eq('myfxbook_account_id', String(account.id))
+        .maybeSingle();
+
+      let pipauraAccountId = existingMfxAccount?.pipaura_account_id;
+
+      // Create PipAura trading account if it doesn't exist
+      if (!pipauraAccountId) {
+        const { data: newPipauraAccount, error: pipauraError } = await supabase
+          .from('trade_accounts')
+          .insert({
+            user_id: profile.id,
+            account_name: account.name || `MyFxBook #${account.id}`,
+            broker_name: account.broker || 'Unknown Broker',
+            account_type: 'live_personal',
+            market_type: 'forex',
+            starting_balance: parseFloat(account.balance) || 0,
+            current_balance: parseFloat(account.balance) || 0,
+            currency: account.currency || 'USD',
+          })
+          .select('id')
+          .single();
+
+        if (pipauraError || !newPipauraAccount) {
+          console.error(`Failed to create PipAura account for MyFxBook account ${account.name}:`, pipauraError);
+          continue;
+        }
+
+        pipauraAccountId = newPipauraAccount.id;
+      }
+
+      // Upsert MyFxBook account with PipAura link
+      await supabase.from('myfxbook_accounts').upsert(
+        {
+          linked_account_id: linkedAccount.id,
+          user_id: user.id,
+          myfxbook_account_id: String(account.id),
+          account_name: account.name,
+          broker: account.broker || null,
+          currency: account.currency || 'USD',
+          balance: parseFloat(account.balance) || 0,
+          equity: parseFloat(account.equity) || 0,
+          gain: parseFloat(account.gain) || 0,
+          pipaura_account_id: pipauraAccountId,
+          is_active: 1,
+          auto_sync_enabled: 1,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'myfxbook_account_id',
+        }
+      );
+    }
+
+    // Step 8: Get all active MyFxBook accounts for trade sync
     const { data: myfxbookAccounts, error: accountsError } = await supabase
       .from('myfxbook_accounts')
       .select('*')
@@ -195,11 +311,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ 
         success: true, 
         message: 'No active MyFxBook accounts to sync',
-        importedCount: 0
+        importedCount: 0,
+        accountsProcessed: 0,
       });
     }
 
-    // Step 4: Sync trades for each account
+    // Step 9: Sync trades for each account
     let totalImported = 0;
 
     for (const account of myfxbookAccounts) {
