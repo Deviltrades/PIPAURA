@@ -178,9 +178,12 @@ export default function Accounts() {
       }
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       refetchMyfxbook();
-      queryClient.invalidateQueries({ queryKey: ['/api/trade-accounts'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/trade-accounts'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/trades'] });
+      await queryClient.refetchQueries({ queryKey: ['/api/trade-accounts'] });
+      await queryClient.refetchQueries({ queryKey: ['/api/trades'] });
       toast({
         title: "MyFxBook Connected",
         description: `Successfully linked ${data.accountCount} trading account(s)`,
@@ -229,9 +232,12 @@ export default function Accounts() {
       }
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       refetchMyfxbook();
-      queryClient.invalidateQueries({ queryKey: ['/api/trade-accounts'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/trade-accounts'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/trades'] });
+      await queryClient.refetchQueries({ queryKey: ['/api/trade-accounts'] });
+      await queryClient.refetchQueries({ queryKey: ['/api/trades'] });
       toast({
         title: "Sync Complete",
         description: `Imported ${data.importedCount} new trade(s) from ${data.accountsProcessed} account(s)`,
