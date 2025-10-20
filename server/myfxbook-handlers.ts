@@ -218,6 +218,17 @@ export async function handleConnect(req: any, res: any) {
       throw new Error('Failed to create linked account: ' + linkedError?.message);
     }
 
+    // Get user profile ID (required for trade_accounts)
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('supabase_user_id', user.id)
+      .single();
+
+    if (!profile) {
+      throw new Error('User profile not found');
+    }
+
     // Fetch MyFxBook accounts
     const accounts = await fetchMyFxBookAccounts(sessionId);
 
@@ -237,7 +248,7 @@ export async function handleConnect(req: any, res: any) {
         const { data: newPipauraAccount, error: pipauraError } = await supabase
           .from('trade_accounts')
           .insert({
-            user_id: user.id,
+            user_id: profile.id,
             account_name: account.name || `MyFxBook #${account.id}`,
             broker_name: account.broker || 'Unknown Broker',
             account_type: 'live_personal',
