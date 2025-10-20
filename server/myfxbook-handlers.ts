@@ -138,10 +138,15 @@ export function inferInstrumentType(symbol: string): 'FOREX' | 'INDICES' | 'CRYP
 }
 
 export function mapMyFxBookTrade(trade: any, userId: string, pipAuraAccountId?: string) {
+  // Generate unique ticket_id from MyFxBook trade data
+  const ticketId = trade.id 
+    ? String(trade.id) 
+    : `myfxbook_${trade.openTime}_${trade.symbol}_${trade.openPrice}`.replace(/[^a-zA-Z0-9_]/g, '_');
+  
   return {
     user_id: userId,
     account_id: pipAuraAccountId || null,
-    ticket_id: String(trade.id),
+    ticket_id: ticketId,
     instrument: trade.symbol || 'UNKNOWN',
     instrument_type: inferInstrumentType(trade.symbol),
     trade_type: trade.action === 'buy' ? 'BUY' : 'SELL',
