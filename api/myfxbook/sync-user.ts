@@ -336,7 +336,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         for (const trade of trades) {
           const mappedTrade = mapMyFxBookTrade(
             trade,
-            user.id,
+            profile.id,
             account.pipaura_account_id
           );
 
