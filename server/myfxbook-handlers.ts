@@ -499,6 +499,13 @@ export async function handleSyncUser(req: any, res: any) {
       try {
         const trades = await fetchMyFxBookTrades(sessionId, account.myfxbook_account_id);
         console.log(`Fetched ${trades.length} trades for account ${account.myfxbook_account_id}`);
+        
+        // Log first trade to see structure
+        if (trades.length > 0) {
+          console.log('=== FIRST TRADE RAW DATA ===');
+          console.log(JSON.stringify(trades[0], null, 2));
+          console.log('===========================');
+        }
 
         for (const trade of trades) {
           const mappedTrade = mapMyFxBookTrade(
