@@ -340,10 +340,19 @@ export async function getTrades(accountId?: string) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
+  // Get user profile to match trades
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
   let query = supabase
     .from('trades')
     .select('*')
-    .eq('user_id', user.id);
+    .eq('user_id', profile.id);
 
   // Filter by account_id if a specific account is selected
   if (accountId && accountId !== 'all') {
