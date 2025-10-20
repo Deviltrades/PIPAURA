@@ -257,7 +257,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             broker_name: account.broker || 'Unknown Broker',
             account_type: 'live_personal',
             market_type: 'forex',
-            starting_balance: parseFloat(account.balance) || 0,
+            starting_balance: parseFloat(account.deposits) || parseFloat(account.balance) || 0,
             current_balance: parseFloat(account.balance) || 0,
             currency: account.currency || 'USD',
           })
