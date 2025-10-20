@@ -108,7 +108,7 @@ function mapMyFxBookTrade(trade: any, userId: string, pipAuraAccountId?: string)
     instrument: trade.symbol || 'UNKNOWN',
     instrument_type: inferInstrumentType(trade.symbol),
     trade_type: trade.action === 'buy' ? 'BUY' : 'SELL',
-    position_size: parseFloat(trade.lots || trade.sizing || trade.volume) || 0,
+    position_size: parseFloat(trade.sizing?.value || trade.lots || trade.volume) || 0,
     entry_price: parseFloat(trade.openPrice) || 0,
     exit_price: parseFloat(trade.closePrice) || null,
     stop_loss: parseFloat(trade.sl) || null,
