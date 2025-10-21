@@ -3,13 +3,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Edit, Trash2, Upload, Scan, Clock } from "lucide-react";
 import { AddTradeModal } from "@/components/AddTradeModal";
 import { UploadTradesModal } from "@/components/UploadTradesModal";
 import { OCRUploadModal } from "@/components/OCRUploadModal";
 import { AccountSelector } from "@/components/AccountSelector";
 import { formatCurrency } from "@/lib/utils";
-import { getTrades, deleteTrade } from "@/lib/supabase-service";
+import { getTrades, deleteTrade, bulkDeleteTrades } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
@@ -23,6 +24,7 @@ export default function Trades() {
   const [isOCRModalOpen, setIsOCRModalOpen] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
   const [sessionFilter, setSessionFilter] = useState<string>("all");
+  const [selectedTrades, setSelectedTrades] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [location, setLocation] = useLocation();
@@ -53,6 +55,17 @@ export default function Trades() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: bulkDeleteTrades,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["trades"] });
+      setSelectedTrades([]);
+      toast({
+        title: `${selectedTrades.length} trade${selectedTrades.length > 1 ? 's' : ''} deleted successfully`,
+      });
+    },
+  });
+
   const handleEdit = (trade: any) => {
     setEditingTrade(trade);
     setIsFormOpen(true);
@@ -61,6 +74,29 @@ export default function Trades() {
   const handleDelete = (id: string) => {
     if (window.confirm("Are you sure you want to delete this trade?")) {
       deleteMutation.mutate(id);
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedTrades.length === 0) return;
+    if (window.confirm(`Are you sure you want to delete ${selectedTrades.length} selected trade${selectedTrades.length > 1 ? 's' : ''}?`)) {
+      bulkDeleteMutation.mutate(selectedTrades);
+    }
+  };
+
+  const handleSelectTrade = (tradeId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedTrades(prev => [...prev, tradeId]);
+    } else {
+      setSelectedTrades(prev => prev.filter(id => id !== tradeId));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedTrades(filteredTrades.map((trade: any) => trade.id));
+    } else {
+      setSelectedTrades([]);
     }
   };
 
@@ -147,37 +183,70 @@ export default function Trades() {
           </div>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
-          <Button 
-            onClick={() => setIsOCRModalOpen(true)}
-            variant="outline"
-            className="border-cyan-500/50 text-white hover:bg-cyan-600/20 flex-1 sm:flex-none h-10 sm:h-auto"
-            data-testid="button-upload-screenshot"
-          >
-            <Scan className="h-4 w-4 mr-2" />
-            <span className="hidden lg:inline">Upload Trade Screenshot (AI-Read)</span>
-            <span className="lg:hidden">Upload Screenshot</span>
-          </Button>
-          <Button 
-            onClick={() => setIsUploadModalOpen(true)}
-            variant="outline"
-            className="border-cyan-500/50 text-white hover:bg-cyan-600/20 flex-1 sm:flex-none h-10 sm:h-auto"
-            data-testid="button-upload-trades"
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            <span className="hidden lg:inline">Upload CSV | HTML | EXCEL</span>
-            <span className="lg:hidden">Upload File</span>
-          </Button>
-          <Button 
-            onClick={() => setIsFormOpen(true)}
-            variant="outline"
-            className="border-cyan-500/50 text-white hover:bg-cyan-600/20 flex-1 sm:flex-none h-10 sm:h-auto"
-            data-testid="button-add-trade"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            <span className="hidden lg:inline">Add Trade Manually</span>
-            <span className="lg:hidden">Add Trade</span>
-          </Button>
+        <div className="flex flex-col gap-2 sm:gap-3 w-full">
+          {/* Bulk Actions Row */}
+          {filteredTrades.length > 0 && (
+            <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="select-all"
+                  checked={selectedTrades.length === filteredTrades.length && filteredTrades.length > 0}
+                  onCheckedChange={handleSelectAll}
+                  className="border-cyan-500"
+                  data-testid="checkbox-select-all"
+                />
+                <label htmlFor="select-all" className="text-sm text-gray-300 cursor-pointer">
+                  Select All ({filteredTrades.length})
+                </label>
+              </div>
+              {selectedTrades.length > 0 && (
+                <Button
+                  onClick={handleBulkDelete}
+                  disabled={bulkDeleteMutation.isPending}
+                  variant="outline"
+                  className="border-red-500/50 text-red-300 hover:bg-red-600/20 ml-auto h-9"
+                  data-testid="button-delete-selected"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Selected ({selectedTrades.length})
+                </Button>
+              )}
+            </div>
+          )}
+          
+          {/* Upload/Add Buttons Row */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
+            <Button 
+              onClick={() => setIsOCRModalOpen(true)}
+              variant="outline"
+              className="border-cyan-500/50 text-white hover:bg-cyan-600/20 flex-1 sm:flex-none h-10 sm:h-auto"
+              data-testid="button-upload-screenshot"
+            >
+              <Scan className="h-4 w-4 mr-2" />
+              <span className="hidden lg:inline">Upload Trade Screenshot (AI-Read)</span>
+              <span className="lg:hidden">Upload Screenshot</span>
+            </Button>
+            <Button 
+              onClick={() => setIsUploadModalOpen(true)}
+              variant="outline"
+              className="border-cyan-500/50 text-white hover:bg-cyan-600/20 flex-1 sm:flex-none h-10 sm:h-auto"
+              data-testid="button-upload-trades"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              <span className="hidden lg:inline">Upload CSV | HTML | EXCEL</span>
+              <span className="lg:hidden">Upload File</span>
+            </Button>
+            <Button 
+              onClick={() => setIsFormOpen(true)}
+              variant="outline"
+              className="border-cyan-500/50 text-white hover:bg-cyan-600/20 flex-1 sm:flex-none h-10 sm:h-auto"
+              data-testid="button-add-trade"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              <span className="hidden lg:inline">Add Trade Manually</span>
+              <span className="lg:hidden">Add Trade</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -188,21 +257,29 @@ export default function Trades() {
               <CardContent className="p-3 sm:p-6">
                 {/* Mobile/Tablet Layout: Single column with grouped sections */}
                 <div className="lg:hidden space-y-3 sm:space-y-4">
-                  {/* Header: Instrument & Badges */}
+                  {/* Header: Checkbox, Instrument & Badges */}
                   <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-1.5 sm:space-y-2 flex-1">
-                      <h3 className="text-lg sm:text-2xl font-bold text-white tracking-tight leading-tight">{trade.instrument}</h3>
-                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                        <Badge variant={trade.trade_type === 'BUY' ? 'default' : 'secondary'} className={
-                          trade.trade_type === 'BUY' 
-                            ? 'bg-green-600/20 text-green-400 border border-green-600 hover:bg-green-600/30 text-xs' 
-                            : 'bg-red-600/20 text-red-400 border border-red-600 hover:bg-red-600/30 text-xs'
-                        } data-testid={`badge-type-${trade.id}`}>
-                          {trade.trade_type}
-                        </Badge>
-                        <Badge variant="outline" className="border-cyan-500/50 text-cyan-400 bg-cyan-600/10 text-xs" data-testid={`badge-instrument-${trade.id}`}>
-                          {trade.instrument_type}
-                        </Badge>
+                    <div className="flex items-start gap-3 flex-1">
+                      <Checkbox
+                        checked={selectedTrades.includes(trade.id)}
+                        onCheckedChange={(checked) => handleSelectTrade(trade.id, checked as boolean)}
+                        className="mt-1 border-cyan-500"
+                        data-testid={`checkbox-trade-${trade.id}`}
+                      />
+                      <div className="space-y-1.5 sm:space-y-2 flex-1">
+                        <h3 className="text-lg sm:text-2xl font-bold text-white tracking-tight leading-tight">{trade.instrument}</h3>
+                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                          <Badge variant={trade.trade_type === 'BUY' ? 'default' : 'secondary'} className={
+                            trade.trade_type === 'BUY' 
+                              ? 'bg-green-600/20 text-green-400 border border-green-600 hover:bg-green-600/30 text-xs' 
+                              : 'bg-red-600/20 text-red-400 border border-red-600 hover:bg-red-600/30 text-xs'
+                          } data-testid={`badge-type-${trade.id}`}>
+                            {trade.trade_type}
+                          </Badge>
+                          <Badge variant="outline" className="border-cyan-500/50 text-cyan-400 bg-cyan-600/10 text-xs" data-testid={`badge-instrument-${trade.id}`}>
+                            {trade.instrument_type}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                     <div className="flex sm:hidden gap-1.5">
@@ -326,7 +403,17 @@ export default function Trades() {
 
                 {/* Desktop Layout: Multi-column grid */}
                 <div className="hidden lg:block">
-                  <div className="grid grid-cols-[240px_180px_1fr_280px_auto] gap-4 xl:gap-6 items-center">
+                  <div className="grid grid-cols-[auto_240px_180px_1fr_280px_auto] gap-4 xl:gap-6 items-center">
+                    {/* Checkbox */}
+                    <div className="flex items-center">
+                      <Checkbox
+                        checked={selectedTrades.includes(trade.id)}
+                        onCheckedChange={(checked) => handleSelectTrade(trade.id, checked as boolean)}
+                        className="border-cyan-500"
+                        data-testid={`checkbox-trade-desktop-${trade.id}`}
+                      />
+                    </div>
+                    
                     {/* Left: Instrument & Badges */}
                     <div className="space-y-2">
                       <h3 className="text-2xl font-bold text-white tracking-tight">{trade.instrument}</h3>
@@ -469,7 +556,7 @@ export default function Trades() {
                 }
               </p>
               {sessionFilter === "all" && (
-                <Button onClick={() => setIsFormOpen(true)} className="bg-cyan-600 hover:bg-cyan-700">
+                <Button onClick={() => setIsFormOpen(true)} className="bg-cyan-600 hover:bg-cyan-700" data-testid="button-add-first-trade">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Your First Trade
                 </Button>

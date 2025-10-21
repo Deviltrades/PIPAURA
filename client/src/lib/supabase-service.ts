@@ -423,6 +423,19 @@ export async function deleteTrade(id: string) {
   if (error) throw error;
 }
 
+export async function bulkDeleteTrades(ids: string[]) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { error } = await supabase
+    .from('trades')
+    .delete()
+    .in('id', ids)
+    .eq('user_id', user.id);
+
+  if (error) throw error;
+}
+
 interface UploadTrade {
   ticket_id?: string;
   instrument: string;
