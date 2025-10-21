@@ -27,6 +27,7 @@ import Charts from "@/pages/charts";
 import Fundamentals from "@/pages/fundamentals";
 import Mentor from "@/pages/mentor";
 import MentorDashboard from "@/pages/mentor-dashboard";
+import MentorViewTrader from "@/pages/mentor-view-trader";
 import PropFirm from "@/pages/prop-firm";
 import TaxReports from "@/pages/tax-reports";
 import Settings from "@/pages/settings";
@@ -106,6 +107,7 @@ function Router() {
           <Route path="/fundamentals" component={Fundamentals} />
           <Route path="/mentor" component={Mentor} />
           <Route path="/mentor-dashboard" component={MentorDashboard} />
+          <Route path="/mentor/trader/:traderId" component={MentorViewTrader} />
           <Route path="/prop-firm" component={PropFirm} />
           <Route path="/tax-reports" component={TaxReports} />
           <Route path="/analytics" component={Analytics} />

@@ -34,8 +34,19 @@ export function InviteTraderModal({ open, onOpenChange }: InviteTraderModalProps
   const { toast } = useToast();
 
   // Search users by username
-  const { data: searchResults = [], isLoading: isSearching } = useQuery<UserSearchResult[]>({
+  const { data: searchResults = [], isLoading: isSearching, isError: searchError } = useQuery<UserSearchResult[]>({
     queryKey: ['/api/mentor/search-users', searchQuery],
+    queryFn: async () => {
+      const res = await fetch(`/api/mentor/search-users?searchQuery=${encodeURIComponent(searchQuery)}`, {
+        headers: {
+          'Authorization': `Bearer ${await (await import('@/lib/supabase')).getAuthToken()}`,
+        },
+      });
+      if (!res.ok) {
+        throw new Error('Failed to search users');
+      }
+      return res.json();
+    },
     enabled: inviteMethod === 'username' && searchQuery.length >= 2,
   });
 
@@ -154,7 +165,13 @@ export function InviteTraderModal({ open, onOpenChange }: InviteTraderModalProps
                 </div>
               )}
 
-              {!isSearching && searchQuery.length >= 2 && searchResults.length === 0 && (
+              {searchError && (
+                <div className="text-center py-8 text-red-600 text-sm">
+                  Failed to search users. Please try again.
+                </div>
+              )}
+
+              {!isSearching && !searchError && searchQuery.length >= 2 && searchResults.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground text-sm">
                   No users found matching "{searchQuery}"
                 </div>

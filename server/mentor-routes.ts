@@ -434,12 +434,187 @@ export function setupMentorRoutes(app: express.Express) {
     }
   });
 
+  // Get trader details (read-only)
+  app.get('/api/mentor/trader/:traderId/details', async (req, res) => {
+    try {
+      const user = await getUserFromToken(req);
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const { traderId } = req.params;
+
+      if (!supabase) {
+        return res.status(500).json({ error: 'Database unavailable' });
+      }
+
+      // Verify mentor has access to this trader
+      const { data: connection, error: connError } = await supabase
+        .from('mentor_connections')
+        .select('id')
+        .eq('mentor_id', user.id)
+        .eq('mentee_id', traderId)
+        .eq('status', 'accepted')
+        .maybeSingle();
+
+      if (connError || !connection) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      // Get trader profile
+      const { data: profile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('id, email, username, full_name, avatar_url')
+        .eq('id', traderId)
+        .single();
+
+      if (profileError || !profile) {
+        return res.status(404).json({ error: 'Trader not found' });
+      }
+
+      res.json({
+        name: profile.full_name || profile.username || 'Anonymous',
+        email: profile.email,
+        avatar_url: profile.avatar_url,
+      });
+    } catch (error: any) {
+      console.error('Error fetching trader details:', error);
+      res.status(500).json({ error: error.message || 'Server error' });
+    }
+  });
+
+  // Get trader accounts (read-only)
+  app.get('/api/mentor/trader/:traderId/accounts', async (req, res) => {
+    try {
+      const user = await getUserFromToken(req);
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const { traderId } = req.params;
+
+      if (!supabase) {
+        return res.status(500).json({ error: 'Database unavailable' });
+      }
+
+      // Verify mentor has access to this trader
+      const { data: connection, error: connError } = await supabase
+        .from('mentor_connections')
+        .select('id')
+        .eq('mentor_id', user.id)
+        .eq('mentee_id', traderId)
+        .eq('status', 'accepted')
+        .maybeSingle();
+
+      if (connError || !connection) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      // Get trader accounts
+      const { data: accounts, error: accountsError } = await supabase
+        .from('accounts')
+        .select('*')
+        .eq('user_id', traderId)
+        .order('created_at', { ascending: false });
+
+      if (accountsError) {
+        console.error('Error fetching accounts:', accountsError);
+        return res.status(500).json({ error: 'Failed to fetch accounts' });
+      }
+
+      res.json(accounts || []);
+    } catch (error: any) {
+      console.error('Error fetching trader accounts:', error);
+      res.status(500).json({ error: error.message || 'Server error' });
+    }
+  });
+
+  // Get trader stats (read-only)
+  app.get('/api/mentor/trader/:traderId/stats', async (req, res) => {
+    try {
+      const user = await getUserFromToken(req);
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const { traderId } = req.params;
+
+      if (!supabase) {
+        return res.status(500).json({ error: 'Database unavailable' });
+      }
+
+      // Verify mentor has access to this trader
+      const { data: connection, error: connError } = await supabase
+        .from('mentor_connections')
+        .select('id')
+        .eq('mentor_id', user.id)
+        .eq('mentee_id', traderId)
+        .eq('status', 'accepted')
+        .maybeSingle();
+
+      if (connError || !connection) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      // Get trader trades
+      const { data: trades, error: tradesError } = await supabase
+        .from('trades')
+        .select('*')
+        .eq('user_id', traderId)
+        .eq('status', 'CLOSED');
+
+      if (tradesError) {
+        console.error('Error fetching trades:', tradesError);
+        return res.status(500).json({ error: 'Failed to fetch trades' });
+      }
+
+      // Calculate stats
+      const totalTrades = trades?.length || 0;
+      const winningTrades = trades?.filter(t => (t.pnl || 0) > 0).length || 0;
+      const losingTrades = trades?.filter(t => (t.pnl || 0) < 0).length || 0;
+      const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
+      
+      const profitLoss = trades?.reduce((sum, t) => sum + (t.pnl || 0), 0) || 0;
+      
+      const wins = trades?.filter(t => (t.pnl || 0) > 0) || [];
+      const losses = trades?.filter(t => (t.pnl || 0) < 0) || [];
+      
+      const totalWinAmount = wins.reduce((sum, t) => sum + (t.pnl || 0), 0);
+      const totalLossAmount = Math.abs(losses.reduce((sum, t) => sum + (t.pnl || 0), 0));
+      
+      const avgWin = wins.length > 0 ? totalWinAmount / wins.length : 0;
+      const avgLoss = losses.length > 0 ? totalLossAmount / losses.length : 0;
+      
+      const largestWin = wins.length > 0 ? Math.max(...wins.map(t => t.pnl || 0)) : 0;
+      const largestLoss = losses.length > 0 ? Math.min(...losses.map(t => t.pnl || 0)) : 0;
+      
+      const profitFactor = totalLossAmount > 0 ? totalWinAmount / totalLossAmount : totalWinAmount > 0 ? 999 : 0;
+
+      res.json({
+        total_trades: totalTrades,
+        win_rate: winRate,
+        profit_loss: profitLoss,
+        profit_factor: profitFactor,
+        avg_win: avgWin,
+        avg_loss: avgLoss,
+        largest_win: largestWin,
+        largest_loss: largestLoss,
+      });
+    } catch (error: any) {
+      console.error('Error calculating trader stats:', error);
+      res.status(500).json({ error: error.message || 'Server error' });
+    }
+  });
+
   console.log('✅ Mentor routes initialized:');
   console.log('   GET  /api/mentor/search-users');
   console.log('   POST /api/mentor/invite');
   console.log('   GET  /api/mentor/traders');
   console.log('   POST /api/mentor/connection/:id/accept');
   console.log('   POST /api/mentor/connection/:id/reject');
+  console.log('   GET  /api/mentor/trader/:id/details');
+  console.log('   GET  /api/mentor/trader/:id/accounts');
+  console.log('   GET  /api/mentor/trader/:id/stats');
   console.log('   GET  /api/notifications');
   console.log('   PATCH /api/notifications/:id/read\n');
 }

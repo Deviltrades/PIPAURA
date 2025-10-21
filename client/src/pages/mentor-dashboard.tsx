@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -251,9 +252,16 @@ export default function MentorDashboard() {
                     </div>
 
                     <div className="flex flex-col gap-2 ml-4">
-                      <Button size="sm" variant="outline" data-testid={`button-view-${trader.id}`}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        data-testid={`button-view-${trader.id}`}
+                        asChild
+                      >
+                        <Link href={`/mentor/trader/${trader.id}`}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </Link>
                       </Button>
                       <Button size="sm" variant="outline" data-testid={`button-message-${trader.id}`}>
                         <MessageCircle className="h-4 w-4 mr-2" />
