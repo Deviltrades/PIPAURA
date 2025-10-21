@@ -462,6 +462,73 @@ export const updatePropFirmTrackerSchema = z.object({
   is_active: z.boolean().optional(),
 });
 
+// Tax Reports interfaces
+export interface TaxProfile {
+  id: string;
+  user_id: string;
+  report_currency: string;
+  trader_status: boolean;
+  tax_deductible_expenses_enabled: boolean;
+  include_swap_in_income: boolean;
+  include_commission_deduction: boolean;
+  include_unrealized_pnl: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TaxExpense {
+  id: string;
+  user_id: string;
+  expense_type: 'software' | 'education' | 'data' | 'hardware' | 'other';
+  vendor: string;
+  amount: string;
+  currency: string;
+  expense_date: string;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateTaxExpense {
+  expense_type: 'software' | 'education' | 'data' | 'hardware' | 'other';
+  vendor: string;
+  amount: string;
+  currency: string;
+  expense_date: string;
+  notes?: string;
+}
+
+export interface UpdateTaxProfile {
+  report_currency?: string;
+  trader_status?: boolean;
+  tax_deductible_expenses_enabled?: boolean;
+  include_swap_in_income?: boolean;
+  include_commission_deduction?: boolean;
+  include_unrealized_pnl?: boolean;
+}
+
+// Zod schemas for tax validation
+export const createTaxExpenseSchema = z.object({
+  expense_type: z.enum(['software', 'education', 'data', 'hardware', 'other']),
+  vendor: z.string().min(1, "Vendor name is required"),
+  amount: z.string().min(1, "Amount is required"),
+  currency: z.string().default('USD'),
+  expense_date: z.string().min(1, "Date is required"),
+  notes: z.string().optional(),
+});
+
+export const updateTaxProfileSchema = z.object({
+  report_currency: z.string().optional(),
+  trader_status: z.boolean().optional(),
+  tax_deductible_expenses_enabled: z.boolean().optional(),
+  include_swap_in_income: z.boolean().optional(),
+  include_commission_deduction: z.boolean().optional(),
+  include_unrealized_pnl: z.boolean().optional(),
+});
+
+// Re-export Drizzle tables for database migrations
+export * from './drizzle-schema';
+
 // Types for backward compatibility
 export type User = UserProfile;
 export type InsertJournalEntry = CreateJournalEntry;

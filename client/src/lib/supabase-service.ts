@@ -1247,12 +1247,11 @@ export async function getTaxSummary(year: number, accountIds: string[] = []) {
   } catch (error: any) {
     console.warn('Tax profile not available, using defaults:', error.message);
     taxProfile = {
-      report_currency: 'USD',
-      trader_status: false,
-      tax_deductible_expenses_enabled: true,
-      include_swap_in_income: false,
-      include_commission_deduction: true,
-      include_unrealized_pnl: false
+      reporting_currency: 'USD',
+      tax_year_start_month: 1,
+      include_swap_in_income: 1,
+      include_commission_deduction: 1,
+      include_unrealized_pnl: 0
     };
   }
   
