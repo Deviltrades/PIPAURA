@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { InviteTraderModal } from "@/components/InviteTraderModal";
 
 // This would come from Supabase in production
 interface Trader {
@@ -72,6 +74,7 @@ const getRiskBadge = (score: string) => {
 
 export default function MentorDashboard() {
   const { toast } = useToast();
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   // This would fetch real trader data from Supabase
   const { data: traders = [], isLoading } = useQuery<Trader[]>({
@@ -170,7 +173,11 @@ export default function MentorDashboard() {
               <p className="text-muted-foreground mb-6">
                 You don't have any traders connected to your mentor account yet.
               </p>
-              <Button className="bg-cyan-600 hover:bg-cyan-700" data-testid="button-invite-traders">
+              <Button 
+                className="bg-cyan-600 hover:bg-cyan-700" 
+                data-testid="button-invite-traders"
+                onClick={() => setInviteModalOpen(true)}
+              >
                 <Users className="h-4 w-4 mr-2" />
                 Invite Traders
               </Button>
@@ -320,6 +327,8 @@ export default function MentorDashboard() {
           </TabsContent>
         </Tabs>
       )}
+
+      <InviteTraderModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, Moon, Sun, Settings } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { Link } from "wouter";
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -33,6 +34,7 @@ export default function Layout({ children }: LayoutProps) {
 
       {/* Top right controls */}
       <div className="fixed top-4 right-4 z-50 flex gap-2">
+        <NotificationBell />
         <Button
           variant="outline"
           size="sm"
