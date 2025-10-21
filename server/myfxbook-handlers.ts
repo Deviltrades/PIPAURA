@@ -514,8 +514,8 @@ export async function handleSyncUser(req: any, res: any) {
           
           // DEBUG: Log the mapped trade to see what's being inserted
           console.log('=== MAPPED TRADE BEFORE INSERT ===');
+          console.log('ticket_id:', mappedTrade.ticket_id);
           console.log('position_size:', mappedTrade.position_size);
-          console.log('entry_price:', mappedTrade.entry_price);
           console.log('instrument:', mappedTrade.instrument);
           console.log('===================================');
 
@@ -526,6 +526,8 @@ export async function handleSyncUser(req: any, res: any) {
             .eq('user_id', user.id)
             .eq('ticket_id', mappedTrade.ticket_id)
             .single();
+          
+          console.log('Duplicate check result for', mappedTrade.instrument, ':', existingTrade ? 'FOUND (skip)' : 'NOT FOUND (insert)');
 
           // Only insert if it doesn't exist
           if (!existingTrade) {
