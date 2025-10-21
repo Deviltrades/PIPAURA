@@ -346,9 +346,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Map and insert trades
         for (const trade of trades) {
+          // Skip deposits and withdrawals - they're not actual trades
+          if (trade.action === 'Deposit' || trade.action === 'Withdrawal' || !trade.symbol) {
+            console.log('Skipping non-trade transaction:', trade.action);
+            continue;
+          }
+          
           const mappedTrade = mapMyFxBookTrade(
             trade,
-            profile.id,
+            user.id,
             account.pipaura_account_id
           );
 

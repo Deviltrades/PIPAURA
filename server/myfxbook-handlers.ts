@@ -508,6 +508,12 @@ export async function handleSyncUser(req: any, res: any) {
         }
 
         for (const trade of trades) {
+          // Skip deposits and withdrawals - they're not actual trades
+          if (trade.action === 'Deposit' || trade.action === 'Withdrawal' || !trade.symbol) {
+            console.log('Skipping non-trade transaction:', trade.action);
+            continue;
+          }
+          
           const mappedTrade = mapMyFxBookTrade(
             trade,
             user.id,
