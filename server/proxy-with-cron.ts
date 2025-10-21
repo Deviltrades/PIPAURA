@@ -2,6 +2,7 @@
 import express from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { setupCronRoutes } from './cron-routes.js';
+import { setupMentorRoutes } from './mentor-routes.js';
 import { handleConnect, handleStatus, handleSyncUser, handleDisconnect } from './myfxbook-handlers.js';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
@@ -208,6 +209,9 @@ app.use(express.json());
 
 // Setup cron API routes first (these take priority)
 setupCronRoutes(app);
+
+// Setup mentor API routes
+setupMentorRoutes(app);
 
 // Stripe checkout session creation endpoint
 app.post("/api/create-checkout-session", async (req, res) => {
