@@ -555,12 +555,12 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
   const layout = showWeekends ? {
     cols: 7,
     dayLabels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-    cellClass: 'h-24 sm:h-28 md:h-32',
+    cellClass: 'h-28 sm:h-32 md:h-36',
     cellStyle: {}
   } : {
     cols: 5,
     dayLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    cellClass: 'h-24 sm:h-28 md:h-32',
+    cellClass: 'h-28 sm:h-32 md:h-36',
     cellStyle: {}
   };
 
@@ -1024,16 +1024,16 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
           {/* Main Calendar */}
           <div className="flex-1">
             {/* Days of Week Header */}
-            <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} gap-0 sm:gap-0.5 mb-2`} data-testid="grid-calendar">
+            <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} gap-1 sm:gap-1.5 mb-2 sm:mb-3`} data-testid="grid-calendar">
               {layout.dayLabels.map((day) => (
                 <div key={day} className="h-8 sm:h-10 flex items-center justify-center" data-testid={`header-day-${day.toLowerCase()}`}>
-                  <span className="text-xs sm:text-sm font-medium text-muted-foreground">{day}</span>
+                  <span className="text-xs sm:text-sm font-semibold text-muted-foreground">{day}</span>
                 </div>
               ))}
             </div>
 
             {/* Calendar Grid */}
-            <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} gap-0 sm:gap-0.5`}>
+            <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} gap-1 sm:gap-1.5`}>
           {calendarDays.map((day) => {
             const dateKey = format(day, "yyyy-MM-dd");
             const dayTrades = tradesByDate[dateKey] || [];
@@ -1119,7 +1119,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                       width: 0,
                       height: 0,
                       borderStyle: 'solid',
-                      borderWidth: '0 24px 24px 0',
+                      borderWidth: '0 20px 20px 0',
                       borderColor: 'transparent #1e3a8a transparent transparent'
                     }}
                   />
@@ -1129,16 +1129,16 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                 {dayTrades.length > 0 && (
                   <div className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
                     {dailyPnL > 0 ? (
-                      <Check className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                      <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                     ) : (
-                      <X className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                      <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                     )}
                   </div>
                 )}
                 
                 {/* Date - Top Left */}
-                <div className="absolute top-0.5 left-1 sm:top-1 sm:left-1.5">
-                  <span className={`text-xs sm:text-sm font-semibold ${
+                <div className="absolute top-1 left-1.5 sm:top-1.5 sm:left-2">
+                  <span className={`text-sm sm:text-base font-bold ${
                     dayTrades.length > 0 ? 'text-black dark:text-white' : 'text-foreground dark:text-white'
                   }`}>
                     {format(day, 'd')}
@@ -1163,10 +1163,10 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                 
                 {/* Trading Day Content */}
                 {dayTrades.length > 0 ? (
-                  <div className="absolute inset-x-1 sm:inset-x-2 top-7 sm:top-8 bottom-1 sm:bottom-2 flex flex-col justify-center">
+                  <div className="absolute inset-x-1.5 sm:inset-x-2 top-8 sm:top-9 bottom-1.5 sm:bottom-2 flex flex-col justify-center">
                     {/* Display Value - Percentage or Dollar */}
                     <div className="text-center">
-                      <div className="text-sm sm:text-base md:text-lg font-bold text-black leading-tight">
+                      <div className="text-base sm:text-lg md:text-xl font-bold text-black leading-tight">
                         {displayMode === "percentage" 
                           ? `${dailyPnL > 0 ? '+' : ''}${dailyReturn?.toFixed(2)}%`
                           : `${dailyPnL > 0 ? '+' : ''}$${Math.abs(dailyPnL) >= 1000 
@@ -1174,12 +1174,12 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                               : dailyPnL.toFixed(0)}`
                         }
                       </div>
-                      <div className="text-[10px] sm:text-xs text-black/80 font-medium">
+                      <div className="text-xs sm:text-sm text-black/80 font-medium mt-0.5">
                         {displayMode === "percentage" ? "%" : "USD"}
                       </div>
                     </div>
                     {/* Trade Count */}
-                    <div className="text-[10px] sm:text-xs text-black/90 text-center mt-0.5 sm:mt-1">
+                    <div className="text-[11px] sm:text-xs text-black/90 text-center mt-1 sm:mt-1.5 font-medium">
                       Trades: {dayTrades.length}
                     </div>
                   </div>
@@ -1188,12 +1188,12 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                   isCurrentMonth && (
                     <>
                       {/* Background Logo */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-40">
-                        <PipAuraLogo isCollapsed={true} className="scale-75" />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-30">
+                        <PipAuraLogo isCollapsed={true} className="scale-[0.65] sm:scale-75" />
                       </div>
                       {/* Zero Trades Text */}
-                      <div className="absolute inset-0 flex items-end justify-center pb-2">
-                        <div className="text-[9px] sm:text-[10px] text-white/60 font-bold text-center px-1">
+                      <div className="absolute inset-0 flex items-end justify-center pb-2 sm:pb-3">
+                        <div className="text-[10px] sm:text-[11px] text-white/70 font-semibold text-center px-1">
                           Zero Trades
                         </div>
                       </div>
@@ -1215,14 +1215,14 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
               </div>
               
               {/* Weekly Summary Boxes */}
-              <div className="space-y-0.5 sm:space-y-1">
+              <div className="space-y-1 sm:space-y-1.5">
                 {getWeeklyTotals().map((week, index) => (
                   <div 
                     key={index}
-                    className="bg-gray-600 rounded-lg p-1.5 sm:p-3 text-white h-24 sm:h-28 md:h-32"
+                    className="bg-gray-600 rounded-lg p-2 sm:p-3 text-white h-28 sm:h-32 md:h-36 flex flex-col justify-center"
                   >
-                    <div className="text-[9px] sm:text-xs font-medium mb-0.5 sm:mb-1">W{week.weekNumber}</div>
-                    <div className={`text-xs sm:text-sm font-bold ${
+                    <div className="text-[10px] sm:text-xs font-semibold mb-1 text-gray-300">W{week.weekNumber}</div>
+                    <div className={`text-sm sm:text-base font-bold ${
                       week.pnl >= 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
                       {week.pnl >= 0 ? '+' : ''}${Math.abs(week.pnl) >= 1000 
@@ -1230,8 +1230,8 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                         : week.pnl.toFixed(0)
                       }
                     </div>
-                    <div className="text-xs text-gray-300 mt-1">
-                      {week.tradeCount} trades
+                    <div className="text-[10px] sm:text-xs text-gray-300 mt-1">
+                      {week.tradeCount} {week.tradeCount === 1 ? 'trade' : 'trades'}
                     </div>
                   </div>
                 ))}
