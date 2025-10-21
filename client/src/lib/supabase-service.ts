@@ -1149,6 +1149,8 @@ export async function createTaxExpense(expenseData: any) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
+  console.log('💾 Creating tax expense:', { user_id: user.id, expenseData });
+
   const { data, error } = await supabase
     .from('tax_expenses')
     .insert({
@@ -1158,7 +1160,12 @@ export async function createTaxExpense(expenseData: any) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('❌ Tax expense creation failed:', error);
+    throw error;
+  }
+  
+  console.log('✅ Tax expense created successfully:', data);
   return data;
 }
 

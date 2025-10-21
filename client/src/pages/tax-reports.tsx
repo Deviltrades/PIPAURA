@@ -135,12 +135,14 @@ export default function TaxReports() {
   // Create/Update expense mutation
   const expenseMutation = useMutation({
     mutationFn: async (data: ExpenseFormData) => {
+      console.log('📝 Expense mutation starting...', { editingExpense, data });
       if (editingExpense) {
         return updateTaxExpense(editingExpense.id, data);
       }
       return createTaxExpense(data);
     },
     onSuccess: () => {
+      console.log('✅ Expense mutation succeeded');
       queryClient.invalidateQueries({ queryKey: ['/api/tax/expenses'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tax/summary'] });
       toast({
@@ -148,6 +150,14 @@ export default function TaxReports() {
         description: "Your tax expense has been saved successfully",
       });
       handleCloseExpenseModal();
+    },
+    onError: (error: any) => {
+      console.error('❌ Expense mutation failed:', error);
+      toast({
+        title: "Failed to save expense",
+        description: error.message || "An error occurred while saving the expense",
+        variant: "destructive",
+      });
     },
   });
 
