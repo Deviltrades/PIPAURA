@@ -825,7 +825,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
                 {showAllFees ? "All Time Only" : "All Periods"}
               </button>
 
-              <DraggableWidget title="Swap Fees & Commissions" themeColor={themeColor} textColor={textColor}>
+              <DraggableWidget title="Fees & Commissions" themeColor={themeColor} textColor={textColor}>
                 {/* Fees Values */}
                 {showAllFees ? (
                   <div className="flex gap-6 mt-1">
