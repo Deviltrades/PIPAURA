@@ -492,17 +492,9 @@ export async function handleSyncUser(req: any, res: any) {
         const trades = await fetchMyFxBookTrades(sessionId, account.myfxbook_account_id);
         console.log(`Fetched ${trades.length} trades for account ${account.myfxbook_account_id}`);
         
-        // Log first trade to see structure
-        if (trades.length > 0) {
-          console.log('=== FIRST TRADE RAW DATA ===');
-          console.log(JSON.stringify(trades[0], null, 2));
-          console.log('===========================');
-        }
-
         for (const trade of trades) {
           // Skip deposits and withdrawals - they're not actual trades
           if (trade.action === 'Deposit' || trade.action === 'Withdrawal' || !trade.symbol) {
-            console.log('Skipping non-trade transaction:', trade.action);
             continue;
           }
           
@@ -511,13 +503,6 @@ export async function handleSyncUser(req: any, res: any) {
             user.id,
             account.pipaura_account_id
           );
-          
-          // DEBUG: Log the mapped trade to see what's being inserted
-          console.log('=== MAPPED TRADE BEFORE INSERT ===');
-          console.log('ticket_id:', mappedTrade.ticket_id);
-          console.log('position_size:', mappedTrade.position_size);
-          console.log('instrument:', mappedTrade.instrument);
-          console.log('===================================');
 
           // Check if trade already exists
           const { data: existingTrade } = await supabase
@@ -526,8 +511,6 @@ export async function handleSyncUser(req: any, res: any) {
             .eq('user_id', user.id)
             .eq('ticket_id', mappedTrade.ticket_id)
             .single();
-          
-          console.log('Duplicate check result for', mappedTrade.instrument, ':', existingTrade ? 'FOUND (skip)' : 'NOT FOUND (insert)');
 
           // Only insert if it doesn't exist
           if (!existingTrade) {

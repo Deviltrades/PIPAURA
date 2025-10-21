@@ -76,8 +76,14 @@ A comprehensive automated trade import system that syncs trades directly from My
 - **Manual Sync**: Users can trigger immediate sync from the accounts page
 - **Session Management**: Automatic re-authentication when MyFxBook sessions expire (24-hour validity)
 - **Multi-Account Support**: Supports multiple MyFxBook trading accounts per user
-- **Duplicate Prevention**: Uses `ticket_id` to prevent duplicate trade imports
+- **Duplicate Prevention**: 
+  - Unique constraint on `trades.ticket_id` prevents database-level duplicates
+  - Deterministic ticket_id generation from trade data (symbol, open/close time, prices)
+  - Application-level duplicate check before insert to avoid database errors
+- **Deposit Filtering**: Automatically filters out deposit/withdrawal transactions during sync
+- **Position Size Mapping**: Correctly extracts position size from MyFxBook's nested `sizing.value` field
 - **Intelligent Mapping**: Automatically maps MyFxBook trade data to PipAura format with instrument type inference
+- **RLS Compatibility**: Uses Supabase auth user.id for trades to ensure Row Level Security policies work correctly
 
 **Database Schema**: 
 - `myfxbook_linked_accounts` - Stores encrypted credentials, session tokens, sync status, and last sync timestamps per user

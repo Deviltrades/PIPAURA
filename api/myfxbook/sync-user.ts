@@ -345,7 +345,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         for (const trade of trades) {
           // Skip deposits and withdrawals - they're not actual trades
           if (trade.action === 'Deposit' || trade.action === 'Withdrawal' || !trade.symbol) {
-            console.log('Skipping non-trade transaction:', trade.action);
             continue;
           }
           
@@ -355,13 +354,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             account.pipaura_account_id
           );
 
-          // Insert trade (ignore duplicates based on ticket_id)
-          await supabase.from('trades').upsert(mappedTrade, {
-            onConflict: 'ticket_id',
-            ignoreDuplicates: true,
-          });
+          // Check if trade already exists
+          const { data: existingTrade } = await supabase
+            .from('trades')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('ticket_id', mappedTrade.ticket_id)
+            .single();
 
-          totalImported++;
+          // Only insert if it doesn't exist
+          if (!existingTrade) {
+            await supabase.from('trades').insert(mappedTrade);
+            totalImported++;
+          }
         }
 
         // Update last trade ID
