@@ -1219,8 +1219,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                 {getWeeklyTotals().map((week, index) => (
                   <div 
                     key={index}
-                    className="bg-gray-600 rounded-lg p-1.5 sm:p-3 text-white"
-                    style={{ height: showWeekends ? '96px' : '96px' }}
+                    className="bg-gray-600 rounded-lg p-1.5 sm:p-3 text-white h-24 sm:h-28 md:h-32"
                   >
                     <div className="text-[9px] sm:text-xs font-medium mb-0.5 sm:mb-1">W{week.weekNumber}</div>
                     <div className={`text-xs sm:text-sm font-bold ${
