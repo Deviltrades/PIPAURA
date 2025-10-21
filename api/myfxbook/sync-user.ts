@@ -89,16 +89,13 @@ async function fetchMyFxBookTrades(sessionId: string, accountId: string, lastTra
 
 // Map MyFxBook trade to PipAura format
 function mapMyFxBookTrade(trade: any, userId: string, pipAuraAccountId?: string) {
-  // Log the raw trade data to see what fields are available
-  console.log('Raw MyFxBook trade data:', JSON.stringify(trade, null, 2));
-  console.log('Position size fields - lots:', trade.lots, 'sizing:', trade.sizing, 'volume:', trade.volume);
-  
   // Use MyFxBook's unique identifiers in order of preference
+  // Create deterministic ticket_id from trade data (no Math.random!)
   const ticketId = String(
     trade.historyId ?? 
     trade.ticket ?? 
     trade.id ?? 
-    `myfxbook_${trade.openTime}_${trade.closeTime}_${trade.symbol}_${trade.openPrice}_${Math.random()}`.replace(/[^a-zA-Z0-9_]/g, '_')
+    `myfxbook_${trade.symbol}_${trade.openTime}_${trade.closeTime}_${trade.openPrice}_${trade.closePrice}`.replace(/[^a-zA-Z0-9_]/g, '_')
   );
   
   return {

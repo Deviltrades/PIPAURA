@@ -138,21 +138,13 @@ export function inferInstrumentType(symbol: string): 'FOREX' | 'INDICES' | 'CRYP
 }
 
 export function mapMyFxBookTrade(trade: any, userId: string, pipAuraAccountId?: string) {
-  // Log the raw trade data to see what fields are available
-  console.log('=== RAW MYFXBOOK TRADE DATA ===');
-  console.log(JSON.stringify(trade, null, 2));
-  console.log('Position size fields:');
-  console.log('  - trade.lots:', trade.lots);
-  console.log('  - trade.sizing:', trade.sizing);
-  console.log('  - trade.volume:', trade.volume);
-  console.log('================================');
-  
   // Use MyFxBook's unique identifiers in order of preference
+  // Create deterministic ticket_id from trade data (no Math.random!)
   const ticketId = String(
     trade.historyId ?? 
     trade.ticket ?? 
     trade.id ?? 
-    `myfxbook_${trade.openTime}_${trade.closeTime}_${trade.symbol}_${trade.openPrice}_${Math.random()}`.replace(/[^a-zA-Z0-9_]/g, '_')
+    `myfxbook_${trade.symbol}_${trade.openTime}_${trade.closeTime}_${trade.openPrice}_${trade.closePrice}`.replace(/[^a-zA-Z0-9_]/g, '_')
   );
   
   return {
