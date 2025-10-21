@@ -8,6 +8,7 @@ import { Search, Mail, User, Loader2, Check, X } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getAuthToken } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -37,9 +38,10 @@ export function InviteTraderModal({ open, onOpenChange }: InviteTraderModalProps
   const { data: searchResults = [], isLoading: isSearching, isError: searchError } = useQuery<UserSearchResult[]>({
     queryKey: ['/api/mentor/search-users', searchQuery],
     queryFn: async () => {
+      const token = await getAuthToken();
       const res = await fetch(`/api/mentor/search-users?searchQuery=${encodeURIComponent(searchQuery)}`, {
         headers: {
-          'Authorization': `Bearer ${await (await import('@/lib/supabase')).getAuthToken()}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
       if (!res.ok) {

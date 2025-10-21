@@ -11,137 +11,82 @@ Settings access: Settings icon next to theme toggle with dedicated logout tab.
 ## System Architecture
 
 ### CRITICAL: Environment Separation
-**IMPORTANT**: 
-- **Replit** = Development environment ONLY (local testing with Neon database)
-- **Supabase** = Production backend database (all schemas, tables, RLS policies)
-- **Vercel** = Production frontend and serverless API deployment
-
-**Database Schema Management**:
-- All production schema changes MUST be made directly in Supabase (via Supabase Dashboard SQL Editor)
-- Replit's Neon database is for local development testing only
-- Never push schema changes to Neon expecting them to appear in production
-- Frontend always connects to Supabase, NOT Neon
+- **Replit**: Development environment ONLY (local testing with Neon database).
+- **Supabase**: Production backend database (all schemas, tables, RLS policies).
+- **Vercel**: Production frontend and serverless API deployment.
+- All production schema changes MUST be made directly in Supabase.
+- Frontend always connects to Supabase.
 
 ### Frontend
-The client-side is a React 18 and TypeScript application using `shadcn/ui` (built on Radix UI), Tailwind CSS for styling (light/dark themes, responsiveness), React Query for server state management, Wouter for routing, and React Hook Form with Zod for form validation.
+The client-side is a React 18 and TypeScript application using `shadcn/ui` (built on Radix UI), Tailwind CSS for styling, React Query for server state management, Wouter for routing, and React Hook Form with Zod for form validation.
 
 ### Backend & Deployment
-**Development (Replit)**: Express server (`server/proxy-with-cron.ts`) handles all API routes, Stripe operations, and cron endpoints. Vite dev server runs on port 5173, proxied through Express on port 5000. Uses Neon database for local testing.
-
-**Production (Vercel + Supabase)**: 
-- Frontend deployed as static Vite build to Vercel
-- Backend API routes implemented as Vercel serverless functions in `/api` directory:
-  - `/api/create-checkout-session.ts` - Stripe checkout session creation
-  - `/api/create-portal-session.ts` - Stripe Customer Portal access (auth-protected)
-  - `/api/webhooks/stripe.ts` - Stripe webhook handler for subscription events
-  - `/api/cron/*` - Scheduled serverless functions for fundamental analysis updates
-- Database operations, authentication, and file storage handled by Supabase
-- Enables true JAMstack architecture with serverless backend
+- **Development (Replit)**: Express server handles all API routes, Stripe operations, and cron endpoints. Vite dev server runs on port 5173, proxied through Express on port 5000. Uses Neon database for local testing.
+- **Production (Vercel + Supabase)**: Frontend deployed as static Vite build to Vercel. Backend API routes implemented as Vercel serverless functions in `/api` directory for Stripe and cron jobs. Database operations, authentication, and file storage handled by Supabase.
 
 ### Data Storage
-Supabase PostgreSQL stores all production data, including user profiles, journal entries (instrument types, position details, P&L), and Supabase Storage handles trade attachments.
+Supabase PostgreSQL stores all production data, including user profiles, journal entries, and Supabase Storage handles trade attachments.
 
 ### Dashboard
-Features a customizable widget system with 8 types, drag-and-drop, resize functionality, and template saving. Dashboard layouts are saved per breakpoint (lg, md, sm, xs, xxs) to ensure mobile and desktop layouts persist independently. Users can customize widget positions on any device, and changes are automatically saved when clicking the "Save Layout" button.
+Features a customizable widget system with 8 types, drag-and-drop, resize functionality, and template saving. Layouts are saved per breakpoint (lg, md, sm, xs, xxs).
 
 ### Account Filtering System
-A universal account selector enables database-level filtering by `account_id` across all pages. React Query uses account-specific cache keys for data isolation, ensuring consistent data updates and cross-page consistency.
+A universal account selector enables database-level filtering by `account_id` across all pages. React Query uses account-specific cache keys.
 
 ### Calendar
-Offers comprehensive settings persistence for display options (weekends, totals, consistency tracker), view modes, and filter selections. It integrates with the account filtering system for account-specific views.
+Offers comprehensive settings persistence for display options, view modes, and filter selections, integrating with the account filtering system.
 
 ### Authentication and Authorization
-Supabase Auth manages email/password authentication, JWT tokens, session management, role-based permissions, and custom sign-up/sign-in forms with production-ready email verification. Password reset functionality is implemented with a dedicated `/reset-password` route that handles Supabase recovery tokens, allowing users to reset their passwords via email link.
+Supabase Auth manages email/password authentication, JWT tokens, session management, role-based permissions, and custom sign-up/sign-in forms with email verification and password reset.
 
 ### Fundamentals Page
-Provides comprehensive fundamental analysis across four tabs:
-- **Economic Calendar**: Weekly events, central bank rates, and external links.
-- **Market News**: Real-time news from Finnhub API with smart impact classification (high/medium/low) and auto-refresh.
-- **Market Analysis**: Real-time fundamental bias for FX pairs and indices.
-- **Fundamental Strength**: Detailed FX pair bias breakdown and currency strength analysis.
+Provides comprehensive fundamental analysis across four tabs: Economic Calendar, Market News (from Finnhub API), Market Analysis (real-time fundamental bias), and Fundamental Strength (FX pair bias and currency strength).
 
 ### Automated Fundamental Bias System
-A comprehensive automated fundamental analysis system provides real-time bias calculations via JavaScript ES6+ serverless functions deployed on Vercel. It leverages RapidAPI for economic events, Yahoo Finance for market data, and manual central bank tone settings. Cron jobs run every 15 minutes (high-impact events), 30 minutes (hourly bias update), and 4 hours (full calendar refresh) to update Supabase tables (`forex_events`, `economic_scores`, `currency_scores`, `fundamental_bias`, `index_bias`).
+A comprehensive automated fundamental analysis system provides real-time bias calculations via JavaScript ES6+ serverless functions on Vercel. It leverages RapidAPI for economic events, Yahoo Finance for market data, and manual central bank tone settings. Cron jobs update Supabase tables every 15 minutes, 30 minutes, and 4 hours.
 
 ### Market News Integration
-Utilizes Finnhub API for real-time market news across forex, general market, and crypto. News articles are automatically classified by impact (high/medium/low based on keywords) and stored in the `market_news` Supabase table with RLS policies for public read access. A dedicated cron job (every 30 min) fetches the latest 50 articles, deduplicates via unique constraint on (headline, datetime), and auto-cleans news older than 7 days. The frontend displays the latest 15 articles with 60-second auto-refresh and direct article links.
+Utilizes Finnhub API for real-time market news across forex, general market, and crypto. News articles are automatically classified by impact and stored in the `market_news` Supabase table. A cron job fetches the latest 50 articles every 30 minutes, with deduplication and auto-cleaning.
 
 ### Floating DNA Core Visualization
-The analytics page features a "Trader DNA Core" visualization: an animated 3D-like double-helix structure colored by overall Edge Integrity score, with six orbiting metrics.
+The analytics page features an animated 3D-like double-helix structure colored by overall Edge Integrity score, with six orbiting metrics.
 
 ### UI/UX Design and Visual Effects
-The application uses a unified cyan/teal color scheme (hsl(188, 94%, 60%)) with dark blue backgrounds. Interactive elements feature steady glow effects, except for strong/weak bias cards which pulsate. Light mode is fully supported with theme-aware styling. The custom text-based logo dynamically displays "PipAura" and "Traders Hub." Calendar styling distinguishes non-trading, winning, and losing days.
+The application uses a unified cyan/teal color scheme (hsl(188, 94%, 60%)) with dark blue backgrounds. Interactive elements feature glow effects. Light mode is fully supported.
 
 ### Instrument Type Expansion
-Supports five asset classes (FOREX, INDICES, CRYPTO, FUTURES, STOCKS) with searchable dropdowns and custom instrument creation, including duplicate detection.
+Supports five asset classes (FOREX, INDICES, CRYPTO, FUTURES, STOCKS) with searchable dropdowns and custom instrument creation.
 
 ### Multi-Format Trade Upload System
-A comprehensive trade import system supports CSV, Excel (.xls/.xlsx), and HTML formats from MT4/MT5/TradeZella. It features automatic file type detection, smart header/row filtering, auto-delimiter detection, flexible column mapping, and broker compatibility. Trades are associated with selected accounts, and balances are updated.
+A comprehensive trade import system supports CSV, Excel (.xls/.xlsx), and HTML formats from MT4/MT5/TradeZella. It features automatic file type detection, smart header/row filtering, auto-delimiter detection, flexible column mapping, and broker compatibility.
 
 ### Trade Enrichment System
-An automated post-upload system calculates and stores advanced trade analytics: session detection (London/New York/Asia), holding time, profit normalization (profit-per-lot), and duplicate prevention via `ticket_id`.
+An automated post-upload system calculates and stores advanced trade analytics: session detection, holding time, profit normalization, and duplicate prevention.
 
 ### MyFxBook Auto-Sync Integration
 A comprehensive automated trade import system that syncs trades directly from MyFxBook accounts:
-- **Encrypted Credentials**: User MyFxBook credentials stored with AES-256 encryption using Node.js crypto module
-- **Automatic Syncing**: Vercel Cron jobs run every 3 hours to fetch new trades from all connected MyFxBook accounts
-- **Manual Sync**: Users can trigger immediate sync from the accounts page
-- **Session Management**: Automatic re-authentication when MyFxBook sessions expire (24-hour validity)
-- **Multi-Account Support**: Supports multiple MyFxBook trading accounts per user
-- **Duplicate Prevention**: 
-  - Unique constraint on `trades.ticket_id` prevents database-level duplicates
-  - Deterministic ticket_id generation from trade data (symbol, open/close time, prices)
-  - Application-level duplicate check before insert to avoid database errors
-- **Deposit Filtering**: Automatically filters out deposit/withdrawal transactions during sync
-- **Position Size Mapping**: Correctly extracts position size from MyFxBook's nested `sizing.value` field
-- **Intelligent Mapping**: Automatically maps MyFxBook trade data to PipAura format with instrument type inference
-- **RLS Compatibility**: Uses Supabase auth user.id for trades to ensure Row Level Security policies work correctly
-
-**Database Schema**: 
-- `myfxbook_linked_accounts` - Stores encrypted credentials, session tokens, sync status, and last sync timestamps per user
-- `myfxbook_accounts` - Stores individual MyFxBook trading account details with optional mapping to PipAura accounts
-
-**Backend Implementation** (Vercel Serverless):
-- `/api/myfxbook/connect.ts` - Connects MyFxBook account, encrypts credentials, fetches account list
-- `/api/myfxbook/sync-user.ts` - Manual sync endpoint for authenticated users
-- `/api/myfxbook/sync.ts` - Global cron-triggered sync for all active linked accounts (protected by `x-cron-secret` header)
-
-**Frontend UI**: Integrated into the Accounts page with connection status, linked email display, last sync timestamp, and manual "Sync Now" button. Users enter MyFxBook credentials once, which are encrypted before storage.
-
-**Environment Variables** (Production):
-- `ENC_PASSPHRASE` - Passphrase for AES-256 credential encryption
-- `CRON_SECRET` - Secret header for authenticating cron requests
-- `SUPABASE_SERVICE_ROLE_KEY` - Service role key for database operations
-- `VITE_SUPABASE_URL` - Supabase project URL
-
-**Cron Schedule**: Configured in `vercel.json` to run every 3 hours (`0 */3 * * *`), automatically syncing trades for all users with active MyFxBook connections.
+- Encrypted Credentials: User MyFxBook credentials stored with AES-256 encryption.
+- Automatic Syncing: Vercel Cron jobs run every 3 hours.
+- Manual Sync: Users can trigger immediate sync.
+- Multi-Account Support: Supports multiple MyFxBook trading accounts per user.
+- Duplicate Prevention: Unique constraint on `trades.ticket_id` and application-level checks.
+- Intelligent Mapping: Automatically maps MyFxBook trade data to PipAura format with instrument type inference.
 
 ### Prop Firm Tracker
 A comprehensive proprietary firm challenge tracker enables users to monitor their prop firm account progress with real-time metrics:
-- **Challenge Types**: Instant funding, 1-step, 2-step, and 3-step challenges
-- **Risk Metrics**: Daily max loss, overall max loss, and profit target tracking with visual progress indicators
-- **Real-time Calculations**: Automatic calculation of current daily loss, overall loss, and profit based on account trades
-- **Alert System**: Visual warnings when approaching loss limits or achieving profit targets
-- **Account Integration**: Seamlessly integrates with prop firm account types for accurate balance tracking
-- **Funding Progress Tracker**: Phase visualization (Challenge/Verification/Funded/Scaling) with clickable transitions, drawdown buffer calculations, and pass probability metrics
-- **Automatic Sync**: When trades are added via manual entry, OCR upload, or CSV/Excel import, metrics automatically update if the account has an active prop firm tracker. Manual "Sync Metrics" button available for refreshing calculations.
+- Challenge Types: Supports Instant funding, 1-step, 2-step, and 3-step challenges.
+- Risk Metrics: Daily max loss, overall max loss, and profit target tracking with visual indicators.
+- Funding Progress Tracker: Phase visualization (Challenge/Verification/Funded/Scaling) with clickable transitions.
+- Automatic Sync: Metrics automatically update when trades are added or imported.
 
-Database schema includes `prop_firm_tracker` table with challenge configuration, loss limits, profit targets, active status tracking, and funding phase tracking. The system queries the `trades` table by `account_id` to calculate metrics, ensuring all trades for prop firm accounts automatically sync to the tracker.
+### Mentor-Mentee System
+A comprehensive mentor-mentee invitation system enables experienced traders to guide and monitor their students:
+- Invitation System: Mentors can invite traders via email or username.
+- Read-Only Access: Accepted mentors gain read-only access to view mentee accounts, trades, and performance stats.
+- Security: Access control enforced via `mentor_connections` table.
 
 ### Subscription and Payment System
-A comprehensive Stripe-based subscription system with three pricing tiers:
-- **Lite Plan** (£4.99/month, £49.99/year): Entry-level tier with 1 account limit and 1GB monthly storage
-- **Core Plan** (£14/month, £114/year): Mid-tier with 10 account limit and 2GB monthly storage
-- **Elite Plan** (£24/month, £230/year): Premium tier with unlimited accounts and 10GB monthly storage
-
-**Automatic Fulfillment**: Stripe webhooks automatically update user plan types and storage limits upon successful payment. The webhook endpoint (`/api/webhooks/stripe`) handles:
-- `checkout.session.completed`: Updates user to purchased plan (lite/core/elite)
-- `customer.subscription.deleted`: Downgrades cancelled subscriptions back to lite plan
-- Automatic storage limit updates based on plan tier
-
-**Storage Enforcement**: The `useUserProfile` hook enforces storage limits client-side via the `canPerformAction` function, which checks `storage_used_mb` against `storage_limit_mb` before allowing upload operations.
-
-**Billing Management**: Users can manage their subscriptions through the Stripe Customer Portal accessible from the `/user` page. The portal allows plan upgrades/downgrades, payment method updates, invoice viewing, and subscription cancellation (downgrades to Lite plan).
+A comprehensive Stripe-based subscription system with three pricing tiers (Lite, Core, Elite). Automatic Fulfillment via Stripe webhooks updates user plan types and storage limits. Storage Enforcement is handled client-side. Users can manage subscriptions via the Stripe Customer Portal.
 
 ## External Dependencies
 
