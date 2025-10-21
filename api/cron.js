@@ -12,7 +12,7 @@
 
 import { runRapidApiUpdate } from '../lib/cron/rapidapi-calendar.js';
 import { runHourlyUpdate } from '../lib/cron/hourly-bias.js';
-import { runNewsUpdate } from '../lib/cron/news-update.js';
+import { updateMarketNews } from '../lib/cron/finnhub-news.js';
 
 export default async function handler(req, res) {
   const API_KEY = process.env.CRON_API_KEY;
@@ -87,7 +87,7 @@ export default async function handler(req, res) {
           throw new Error('Missing FINNHUB_API_KEY');
         }
         console.log('[CRON] Running Market News Update...');
-        await runNewsUpdate(supabaseUrl, supabaseKey, finnhubKey);
+        await updateMarketNews(supabaseUrl, supabaseKey, finnhubKey);
         return res.status(200).json({
           success: true,
           message: 'Market news update completed',
