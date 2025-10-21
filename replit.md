@@ -10,11 +10,23 @@ Settings access: Settings icon next to theme toggle with dedicated logout tab.
 
 ## System Architecture
 
+### CRITICAL: Environment Separation
+**IMPORTANT**: 
+- **Replit** = Development environment ONLY (local testing with Neon database)
+- **Supabase** = Production backend database (all schemas, tables, RLS policies)
+- **Vercel** = Production frontend and serverless API deployment
+
+**Database Schema Management**:
+- All production schema changes MUST be made directly in Supabase (via Supabase Dashboard SQL Editor)
+- Replit's Neon database is for local development testing only
+- Never push schema changes to Neon expecting them to appear in production
+- Frontend always connects to Supabase, NOT Neon
+
 ### Frontend
 The client-side is a React 18 and TypeScript application using `shadcn/ui` (built on Radix UI), Tailwind CSS for styling (light/dark themes, responsiveness), React Query for server state management, Wouter for routing, and React Hook Form with Zod for form validation.
 
 ### Backend & Deployment
-**Development (Replit)**: Express server (`server/proxy-with-cron.ts`) handles all API routes, Stripe operations, and cron endpoints. Vite dev server runs on port 5173, proxied through Express on port 5000.
+**Development (Replit)**: Express server (`server/proxy-with-cron.ts`) handles all API routes, Stripe operations, and cron endpoints. Vite dev server runs on port 5173, proxied through Express on port 5000. Uses Neon database for local testing.
 
 **Production (Vercel + Supabase)**: 
 - Frontend deployed as static Vite build to Vercel
@@ -27,7 +39,7 @@ The client-side is a React 18 and TypeScript application using `shadcn/ui` (buil
 - Enables true JAMstack architecture with serverless backend
 
 ### Data Storage
-Supabase PostgreSQL stores all data, including user profiles, journal entries (instrument types, position details, P&L), and Supabase Storage handles trade attachments.
+Supabase PostgreSQL stores all production data, including user profiles, journal entries (instrument types, position details, P&L), and Supabase Storage handles trade attachments.
 
 ### Dashboard
 Features a customizable widget system with 8 types, drag-and-drop, resize functionality, and template saving. Dashboard layouts are saved per breakpoint (lg, md, sm, xs, xxs) to ensure mobile and desktop layouts persist independently. Users can customize widget positions on any device, and changes are automatically saved when clicking the "Save Layout" button.
