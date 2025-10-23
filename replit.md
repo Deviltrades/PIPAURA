@@ -105,7 +105,14 @@ A comprehensive Stripe-based subscription system with three pricing tiers (Lite 
 **Subscription Management:**
 - Users manage subscriptions via Stripe Customer Portal
 - Plan upgrades/downgrades handled by subscription webhook events
-- Cancellations downgrade users to Lite plan
+- Grace period cancellations: users retain access until current_period_end
+- Professional lock screen shown after grace period expires
+
+**Revenue Protection (Security Webhooks):**
+- `invoice.payment_failed`: Marks subscription as past_due, allows Stripe retry attempts
+- `charge.refunded`: Immediately downgrades to Lite, logs admin alert
+- `charge.dispute.created`: URGENT admin notification with evidence deadline and dispute link
+- Automated downgrade logic prevents users from keeping paid access after refunds/chargebacks
 
 ## External Dependencies
 

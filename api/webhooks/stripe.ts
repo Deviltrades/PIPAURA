@@ -358,6 +358,163 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         break;
       }
 
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        console.log('❌ Payment failed for invoice:', invoice.id);
+
+        const customerId = invoice.customer as string;
+        const customer = await stripe.customers.retrieve(customerId);
+
+        if ('deleted' in customer && customer.deleted) {
+          console.error('Customer was deleted');
+          return res.status(400).json({ error: 'Customer was deleted' });
+        }
+
+        const customerEmail = customer.email;
+        if (!customerEmail) {
+          console.error('No customer email found');
+          return res.status(400).json({ error: 'No customer email found' });
+        }
+
+        // Mark subscription as past_due
+        await supabase
+          .from('user_profiles')
+          .update({
+            subscription_status: 'past_due',
+            updated_at: new Date().toISOString()
+          })
+          .eq('email', customerEmail);
+
+        console.log(`⚠️ PAYMENT FAILED: ${customerEmail} - marked as past_due (Attempt ${invoice.attempt_count || 1})`);
+        console.log(`   Invoice: ${invoice.id}, Amount: ${invoice.amount_due / 100} ${invoice.currency.toUpperCase()}`);
+        
+        // After multiple failed attempts, Stripe will cancel the subscription automatically
+        // which will trigger customer.subscription.deleted webhook
+        break;
+      }
+
+      case 'charge.refunded': {
+        const charge = event.data.object as Stripe.Charge;
+        console.log('💸 Refund issued for charge:', charge.id);
+
+        const customerId = charge.customer as string;
+        if (!customerId) {
+          console.error('No customer ID in refunded charge');
+          return res.status(400).json({ error: 'No customer ID' });
+        }
+
+        const customer = await stripe.customers.retrieve(customerId);
+        if ('deleted' in customer && customer.deleted) {
+          console.error('Customer was deleted');
+          return res.status(400).json({ error: 'Customer was deleted' });
+        }
+
+        const customerEmail = customer.email;
+        if (!customerEmail) {
+          console.error('No customer email found');
+          return res.status(400).json({ error: 'No customer email found' });
+        }
+
+        // Get current profile for context
+        const { data: currentProfile } = await supabase
+          .from('user_profiles')
+          .select('plan_type, subscription_status')
+          .eq('email', customerEmail)
+          .single();
+
+        const previousPlan = currentProfile?.plan_type || 'unknown';
+        const refundAmount = charge.amount_refunded / 100;
+        const currency = charge.currency.toUpperCase();
+
+        // Downgrade to Lite immediately (they got their money back)
+        await createOrUpdateUserPlan(customerEmail, 'lite', {
+          status: 'active',
+          stripe_customer_id: customerId,
+          stripe_subscription_id: undefined
+        });
+
+        // Log for admin review
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('🚨 REFUND ALERT - ADMIN ACTION MAY BE REQUIRED');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log(`Email: ${customerEmail}`);
+        console.log(`Previous Plan: ${previousPlan}`);
+        console.log(`Refund Amount: ${refundAmount} ${currency}`);
+        console.log(`Charge ID: ${charge.id}`);
+        console.log(`Customer ID: ${customerId}`);
+        console.log(`Reason: ${charge.refunds?.data[0]?.reason || 'Not specified'}`);
+        console.log(`Action Taken: Downgraded to Lite plan`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        break;
+      }
+
+      case 'charge.dispute.created': {
+        const dispute = event.data.object as Stripe.Dispute;
+        console.log('⚡ Dispute created:', dispute.id);
+
+        const chargeId = dispute.charge as string;
+        const charge = await stripe.charges.retrieve(chargeId);
+        
+        const customerId = charge.customer as string;
+        if (!customerId) {
+          console.error('No customer ID in disputed charge');
+          return res.status(400).json({ error: 'No customer ID' });
+        }
+
+        const customer = await stripe.customers.retrieve(customerId);
+        if ('deleted' in customer && customer.deleted) {
+          console.error('Customer was deleted');
+          return res.status(400).json({ error: 'Customer was deleted' });
+        }
+
+        const customerEmail = customer.email;
+        if (!customerEmail) {
+          console.error('No customer email found');
+          return res.status(400).json({ error: 'No customer email found' });
+        }
+
+        // Get user profile for context
+        const { data: userProfile } = await supabase
+          .from('user_profiles')
+          .select('plan_type, subscription_status, created_at')
+          .eq('email', customerEmail)
+          .single();
+
+        const disputeAmount = dispute.amount / 100;
+        const currency = dispute.currency.toUpperCase();
+
+        // URGENT: Log dispute for immediate admin attention
+        console.log('');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('🚨🚨🚨 URGENT: PAYMENT DISPUTE CREATED 🚨🚨🚨');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log(`⚠️  IMMEDIATE ADMIN ATTENTION REQUIRED ⚠️`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log(`Email: ${customerEmail}`);
+        console.log(`Plan: ${userProfile?.plan_type || 'unknown'}`);
+        console.log(`Status: ${userProfile?.subscription_status || 'unknown'}`);
+        console.log(`Dispute Amount: ${disputeAmount} ${currency}`);
+        console.log(`Dispute Reason: ${dispute.reason}`);
+        console.log(`Dispute ID: ${dispute.id}`);
+        console.log(`Charge ID: ${chargeId}`);
+        console.log(`Customer ID: ${customerId}`);
+        console.log(`Customer Since: ${userProfile?.created_at || 'unknown'}`);
+        console.log(`Dispute Status: ${dispute.status}`);
+        console.log(`Evidence Due: ${dispute.evidence_details?.due_by ? new Date(dispute.evidence_details.due_by * 1000).toISOString() : 'N/A'}`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log(`Action: Review in Stripe Dashboard immediately`);
+        console.log(`Link: https://dashboard.stripe.com/disputes/${dispute.id}`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('');
+
+        // Note: Don't immediately downgrade on dispute creation
+        // Wait for dispute resolution (dispute.closed webhook)
+        // Stripe will handle the chargeback automatically if you lose
+        
+        break;
+      }
+
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }
