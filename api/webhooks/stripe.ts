@@ -200,10 +200,12 @@ async function createOrUpdateUserPlan(
     throw new Error(`Unexpected response when creating user ${email}`);
   }
 
-  // Create or update user profile (upsert for idempotency)
+  // Wait a moment for the database trigger to create the initial profile
+  console.log('⏳ Waiting for database trigger to create initial profile...');
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  // Update the profile created by the trigger with correct plan details
   const profileData: any = {
-    supabase_user_id: authUserId,
-    email,
     plan_type: planId,
     storage_limit_mb: limits.storage_limit_mb,
     image_limit: limits.image_limit,
@@ -226,20 +228,43 @@ async function createOrUpdateUserPlan(
     }
   }
 
+  console.log('📝 Updating user profile with plan details...');
+  
   const { data: newProfile, error: profileError } = await supabase
     .from('user_profiles')
-    .upsert(profileData, {
-      onConflict: 'supabase_user_id',
-      ignoreDuplicates: false
-    })
+    .update(profileData)
+    .eq('supabase_user_id', authUserId)
     .select();
 
   if (profileError) {
-    console.error('Failed to create/update user profile:', profileError);
-    throw new Error(`Profile setup failed for ${email}: ${profileError.message}`);
+    console.error('Failed to update user profile:', profileError);
+    console.error('Profile might not exist yet. Trying insert with upsert...');
+    
+    // Fallback: try upsert in case trigger didn't create profile
+    const upsertData = {
+      supabase_user_id: authUserId,
+      email,
+      ...profileData
+    };
+    
+    const { data: upsertProfile, error: upsertError } = await supabase
+      .from('user_profiles')
+      .upsert(upsertData, {
+        onConflict: 'supabase_user_id',
+        ignoreDuplicates: false
+      })
+      .select();
+    
+    if (upsertError) {
+      console.error('Failed to create/update user profile:', upsertError);
+      throw new Error(`Profile setup failed for ${email}: ${upsertError.message}`);
+    }
+    
+    console.log(`✅ Created user profile for ${email} with ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
+    return upsertProfile[0];
   }
 
-  console.log(`✅ Created/updated user profile for ${email} with ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
+  console.log(`✅ Updated user profile for ${email} with ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
 
   // ALWAYS send password reset email (for new accounts and re-subscribers)
   // This ensures users can set/reset their password regardless of account status
