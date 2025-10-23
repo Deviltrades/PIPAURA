@@ -50,7 +50,16 @@ function getPlanFromStripeData(metadata?: Stripe.Metadata | null, items?: Stripe
   return null;
 }
 
-async function createOrUpdateUserPlan(email: string, planId: PlanType) {
+async function createOrUpdateUserPlan(
+  email: string, 
+  planId: PlanType, 
+  subscriptionData?: {
+    status: 'active' | 'canceled' | 'trialing' | 'past_due';
+    current_period_end?: number;
+    stripe_customer_id?: string;
+    stripe_subscription_id?: string;
+  }
+) {
   const planLimits = {
     lite: { storage_limit_mb: 1024, image_limit: 999999, account_limit: 1 },
     core: { storage_limit_mb: 2048, image_limit: 999999, account_limit: 10 },
@@ -68,14 +77,30 @@ async function createOrUpdateUserPlan(email: string, planId: PlanType) {
 
   if (existingProfile) {
     // User exists, just update their plan
+    const updateData: any = { 
+      plan_type: planId,
+      storage_limit_mb: limits.storage_limit_mb,
+      image_limit: limits.image_limit,
+      account_limit: limits.account_limit
+    };
+
+    // Add subscription tracking fields if provided
+    if (subscriptionData) {
+      updateData.subscription_status = subscriptionData.status;
+      if (subscriptionData.current_period_end) {
+        updateData.current_period_end = new Date(subscriptionData.current_period_end * 1000).toISOString();
+      }
+      if (subscriptionData.stripe_customer_id) {
+        updateData.stripe_customer_id = subscriptionData.stripe_customer_id;
+      }
+      if (subscriptionData.stripe_subscription_id) {
+        updateData.stripe_subscription_id = subscriptionData.stripe_subscription_id;
+      }
+    }
+
     const { data, error } = await supabase
       .from('user_profiles')
-      .update({ 
-        plan_type: planId,
-        storage_limit_mb: limits.storage_limit_mb,
-        image_limit: limits.image_limit,
-        account_limit: limits.account_limit
-      })
+      .update(updateData)
       .eq('email', email)
       .select();
 
@@ -84,7 +109,7 @@ async function createOrUpdateUserPlan(email: string, planId: PlanType) {
       throw error;
     }
 
-    console.log(`✅ Updated existing user ${email} to ${planId} plan`);
+    console.log(`✅ Updated existing user ${email} to ${planId} plan, status: ${subscriptionData?.status || 'active'}`);
     return data[0];
   }
 
@@ -138,18 +163,34 @@ async function createOrUpdateUserPlan(email: string, planId: PlanType) {
   }
 
   // Create or update user profile (upsert for idempotency)
+  const profileData: any = {
+    supabase_user_id: authUserId,
+    email,
+    plan_type: planId,
+    storage_limit_mb: limits.storage_limit_mb,
+    image_limit: limits.image_limit,
+    account_limit: limits.account_limit,
+    storage_used_mb: 0,
+    image_count: 0
+  };
+
+  // Add subscription tracking fields if provided
+  if (subscriptionData) {
+    profileData.subscription_status = subscriptionData.status;
+    if (subscriptionData.current_period_end) {
+      profileData.current_period_end = new Date(subscriptionData.current_period_end * 1000).toISOString();
+    }
+    if (subscriptionData.stripe_customer_id) {
+      profileData.stripe_customer_id = subscriptionData.stripe_customer_id;
+    }
+    if (subscriptionData.stripe_subscription_id) {
+      profileData.stripe_subscription_id = subscriptionData.stripe_subscription_id;
+    }
+  }
+
   const { data: newProfile, error: profileError } = await supabase
     .from('user_profiles')
-    .upsert({
-      supabase_user_id: authUserId,
-      email,
-      plan_type: planId,
-      storage_limit_mb: limits.storage_limit_mb,
-      image_limit: limits.image_limit,
-      account_limit: limits.account_limit,
-      storage_used_mb: 0,
-      image_count: 0
-    }, {
+    .upsert(profileData, {
       onConflict: 'supabase_user_id',
       ignoreDuplicates: false
     })
@@ -252,8 +293,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return res.status(400).json({ error: 'Could not determine plan' });
         }
 
-        await createOrUpdateUserPlan(customerEmail, planId);
-        console.log(`Subscription ${event.type} for ${customerEmail}, plan: ${planId}`);
+        // Map Stripe subscription status to our status enum
+        const statusMap: Record<string, 'active' | 'canceled' | 'trialing' | 'past_due'> = {
+          'active': 'active',
+          'trialing': 'trialing',
+          'past_due': 'past_due',
+          'canceled': 'canceled',
+          'incomplete': 'active', // Treat as active if they complete payment
+          'incomplete_expired': 'expired' as any,
+          'unpaid': 'past_due'
+        };
+
+        await createOrUpdateUserPlan(customerEmail, planId, {
+          status: statusMap[subscription.status] || 'active',
+          current_period_end: (subscription as any).current_period_end,
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscription.id
+        });
+
+        console.log(`Subscription ${event.type} for ${customerEmail}, plan: ${planId}, status: ${subscription.status}`);
         break;
       }
 
@@ -275,8 +333,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return res.status(400).json({ error: 'No customer email found' });
         }
 
-        await createOrUpdateUserPlan(customerEmail, 'lite');
-        console.log(`Downgraded ${customerEmail} to lite plan after cancellation`);
+        // Get current user profile to preserve their plan_type
+        const { data: currentProfile } = await supabase
+          .from('user_profiles')
+          .select('plan_type')
+          .eq('email', customerEmail)
+          .single();
+
+        const currentPlan = currentProfile?.plan_type || 'lite';
+
+        // Mark as canceled but KEEP their current plan_type and period_end
+        // They'll retain access until current_period_end expires
+        await supabase
+          .from('user_profiles')
+          .update({
+            subscription_status: 'canceled',
+            // Keep plan_type as-is for analytics
+            // Keep current_period_end so we know when access expires
+            updated_at: new Date().toISOString()
+          })
+          .eq('email', customerEmail);
+
+        console.log(`✅ Marked ${customerEmail} subscription as canceled (keeping ${currentPlan} plan until period ends)`);
         break;
       }
 

@@ -30,6 +30,7 @@ export const cashflowTypeEnum = pgEnum('cashflow_type', ['deposit', 'withdrawal'
 export const expenseTypeEnum = pgEnum('expense_type', ['software', 'education', 'data', 'hardware', 'other']);
 export const challengeTypeEnum = pgEnum('challenge_type', ['instant', '1-step', '2-step', '3-step']);
 export const fundingPhaseEnum = pgEnum('funding_phase', ['challenge', 'verification', 'funded', 'scaling']);
+export const subscriptionStatusEnum = pgEnum('subscription_status', ['active', 'canceled', 'expired', 'past_due', 'trialing']);
 
 // Trade Accounts table
 export const tradeAccounts = pgTable('trade_accounts', {
@@ -101,6 +102,10 @@ export const userProfiles = pgTable('user_profiles', {
   calendar_settings: jsonb('calendar_settings'),
   sidebar_settings: jsonb('sidebar_settings'),
   plan_type: planTypeEnum('plan_type').default('lite'),
+  subscription_status: subscriptionStatusEnum('subscription_status').default('active'),
+  current_period_end: timestamp('current_period_end', { withTimezone: true }),
+  stripe_customer_id: text('stripe_customer_id'),
+  stripe_subscription_id: text('stripe_subscription_id'),
   storage_used_mb: integer('storage_used_mb').default(0),
   storage_limit_mb: integer('storage_limit_mb').default(0),
   image_count: integer('image_count').default(0),

@@ -94,6 +94,10 @@ export interface UserProfile {
   
   // Role-based access control fields
   plan_type: 'lite' | 'core' | 'elite';
+  subscription_status: 'active' | 'canceled' | 'expired' | 'past_due' | 'trialing';
+  current_period_end?: string;
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
   storage_used_mb: number;
   storage_limit_mb: number;
   image_count: number;
