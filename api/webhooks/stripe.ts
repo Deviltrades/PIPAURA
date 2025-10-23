@@ -271,7 +271,7 @@ async function createOrUpdateUserPlan(
   console.log(`\n📧 Attempting to send password setup email to ${email}...`);
   
   const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `https://pipaura.com/reset-password`
+    redirectTo: `https://www.pipaura.com/reset-password`
   });
 
   if (resetError) {

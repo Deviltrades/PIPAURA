@@ -73,7 +73,7 @@ export default function AuthPage() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `https://www.pipaura.com/reset-password`,
       });
 
       if (error) throw error;
