@@ -129,8 +129,22 @@ async function createOrUpdateUserPlan(
 
   if (authError) {
     // If user already exists (Stripe retry or duplicate webhook), fetch them
-    if (authError.message?.includes('already registered') || authError.message?.includes('already exists')) {
+    // Check for various "user exists" error messages
+    const userExistsErrors = [
+      'already registered',
+      'already exists', 
+      'Database error creating new user',
+      'User already registered',
+      'duplicate key value'
+    ];
+    
+    const isUserExistsError = userExistsErrors.some(msg => 
+      authError.message?.toLowerCase().includes(msg.toLowerCase())
+    );
+
+    if (isUserExistsError) {
       console.log(`ℹ️ Auth user already exists for ${email}, fetching existing user`);
+      console.log(`   Original error: ${authError.message}`);
       
       // List users by email to get existing user
       const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({
@@ -145,14 +159,23 @@ async function createOrUpdateUserPlan(
 
       const existingAuthUser = existingUsers?.users?.find(u => u.email === email);
       if (!existingAuthUser) {
-        console.error(`User ${email} should exist but was not found`);
-        throw new Error(`Account verification failed for ${email}`);
+        console.error(`User ${email} should exist but was not found in list`);
+        console.error(`This might be a genuine database error, not a duplicate user`);
+        throw new Error(`Account verification failed for ${email}: ${authError.message}`);
       }
 
       authUserId = existingAuthUser.id;
       console.log(`✅ Found existing Auth user for ${email}, ID: ${authUserId}`);
     } else {
-      console.error('Failed to create Supabase Auth user:', authError);
+      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.error('❌ Failed to create Supabase Auth user');
+      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.error(`Email: ${email}`);
+      console.error(`Error Name: ${authError.name}`);
+      console.error(`Error Message: ${authError.message}`);
+      console.error(`Error Status: ${(authError as any).status}`);
+      console.error(`Full Error: ${JSON.stringify(authError, null, 2)}`);
+      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       throw new Error(`Failed to create account for ${email}: ${authError.message}`);
     }
   } else if (authUser.user) {
