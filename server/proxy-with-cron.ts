@@ -210,7 +210,7 @@ app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async 
           return res.status(400).json({ error: 'Missing or invalid plan ID' });
         }
 
-        await updateUserPlan(customerEmail, planId);
+        await createOrUpdateUserPlan(customerEmail, planId);
         break;
       }
 
