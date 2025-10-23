@@ -24,18 +24,30 @@ export default function PaymentSuccess() {
       return;
     }
 
-    // Extract email and plan from URL (Stripe checkout adds these as query params)
-    const email = params.get('email') || '';
+    // Extract plan from URL
     const plan = params.get('plan') || 'lite';
-    
-    setCustomerEmail(email);
     setPlanType(plan);
+
+    // Fetch session details from Stripe to get customer email
+    const fetchSessionDetails = async () => {
+      try {
+        const response = await fetch(`/api/get-checkout-session?session_id=${sessionId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setCustomerEmail(data.customer_email || '');
+        }
+      } catch (error) {
+        console.error('Failed to fetch session details:', error);
+      }
+    };
+
+    fetchSessionDetails();
 
     // Wait a moment for webhook to process, then refresh profile
     const timer = setTimeout(async () => {
       await queryClient.invalidateQueries({ queryKey: ['/api/user/profile'] });
       setIsRefreshing(false);
-    }, 2000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [setLocation]);

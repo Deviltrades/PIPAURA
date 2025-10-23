@@ -73,13 +73,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&email={CUSTOMER_EMAIL}&plan=${planId}`,
+      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&plan=${planId}`,
       cancel_url: `${origin}/pricing`,
       metadata: {
         planId,
         interval,
       },
       customer_email: undefined, // Let customer enter their email during checkout
+      custom_text: {
+        submit: {
+          message: 'Your account will be created automatically after payment'
+        }
+      }
     });
 
     return res.status(200).json({ sessionId: session.id, url: session.url });
