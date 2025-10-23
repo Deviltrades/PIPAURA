@@ -118,6 +118,14 @@ async function createOrUpdateUserPlan(
 
   // Try to create Auth user with Admin API
   let authUserId: string;
+  
+  console.log('🔑 DEBUG: Supabase credentials check:');
+  console.log(`   URL: ${process.env.VITE_SUPABASE_URL?.substring(0, 30)}...`);
+  console.log(`   Service Role Key exists: ${!!process.env.SUPABASE_SERVICE_ROLE_KEY}`);
+  console.log(`   Service Role Key length: ${process.env.SUPABASE_SERVICE_ROLE_KEY?.length}`);
+  
+  console.log(`\n👤 Attempting to create Auth user: ${email}`);
+  
   const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
     email,
     email_confirm: true, // Auto-confirm email
@@ -126,6 +134,13 @@ async function createOrUpdateUserPlan(
       created_via: 'stripe_payment'
     }
   });
+  
+  console.log('📡 Supabase Auth API Response:');
+  console.log(`   Success: ${!!authUser}`);
+  console.log(`   Error: ${!!authError}`);
+  if (authError) {
+    console.log(`   Error details: ${JSON.stringify(authError, null, 2)}`);
+  }
 
   if (authError) {
     // If user already exists (Stripe retry or duplicate webhook), fetch them
