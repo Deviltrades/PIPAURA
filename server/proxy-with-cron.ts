@@ -60,9 +60,9 @@ function getPlanFromStripeData(metadata?: Stripe.Metadata | null, items?: Stripe
   return null;
 }
 
-// Helper function to update user plan in Supabase
-// NOTE: User MUST exist before checkout (authentication required)
-async function updateUserPlan(email: string, planId: 'lite' | 'core' | 'elite') {
+// Helper function to create or update user plan in Supabase
+// Automatically creates Supabase Auth account if user doesn't exist
+async function createOrUpdateUserPlan(email: string, planId: 'lite' | 'core' | 'elite') {
   if (!supabase) {
     console.error('❌ Supabase client not initialized');
     throw new Error('Database connection unavailable');
@@ -76,34 +76,89 @@ async function updateUserPlan(email: string, planId: 'lite' | 'core' | 'elite') 
 
   const limits = planLimits[planId];
 
-  // Update user profile - user MUST exist (checkout requires authentication)
-  const { data, error } = await supabase
+  // Check if user profile already exists
+  const { data: existingProfile } = await supabase
     .from('user_profiles')
-    .update({ 
+    .select('id, supabase_user_id')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (existingProfile) {
+    // User exists, just update their plan
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update({ 
+        plan_type: planId,
+        storage_limit_mb: limits.storage_limit_mb,
+        image_limit: limits.image_limit,
+        account_limit: limits.account_limit
+      })
+      .eq('email', email)
+      .select();
+
+    if (error) {
+      console.error('❌ Failed to update user plan:', error);
+      throw error;
+    }
+
+    console.log(`✅ Updated existing user ${email} to ${planId} plan`);
+    return data[0];
+  }
+
+  // User doesn't exist - create Supabase Auth account
+  console.log(`📝 Creating new account for ${email} with ${planId} plan`);
+
+  // Create Auth user with Admin API
+  const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+    email,
+    email_confirm: true, // Auto-confirm email
+    user_metadata: {
+      plan_type: planId,
+      created_via: 'stripe_payment'
+    }
+  });
+
+  if (authError || !authUser.user) {
+    console.error('❌ Failed to create Supabase Auth user:', authError);
+    throw new Error(`Failed to create account for ${email}: ${authError?.message}`);
+  }
+
+  console.log(`✅ Created Supabase Auth user for ${email}, ID: ${authUser.user.id}`);
+
+  // Create user profile with the purchased plan
+  const { data: newProfile, error: profileError } = await supabase
+    .from('user_profiles')
+    .insert({
+      supabase_user_id: authUser.user.id,
+      email,
       plan_type: planId,
       storage_limit_mb: limits.storage_limit_mb,
       image_limit: limits.image_limit,
-      account_limit: limits.account_limit
+      account_limit: limits.account_limit,
+      storage_used_mb: 0,
+      image_count: 0
     })
-    .eq('email', email)
     .select();
 
-  if (error) {
-    console.error('❌ Failed to update user plan:', error);
-    throw error;
-  }
-  
-  if (!data || data.length === 0) {
-    // This should not happen since checkout requires authentication
-    // Log the issue for investigation
-    console.error(`❌ CRITICAL: User profile not found for authenticated purchase! Email: ${email}, Plan: ${planId}`);
-    console.error('This indicates the user completed Stripe checkout without a Supabase profile.');
-    console.error('Possible causes: profile creation failed, race condition, or authentication bypass.');
-    throw new Error(`User profile not found for ${email}. User must sign up before purchasing.`);
+  if (profileError) {
+    console.error('❌ Failed to create user profile:', profileError);
+    throw new Error(`Account created but profile setup failed for ${email}`);
   }
 
-  console.log(`✅ Updated user ${email} to ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
-  return data[0];
+  console.log(`✅ Created user profile for ${email} with ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
+
+  // Send password reset email so user can set their password
+  const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.VITE_SUPABASE_URL?.replace('supabase.co', 'vercel.app')}/reset-password`
+  });
+
+  if (resetError) {
+    console.warn(`⚠️ Created account for ${email} but failed to send password setup email:`, resetError);
+  } else {
+    console.log(`📧 Sent password setup email to ${email}`);
+  }
+
+  return newProfile[0];
 }
 
 // Webhook endpoint needs raw body for signature verification
@@ -179,7 +234,7 @@ app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async 
           return res.status(400).json({ error: 'Could not determine plan type' });
         }
 
-        await updateUserPlan(customer.email, planId);
+        await createOrUpdateUserPlan(customer.email, planId);
         break;
       }
 
@@ -190,7 +245,7 @@ app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async 
         // Downgrade user to lite plan
         const customer = await stripe.customers.retrieve(subscription.customer as string);
         if ('email' in customer && customer.email) {
-          await updateUserPlan(customer.email, 'lite');
+          await createOrUpdateUserPlan(customer.email, 'lite');
           console.log(`📉 Downgraded user ${customer.email} to lite plan`);
         } else {
           console.error('Customer has no email:', subscription.customer);

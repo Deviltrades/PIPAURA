@@ -50,7 +50,7 @@ function getPlanFromStripeData(metadata?: Stripe.Metadata | null, items?: Stripe
   return null;
 }
 
-async function updateUserPlan(email: string, planId: PlanType) {
+async function createOrUpdateUserPlan(email: string, planId: PlanType) {
   const planLimits = {
     lite: { storage_limit_mb: 1024, image_limit: 999999, account_limit: 1 },
     core: { storage_limit_mb: 2048, image_limit: 999999, account_limit: 10 },
@@ -59,34 +59,89 @@ async function updateUserPlan(email: string, planId: PlanType) {
 
   const limits = planLimits[planId];
 
-  // Update user profile - user MUST exist (checkout requires authentication)
-  const { data, error } = await supabase
+  // Check if user profile already exists
+  const { data: existingProfile } = await supabase
     .from('user_profiles')
-    .update({ 
+    .select('id, supabase_user_id')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (existingProfile) {
+    // User exists, just update their plan
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update({ 
+        plan_type: planId,
+        storage_limit_mb: limits.storage_limit_mb,
+        image_limit: limits.image_limit,
+        account_limit: limits.account_limit
+      })
+      .eq('email', email)
+      .select();
+
+    if (error) {
+      console.error('Failed to update user plan:', error);
+      throw error;
+    }
+
+    console.log(`✅ Updated existing user ${email} to ${planId} plan`);
+    return data[0];
+  }
+
+  // User doesn't exist - create Supabase Auth account
+  console.log(`📝 Creating new account for ${email} with ${planId} plan`);
+
+  // Create Auth user with Admin API
+  const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+    email,
+    email_confirm: true, // Auto-confirm email
+    user_metadata: {
+      plan_type: planId,
+      created_via: 'stripe_payment'
+    }
+  });
+
+  if (authError || !authUser.user) {
+    console.error('Failed to create Supabase Auth user:', authError);
+    throw new Error(`Failed to create account for ${email}: ${authError?.message}`);
+  }
+
+  console.log(`✅ Created Supabase Auth user for ${email}, ID: ${authUser.user.id}`);
+
+  // Create user profile with the purchased plan
+  const { data: newProfile, error: profileError } = await supabase
+    .from('user_profiles')
+    .insert({
+      supabase_user_id: authUser.user.id,
+      email,
       plan_type: planId,
       storage_limit_mb: limits.storage_limit_mb,
       image_limit: limits.image_limit,
-      account_limit: limits.account_limit
+      account_limit: limits.account_limit,
+      storage_used_mb: 0,
+      image_count: 0
     })
-    .eq('email', email)
     .select();
 
-  if (error) {
-    console.error('Failed to update user plan:', error);
-    throw error;
-  }
-  
-  if (!data || data.length === 0) {
-    // This should not happen since checkout requires authentication
-    // Log the issue for investigation
-    console.error(`❌ CRITICAL: User profile not found for authenticated purchase! Email: ${email}, Plan: ${planId}`);
-    console.error('This indicates the user completed Stripe checkout without a Supabase profile.');
-    console.error('Possible causes: profile creation failed, race condition, or authentication bypass.');
-    throw new Error(`User profile not found for ${email}. User must sign up before purchasing.`);
+  if (profileError) {
+    console.error('Failed to create user profile:', profileError);
+    throw new Error(`Account created but profile setup failed for ${email}`);
   }
 
-  console.log(`✅ Updated user ${email} to ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
-  return data[0];
+  console.log(`✅ Created user profile for ${email} with ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
+
+  // Send password reset email so user can set their password
+  const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `https://pipaura.com/reset-password`
+  });
+
+  if (resetError) {
+    console.warn(`⚠️ Created account for ${email} but failed to send password setup email:`, resetError);
+  } else {
+    console.log(`📧 Sent password setup email to ${email}`);
+  }
+
+  return newProfile[0];
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -132,7 +187,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return res.status(400).json({ error: 'Missing or invalid plan ID' });
         }
 
-        await updateUserPlan(customerEmail, planId);
+        await createOrUpdateUserPlan(customerEmail, planId);
         console.log(`Checkout completed for ${customerEmail}, plan: ${planId}`);
         break;
       }
@@ -163,7 +218,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return res.status(400).json({ error: 'Could not determine plan' });
         }
 
-        await updateUserPlan(customerEmail, planId);
+        await createOrUpdateUserPlan(customerEmail, planId);
         console.log(`Subscription ${event.type} for ${customerEmail}, plan: ${planId}`);
         break;
       }
@@ -186,7 +241,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return res.status(400).json({ error: 'No customer email found' });
         }
 
-        await updateUserPlan(customerEmail, 'lite');
+        await createOrUpdateUserPlan(customerEmail, 'lite');
         console.log(`Downgraded ${customerEmail} to lite plan after cancellation`);
         break;
       }
