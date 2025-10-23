@@ -177,6 +177,9 @@ export default function PaymentSuccess() {
                   <p className="text-slate-300 text-sm mb-2">
                     We've sent a password setup email to <span className="font-semibold text-white">{displayEmail}</span>
                   </p>
+                  <p className="text-red-400 text-sm font-medium mb-2">
+                    Please allow 5–15 minutes for your account to be created. You'll receive an email with a password setup link once your account is ready.
+                  </p>
                   <p className="text-slate-400 text-sm">
                     Click the link in the email to set your password and access your trading journal.
                   </p>
