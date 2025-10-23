@@ -11,14 +11,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { planId, interval, customerEmail } = req.body;
+    const { planId, interval } = req.body;
 
     if (!planId || !interval) {
       return res.status(400).json({ error: 'Missing required fields: planId and interval' });
-    }
-
-    if (!customerEmail) {
-      return res.status(400).json({ error: 'Customer email is required for subscription' });
     }
 
     // Validate planId
@@ -60,7 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
-      customer_email: customerEmail,
+      billing_address_collection: 'auto',
       line_items: [
         {
           price_data: {
@@ -82,7 +78,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       metadata: {
         planId,
         interval,
-        customerEmail,
       },
     });
 

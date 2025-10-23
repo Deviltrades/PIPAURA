@@ -97,16 +97,6 @@ export default function Checkout() {
   }, []);
 
   const handleCheckout = async () => {
-    if (!user?.email) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to purchase a subscription.",
-        variant: "destructive",
-      });
-      setLocation("/auth");
-      return;
-    }
-
     setIsProcessing(true);
     try {
       const stripe = await stripePromise;
@@ -114,11 +104,11 @@ export default function Checkout() {
         throw new Error("Stripe failed to load");
       }
 
-      // Create checkout session
+      // Create checkout session (no authentication required)
+      // Stripe will collect customer email during checkout
       const response = await apiRequest("POST", "/api/create-checkout-session", {
         planId: selectedPlan,
         interval: selectedInterval,
-        customerEmail: user.email,
       });
 
       const data = await response.json();
