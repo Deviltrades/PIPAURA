@@ -86,7 +86,26 @@ A comprehensive mentor-mentee invitation system enables experienced traders to g
 - Security: Access control enforced via `mentor_connections` table.
 
 ### Subscription and Payment System
-A comprehensive Stripe-based subscription system with three pricing tiers (Lite, Core, Elite). Automatic Fulfillment via Stripe webhooks updates user plan types and storage limits. Storage Enforcement is handled client-side. Users can manage subscriptions via the Stripe Customer Portal.
+A comprehensive Stripe-based subscription system with three pricing tiers (Lite £4.99/month, Core £14/month, Elite £24/month). 
+
+**Payment-First Flow:**
+- Users can purchase without creating an account first
+- Stripe checkout collects email during payment
+- Webhook automatically creates Supabase Auth account using Admin API
+- User profile created with purchased plan tier and limits
+- Password reset email sent for account activation
+- User sets password and logs in to access journal
+
+**Automatic Fulfillment:**
+- Stripe webhooks create/update user accounts and plan tiers
+- Idempotent webhook design handles Stripe retries and duplicate events
+- Uses upsert pattern to prevent orphaned Auth accounts
+- Storage limits and account limits assigned based on plan tier
+
+**Subscription Management:**
+- Users manage subscriptions via Stripe Customer Portal
+- Plan upgrades/downgrades handled by subscription webhook events
+- Cancellations downgrade users to Lite plan
 
 ## External Dependencies
 

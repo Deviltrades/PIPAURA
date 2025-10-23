@@ -91,7 +91,8 @@ async function createOrUpdateUserPlan(email: string, planId: PlanType) {
   // User doesn't exist - create Supabase Auth account
   console.log(`📝 Creating new account for ${email} with ${planId} plan`);
 
-  // Create Auth user with Admin API
+  // Try to create Auth user with Admin API
+  let authUserId: string;
   const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
     email,
     email_confirm: true, // Auto-confirm email
@@ -101,18 +102,46 @@ async function createOrUpdateUserPlan(email: string, planId: PlanType) {
     }
   });
 
-  if (authError || !authUser.user) {
-    console.error('Failed to create Supabase Auth user:', authError);
-    throw new Error(`Failed to create account for ${email}: ${authError?.message}`);
+  if (authError) {
+    // If user already exists (Stripe retry or duplicate webhook), fetch them
+    if (authError.message?.includes('already registered') || authError.message?.includes('already exists')) {
+      console.log(`ℹ️ Auth user already exists for ${email}, fetching existing user`);
+      
+      // List users by email to get existing user
+      const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000
+      });
+
+      if (listError) {
+        console.error('Failed to list existing users:', listError);
+        throw new Error(`Could not verify existing account for ${email}`);
+      }
+
+      const existingAuthUser = existingUsers?.users?.find(u => u.email === email);
+      if (!existingAuthUser) {
+        console.error(`User ${email} should exist but was not found`);
+        throw new Error(`Account verification failed for ${email}`);
+      }
+
+      authUserId = existingAuthUser.id;
+      console.log(`✅ Found existing Auth user for ${email}, ID: ${authUserId}`);
+    } else {
+      console.error('Failed to create Supabase Auth user:', authError);
+      throw new Error(`Failed to create account for ${email}: ${authError.message}`);
+    }
+  } else if (authUser.user) {
+    authUserId = authUser.user.id;
+    console.log(`✅ Created new Supabase Auth user for ${email}, ID: ${authUserId}`);
+  } else {
+    throw new Error(`Unexpected response when creating user ${email}`);
   }
 
-  console.log(`✅ Created Supabase Auth user for ${email}, ID: ${authUser.user.id}`);
-
-  // Create user profile with the purchased plan
+  // Create or update user profile (upsert for idempotency)
   const { data: newProfile, error: profileError } = await supabase
     .from('user_profiles')
-    .insert({
-      supabase_user_id: authUser.user.id,
+    .upsert({
+      supabase_user_id: authUserId,
       email,
       plan_type: planId,
       storage_limit_mb: limits.storage_limit_mb,
@@ -120,25 +149,30 @@ async function createOrUpdateUserPlan(email: string, planId: PlanType) {
       account_limit: limits.account_limit,
       storage_used_mb: 0,
       image_count: 0
+    }, {
+      onConflict: 'supabase_user_id',
+      ignoreDuplicates: false
     })
     .select();
 
   if (profileError) {
-    console.error('Failed to create user profile:', profileError);
-    throw new Error(`Account created but profile setup failed for ${email}`);
+    console.error('Failed to create/update user profile:', profileError);
+    throw new Error(`Profile setup failed for ${email}: ${profileError.message}`);
   }
 
-  console.log(`✅ Created user profile for ${email} with ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
+  console.log(`✅ Created/updated user profile for ${email} with ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
 
-  // Send password reset email so user can set their password
-  const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `https://pipaura.com/reset-password`
-  });
+  // Send password reset email so user can set their password (only if new account)
+  if (authUser?.user) {
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `https://pipaura.com/reset-password`
+    });
 
-  if (resetError) {
-    console.warn(`⚠️ Created account for ${email} but failed to send password setup email:`, resetError);
-  } else {
-    console.log(`📧 Sent password setup email to ${email}`);
+    if (resetError) {
+      console.warn(`⚠️ Created account for ${email} but failed to send password setup email:`, resetError);
+    } else {
+      console.log(`📧 Sent password setup email to ${email}`);
+    }
   }
 
   return newProfile[0];
