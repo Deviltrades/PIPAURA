@@ -10,17 +10,26 @@ export default function PaymentSuccess() {
   const [, setLocation] = useLocation();
   const { profile, isLoading } = useUserProfile();
   const [isRefreshing, setIsRefreshing] = useState(true);
+  const [customerEmail, setCustomerEmail] = useState<string>('');
+  const [planType, setPlanType] = useState<string>('lite');
 
   useEffect(() => {
-    // Get session_id from URL
+    // Get session_id and customer email from URL
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('session_id');
 
     if (!sessionId) {
-      // No session ID, redirect to dashboard
-      setLocation('/dashboard');
+      // No session ID, redirect to auth
+      setLocation('/auth');
       return;
     }
+
+    // Extract email and plan from URL (Stripe checkout adds these as query params)
+    const email = params.get('email') || '';
+    const plan = params.get('plan') || 'lite';
+    
+    setCustomerEmail(email);
+    setPlanType(plan);
 
     // Wait a moment for webhook to process, then refresh profile
     const timer = setTimeout(async () => {
@@ -63,7 +72,7 @@ export default function PaymentSuccess() {
     return features[planType as keyof typeof features] || features.lite;
   };
 
-  if (isLoading || isRefreshing) {
+  if (isRefreshing) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950 flex items-center justify-center">
         <div className="text-center">
@@ -75,9 +84,11 @@ export default function PaymentSuccess() {
     );
   }
 
-  const planType = profile?.plan_type || 'lite';
-  const planName = getPlanName(planType);
-  const features = getPlanFeatures(planType);
+  const displayPlanType = profile?.plan_type || planType;
+  const displayEmail = profile?.email || customerEmail;
+  const planName = getPlanName(displayPlanType);
+  const features = getPlanFeatures(displayPlanType);
+  const isLoggedIn = !!profile;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950">
@@ -131,7 +142,7 @@ export default function PaymentSuccess() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-400">Account Email</p>
-                <p className="text-white font-medium">{profile?.email}</p>
+                <p className="text-white font-medium" data-testid="text-account-email">{displayEmail}</p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-slate-400">Plan Type</p>
@@ -140,6 +151,28 @@ export default function PaymentSuccess() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Password Setup Notice - Only show if not logged in */}
+        {!isLoggedIn && (
+          <Card className="bg-amber-900/20 border-amber-500/30 mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-3">
+                <div className="bg-amber-500/20 rounded-full p-2 mt-0.5">
+                  <Sparkles className="h-5 w-5 text-amber-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-amber-400 font-semibold mb-2">Check Your Email!</h3>
+                  <p className="text-slate-300 text-sm mb-2">
+                    We've sent a password setup email to <span className="font-semibold text-white">{displayEmail}</span>
+                  </p>
+                  <p className="text-slate-400 text-sm">
+                    Click the link in the email to set your password and access your trading journal.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Next Steps */}
         <Card className="bg-gradient-to-r from-cyan-900/20 to-blue-900/20 border-cyan-500/30 mb-6">
@@ -168,23 +201,36 @@ export default function PaymentSuccess() {
 
         {/* Action Buttons */}
         <div className="flex gap-4">
-          <Button
-            onClick={() => setLocation('/dashboard')}
-            className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/30"
-            size="lg"
-            data-testid="button-go-to-dashboard"
-          >
-            Go to Dashboard
-          </Button>
-          <Button
-            onClick={() => setLocation('/settings')}
-            variant="outline"
-            className="border-slate-600 text-slate-300 hover:bg-slate-800"
-            size="lg"
-            data-testid="button-manage-subscription"
-          >
-            Manage Subscription
-          </Button>
+          {isLoggedIn ? (
+            <>
+              <Button
+                onClick={() => setLocation('/dashboard')}
+                className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/30"
+                size="lg"
+                data-testid="button-go-to-dashboard"
+              >
+                Go to Dashboard
+              </Button>
+              <Button
+                onClick={() => setLocation('/settings')}
+                variant="outline"
+                className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                size="lg"
+                data-testid="button-manage-subscription"
+              >
+                Manage Subscription
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={() => setLocation('/auth')}
+              className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/30"
+              size="lg"
+              data-testid="button-go-to-login"
+            >
+              Go to Login
+            </Button>
+          )}
         </div>
 
         <p className="text-center text-sm text-slate-500 mt-6">

@@ -73,12 +73,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&email={CUSTOMER_EMAIL}&plan=${planId}`,
       cancel_url: `${origin}/pricing`,
       metadata: {
         planId,
         interval,
       },
+      customer_email: undefined, // Let customer enter their email during checkout
     });
 
     return res.status(200).json({ sessionId: session.id, url: session.url });
