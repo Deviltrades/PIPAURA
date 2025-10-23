@@ -7,6 +7,7 @@ import { PipAuraLogo } from "@/components/PipAuraLogo";
 import { useToast } from "@/hooks/use-toast";
 import { Check, ArrowLeft, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
 
 if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
   throw new Error("Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY");
@@ -76,6 +77,7 @@ const planDetails: Record<Plan, PlanDetails> = {
 export default function Checkout() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<Plan>("core");
   const [selectedInterval, setSelectedInterval] = useState<Interval>("monthly");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -95,6 +97,16 @@ export default function Checkout() {
   }, []);
 
   const handleCheckout = async () => {
+    if (!user?.email) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to purchase a subscription.",
+        variant: "destructive",
+      });
+      setLocation("/auth");
+      return;
+    }
+
     setIsProcessing(true);
     try {
       const stripe = await stripePromise;
@@ -106,6 +118,7 @@ export default function Checkout() {
       const response = await apiRequest("POST", "/api/create-checkout-session", {
         planId: selectedPlan,
         interval: selectedInterval,
+        customerEmail: user.email,
       });
 
       const data = await response.json();
