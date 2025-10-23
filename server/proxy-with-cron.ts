@@ -216,10 +216,14 @@ setupMentorRoutes(app);
 // Stripe checkout session creation endpoint
 app.post("/api/create-checkout-session", async (req, res) => {
   try {
-    const { planId, interval } = req.body;
+    const { planId, interval, customerEmail } = req.body;
     
     if (!planId || !interval) {
       return res.status(400).json({ error: "Missing planId or interval" });
+    }
+
+    if (!customerEmail) {
+      return res.status(400).json({ error: "Customer email is required for subscription" });
     }
 
     // Define your pricing (in pence for GBP)
@@ -247,6 +251,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription', // Recurring subscription
+      customer_email: customerEmail,
       line_items: [
         {
           price_data: {
@@ -263,11 +268,12 @@ app.post("/api/create-checkout-session", async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${req.headers.origin}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/pricing`,
       metadata: {
         planId,
         interval,
+        customerEmail,
       },
     });
 
