@@ -203,17 +203,36 @@ async function createOrUpdateUserPlan(
 
   console.log(`✅ Created/updated user profile for ${email} with ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
 
-  // Send password reset email so user can set their password (only if new account)
-  if (authUser?.user) {
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `https://pipaura.com/reset-password`
-    });
+  // ALWAYS send password reset email (for new accounts and re-subscribers)
+  // This ensures users can set/reset their password regardless of account status
+  console.log(`\n📧 Attempting to send password setup email to ${email}...`);
+  
+  const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `https://pipaura.com/reset-password`
+  });
 
-    if (resetError) {
-      console.warn(`⚠️ Created account for ${email} but failed to send password setup email:`, resetError);
-    } else {
-      console.log(`📧 Sent password setup email to ${email}`);
-    }
+  if (resetError) {
+    console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.error('❌ CRITICAL: PASSWORD EMAIL FAILED');
+    console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.error(`Email: ${email}`);
+    console.error(`Error Name: ${resetError.name}`);
+    console.error(`Error Message: ${resetError.message}`);
+    console.error(`Error Status: ${(resetError as any).status}`);
+    console.error(`Full Error: ${JSON.stringify(resetError, null, 2)}`);
+    console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.error('NEXT STEPS:');
+    console.error('1. Check Supabase Auth → Email Templates (Reset Password enabled)');
+    console.error('2. Check Supabase Auth → SMTP Settings (custom provider configured)');
+    console.error('3. Check Supabase Auth → URL Configuration (pipaura.com/reset-password whitelisted)');
+    console.error('4. Test manual password reset from Supabase dashboard');
+    console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    // Don't throw - account is created, just log the error for monitoring
+  } else {
+    console.log('✅ Password setup email sent successfully!');
+    console.log(`   To: ${email}`);
+    console.log(`   Redirect: https://pipaura.com/reset-password`);
+    console.log(`   Check inbox (and spam folder) within 1-2 minutes`);
   }
 
   return newProfile[0];
@@ -247,23 +266,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        console.log('Checkout completed:', session.id);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('💳 CHECKOUT COMPLETED');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log(`Session ID: ${session.id}`);
+        console.log(`Stripe Event ID: ${event.id}`);
 
         const customerEmail = session.customer_details?.email || session.customer_email;
         const planId = getPlanFromStripeData(session.metadata);
         
         if (!customerEmail) {
-          console.error('Missing email in checkout session:', session.id);
+          console.error('❌ Missing email in checkout session:', session.id);
           return res.status(400).json({ error: 'Missing customer email' });
         }
 
         if (!planId) {
-          console.error('Missing or invalid planId in session:', session.id);
+          console.error('❌ Missing or invalid planId in session:', session.id);
           return res.status(400).json({ error: 'Missing or invalid plan ID' });
         }
 
+        console.log(`Customer Email: ${customerEmail}`);
+        console.log(`Plan: ${planId}`);
+        console.log('Creating user account and sending password setup email...');
+
         await createOrUpdateUserPlan(customerEmail, planId);
-        console.log(`Checkout completed for ${customerEmail}, plan: ${planId}`);
+        
+        console.log(`✅ Checkout processing complete for ${customerEmail}`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         break;
       }
 
