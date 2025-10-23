@@ -59,29 +59,56 @@ async function updateUserPlan(email: string, planId: PlanType) {
 
   const limits = planLimits[planId];
 
-  const { data, error } = await supabase
+  // First, try to find existing user
+  const { data: existingUser } = await supabase
     .from('user_profiles')
-    .update({ 
-      plan_type: planId,
-      storage_limit_mb: limits.storage_limit_mb,
-      image_limit: limits.image_limit,
-      account_limit: limits.account_limit
-    })
+    .select('id')
     .eq('email', email)
-    .select();
+    .maybeSingle();
 
-  if (error) {
-    console.error('Failed to update user plan:', error);
-    throw error;
-  }
-  
-  if (!data || data.length === 0) {
-    console.warn(`No user found with email ${email}`);
-    throw new Error(`No user found with email ${email}`);
-  }
+  if (existingUser) {
+    // User exists, update their plan
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update({ 
+        plan_type: planId,
+        storage_limit_mb: limits.storage_limit_mb,
+        image_limit: limits.image_limit,
+        account_limit: limits.account_limit
+      })
+      .eq('email', email)
+      .select();
 
-  console.log(`Updated user ${email} to ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
-  return data[0];
+    if (error) {
+      console.error('Failed to update user plan:', error);
+      throw error;
+    }
+
+    console.log(`✅ Updated user ${email} to ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
+    return data[0];
+  } else {
+    // User doesn't exist yet, create profile with purchased plan
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .insert({
+        email,
+        plan_type: planId,
+        storage_limit_mb: limits.storage_limit_mb,
+        image_limit: limits.image_limit,
+        account_limit: limits.account_limit,
+        storage_used_mb: 0,
+        image_count: 0
+      })
+      .select();
+
+    if (error) {
+      console.error('Failed to create user profile:', error);
+      throw error;
+    }
+
+    console.log(`✅ Created new user profile for ${email} with ${planId} plan (storage: ${limits.storage_limit_mb}MB, accounts: ${limits.account_limit})`);
+    return data[0];
+  }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
