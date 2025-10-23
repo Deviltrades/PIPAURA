@@ -144,7 +144,7 @@ async function createOrUpdateUserPlan(
 
   if (authError) {
     // If user already exists (Stripe retry or duplicate webhook), fetch them
-    // Check for various "user exists" error messages
+    // Check for various "user exists" error messages and codes
     const userExistsErrors = [
       'already registered',
       'already exists', 
@@ -153,9 +153,12 @@ async function createOrUpdateUserPlan(
       'duplicate key value'
     ];
     
-    const isUserExistsError = userExistsErrors.some(msg => 
-      authError.message?.toLowerCase().includes(msg.toLowerCase())
-    );
+    const isUserExistsError = 
+      (authError as any).code === 'email_exists' ||
+      (authError as any).status === 422 ||
+      userExistsErrors.some(msg => 
+        authError.message?.toLowerCase().includes(msg.toLowerCase())
+      );
 
     if (isUserExistsError) {
       console.log(`ℹ️ Auth user already exists for ${email}, fetching existing user`);
@@ -172,15 +175,19 @@ async function createOrUpdateUserPlan(
         throw new Error(`Could not verify existing account for ${email}`);
       }
 
-      const existingAuthUser = existingUsers?.users?.find(u => u.email === email);
+      const existingAuthUser = existingUsers?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
       if (!existingAuthUser) {
-        console.error(`User ${email} should exist but was not found in list`);
-        console.error(`This might be a genuine database error, not a duplicate user`);
-        throw new Error(`Account verification failed for ${email}: ${authError.message}`);
+        console.error(`User ${email} should exist but was not found in list of ${existingUsers?.users?.length} users`);
+        console.error(`Searched for email: ${email}`);
+        console.error(`This might indicate a pagination issue or timing problem`);
+        
+        // Continue anyway - user exists, we'll update profile if possible
+        console.log(`⚠️ Continuing without auth user ID - will rely on profile email lookup`);
+        authUserId = ''; // Will use email-based lookup for profile
+      } else {
+        authUserId = existingAuthUser.id;
+        console.log(`✅ Found existing Auth user for ${email}, ID: ${authUserId}`);
       }
-
-      authUserId = existingAuthUser.id;
-      console.log(`✅ Found existing Auth user for ${email}, ID: ${authUserId}`);
     } else {
       console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.error('❌ Failed to create Supabase Auth user');
@@ -230,11 +237,18 @@ async function createOrUpdateUserPlan(
 
   console.log('📝 Updating user profile with plan details...');
   
-  const { data: newProfile, error: profileError } = await supabase
-    .from('user_profiles')
-    .update(profileData)
-    .eq('supabase_user_id', authUserId)
-    .select();
+  // Update profile by auth user ID if we have it, otherwise by email
+  let profileQuery = supabase.from('user_profiles').update(profileData);
+  
+  if (authUserId) {
+    profileQuery = profileQuery.eq('supabase_user_id', authUserId);
+  } else {
+    // Fallback to email-based lookup
+    console.log('⚠️ Using email-based profile lookup as fallback');
+    profileQuery = profileQuery.eq('email', email);
+  }
+  
+  const { data: newProfile, error: profileError } = await profileQuery.select();
 
   if (profileError) {
     console.error('Failed to update user profile:', profileError);
