@@ -681,6 +681,31 @@ export async function uploadFile(file: File): Promise<string> {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
+  // Get user profile with storage limits
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id, plan_type, storage_used_mb, storage_limit_mb')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  // Calculate file size in MB
+  const fileSizeMB = file.size / (1024 * 1024);
+
+  // Check if upload would exceed storage limit
+  const newStorageUsed = (profile.storage_used_mb || 0) + fileSizeMB;
+  
+  if (newStorageUsed > profile.storage_limit_mb) {
+    const planNames = { lite: 'Lite (1GB)', core: 'Core (2GB)', elite: 'Elite (10GB)' };
+    const currentPlan = planNames[profile.plan_type as keyof typeof planNames] || 'Lite';
+    const remainingMB = Math.max(0, profile.storage_limit_mb - (profile.storage_used_mb || 0));
+    
+    throw new Error(
+      `Storage limit reached. You've used ${(profile.storage_used_mb || 0).toFixed(2)}MB of ${profile.storage_limit_mb}MB (${remainingMB.toFixed(2)}MB remaining). This file is ${fileSizeMB.toFixed(2)}MB. Upgrade your plan for more storage.`
+    );
+  }
+
   const fileExt = file.name.split('.').pop();
   const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
@@ -689,6 +714,15 @@ export async function uploadFile(file: File): Promise<string> {
     .upload(fileName, file);
 
   if (error) throw error;
+
+  // Update storage usage in user profile
+  await supabase
+    .from('user_profiles')
+    .update({
+      storage_used_mb: newStorageUsed,
+      updated_at: new Date().toISOString()
+    })
+    .eq('supabase_user_id', user.id);
 
   // Get public URL
   const { data: { publicUrl } } = supabase.storage
@@ -851,18 +885,52 @@ export async function getTradeAccounts(): Promise<TradeAccount[]> {
   return accountsWithBalance;
 }
 
-export async function createTradeAccount(account: CreateTradeAccount): Promise<TradeAccount> {
+export async function createTradeAccount(account: CreateTradeAccount, source: 'manual' | 'myfxbook' = 'manual'): Promise<TradeAccount> {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  // Get user profile to link account
+  // Get user profile with plan limits
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('id')
+    .select('id, plan_type, account_limit')
     .eq('supabase_user_id', user.id)
     .single();
 
   if (!profile) throw new Error('User profile not found');
+
+  // Enforce account limits for MANUAL accounts only (MyFxBook accounts are unlimited)
+  if (source === 'manual') {
+    // Count existing MANUAL accounts only
+    const { count: manualAccountCount, error: countError } = await supabase
+      .from('trade_accounts')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', profile.id)
+      .eq('source', 'manual');
+
+    if (countError) throw countError;
+
+    const currentManualAccounts = manualAccountCount || 0;
+
+    // Plan-based limits
+    const planLimits = {
+      lite: 1,
+      core: 10,
+      elite: 999999 // unlimited
+    };
+
+    const maxManualAccounts = planLimits[profile.plan_type as keyof typeof planLimits] || 1;
+
+    if (currentManualAccounts >= maxManualAccounts) {
+      const planNames = { lite: 'Lite', core: 'Core', elite: 'Elite' };
+      const currentPlanName = planNames[profile.plan_type as keyof typeof planNames] || 'Lite';
+      
+      if (profile.plan_type === 'lite') {
+        throw new Error(`Account limit reached. ${currentPlanName} plan allows 1 manual account. Upgrade to Core for 10 accounts or connect via MyFxBook for unlimited accounts.`);
+      } else if (profile.plan_type === 'core') {
+        throw new Error(`Account limit reached. ${currentPlanName} plan allows 10 manual accounts. Upgrade to Elite for unlimited accounts or connect via MyFxBook for unlimited accounts.`);
+      }
+    }
+  }
 
   const { data, error } = await supabase
     .from('trade_accounts')
@@ -870,6 +938,7 @@ export async function createTradeAccount(account: CreateTradeAccount): Promise<T
       ...account,
       user_id: profile.id,
       current_balance: account.starting_balance,
+      source: source,
       is_active: true
     }])
     .select()

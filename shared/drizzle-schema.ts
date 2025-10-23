@@ -25,6 +25,7 @@ export const tagCategoryEnum = pgEnum('tag_category', ['timeframe', 'strategy', 
 export const journalStatusEnum = pgEnum('journal_status', ['OPEN', 'CLOSED', 'CANCELLED']);
 export const tradeAccountTypeEnum = pgEnum('account_type_enum', ['demo', 'proprietary_firm', 'live_personal', 'live_company']);
 export const marketTypeEnum = pgEnum('market_type_enum', ['forex', 'futures', 'stocks', 'crypto']);
+export const accountSourceEnum = pgEnum('account_source', ['manual', 'myfxbook']);
 export const cashflowTypeEnum = pgEnum('cashflow_type', ['deposit', 'withdrawal']);
 export const expenseTypeEnum = pgEnum('expense_type', ['software', 'education', 'data', 'hardware', 'other']);
 export const challengeTypeEnum = pgEnum('challenge_type', ['instant', '1-step', '2-step', '3-step']);
@@ -40,6 +41,7 @@ export const tradeAccounts = pgTable('trade_accounts', {
   account_name: text('account_name').notNull(),
   starting_balance: decimal('starting_balance', { precision: 12, scale: 2 }).notNull(),
   current_balance: decimal('current_balance', { precision: 12, scale: 2 }),
+  source: accountSourceEnum('source').default('manual').notNull(),
   is_active: integer('is_active').default(1).notNull(),
   created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)

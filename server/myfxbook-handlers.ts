@@ -264,6 +264,7 @@ export async function handleConnect(req: any, res: any) {
             market_type: 'forex',
             starting_balance: parseFloat(account.deposits) || parseFloat(account.balance) || 0,
             current_balance: parseFloat(account.balance) || 0,
+            source: 'myfxbook', // Mark as MyFxBook account (unlimited, no plan limits)
             currency: account.currency || 'USD',
           })
           .select('id')

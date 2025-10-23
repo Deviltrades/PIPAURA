@@ -57,6 +57,7 @@ export interface TradeAccount {
   account_name: string;
   starting_balance: number;
   current_balance?: number;
+  source: 'manual' | 'myfxbook';
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -68,6 +69,7 @@ export interface CreateTradeAccount {
   broker_name: string;
   account_name: string;
   starting_balance: number;
+  source?: 'manual' | 'myfxbook'; // Optional, defaults to 'manual'
 }
 
 // Enhanced User Profile interface with role-based access control
