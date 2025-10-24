@@ -58,8 +58,8 @@ export function Reports({ accountId }: ReportsProps) {
   const filteredTrades = useMemo(() => {
     return allTrades.filter(trade => {
       // Date range filter
-      if (dateRange.from && dateRange.to && trade.entry_time) {
-        const tradeDate = parseISO(trade.entry_time);
+      if (dateRange.from && dateRange.to && trade.entry_date) {
+        const tradeDate = parseISO(trade.entry_date);
         if (tradeDate < dateRange.from || tradeDate > dateRange.to) {
           return false;
         }
@@ -172,8 +172,8 @@ export function Reports({ accountId }: ReportsProps) {
     // Group by day for daily stats
     const tradesByDay: Record<string, Trade[]> = {};
     closedTrades.forEach(trade => {
-      if (!trade.entry_time) return;
-      const day = trade.entry_time.split('T')[0];
+      if (!trade.entry_date) return;
+      const day = trade.entry_date.split('T')[0];
       if (!tradesByDay[day]) tradesByDay[day] = [];
       tradesByDay[day].push(trade);
     });
@@ -231,8 +231,8 @@ export function Reports({ accountId }: ReportsProps) {
     // Group by month for monthly stats
     const tradesByMonth: Record<string, Trade[]> = {};
     closedTrades.forEach(trade => {
-      if (!trade.entry_time) return;
-      const month = trade.entry_time.substring(0, 7); // YYYY-MM
+      if (!trade.entry_date) return;
+      const month = trade.entry_date.substring(0, 7); // YYYY-MM
       if (!tradesByMonth[month]) tradesByMonth[month] = [];
       tradesByMonth[month].push(trade);
     });
