@@ -22,7 +22,7 @@ export default function DraggableWidget({ title, children, className = "", theme
     <div className={`${colorStyles[themeColor as keyof typeof colorStyles] || colorStyles.slate} rounded-xl h-full border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300 ${className}`} style={{ color: textColor }}>
       <div className="p-4 h-full flex flex-col">
         <h3 className="font-medium mb-3 text-sm" style={{ color: textColor }}>{title}</h3>
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto">
           {children}
         </div>
       </div>
