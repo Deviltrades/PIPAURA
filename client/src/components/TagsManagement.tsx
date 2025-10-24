@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Palette } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import { getUserTags, createUserTag, createUserTagsBatch, deleteUserTag } from "@/lib/supabase-service";
 
 // Pre-made tags organized by category
 const PREMADE_TAGS = {
@@ -125,17 +126,15 @@ export function TagsManagement() {
 
   // Fetch user's tags
   const { data: userTags = [] } = useQuery<any[]>({
-    queryKey: ["/api/user-tags"],
+    queryKey: ["user-tags"],
+    queryFn: getUserTags,
   });
 
   // Create custom tag mutation
   const createTagMutation = useMutation({
-    mutationFn: async (data: { name: string; category: string; color: string }) => {
-      const res = await apiRequest("POST", "/api/user-tags", data);
-      return res.json();
-    },
+    mutationFn: createUserTag,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user-tags"] });
+      queryClient.invalidateQueries({ queryKey: ["user-tags"] });
       setIsCreateDialogOpen(false);
       setNewTagName("");
       setNewTagCategory("custom");
@@ -156,12 +155,9 @@ export function TagsManagement() {
 
   // Add predefined tags mutation
   const addPredefinedTagsMutation = useMutation({
-    mutationFn: async (tags: { name: string; category: string; color: string }[]) => {
-      const res = await apiRequest("POST", "/api/user-tags/batch", { tags });
-      return res.json();
-    },
+    mutationFn: createUserTagsBatch,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user-tags"] });
+      queryClient.invalidateQueries({ queryKey: ["user-tags"] });
       setSelectedPredefinedTags(new Set());
       toast({
         title: "Tags added",
@@ -179,12 +175,9 @@ export function TagsManagement() {
 
   // Delete tag mutation
   const deleteTagMutation = useMutation({
-    mutationFn: async (tagId: string) => {
-      const res = await apiRequest("DELETE", `/api/user-tags/${tagId}`);
-      return res.json();
-    },
+    mutationFn: deleteUserTag,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user-tags"] });
+      queryClient.invalidateQueries({ queryKey: ["user-tags"] });
       toast({
         title: "Tag deleted",
         description: "Tag has been removed from your library."

@@ -1317,6 +1317,109 @@ export async function deleteAccountCashflow(id: string) {
   if (error) throw error;
 }
 
+// User Tags Operations
+export async function getUserTags() {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const { data, error } = await supabase
+    .from('user_tags')
+    .select('*')
+    .eq('user_id', profile.id)
+    .eq('is_active', 1)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createUserTag(tagData: { name: string; category: string; color: string }) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const { data, error } = await supabase
+    .from('user_tags')
+    .insert({
+      user_id: profile.id,
+      name: tagData.name,
+      category: tagData.category,
+      color: tagData.color,
+      is_predefined: 0
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function createUserTagsBatch(tags: { name: string; category: string; color: string }[]) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  const tagsToInsert = tags.map(tag => ({
+    user_id: profile.id,
+    name: tag.name,
+    category: tag.category,
+    color: tag.color,
+    is_predefined: 1
+  }));
+
+  const { data, error } = await supabase
+    .from('user_tags')
+    .insert(tagsToInsert)
+    .select();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteUserTag(tagId: string) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('supabase_user_id', user.id)
+    .single();
+
+  if (!profile) throw new Error('User profile not found');
+
+  // Soft delete - mark as inactive
+  const { error } = await supabase
+    .from('user_tags')
+    .update({ is_active: 0 })
+    .eq('id', tagId)
+    .eq('user_id', profile.id);
+
+  if (error) throw error;
+}
+
 // Tax Summary Calculation
 export async function getTaxSummary(year: number, accountIds: string[] = []) {
   const user = await getCurrentUser();
