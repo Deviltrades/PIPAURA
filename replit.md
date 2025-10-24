@@ -123,6 +123,26 @@ A comprehensive strategy documentation and performance tracking system:
 - **Filter Synchronization**: All filters dynamically populated from user's actual trade data
 - **Real-time Updates**: Statistics recalculate instantly based on selected filters
 
+### Custom Tags/Filters System
+A comprehensive tag management system allowing users to categorize and filter trades with custom tags:
+- **Tag Creation**: Users create custom tags organized by 8 predefined categories:
+  - Strategy Filters (Pivot Reversal, Breakout Box, Liquidity Sweep, etc.)
+  - Risk & Trade Management (Aggressive Entry, Scaled In, Trailing Stop Used, etc.)
+  - Market Context (High Volatility, Trend Market, News Hour, etc.)
+  - Session & Timing (Asia, London, NY, Overlap, etc.)
+  - Psychological/Behavioral (FOMO Entry, Revenge Trade, Perfect Discipline, etc.)
+  - Outcome/Result (Textbook Trade, Sloppy Entry, Patience Rewarded, etc.)
+  - Bias Alignment (Aligned with Fundamental Bias, Same as HTF Direction, etc.)
+  - Emotion at Exit (Confident Exit, Regret Exit, Emotional Close, etc.)
+- **Tag Management UI**: Located in Strategy & Playbook → Tags tab with batch import of predefined tag templates
+- **Trade Tagging**: 
+  - Add tags during manual trade upload via TagSelector modal
+  - Edit tags on existing trades via "Manage Tags" button on each trade card
+  - Multiple tags per trade with visual tag badges (color-coded by category)
+- **Tag Display**: Tags shown as colored badges on trade cards in journal with custom colors per tag
+- **Filter Integration**: Custom tags filter in Reports page enables filtering statistics by selected tags
+- **Database**: `user_tags` table stores tag definitions, `trades.custom_tags` text array stores tag names per trade
+
 ### Subscription and Payment System
 A comprehensive Stripe-based subscription system with three pricing tiers (Lite £4.99/month, Core £14/month, Elite £24/month). 
 

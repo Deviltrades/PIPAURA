@@ -33,7 +33,7 @@ export function ManageTagsDialog({ isOpen, onClose, trade }: ManageTagsDialogPro
       // Update the trade with new tags
       await updateTrade(trade.id, {
         custom_tags: tags,
-      });
+      } as any);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["trades"] });

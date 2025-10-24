@@ -167,7 +167,6 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
       entryPrice: "",
       entryTime: "",
       exitTime: "",
-      exitPrice: "",
       stopLoss: "",
       takeProfit: "",
       notes: "",
