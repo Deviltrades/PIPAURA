@@ -40,6 +40,8 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
   const [showAllAverage, setShowAllAverage] = useState(false);
   const [showAllFees, setShowAllFees] = useState(false);
   const [showAllTotalTrades, setShowAllTotalTrades] = useState(false);
+  const [monthlyTargetDialogOpen, setMonthlyTargetDialogOpen] = useState(false);
+  const [monthlyTargetInput, setMonthlyTargetInput] = useState<string>("");
   
   // Fetch account data to get balance for risk calculation
   const { data: accountData } = useQuery({
@@ -181,7 +183,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       
       // Update existing widgets with new default heights while preserving positions
       merged[breakpoint] = savedLayout.map((savedItem: any) => {
-        const defaultItem = defaultWidgetsMap.get(savedItem.i);
+        const defaultItem: any = defaultWidgetsMap.get(savedItem.i);
         if (defaultItem) {
           // Keep saved x/y position but use default w/h (to apply new compact sizes)
           return {
@@ -532,7 +534,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
   const mostProfitablePnL = mostProfitable ? mostProfitable[1] : 0;
 
   // 4. Monthly Progress Bar
-  const monthlyTarget = 5000; // You can make this configurable later
+  const monthlyTarget = userProfile?.preferences?.monthlyTarget || 5000;
   const monthlyProgress = monthlyPnL;
   const monthlyProgressPercent = Math.min((monthlyProgress / monthlyTarget) * 100, 100);
 
@@ -1572,7 +1574,25 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
 
           {/* 4. Monthly Progress Bar Widget */}
           <div key="monthlyprogress">
-            <DraggableWidget title="Monthly Target" themeColor={themeColor} textColor={textColor}>
+            <DraggableWidget 
+              title="Monthly Target" 
+              themeColor={themeColor} 
+              textColor={textColor}
+              actionButton={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 w-5 p-0 hover:bg-cyan-500/20"
+                  onClick={() => {
+                    setMonthlyTargetInput(monthlyTarget.toString());
+                    setMonthlyTargetDialogOpen(true);
+                  }}
+                  data-testid="button-edit-monthly-target"
+                >
+                  <Target className="h-3 w-3" style={{ color: textColor }} />
+                </Button>
+              }
+            >
               <div className="flex flex-col justify-center h-full space-y-2">
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-400">Progress</span>
@@ -1946,6 +1966,78 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           <SessionInsights trades={trades} bgColor={bgColor} textColor={textColor} themeColor={themeColor} />
         </div>
       </div>
+
+      {/* Monthly Target Edit Dialog */}
+      <Dialog open={monthlyTargetDialogOpen} onOpenChange={setMonthlyTargetDialogOpen}>
+        <DialogContent className="bg-slate-900 border-cyan-700/50 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-cyan-400">Set Monthly Target</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm text-gray-400 block mb-2">Monthly Target ($)</label>
+              <Input
+                type="number"
+                value={monthlyTargetInput}
+                onChange={(e) => setMonthlyTargetInput(e.target.value)}
+                placeholder="Enter target amount"
+                className="bg-slate-800 border-cyan-700/50 text-white"
+                data-testid="input-monthly-target"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setMonthlyTargetDialogOpen(false)}
+                className="bg-slate-800/40 border-cyan-700/50 text-gray-300 hover:bg-slate-700/50"
+                data-testid="button-cancel-target"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  const target = parseFloat(monthlyTargetInput);
+                  if (isNaN(target) || target <= 0) {
+                    toast({
+                      title: "Invalid Target",
+                      description: "Please enter a valid positive number",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  
+                  try {
+                    await updateUserProfile({
+                      preferences: {
+                        ...userProfile?.preferences,
+                        monthlyTarget: target,
+                      },
+                    });
+                    
+                    toast({
+                      title: "Target Updated",
+                      description: `Monthly target set to $${target}`,
+                    });
+                    
+                    setMonthlyTargetDialogOpen(false);
+                    queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to update monthly target",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+                className="bg-cyan-500 hover:bg-cyan-600 text-white"
+                data-testid="button-save-target"
+              >
+                Save Target
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

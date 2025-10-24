@@ -9,9 +9,10 @@ interface DraggableWidgetProps {
   themeColor?: string;
   textColor?: string;
   infoContent?: ReactNode;
+  actionButton?: ReactNode;
 }
 
-export default function DraggableWidget({ title, children, className = "", themeColor = "slate", textColor = "#ffffff", infoContent }: DraggableWidgetProps) {
+export default function DraggableWidget({ title, children, className = "", themeColor = "slate", textColor = "#ffffff", infoContent, actionButton }: DraggableWidgetProps) {
   const colorStyles = {
     slate: "bg-slate-800/60 border-slate-700/40",
     blue: "bg-slate-900/40 border-blue-800/30",
@@ -26,24 +27,27 @@ export default function DraggableWidget({ title, children, className = "", theme
       <div className="p-2 h-full flex flex-col">
         <div className="flex items-center justify-between mb-1.5">
           <h3 className="font-medium text-xs" style={{ color: textColor }}>{title}</h3>
-          {infoContent && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <button 
-                  className="text-cyan-400 hover:text-cyan-300 transition-colors"
-                  data-testid="button-info"
+          <div className="flex items-center gap-1">
+            {actionButton}
+            {infoContent && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button 
+                    className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                    data-testid="button-info"
+                  >
+                    <Info className="h-3 w-3" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent 
+                  className="w-80 bg-slate-900/95 border-cyan-700/50 text-white"
+                  align="end"
                 >
-                  <Info className="h-3 w-3" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent 
-                className="w-80 bg-slate-900/95 border-cyan-700/50 text-white"
-                align="end"
-              >
-                {infoContent}
-              </PopoverContent>
-            </Popover>
-          )}
+                  {infoContent}
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
         </div>
         <div className="flex-1 overflow-auto">
           {children}
