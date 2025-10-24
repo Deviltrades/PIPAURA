@@ -1074,16 +1074,16 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
               }
               if (dailyPnL > 0) {
                 return {
-                  backgroundColor: '#00ad57', // Dulled down green (15% less bright)
-                  borderColor: '#00ad57',
-                  textColor: 'text-black',
-                  boxShadow: '0 0 12px #00ad57' // Slightly reduced glow
+                  backgroundColor: 'rgba(16, 185, 129, 0.15)', // Transparent green (15% opacity)
+                  borderColor: '#10b981',
+                  textColor: 'text-green-400',
+                  boxShadow: 'none'
                 };
               }
               return {
-                backgroundColor: '#e55555', // Toned down bright red (20% less bright)
-                borderColor: '#e55555',
-                textColor: 'text-black',
+                backgroundColor: 'rgba(239, 68, 68, 0.15)', // Transparent red (15% opacity)
+                borderColor: '#ef4444',
+                textColor: 'text-red-400',
                 boxShadow: 'none'
               };
             };
@@ -1166,7 +1166,7 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                   <div className="absolute inset-x-1.5 sm:inset-x-2 top-8 sm:top-9 bottom-1.5 sm:bottom-2 flex flex-col justify-center">
                     {/* Display Value - Percentage or Dollar */}
                     <div className="text-center">
-                      <div className="text-base sm:text-lg md:text-xl font-bold text-black leading-tight">
+                      <div className={`text-base sm:text-lg md:text-xl font-bold ${dayStyles.textColor} leading-tight`}>
                         {displayMode === "percentage" 
                           ? `${dailyPnL > 0 ? '+' : ''}${dailyReturn?.toFixed(2)}%`
                           : `${dailyPnL > 0 ? '+' : ''}$${Math.abs(dailyPnL) >= 1000 
@@ -1174,13 +1174,13 @@ export function TradingCalendar({ className, selectedAccount = "all" }: TradingC
                               : dailyPnL.toFixed(0)}`
                         }
                       </div>
-                      <div className="text-xs sm:text-sm text-black/80 font-medium mt-0.5">
+                      <div className={`text-xs sm:text-sm ${dayStyles.textColor} opacity-80 font-medium mt-0.5`}>
                         {displayMode === "percentage" ? "%" : "USD"}
                       </div>
                     </div>
                     {/* Trade Count */}
-                    <div className="text-[11px] sm:text-xs text-black/90 text-center mt-1 sm:mt-1.5 font-medium">
-                      Trades: {dayTrades.length}
+                    <div className={`text-[11px] sm:text-xs ${dayStyles.textColor} opacity-70 text-center mt-1 sm:mt-1.5 font-medium`}>
+                      {dayTrades.length} {dayTrades.length === 1 ? 'trade' : 'trades'}
                     </div>
                   </div>
                 ) : (
