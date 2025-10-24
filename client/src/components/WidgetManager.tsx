@@ -26,6 +26,7 @@ export type WidgetType =
   | "recent-trades"
   | "trading-calendar"
   | "risk-metrics"
+  | "setup-breakdown"
   | "session-breakdown";
 
 export interface WidgetConfig {
@@ -85,6 +86,13 @@ export const availableWidgets: WidgetConfig[] = [
     description: "Risk management statistics and ratios",
     icon: <TrendingUp className="h-4 w-4" />,
     category: "performance"
+  },
+  {
+    id: "setup-breakdown",
+    title: "Setup Breakdown",
+    description: "Top performing strategies, setups, and tags with P&L, WR%, and Avg R",
+    icon: <BarChart3 className="h-4 w-4" />,
+    category: "analytics"
   },
   {
     id: "session-breakdown",
