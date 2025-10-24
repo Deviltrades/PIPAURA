@@ -364,7 +364,6 @@ export async function getTrades(accountId?: string) {
     throw error;
   }
   
-  console.log('getTrades raw data sample:', data?.[0]);
   return data;
 }
 

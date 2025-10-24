@@ -46,22 +46,7 @@ export default function Trades() {
 
   const { data: trades = [], isLoading } = useQuery({
     queryKey: ["trades", selectedAccount],
-    queryFn: async () => {
-      const data = await getTrades(selectedAccount);
-      console.log("=== TRADES FETCH DEBUG ===");
-      console.log("Total trades:", data?.length);
-      if (data && data.length > 0) {
-        console.log("First trade instrument:", data[0].instrument);
-        console.log("First trade custom_tags:", data[0].custom_tags);
-        console.log("First trade custom_tags LENGTH:", data[0].custom_tags?.length);
-        console.log("First trade custom_tags ITEMS:", JSON.stringify(data[0].custom_tags));
-        
-        // Check condition for display
-        const hasTags = data[0].custom_tags && data[0].custom_tags.length > 0;
-        console.log("Should display tags?:", hasTags);
-      }
-      return data;
-    },
+    queryFn: () => getTrades(selectedAccount),
     retry: false,
     refetchOnMount: true,
     staleTime: 0,
@@ -70,12 +55,7 @@ export default function Trades() {
   // Fetch user tags
   const { data: userTags = [] } = useQuery<any[]>({
     queryKey: ["user-tags"],
-    queryFn: async () => {
-      const tags = await getUserTags();
-      console.log("User tags loaded:", tags);
-      console.log("User tags count:", tags?.length);
-      return tags;
-    },
+    queryFn: getUserTags,
   });
 
   const deleteMutation = useMutation({
@@ -354,18 +334,10 @@ export default function Trades() {
                             {trade.instrument_type}
                           </Badge>
                           {/* Custom Tags */}
-                          {(() => {
-                            console.log(`=== RENDERING TAGS FOR ${trade.instrument} ===`);
-                            console.log("trade.custom_tags:", trade.custom_tags);
-                            console.log("Condition check:", trade.custom_tags && trade.custom_tags.length > 0);
-                            console.log("userTags available:", userTags);
-                            return null;
-                          })()}
                           {trade.custom_tags && trade.custom_tags.length > 0 && (
                             <>
                               {trade.custom_tags.map((tagName: string, index: number) => {
                                 const tagColor = getTagColor(tagName);
-                                console.log(`Rendering tag: ${tagName}, color: ${tagColor}`);
                                 return (
                                   <Badge
                                     key={index}

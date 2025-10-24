@@ -378,7 +378,6 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
       }
 
       setUploadedImages(prev => [...prev, ...uploadedUrls]);
-      console.log("AddTradeModal: After image upload, form values:", form.getValues());
       toast({
         title: "✅ Images uploaded successfully!",
         description: `Successfully uploaded ${uploadedUrls.length} image(s). You can now save your trade.`,
@@ -402,9 +401,6 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
   };
 
   const onSubmit = (data: AddTradeFormData) => {
-    console.log("Form data:", data);
-    console.log("Form errors:", form.formState.errors);
-    
     // Add entryMode to data
     const submitData = {
       ...data,
