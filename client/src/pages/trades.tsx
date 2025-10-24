@@ -53,8 +53,12 @@ export default function Trades() {
       if (data && data.length > 0) {
         console.log("First trade instrument:", data[0].instrument);
         console.log("First trade custom_tags:", data[0].custom_tags);
-        console.log("First trade custom_tags type:", typeof data[0].custom_tags);
-        console.log("First trade custom_tags array?:", Array.isArray(data[0].custom_tags));
+        console.log("First trade custom_tags LENGTH:", data[0].custom_tags?.length);
+        console.log("First trade custom_tags ITEMS:", JSON.stringify(data[0].custom_tags));
+        
+        // Check condition for display
+        const hasTags = data[0].custom_tags && data[0].custom_tags.length > 0;
+        console.log("Should display tags?:", hasTags);
       }
       return data;
     },
@@ -66,7 +70,12 @@ export default function Trades() {
   // Fetch user tags
   const { data: userTags = [] } = useQuery<any[]>({
     queryKey: ["user-tags"],
-    queryFn: getUserTags,
+    queryFn: async () => {
+      const tags = await getUserTags();
+      console.log("User tags loaded:", tags);
+      console.log("User tags count:", tags?.length);
+      return tags;
+    },
   });
 
   const deleteMutation = useMutation({
