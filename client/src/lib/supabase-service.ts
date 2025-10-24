@@ -349,7 +349,7 @@ export async function getTrades(accountId?: string) {
 
   let query = supabase
     .from('trades')
-    .select('*')
+    .select('*, custom_tags')
     .eq('user_id', user.id);
 
   // Filter by account_id if a specific account is selected
@@ -359,7 +359,12 @@ export async function getTrades(accountId?: string) {
 
   const { data, error } = await query.order('created_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    console.error('getTrades error:', error);
+    throw error;
+  }
+  
+  console.log('getTrades raw data sample:', data?.[0]);
   return data;
 }
 
