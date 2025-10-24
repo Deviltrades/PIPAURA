@@ -672,22 +672,57 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
   
   const riskHistogramData = createHistogramData();
 
-  // 8. Exposure by Pair / Asset Class
-  const assetExposure: Record<string, { count: number; pnl: number }> = {};
-  (trades || []).forEach(trade => {
-    const asset = trade.instrument_type || 'FOREX';
-    if (!assetExposure[asset]) assetExposure[asset] = { count: 0, pnl: 0 };
-    assetExposure[asset].count++;
-    assetExposure[asset].pnl += Number(trade.pnl) || 0;
-  });
-
-  const actualTradeCount = (trades || []).length;
-  const exposureData = Object.entries(assetExposure).map(([asset, data]) => ({
-    asset,
-    count: data.count,
-    pnl: data.pnl,
-    percentage: actualTradeCount > 0 ? (data.count / actualTradeCount) * 100 : 0
-  })).sort((a, b) => b.count - a.count);
+  // 8. Asset Exposure - Advanced calculation using lot size × duration
+  const [exposureView, setExposureView] = useState<'symbol' | 'class'>('class');
+  
+  const calculateExposure = () => {
+    const exposureMap: Record<string, { exposure: number; count: number; pnl: number }> = {};
+    
+    (trades || []).forEach(trade => {
+      const key = exposureView === 'class' 
+        ? (trade.instrument_type || 'FOREX')
+        : (trade.symbol || 'Unknown');
+      
+      // Calculate exposure: lot size × hold time (in hours)
+      const lotSize = Number(trade.position_size) || 1;
+      const openTime = trade.open_time ? new Date(trade.open_time) : null;
+      const closeTime = trade.close_time ? new Date(trade.close_time) : null;
+      
+      let holdTimeHours = 1; // Default to 1 hour if times not available
+      if (openTime && closeTime) {
+        holdTimeHours = Math.abs(closeTime.getTime() - openTime.getTime()) / (1000 * 60 * 60);
+      }
+      
+      const exposureValue = lotSize * holdTimeHours;
+      
+      if (!exposureMap[key]) {
+        exposureMap[key] = { exposure: 0, count: 0, pnl: 0 };
+      }
+      
+      exposureMap[key].exposure += exposureValue;
+      exposureMap[key].count++;
+      exposureMap[key].pnl += Number(trade.pnl) || 0;
+    });
+    
+    const totalExposure = Object.values(exposureMap).reduce((sum, item) => sum + item.exposure, 0);
+    
+    return Object.entries(exposureMap)
+      .map(([name, data]) => ({
+        name,
+        exposure: data.exposure,
+        count: data.count,
+        pnl: data.pnl,
+        percentage: totalExposure > 0 ? (data.exposure / totalExposure) * 100 : 0
+      }))
+      .sort((a, b) => b.exposure - a.exposure);
+  };
+  
+  const exposureData = calculateExposure();
+  const topExposure = exposureData.length > 0 ? exposureData[0] : null;
+  const highExposureWarning = topExposure && topExposure.percentage > 50;
+  
+  // Chart colors for pie chart
+  const exposureColors = ['#22d3ee', '#06b6d4', '#0891b2', '#0e7490', '#155e75', '#164e63'];
 
   const resetLayout = () => {
     resetLayoutMutation.mutate();
@@ -1737,28 +1772,145 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
             </DraggableWidget>
           </div>
 
-          {/* 8. Exposure by Asset Class Widget */}
+          {/* 8. Asset Exposure Widget */}
           <div key="exposure">
-            <DraggableWidget title="Asset Exposure" themeColor={themeColor} textColor={textColor}>
-              <div className="space-y-2 overflow-y-auto h-full">
-                {exposureData.length > 0 ? (
-                  exposureData.map((item, idx) => (
-                    <div key={idx} className="bg-slate-800/20 rounded-lg p-2 border border-cyan-700/30">
-                      <div className="flex justify-between items-center mb-1">
-                        <div className="font-medium text-sm" style={{ color: textColor }}>{item.asset}</div>
-                        <div className="text-sm font-bold text-cyan-500">{item.percentage.toFixed(0)}%</div>
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-400">
-                        <span>{item.count} trades</span>
-                        <span className={item.pnl >= 0 ? 'text-green-500' : 'text-red-500'}>
-                          {item.pnl >= 0 ? '+' : ''}${item.pnl.toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center text-gray-400 py-4">No exposure data</div>
+            <DraggableWidget 
+              title="Asset Exposure" 
+              themeColor={themeColor} 
+              textColor={textColor}
+              infoContent={
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">What This Shows</h4>
+                    <p className="text-gray-300">
+                      This widget visualizes your trading exposure across different assets, showing where you're concentrating your trading activity.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">Exposure Calculation</h4>
+                    <p className="text-gray-300">
+                      Exposure is calculated using:
+                    </p>
+                    <p className="text-gray-400 text-xs mt-1">
+                      Lot Size × Hold Time (hours)
+                    </p>
+                    <p className="text-gray-300 text-xs mt-1">
+                      This gives a more accurate picture than just trade count, as it accounts for both position size and time in market.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">View Options</h4>
+                    <ul className="text-gray-300 space-y-1 text-xs">
+                      <li>📊 <span className="text-cyan-400">By Asset Class</span>: See exposure across FOREX, INDICES, CRYPTO, etc.</li>
+                      <li>🎯 <span className="text-cyan-400">By Symbol</span>: See exposure for specific trading pairs</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">High Exposure Warning</h4>
+                    <p className="text-gray-300">
+                      If more than 50% of your exposure is in a single asset, you'll see a balance warning. This suggests you may want to diversify to reduce concentration risk.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">Top 3 Highlights</h4>
+                    <p className="text-gray-300">
+                      The top 3 most exposed assets are highlighted with badges, making it easy to spot your dominant trading areas.
+                    </p>
+                  </div>
+                </div>
+              }
+            >
+              <div className="flex flex-col h-full">
+                {/* Toggle between Symbol and Asset Class */}
+                <div className="flex gap-2 mb-3">
+                  <Button
+                    variant={exposureView === 'class' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setExposureView('class')}
+                    className={exposureView === 'class' 
+                      ? 'bg-cyan-500 hover:bg-cyan-600 text-white' 
+                      : 'bg-slate-800/40 border-cyan-700/50 text-gray-300 hover:bg-slate-700/50'
+                    }
+                    data-testid="button-exposure-class"
+                  >
+                    By Asset Class
+                  </Button>
+                  <Button
+                    variant={exposureView === 'symbol' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setExposureView('symbol')}
+                    className={exposureView === 'symbol' 
+                      ? 'bg-cyan-500 hover:bg-cyan-600 text-white' 
+                      : 'bg-slate-800/40 border-cyan-700/50 text-gray-300 hover:bg-slate-700/50'
+                    }
+                    data-testid="button-exposure-symbol"
+                  >
+                    By Symbol
+                  </Button>
+                </div>
+                
+                {/* High Exposure Warning */}
+                {highExposureWarning && topExposure && (
+                  <div className="bg-amber-500/20 border border-amber-500/50 rounded-lg p-2 mb-3 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-400 flex-shrink-0" />
+                    <p className="text-amber-200 text-xs">
+                      High exposure to <span className="font-bold">{topExposure.name}</span> ({topExposure.percentage.toFixed(0)}%) – consider diversifying to reduce risk.
+                    </p>
+                  </div>
                 )}
+                
+                {/* List View */}
+                <div className="space-y-2 flex-1 overflow-y-auto">
+                  {exposureData.length > 0 ? (
+                    exposureData.map((item, idx) => {
+                      const isTop3 = idx < 3;
+                      const badgeColors = ['bg-yellow-500', 'bg-gray-400', 'bg-orange-600'];
+                      
+                      return (
+                        <div 
+                          key={idx} 
+                          className={`bg-slate-800/20 rounded-lg p-3 border ${
+                            isTop3 ? 'border-cyan-500/50' : 'border-cyan-700/30'
+                          } relative`}
+                          data-testid={`exposure-item-${idx}`}
+                        >
+                          {/* Top 3 Badge */}
+                          {isTop3 && (
+                            <div className={`absolute -top-2 -right-2 ${badgeColors[idx]} text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg`}>
+                              #{idx + 1}
+                            </div>
+                          )}
+                          
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="font-medium" style={{ color: textColor }}>{item.name}</div>
+                            <div className="text-lg font-bold text-cyan-400">{item.percentage.toFixed(0)}%</div>
+                          </div>
+                          
+                          <div className="flex justify-between text-xs text-gray-400">
+                            <span>{item.count} trades</span>
+                            <span className={item.pnl >= 0 ? 'text-green-500' : 'text-red-500'}>
+                              {item.pnl >= 0 ? '+' : ''}${item.pnl.toFixed(2)}
+                            </span>
+                          </div>
+                          
+                          {/* Exposure Bar */}
+                          <div className="mt-2 bg-slate-700/30 rounded-full h-1.5 overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-cyan-500 to-cyan-300 rounded-full transition-all duration-300"
+                              style={{ width: `${item.percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center text-gray-400 py-8">No exposure data</div>
+                  )}
+                </div>
               </div>
             </DraggableWidget>
           </div>
