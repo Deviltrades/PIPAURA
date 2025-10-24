@@ -1580,7 +1580,55 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
 
           {/* 7. Risk Deviation Widget */}
           <div key="riskdeviation">
-            <DraggableWidget title="Risk Deviation" themeColor={themeColor} textColor={textColor}>
+            <DraggableWidget 
+              title="Risk Deviation" 
+              themeColor={themeColor} 
+              textColor={textColor}
+              infoContent={
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">What This Shows</h4>
+                    <p className="text-gray-300">
+                      This widget measures how consistent your risk sizing is across all trades. It displays a histogram showing the distribution of risk percentage per trade.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">How It Works</h4>
+                    <p className="text-gray-300">
+                      Risk is calculated from your stop loss distance and position size:
+                    </p>
+                    <p className="text-gray-400 text-xs mt-1">
+                      Risk % = (Entry - Stop Loss) × Position Size ÷ Account Balance × 100
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">Understanding the Colors</h4>
+                    <ul className="text-gray-300 space-y-1 text-xs">
+                      <li>🟦 <span className="text-cyan-400">Cyan bars</span>: Trades within acceptable risk band (0.75%-1.25%)</li>
+                      <li>🟥 <span className="text-red-400">Red bars</span>: Trades outside acceptable risk band</li>
+                      <li>🟩 <span className="text-green-400">Green dashed line</span>: Target risk (1%)</li>
+                      <li>🟨 <span className="text-yellow-400">Yellow dashed lines</span>: Deviation bands (±0.25%)</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">The Alert</h4>
+                    <p className="text-gray-300">
+                      If more than 20% of your trades fall outside the acceptable band, you'll see a warning to tighten your lot sizing discipline.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">How to Use This</h4>
+                    <p className="text-gray-300">
+                      Consistent risk sizing is crucial for long-term success. Aim to keep all your trades within the target band. If you see many red bars, review your position sizing calculations before entering trades.
+                    </p>
+                  </div>
+                </div>
+              }
+            >
               <div className="flex flex-col h-full">
                 {/* Alert banner if > 20% trades outside band */}
                 {percentOutsideBand > 20 && (
