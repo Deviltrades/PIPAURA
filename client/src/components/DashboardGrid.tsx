@@ -156,6 +156,33 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
     retry: false,
   });
 
+  // Helper function to merge saved layouts with new default widgets
+  const mergeLayouts = (savedLayouts: any, defaults: any) => {
+    const merged: any = {};
+    
+    const breakpoints = ['lg', 'md', 'sm', 'xs', 'xxs'];
+    
+    breakpoints.forEach(breakpoint => {
+      const savedLayout = savedLayouts[breakpoint] || [];
+      const defaultLayout = defaults[breakpoint] || [];
+      
+      // Create a map of existing widget IDs in saved layout
+      const savedWidgetIds = new Set(savedLayout.map((item: any) => item.i));
+      
+      // Start with saved layout
+      merged[breakpoint] = [...savedLayout];
+      
+      // Add any new widgets from defaults that aren't in saved layout
+      defaultLayout.forEach((defaultItem: any) => {
+        if (!savedWidgetIds.has(defaultItem.i)) {
+          merged[breakpoint].push(defaultItem);
+        }
+      });
+    });
+    
+    return merged;
+  };
+
   // Load theme color and layouts from user profile
   useEffect(() => {
     if (userProfile?.preferences?.dashboardColor) {
@@ -168,7 +195,19 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       setTextColor(userProfile.preferences.dashboardTextColor);
     }
     if (userProfile?.preferences?.dashboardLayouts) {
-      setLayouts(userProfile.preferences.dashboardLayouts);
+      // Merge saved layouts with new defaults to include any newly added widgets
+      const mergedLayouts = mergeLayouts(userProfile.preferences.dashboardLayouts, defaultLayouts);
+      setLayouts(mergedLayouts);
+      
+      // Persist merged layouts back to profile so new widgets are saved
+      if (JSON.stringify(mergedLayouts) !== JSON.stringify(userProfile.preferences.dashboardLayouts)) {
+        updateUserProfile({
+          preferences: { 
+            ...userProfile.preferences, 
+            dashboardLayouts: mergedLayouts 
+          }
+        });
+      }
     }
   }, [userProfile]);
 
