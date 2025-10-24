@@ -46,7 +46,18 @@ export default function Trades() {
 
   const { data: trades = [], isLoading } = useQuery({
     queryKey: ["trades", selectedAccount],
-    queryFn: () => getTrades(selectedAccount),
+    queryFn: async () => {
+      const data = await getTrades(selectedAccount);
+      console.log("=== TRADES FETCH DEBUG ===");
+      console.log("Total trades:", data?.length);
+      if (data && data.length > 0) {
+        console.log("First trade instrument:", data[0].instrument);
+        console.log("First trade custom_tags:", data[0].custom_tags);
+        console.log("First trade custom_tags type:", typeof data[0].custom_tags);
+        console.log("First trade custom_tags array?:", Array.isArray(data[0].custom_tags));
+      }
+      return data;
+    },
     retry: false,
     refetchOnMount: true,
     staleTime: 0,
