@@ -5,7 +5,13 @@ import type {
   CalendarSettings,
   SidebarSettings,
   TradeAccount,
-  CreateTradeAccount
+  CreateTradeAccount,
+  Strategy,
+  CreateStrategy,
+  UpdateStrategy,
+  PlaybookRule,
+  CreatePlaybookRule,
+  UpdatePlaybookRule
 } from '@shared/schema';
 
 // Helper function to get current user
@@ -1942,4 +1948,241 @@ export async function updatePropFirmPhase(
     current_phase: phase,
     phase_start_date: new Date().toISOString()
   });
+}
+
+// ==================== STRATEGY OPERATIONS ====================
+
+// Get all strategies for the current user
+export async function getStrategies(): Promise<Strategy[]> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('strategies')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+  
+  if (error) throw error;
+  return data || [];
+}
+
+// Get a single strategy by ID
+export async function getStrategy(strategyId: string): Promise<Strategy> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('strategies')
+    .select('*')
+    .eq('id', strategyId)
+    .eq('user_id', user.id)
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
+// Create a new strategy
+export async function createStrategy(strategy: CreateStrategy): Promise<Strategy> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('strategies')
+    .insert({
+      user_id: user.id,
+      ...strategy,
+      is_active: 1
+    })
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
+// Update a strategy
+export async function updateStrategy(strategyId: string, updates: UpdateStrategy): Promise<Strategy> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('strategies')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', strategyId)
+    .eq('user_id', user.id)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
+// Delete a strategy
+export async function deleteStrategy(strategyId: string): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { error } = await supabase
+    .from('strategies')
+    .delete()
+    .eq('id', strategyId)
+    .eq('user_id', user.id);
+  
+  if (error) throw error;
+}
+
+// ==================== PLAYBOOK RULE OPERATIONS ====================
+
+// Get all playbook rules for the current user
+export async function getPlaybookRules(): Promise<PlaybookRule[]> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('playbook_rules')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('category', { ascending: true })
+    .order('created_at', { ascending: false });
+  
+  if (error) throw error;
+  return data || [];
+}
+
+// Create a new playbook rule
+export async function createPlaybookRule(rule: CreatePlaybookRule): Promise<PlaybookRule> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('playbook_rules')
+    .insert({
+      user_id: user.id,
+      ...rule,
+      is_active: 1
+    })
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
+// Update a playbook rule
+export async function updatePlaybookRule(ruleId: string, updates: UpdatePlaybookRule): Promise<PlaybookRule> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('playbook_rules')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', ruleId)
+    .eq('user_id', user.id)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
+// Delete a playbook rule
+export async function deletePlaybookRule(ruleId: string): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  const { error } = await supabase
+    .from('playbook_rules')
+    .delete()
+    .eq('id', ruleId)
+    .eq('user_id', user.id);
+  
+  if (error) throw error;
+}
+
+// Get strategy performance metrics from trades
+export async function getStrategyMetrics(strategyName: string, accountId?: string) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+  
+  let query = supabase
+    .from('trades')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('status', 'CLOSED');
+  
+  // Filter by strategy or setup_type
+  query = query.or(`strategy.eq.${strategyName},setup_type.eq.${strategyName}`);
+  
+  if (accountId) {
+    query = query.eq('account_id', accountId);
+  }
+  
+  const { data: trades, error } = await query;
+  
+  if (error) throw error;
+  
+  if (!trades || trades.length === 0) {
+    return {
+      totalTrades: 0,
+      wins: 0,
+      losses: 0,
+      winRate: 0,
+      totalPnL: 0,
+      avgR: 0,
+      expectancy: 0,
+      avgWin: 0,
+      avgLoss: 0,
+      profitFactor: 0
+    };
+  }
+  
+  const wins = trades.filter(t => parseFloat(t.pnl || '0') > 0);
+  const losses = trades.filter(t => parseFloat(t.pnl || '0') < 0);
+  
+  const totalPnL = trades.reduce((sum, t) => sum + parseFloat(t.pnl || '0'), 0);
+  const winRate = (wins.length / trades.length) * 100;
+  
+  const avgWin = wins.length > 0 
+    ? wins.reduce((sum, t) => sum + parseFloat(t.pnl || '0'), 0) / wins.length 
+    : 0;
+  
+  const avgLoss = losses.length > 0 
+    ? Math.abs(losses.reduce((sum, t) => sum + parseFloat(t.pnl || '0'), 0) / losses.length)
+    : 0;
+  
+  const profitFactor = avgLoss > 0 ? (avgWin * wins.length) / (avgLoss * losses.length) : 0;
+  
+  // Calculate Avg R (average risk-reward ratio)
+  const rValues = trades
+    .filter(t => t.risk_amount && parseFloat(t.risk_amount) > 0)
+    .map(t => parseFloat(t.pnl || '0') / parseFloat(t.risk_amount || '1'));
+  
+  const avgR = rValues.length > 0 
+    ? rValues.reduce((sum, r) => sum + r, 0) / rValues.length 
+    : 0;
+  
+  // Expectancy = (Win Rate × Avg Win) - (Loss Rate × Avg Loss)
+  const lossRate = (losses.length / trades.length);
+  const expectancy = (winRate / 100 * avgWin) - (lossRate * avgLoss);
+  
+  return {
+    totalTrades: trades.length,
+    wins: wins.length,
+    losses: losses.length,
+    winRate,
+    totalPnL,
+    avgR,
+    expectancy,
+    avgWin,
+    avgLoss,
+    profitFactor
+  };
 }
