@@ -100,6 +100,29 @@ A comprehensive mentor-mentee invitation system enables experienced traders to g
 - Read-Only Access: Accepted mentors gain read-only access to view mentee accounts, trades, and performance stats.
 - Security: Access control enforced via `mentor_connections` table.
 
+### Strategy & Playbook System
+A comprehensive strategy documentation and performance tracking system:
+- **Strategy Management**: Create, edit, and track trading strategies with status indicators (Active/Testing/Inactive)
+- **Performance Metrics**: Real-time calculation of Win Rate, P&L, Avg R, Expectancy, and Profit Factor for each strategy
+- **Playbook Rules**: Document trading rules organized by category (Risk Management, Entry, Exit, Psychology)
+- **Widget Integration**: Setup Breakdown widget rows are clickable and navigate to strategy details
+- **Reports Page**: Comprehensive trading statistics with advanced filtering capabilities
+
+**Reports Features (Added October 2025):**
+- **YOUR STATS Summary**: Best month, Lowest month, and Average monthly P&L with date range display
+- **Comprehensive Metrics Grid**: 27+ statistics including:
+  - Trade-level metrics: Total P&L, average wins/losses, consecutive streaks, commissions, swap, largest profit/loss
+  - Day-level metrics: Trading days, winning/losing days, consecutive day streaks, daily P&L averages, largest profitable/losing days
+  - Performance metrics: Average planned R-Multiple, average daily volume
+- **Advanced Filtering System**:
+  - **General**: Instrument Type (FOREX, INDICES, CRYPTO, etc.), Individual Instruments (first 20)
+  - **Tags**: Open/Closed status, Side (BUY/SELL)
+  - **Day & Time**: Session tags (London, New York, Asian, etc.)
+  - **Playbook**: Filter by Strategy and Setup Type
+- **Date Range Selection**: Calendar picker for custom date range analysis (defaults to current month)
+- **Filter Synchronization**: All filters dynamically populated from user's actual trade data
+- **Real-time Updates**: Statistics recalculate instantly based on selected filters
+
 ### Subscription and Payment System
 A comprehensive Stripe-based subscription system with three pricing tiers (Lite £4.99/month, Core £14/month, Elite £24/month). 
 

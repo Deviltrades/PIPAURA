@@ -21,13 +21,13 @@ interface ReportsProps {
 }
 
 interface TradeFilters {
-  instrument?: string;
-  intradayMultiday?: "intraday" | "multiday" | "both";
+  instruments?: string[];
+  instrumentTypes?: string[];
   openClosed?: "open" | "closed" | "both";
-  reviewed?: "reviewed" | "unreviewed" | "both";
   side?: "BUY" | "SELL" | "both";
-  symbol?: string;
-  status?: string;
+  sessionTags?: string[];
+  strategies?: string[];
+  setupTypes?: string[];
 }
 
 interface DateRange {
@@ -54,6 +54,27 @@ export function Reports({ accountId }: ReportsProps) {
     queryFn: () => getTrades(),
   });
   
+  // Extract unique values for filters from trades
+  const uniqueInstruments = useMemo(() => {
+    return Array.from(new Set(allTrades.map(t => t.instrument).filter(Boolean))).sort();
+  }, [allTrades]);
+  
+  const uniqueInstrumentTypes = useMemo(() => {
+    return Array.from(new Set(allTrades.map(t => t.instrument_type).filter(Boolean))).sort();
+  }, [allTrades]);
+  
+  const uniqueSessionTags = useMemo(() => {
+    return Array.from(new Set(allTrades.map(t => t.session_tag).filter(Boolean))).sort();
+  }, [allTrades]);
+  
+  const uniqueStrategies = useMemo(() => {
+    return Array.from(new Set(allTrades.map(t => t.strategy).filter(Boolean))).sort();
+  }, [allTrades]);
+  
+  const uniqueSetupTypes = useMemo(() => {
+    return Array.from(new Set(allTrades.map(t => t.setup_type).filter(Boolean))).sort();
+  }, [allTrades]);
+  
   // Filter trades based on date range and filters
   const filteredTrades = useMemo(() => {
     return allTrades.filter(trade => {
@@ -70,12 +91,37 @@ export function Reports({ accountId }: ReportsProps) {
         return false;
       }
       
+      // Instrument filter
+      if (filters.instruments && filters.instruments.length > 0) {
+        if (!filters.instruments.includes(trade.instrument)) return false;
+      }
+      
+      // Instrument Type filter
+      if (filters.instrumentTypes && filters.instrumentTypes.length > 0) {
+        if (!filters.instrumentTypes.includes(trade.instrument_type)) return false;
+      }
+      
       // Open/Closed filter
       if (filters.openClosed === "open" && trade.status !== "OPEN") return false;
       if (filters.openClosed === "closed" && trade.status !== "CLOSED") return false;
       
       // Side filter
-      if (filters.side && filters.side !== "both" && trade.direction !== filters.side) return false;
+      if (filters.side && filters.side !== "both" && trade.trade_type !== filters.side) return false;
+      
+      // Session Tag filter
+      if (filters.sessionTags && filters.sessionTags.length > 0) {
+        if (!trade.session_tag || !filters.sessionTags.includes(trade.session_tag)) return false;
+      }
+      
+      // Strategy filter
+      if (filters.strategies && filters.strategies.length > 0) {
+        if (!trade.strategy || !filters.strategies.includes(trade.strategy)) return false;
+      }
+      
+      // Setup Type filter
+      if (filters.setupTypes && filters.setupTypes.length > 0) {
+        if (!trade.setup_type || !filters.setupTypes.includes(trade.setup_type)) return false;
+      }
       
       return true;
     });
@@ -363,7 +409,65 @@ export function Reports({ accountId }: ReportsProps) {
                     )}
                   </CollapsibleTrigger>
                   <CollapsibleContent className="mt-2 space-y-3 pl-4">
-                    {/* Filters will be added here */}
+                    {/* Instrument Type */}
+                    {uniqueInstrumentTypes.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm text-gray-300">Instrument Type</Label>
+                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                          {uniqueInstrumentTypes.map((type) => (
+                            <div key={type} className="flex items-center gap-2">
+                              <Checkbox 
+                                id={`instrument-type-${type}`}
+                                checked={filters.instrumentTypes?.includes(type)}
+                                onCheckedChange={(checked) => {
+                                  const current = filters.instrumentTypes || [];
+                                  setFilters({
+                                    ...filters,
+                                    instrumentTypes: checked 
+                                      ? [...current, type]
+                                      : current.filter(t => t !== type)
+                                  });
+                                }}
+                                className="border-slate-600"
+                              />
+                              <Label htmlFor={`instrument-type-${type}`} className="text-sm text-gray-300 cursor-pointer">
+                                {type}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Instruments */}
+                    {uniqueInstruments.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm text-gray-300">Instruments</Label>
+                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                          {uniqueInstruments.slice(0, 20).map((instrument) => (
+                            <div key={instrument} className="flex items-center gap-2">
+                              <Checkbox 
+                                id={`instrument-${instrument}`}
+                                checked={filters.instruments?.includes(instrument)}
+                                onCheckedChange={(checked) => {
+                                  const current = filters.instruments || [];
+                                  setFilters({
+                                    ...filters,
+                                    instruments: checked 
+                                      ? [...current, instrument]
+                                      : current.filter(i => i !== instrument)
+                                  });
+                                }}
+                                className="border-slate-600"
+                              />
+                              <Label htmlFor={`instrument-${instrument}`} className="text-sm text-gray-300 cursor-pointer">
+                                {instrument}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </CollapsibleContent>
                 </Collapsible>
                 
@@ -449,6 +553,37 @@ export function Reports({ accountId }: ReportsProps) {
                       <ChevronRight className="w-4 h-4 text-gray-400" />
                     )}
                   </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2 space-y-3 pl-4">
+                    {/* Session Tags */}
+                    {uniqueSessionTags.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm text-gray-300">Session</Label>
+                        <div className="space-y-1">
+                          {uniqueSessionTags.map((session) => (
+                            <div key={session} className="flex items-center gap-2">
+                              <Checkbox 
+                                id={`session-${session}`}
+                                checked={filters.sessionTags?.includes(session)}
+                                onCheckedChange={(checked) => {
+                                  const current = filters.sessionTags || [];
+                                  setFilters({
+                                    ...filters,
+                                    sessionTags: checked 
+                                      ? [...current, session]
+                                      : current.filter(s => s !== session)
+                                  });
+                                }}
+                                className="border-slate-600"
+                              />
+                              <Label htmlFor={`session-${session}`} className="text-sm text-gray-300 cursor-pointer">
+                                {session}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CollapsibleContent>
                 </Collapsible>
                 
                 {/* Playbook Section */}
@@ -467,6 +602,67 @@ export function Reports({ accountId }: ReportsProps) {
                       <ChevronRight className="w-4 h-4 text-gray-400" />
                     )}
                   </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2 space-y-3 pl-4">
+                    {/* Strategies */}
+                    {uniqueStrategies.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm text-gray-300">Strategy</Label>
+                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                          {uniqueStrategies.map((strategy) => (
+                            <div key={strategy} className="flex items-center gap-2">
+                              <Checkbox 
+                                id={`strategy-${strategy}`}
+                                checked={filters.strategies?.includes(strategy)}
+                                onCheckedChange={(checked) => {
+                                  const current = filters.strategies || [];
+                                  setFilters({
+                                    ...filters,
+                                    strategies: checked 
+                                      ? [...current, strategy]
+                                      : current.filter(s => s !== strategy)
+                                  });
+                                }}
+                                className="border-slate-600"
+                              />
+                              <Label htmlFor={`strategy-${strategy}`} className="text-sm text-gray-300 cursor-pointer">
+                                {strategy}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Setup Types */}
+                    {uniqueSetupTypes.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm text-gray-300">Setup Type</Label>
+                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                          {uniqueSetupTypes.map((setupType) => (
+                            <div key={setupType} className="flex items-center gap-2">
+                              <Checkbox 
+                                id={`setup-${setupType}`}
+                                checked={filters.setupTypes?.includes(setupType)}
+                                onCheckedChange={(checked) => {
+                                  const current = filters.setupTypes || [];
+                                  setFilters({
+                                    ...filters,
+                                    setupTypes: checked 
+                                      ? [...current, setupType]
+                                      : current.filter(s => s !== setupType)
+                                  });
+                                }}
+                                className="border-slate-600"
+                              />
+                              <Label htmlFor={`setup-${setupType}`} className="text-sm text-gray-300 cursor-pointer">
+                                {setupType}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CollapsibleContent>
                 </Collapsible>
               </div>
               
