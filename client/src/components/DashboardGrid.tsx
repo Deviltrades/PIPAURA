@@ -487,7 +487,8 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
   let firstTradePnL = 0, lastTradePnL = 0;
   
   Object.values(tradesByDay).forEach(dayTrades => {
-    if (dayTrades.length > 0) {
+    if (dayTrades.length > 1) {
+      // Only count days with multiple trades to avoid double-counting
       const sorted = dayTrades.sort((a, b) => {
         const timeA = new Date(a.entry_date || a.created_at).getTime();
         const timeB = new Date(b.entry_date || b.created_at).getTime();
@@ -558,11 +559,12 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
     assetExposure[asset].pnl += Number(trade.pnl) || 0;
   });
 
+  const actualTradeCount = (trades || []).length;
   const exposureData = Object.entries(assetExposure).map(([asset, data]) => ({
     asset,
     count: data.count,
     pnl: data.pnl,
-    percentage: totalTrades > 0 ? (data.count / totalTrades) * 100 : 0
+    percentage: actualTradeCount > 0 ? (data.count / actualTradeCount) * 100 : 0
   })).sort((a, b) => b.count - a.count);
 
   const resetLayout = () => {
