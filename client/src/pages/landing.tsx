@@ -105,7 +105,10 @@ export default function Landing() {
             <Button 
               size="lg" 
               className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-xl shadow-cyan-500/30 group"
-              onClick={() => setLocation("/auth")}
+              onClick={() => {
+                setLocation("/features");
+                window.scrollTo(0, 0);
+              }}
               data-testid="button-get-started"
             >
               What's Included

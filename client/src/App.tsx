@@ -9,6 +9,7 @@ import { UserProfileProvider } from "@/hooks/use-user-profile";
 import MainPage from "@/pages/main";
 import Landing from "@/pages/landing";
 import Pricing from "@/pages/pricing";
+import Features from "@/pages/features";
 import AuthPage from "@/pages/auth";
 import ResetPasswordPage from "@/pages/reset-password";
 import MembershipAgreement from "@/pages/membership-agreement";
@@ -72,6 +73,7 @@ function Router() {
       <Route path="/checkout" component={Checkout} />
       <Route path="/payment-success" component={PaymentSuccess} />
       <Route path="/pricing" component={Pricing} />
+      <Route path="/features" component={Features} />
       
       {!user ? (
         <>
