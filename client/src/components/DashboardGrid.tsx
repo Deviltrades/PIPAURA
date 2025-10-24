@@ -176,13 +176,25 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       const savedLayout = savedLayouts[breakpoint] || [];
       const defaultLayout = defaults[breakpoint] || [];
       
-      // Create a map of existing widget IDs in saved layout
-      const savedWidgetIds = new Set(savedLayout.map((item: any) => item.i));
+      // Create a map of default widgets by ID for easy lookup
+      const defaultWidgetsMap = new Map(defaultLayout.map((item: any) => [item.i, item]));
       
-      // Start with saved layout
-      merged[breakpoint] = [...savedLayout];
+      // Update existing widgets with new default heights while preserving positions
+      merged[breakpoint] = savedLayout.map((savedItem: any) => {
+        const defaultItem = defaultWidgetsMap.get(savedItem.i);
+        if (defaultItem) {
+          // Keep saved x/y position but use default w/h (to apply new compact sizes)
+          return {
+            ...savedItem,
+            h: defaultItem.h,  // Use new compact height
+            w: defaultItem.w   // Use new width
+          };
+        }
+        return savedItem;
+      });
       
       // Add any new widgets from defaults that aren't in saved layout
+      const savedWidgetIds = new Set(savedLayout.map((item: any) => item.i));
       defaultLayout.forEach((defaultItem: any) => {
         if (!savedWidgetIds.has(defaultItem.i)) {
           merged[breakpoint].push(defaultItem);
