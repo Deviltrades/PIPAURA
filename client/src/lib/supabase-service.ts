@@ -315,6 +315,7 @@ export interface TradeData {
   attachments?: string[];
   entry_date: string;
   exit_date?: string;
+  custom_tags?: string[];
 }
 
 export async function createTrade(trade: Omit<TradeData, 'user_id'>) {
