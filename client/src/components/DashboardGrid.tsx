@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Responsive, WidthProvider, Layout, Layouts } from "react-grid-layout";
-import { TrendingUp, TrendingDown, BarChart3, Target, DollarSign, Layers, Move, RotateCcw, Save, Grid3X3, Trash2, Palette } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart3, Target, DollarSign, Layers, Move, RotateCcw, Save, Grid3X3, Trash2, Palette, Flame, Clock, Trophy, TrendingUpIcon, CircleDot, PieChart, AlertTriangle, Briefcase } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -52,6 +52,14 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "longshort", x: 0, y: 8, w: 6, h: 4 },
       { i: "timing", x: 6, y: 8, w: 6, h: 7 },
       { i: "calendar", x: 0, y: 15, w: 12, h: 7 },
+      { i: "streak", x: 0, y: 22, w: 3, h: 3 },
+      { i: "holdtime", x: 3, y: 22, w: 3, h: 3 },
+      { i: "mostprofitable", x: 6, y: 22, w: 3, h: 3 },
+      { i: "monthlyprogress", x: 9, y: 22, w: 3, h: 3 },
+      { i: "firstlast", x: 0, y: 25, w: 4, h: 4 },
+      { i: "setupbreakdown", x: 4, y: 25, w: 4, h: 4 },
+      { i: "riskdeviation", x: 8, y: 25, w: 2, h: 4 },
+      { i: "exposure", x: 10, y: 25, w: 2, h: 4 },
     ],
     md: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
@@ -65,6 +73,14 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "longshort", x: 0, y: 16, w: 3, h: 4 },
       { i: "timing", x: 3, y: 16, w: 3, h: 7 },
       { i: "calendar", x: 0, y: 23, w: 6, h: 7 },
+      { i: "streak", x: 0, y: 30, w: 3, h: 3 },
+      { i: "holdtime", x: 3, y: 30, w: 3, h: 3 },
+      { i: "mostprofitable", x: 0, y: 33, w: 3, h: 3 },
+      { i: "monthlyprogress", x: 3, y: 33, w: 3, h: 3 },
+      { i: "firstlast", x: 0, y: 36, w: 3, h: 4 },
+      { i: "setupbreakdown", x: 3, y: 36, w: 3, h: 4 },
+      { i: "riskdeviation", x: 0, y: 40, w: 3, h: 3 },
+      { i: "exposure", x: 3, y: 40, w: 3, h: 3 },
     ],
     sm: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
@@ -78,6 +94,14 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "longshort", x: 0, y: 18, w: 4, h: 4 },
       { i: "timing", x: 0, y: 22, w: 4, h: 7 },
       { i: "calendar", x: 0, y: 29, w: 4, h: 7 },
+      { i: "streak", x: 0, y: 36, w: 2, h: 3 },
+      { i: "holdtime", x: 2, y: 36, w: 2, h: 3 },
+      { i: "mostprofitable", x: 0, y: 39, w: 2, h: 3 },
+      { i: "monthlyprogress", x: 2, y: 39, w: 2, h: 3 },
+      { i: "firstlast", x: 0, y: 42, w: 4, h: 4 },
+      { i: "setupbreakdown", x: 0, y: 46, w: 4, h: 4 },
+      { i: "riskdeviation", x: 0, y: 50, w: 2, h: 3 },
+      { i: "exposure", x: 2, y: 50, w: 2, h: 3 },
     ],
     xs: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
@@ -91,6 +115,14 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "longshort", x: 0, y: 24, w: 2, h: 4 },
       { i: "timing", x: 0, y: 28, w: 2, h: 7 },
       { i: "calendar", x: 0, y: 35, w: 2, h: 7 },
+      { i: "streak", x: 0, y: 42, w: 2, h: 3 },
+      { i: "holdtime", x: 0, y: 45, w: 2, h: 3 },
+      { i: "mostprofitable", x: 0, y: 48, w: 2, h: 3 },
+      { i: "monthlyprogress", x: 0, y: 51, w: 2, h: 3 },
+      { i: "firstlast", x: 0, y: 54, w: 2, h: 4 },
+      { i: "setupbreakdown", x: 0, y: 58, w: 2, h: 4 },
+      { i: "riskdeviation", x: 0, y: 62, w: 2, h: 3 },
+      { i: "exposure", x: 0, y: 65, w: 2, h: 3 },
     ],
     xxs: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
@@ -104,6 +136,14 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "longshort", x: 0, y: 24, w: 2, h: 4 },
       { i: "timing", x: 0, y: 28, w: 2, h: 7 },
       { i: "calendar", x: 0, y: 35, w: 2, h: 7 },
+      { i: "streak", x: 0, y: 42, w: 2, h: 3 },
+      { i: "holdtime", x: 0, y: 45, w: 2, h: 3 },
+      { i: "mostprofitable", x: 0, y: 48, w: 2, h: 3 },
+      { i: "monthlyprogress", x: 0, y: 51, w: 2, h: 3 },
+      { i: "firstlast", x: 0, y: 54, w: 2, h: 4 },
+      { i: "setupbreakdown", x: 0, y: 58, w: 2, h: 4 },
+      { i: "riskdeviation", x: 0, y: 62, w: 2, h: 3 },
+      { i: "exposure", x: 0, y: 65, w: 2, h: 3 },
     ]
   };
 
@@ -354,6 +394,176 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
         status: trade.status
       };
     }) || [];
+
+  // ========== NEW ANALYTICS CALCULATIONS ==========
+  
+  // 1. Longest Winning/Losing Streak
+  let currentWinStreak = 0, maxWinStreak = 0, currentLoseStreak = 0, maxLoseStreak = 0;
+  const sortedTrades = [...(trades || [])].sort((a, b) => {
+    const dateA = new Date(a.entry_date || a.created_at);
+    const dateB = new Date(b.entry_date || b.created_at);
+    return dateA.getTime() - dateB.getTime();
+  });
+  
+  sortedTrades.forEach(trade => {
+    const pnl = Number(trade.pnl) || 0;
+    if (pnl > 0) {
+      currentWinStreak++;
+      currentLoseStreak = 0;
+      maxWinStreak = Math.max(maxWinStreak, currentWinStreak);
+    } else if (pnl < 0) {
+      currentLoseStreak++;
+      currentWinStreak = 0;
+      maxLoseStreak = Math.max(maxLoseStreak, currentLoseStreak);
+    }
+  });
+
+  // 2. Average Hold Time
+  const tradesWithTime = (trades || []).filter(t => t.entry_date && t.exit_date);
+  const avgHoldTimeMs = tradesWithTime.length > 0
+    ? tradesWithTime.reduce((sum, t) => {
+        const entry = new Date(t.entry_date).getTime();
+        const exit = new Date(t.exit_date).getTime();
+        return sum + (exit - entry);
+      }, 0) / tradesWithTime.length
+    : 0;
+  
+  const hours = Math.floor(avgHoldTimeMs / (1000 * 60 * 60));
+  const minutes = Math.floor((avgHoldTimeMs % (1000 * 60 * 60)) / (1000 * 60));
+  const avgHoldTimeDisplay = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+  const winningTradesWithTime = tradesWithTime.filter(t => (Number(t.pnl) || 0) > 0);
+  const losingTradesWithTime = tradesWithTime.filter(t => (Number(t.pnl) || 0) < 0);
+  
+  const avgWinHoldMs = winningTradesWithTime.length > 0
+    ? winningTradesWithTime.reduce((sum, t) => {
+        const entry = new Date(t.entry_date).getTime();
+        const exit = new Date(t.exit_date).getTime();
+        return sum + (exit - entry);
+      }, 0) / winningTradesWithTime.length
+    : 0;
+  
+  const avgLossHoldMs = losingTradesWithTime.length > 0
+    ? losingTradesWithTime.reduce((sum, t) => {
+        const entry = new Date(t.entry_date).getTime();
+        const exit = new Date(t.exit_date).getTime();
+        return sum + (exit - entry);
+      }, 0) / losingTradesWithTime.length
+    : 0;
+
+  const winHours = Math.floor(avgWinHoldMs / (1000 * 60 * 60));
+  const winMinutes = Math.floor((avgWinHoldMs % (1000 * 60 * 60)) / (1000 * 60));
+  const avgWinHoldDisplay = winHours > 0 ? `${winHours}h ${winMinutes}m` : `${winMinutes}m`;
+
+  const lossHours = Math.floor(avgLossHoldMs / (1000 * 60 * 60));
+  const lossMinutes = Math.floor((avgLossHoldMs % (1000 * 60 * 60)) / (1000 * 60));
+  const avgLossHoldDisplay = lossHours > 0 ? `${lossHours}h ${lossMinutes}m` : `${lossMinutes}m`;
+
+  // 3. Most Profitable Instrument
+  const instrumentPnL: Record<string, number> = {};
+  (trades || []).forEach(trade => {
+    const instrument = trade.instrument || 'Unknown';
+    instrumentPnL[instrument] = (instrumentPnL[instrument] || 0) + (Number(trade.pnl) || 0);
+  });
+  
+  const mostProfitable = Object.entries(instrumentPnL).sort((a, b) => b[1] - a[1])[0];
+  const mostProfitableInstrument = mostProfitable ? mostProfitable[0] : 'N/A';
+  const mostProfitablePnL = mostProfitable ? mostProfitable[1] : 0;
+
+  // 4. Monthly Progress Bar
+  const monthlyTarget = 5000; // You can make this configurable later
+  const monthlyProgress = monthlyPnL;
+  const monthlyProgressPercent = Math.min((monthlyProgress / monthlyTarget) * 100, 100);
+
+  // 5. First vs Last Trade of Day
+  const tradesByDay: Record<string, any[]> = {};
+  (trades || []).forEach(trade => {
+    const dateKey = new Date(trade.entry_date || trade.created_at).toDateString();
+    if (!tradesByDay[dateKey]) tradesByDay[dateKey] = [];
+    tradesByDay[dateKey].push(trade);
+  });
+
+  let firstTradeWins = 0, firstTradeLosses = 0, lastTradeWins = 0, lastTradeLosses = 0;
+  let firstTradePnL = 0, lastTradePnL = 0;
+  
+  Object.values(tradesByDay).forEach(dayTrades => {
+    if (dayTrades.length > 0) {
+      const sorted = dayTrades.sort((a, b) => {
+        const timeA = new Date(a.entry_date || a.created_at).getTime();
+        const timeB = new Date(b.entry_date || b.created_at).getTime();
+        return timeA - timeB;
+      });
+      const first = sorted[0];
+      const last = sorted[sorted.length - 1];
+      
+      const firstPnL = Number(first.pnl) || 0;
+      const lastPnL = Number(last.pnl) || 0;
+      
+      firstTradePnL += firstPnL;
+      lastTradePnL += lastPnL;
+      
+      if (firstPnL > 0) firstTradeWins++; else if (firstPnL < 0) firstTradeLosses++;
+      if (lastPnL > 0) lastTradeWins++; else if (lastPnL < 0) lastTradeLosses++;
+    }
+  });
+
+  const firstTradeWinRate = (firstTradeWins + firstTradeLosses) > 0 
+    ? (firstTradeWins / (firstTradeWins + firstTradeLosses)) * 100 
+    : 0;
+  const lastTradeWinRate = (lastTradeWins + lastTradeLosses) > 0 
+    ? (lastTradeWins / (lastTradeWins + lastTradeLosses)) * 100 
+    : 0;
+
+  // 6. Setup Type Breakdown
+  const setupPnL: Record<string, { count: number; pnl: number; wins: number }> = {};
+  (trades || []).forEach(trade => {
+    const setup = trade.setup_type || trade.setup || 'Unknown';
+    if (!setupPnL[setup]) setupPnL[setup] = { count: 0, pnl: 0, wins: 0 };
+    setupPnL[setup].count++;
+    setupPnL[setup].pnl += Number(trade.pnl) || 0;
+    if ((Number(trade.pnl) || 0) > 0) setupPnL[setup].wins++;
+  });
+  
+  const topSetups = Object.entries(setupPnL)
+    .map(([setup, data]) => ({
+      setup,
+      ...data,
+      winRate: data.count > 0 ? (data.wins / data.count) * 100 : 0
+    }))
+    .sort((a, b) => b.pnl - a.pnl)
+    .slice(0, 5);
+
+  // 7. Risk per Trade Deviation
+  const riskAmounts = (trades || [])
+    .filter(t => t.risk_amount && Number(t.risk_amount) > 0)
+    .map(t => Number(t.risk_amount));
+  
+  const avgRisk = riskAmounts.length > 0 
+    ? riskAmounts.reduce((sum, r) => sum + r, 0) / riskAmounts.length 
+    : 0;
+  
+  const variance = riskAmounts.length > 0
+    ? riskAmounts.reduce((sum, r) => sum + Math.pow(r - avgRisk, 2), 0) / riskAmounts.length
+    : 0;
+  
+  const stdDeviation = Math.sqrt(variance);
+  const deviationPercent = avgRisk > 0 ? (stdDeviation / avgRisk) * 100 : 0;
+
+  // 8. Exposure by Pair / Asset Class
+  const assetExposure: Record<string, { count: number; pnl: number }> = {};
+  (trades || []).forEach(trade => {
+    const asset = trade.instrument_type || 'FOREX';
+    if (!assetExposure[asset]) assetExposure[asset] = { count: 0, pnl: 0 };
+    assetExposure[asset].count++;
+    assetExposure[asset].pnl += Number(trade.pnl) || 0;
+  });
+
+  const exposureData = Object.entries(assetExposure).map(([asset, data]) => ({
+    asset,
+    count: data.count,
+    pnl: data.pnl,
+    percentage: totalTrades > 0 ? (data.count / totalTrades) * 100 : 0
+  })).sort((a, b) => b.count - a.count);
 
   const resetLayout = () => {
     resetLayoutMutation.mutate();
@@ -1075,6 +1285,212 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           <div key="calendar">
             <DraggableWidget title="Trading Calendar" themeColor={themeColor} textColor={textColor}>
               <CalendarWidget textColor={textColor} selectedAccount={selectedAccount} />
+            </DraggableWidget>
+          </div>
+
+          {/* 1. Winning/Losing Streak Widget */}
+          <div key="streak">
+            <DraggableWidget title="Streak Tracker" themeColor={themeColor} textColor={textColor}>
+              <div className="grid grid-cols-2 gap-3 h-full">
+                <div className="bg-slate-800/20 rounded-lg p-3 border border-green-500/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Flame className="h-4 w-4 text-green-500" />
+                    <div className="text-xs text-gray-400">Win Streak</div>
+                  </div>
+                  <div className="text-3xl font-bold text-green-500">{maxWinStreak}</div>
+                  <div className="text-xs text-gray-400 mt-1">trades</div>
+                </div>
+                <div className="bg-slate-800/20 rounded-lg p-3 border border-red-500/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Flame className="h-4 w-4 text-red-500" />
+                    <div className="text-xs text-gray-400">Loss Streak</div>
+                  </div>
+                  <div className="text-3xl font-bold text-red-500">{maxLoseStreak}</div>
+                  <div className="text-xs text-gray-400 mt-1">trades</div>
+                </div>
+              </div>
+            </DraggableWidget>
+          </div>
+
+          {/* 2. Average Hold Time Widget */}
+          <div key="holdtime">
+            <DraggableWidget title="Hold Time" themeColor={themeColor} textColor={textColor}>
+              <div className="space-y-3 h-full">
+                <div className="bg-slate-800/20 rounded-lg p-3 border border-cyan-700/30">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock className="h-4 w-4 text-cyan-500" />
+                    <div className="text-xs text-gray-400">Average</div>
+                  </div>
+                  <div className="text-2xl font-bold" style={{ color: textColor }}>{avgHoldTimeDisplay}</div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-slate-800/20 rounded-lg p-2 border border-green-500/30">
+                    <div className="text-xs text-gray-400 mb-1">Wins</div>
+                    <div className="text-sm font-bold text-green-500">{avgWinHoldDisplay}</div>
+                  </div>
+                  <div className="bg-slate-800/20 rounded-lg p-2 border border-red-500/30">
+                    <div className="text-xs text-gray-400 mb-1">Losses</div>
+                    <div className="text-sm font-bold text-red-500">{avgLossHoldDisplay}</div>
+                  </div>
+                </div>
+              </div>
+            </DraggableWidget>
+          </div>
+
+          {/* 3. Most Profitable Instrument Widget */}
+          <div key="mostprofitable">
+            <DraggableWidget title="Top Instrument" themeColor={themeColor} textColor={textColor}>
+              <div className="flex flex-col justify-center items-center h-full">
+                <Trophy className="h-8 w-8 text-yellow-500 mb-3" />
+                <div className="text-xl font-bold text-center mb-2" style={{ color: textColor }}>
+                  {mostProfitableInstrument}
+                </div>
+                <div className={`text-2xl font-bold ${mostProfitablePnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {mostProfitablePnL >= 0 ? '+' : ''}${mostProfitablePnL.toFixed(2)}
+                </div>
+              </div>
+            </DraggableWidget>
+          </div>
+
+          {/* 4. Monthly Progress Bar Widget */}
+          <div key="monthlyprogress">
+            <DraggableWidget title="Monthly Target" themeColor={themeColor} textColor={textColor}>
+              <div className="flex flex-col justify-center h-full space-y-3">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-400">Progress</span>
+                  <span className="font-bold" style={{ color: textColor }}>${monthlyProgress.toFixed(0)} / ${monthlyTarget}</span>
+                </div>
+                <div className="w-full bg-slate-800 rounded-full h-4 overflow-hidden border border-cyan-700/30">
+                  <div 
+                    className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500 flex items-center justify-end pr-2"
+                    style={{ width: `${monthlyProgressPercent}%` }}
+                  >
+                    <span className="text-xs font-bold text-white">{monthlyProgressPercent.toFixed(0)}%</span>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400 text-center">
+                  {monthlyProgress >= monthlyTarget ? '🎉 Target reached!' : `$${(monthlyTarget - monthlyProgress).toFixed(0)} to go`}
+                </div>
+              </div>
+            </DraggableWidget>
+          </div>
+
+          {/* 5. First vs Last Trade Widget */}
+          <div key="firstlast">
+            <DraggableWidget title="First vs Last Trade of Day" themeColor={themeColor} textColor={textColor}>
+              <div className="grid grid-cols-2 gap-4 h-full">
+                <div className="bg-slate-800/20 rounded-lg p-3 border border-cyan-700/30">
+                  <div className="text-center mb-3">
+                    <div className="text-gray-400 text-sm">First Trade</div>
+                  </div>
+                  <div className="relative w-20 h-20 mx-auto mb-3">
+                    <svg className="w-20 h-20 transform -rotate-90">
+                      <circle cx="40" cy="40" r="30" stroke="rgb(30 41 59)" strokeWidth="6" fill="none" />
+                      <circle
+                        cx="40" cy="40" r="30" stroke="rgb(34 197 94)" strokeWidth="6" fill="none"
+                        strokeDasharray={`${firstTradeWinRate * 1.88} 188`} className="transition-all duration-300"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-white font-bold text-lg">{firstTradeWinRate.toFixed(0)}%</div>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className={`font-bold text-lg ${firstTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {firstTradePnL >= 0 ? '+' : ''}${firstTradePnL.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-800/20 rounded-lg p-3 border border-cyan-700/30">
+                  <div className="text-center mb-3">
+                    <div className="text-gray-400 text-sm">Last Trade</div>
+                  </div>
+                  <div className="relative w-20 h-20 mx-auto mb-3">
+                    <svg className="w-20 h-20 transform -rotate-90">
+                      <circle cx="40" cy="40" r="30" stroke="rgb(30 41 59)" strokeWidth="6" fill="none" />
+                      <circle
+                        cx="40" cy="40" r="30" stroke="rgb(239 68 68)" strokeWidth="6" fill="none"
+                        strokeDasharray={`${lastTradeWinRate * 1.88} 188`} className="transition-all duration-300"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-white font-bold text-lg">{lastTradeWinRate.toFixed(0)}%</div>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className={`font-bold text-lg ${lastTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {lastTradePnL >= 0 ? '+' : ''}${lastTradePnL.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </DraggableWidget>
+          </div>
+
+          {/* 6. Setup Type Breakdown Widget */}
+          <div key="setupbreakdown">
+            <DraggableWidget title="Setup Breakdown" themeColor={themeColor} textColor={textColor}>
+              <div className="space-y-2 overflow-y-auto h-full">
+                {topSetups.length > 0 ? (
+                  topSetups.map((setup, idx) => (
+                    <div key={idx} className="bg-slate-800/20 rounded-lg p-2 border border-cyan-700/30">
+                      <div className="flex justify-between items-center mb-1">
+                        <div className="font-medium text-sm" style={{ color: textColor }}>{setup.setup}</div>
+                        <div className={`text-sm font-bold ${setup.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {setup.pnl >= 0 ? '+' : ''}${setup.pnl.toFixed(2)}
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-400">
+                        <span>{setup.count} trades</span>
+                        <span>{setup.winRate.toFixed(0)}% WR</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-gray-400 py-4">No setup data</div>
+                )}
+              </div>
+            </DraggableWidget>
+          </div>
+
+          {/* 7. Risk Deviation Widget */}
+          <div key="riskdeviation">
+            <DraggableWidget title="Risk Deviation" themeColor={themeColor} textColor={textColor}>
+              <div className="flex flex-col justify-center items-center h-full">
+                <AlertTriangle className={`h-8 w-8 mb-3 ${deviationPercent > 20 ? 'text-red-500' : deviationPercent > 10 ? 'text-yellow-500' : 'text-green-500'}`} />
+                <div className={`text-3xl font-bold mb-2 ${deviationPercent > 20 ? 'text-red-500' : deviationPercent > 10 ? 'text-yellow-500' : 'text-green-500'}`}>
+                  {deviationPercent.toFixed(1)}%
+                </div>
+                <div className="text-xs text-gray-400 text-center">Avg Risk: ${avgRisk.toFixed(2)}</div>
+                <div className="text-xs text-gray-400 text-center">Std Dev: ${stdDeviation.toFixed(2)}</div>
+              </div>
+            </DraggableWidget>
+          </div>
+
+          {/* 8. Exposure by Asset Class Widget */}
+          <div key="exposure">
+            <DraggableWidget title="Asset Exposure" themeColor={themeColor} textColor={textColor}>
+              <div className="space-y-2 overflow-y-auto h-full">
+                {exposureData.length > 0 ? (
+                  exposureData.map((item, idx) => (
+                    <div key={idx} className="bg-slate-800/20 rounded-lg p-2 border border-cyan-700/30">
+                      <div className="flex justify-between items-center mb-1">
+                        <div className="font-medium text-sm" style={{ color: textColor }}>{item.asset}</div>
+                        <div className="text-sm font-bold text-cyan-500">{item.percentage.toFixed(0)}%</div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-400">
+                        <span>{item.count} trades</span>
+                        <span className={item.pnl >= 0 ? 'text-green-500' : 'text-red-500'}>
+                          {item.pnl >= 0 ? '+' : ''}${item.pnl.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-gray-400 py-4">No exposure data</div>
+                )}
+              </div>
             </DraggableWidget>
           </div>
         </ResponsiveGridLayout>
