@@ -19,6 +19,12 @@ interface Trade {
   pnl: number;
   createdAt: string;
   status: "OPEN" | "CLOSED";
+  strategy?: string | null;
+  setup_type?: string | null;
+  custom_tags?: string[] | null;
+  entry_price?: string | number | null;
+  stop_loss?: string | number | null;
+  position_size?: number | null;
 }
 
 interface TradingAnalyticsProps {
