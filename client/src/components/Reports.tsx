@@ -12,9 +12,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Filter, Calendar as CalendarIcon, ChevronDown, ChevronRight, MoreVertical } from "lucide-react";
 import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
-import { getTrades } from "@/lib/supabase-service";
+import { getTrades, getUserTags } from "@/lib/supabase-service";
 import type { Trade } from "@shared/schema";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface ReportsProps {
   accountId: string;
@@ -28,6 +29,7 @@ interface TradeFilters {
   sessionTags?: string[];
   strategies?: string[];
   setupTypes?: string[];
+  customTags?: string[];
 }
 
 interface DateRange {
@@ -52,6 +54,12 @@ export function Reports({ accountId }: ReportsProps) {
   const { data: allTrades = [], isLoading } = useQuery({
     queryKey: ['/api/trades', accountId],
     queryFn: () => getTrades(),
+  });
+  
+  // Fetch user tags
+  const { data: userTags = [] } = useQuery<any[]>({
+    queryKey: ["user-tags"],
+    queryFn: getUserTags,
   });
   
   // Extract unique values for filters from trades
@@ -121,6 +129,14 @@ export function Reports({ accountId }: ReportsProps) {
       // Setup Type filter
       if (filters.setupTypes && filters.setupTypes.length > 0) {
         if (!trade.setup_type || !filters.setupTypes.includes(trade.setup_type)) return false;
+      }
+      
+      // Custom Tags filter
+      if (filters.customTags && filters.customTags.length > 0) {
+        if (!trade.custom_tags || trade.custom_tags.length === 0) return false;
+        // Check if trade has at least one of the selected tags
+        const hasMatchingTag = filters.customTags.some(tag => trade.custom_tags?.includes(tag));
+        if (!hasMatchingTag) return false;
       }
       
       return true;
@@ -664,6 +680,61 @@ export function Reports({ accountId }: ReportsProps) {
                     )}
                   </CollapsibleContent>
                 </Collapsible>
+                
+                {/* Custom Tags Section */}
+                {userTags.length > 0 && (
+                  <Collapsible 
+                    open={expandedSections.includes("customtags")}
+                    onOpenChange={() => toggleSection("customtags")}
+                  >
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800">
+                      <div className="flex items-center gap-2">
+                        <span className="text-purple-400 text-xl">🏷️</span>
+                        <span className="text-white font-medium">Custom Tags</span>
+                      </div>
+                      {expandedSections.includes("customtags") ? (
+                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                      )}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-2 space-y-3 pl-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm text-gray-300">Select Tags</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {userTags.map((tag: any) => {
+                            const isSelected = filters.customTags?.includes(tag.name);
+                            return (
+                              <Badge
+                                key={tag.id}
+                                onClick={() => {
+                                  const current = filters.customTags || [];
+                                  setFilters({
+                                    ...filters,
+                                    customTags: isSelected 
+                                      ? current.filter(t => t !== tag.name)
+                                      : [...current, tag.name]
+                                  });
+                                }}
+                                className={`cursor-pointer transition-all text-white border ${
+                                  isSelected ? 'scale-105' : 'opacity-60 hover:opacity-100'
+                                }`}
+                                style={{
+                                  backgroundColor: isSelected ? `${tag.color}60` : `${tag.color}20`,
+                                  borderColor: tag.color,
+                                  boxShadow: isSelected ? `0 0 15px ${tag.color}60` : 'none'
+                                }}
+                                data-testid={`filter-tag-${tag.name.toLowerCase().replace(/\s+/g, "-")}`}
+                              >
+                                {tag.name} {isSelected && "✓"}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
               </div>
               
               <SheetFooter className="mt-6 flex-col sm:flex-col gap-2">
