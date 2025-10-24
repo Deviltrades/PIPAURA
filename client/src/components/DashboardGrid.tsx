@@ -743,7 +743,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           }}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
           cols={{ lg: 12, md: 6, sm: 4, xs: 2, xxs: 2 }}
-          rowHeight={60}
+          rowHeight={80}
           isDraggable={editMode}
           isResizable={editMode}
           margin={[16, 16]}
