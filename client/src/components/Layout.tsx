@@ -46,19 +46,6 @@ export default function Layout({ children }: LayoutProps) {
             <Settings className="h-4 w-4" />
           </Link>
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="bg-slate-900/40 border-cyan-600/30 text-white hover:bg-slate-800/50"
-          data-testid="button-theme-toggle"
-        >
-          {theme === "dark" ? (
-            <Sun className="h-4 w-4" />
-          ) : (
-            <Moon className="h-4 w-4" />
-          )}
-        </Button>
       </div>
 
       {/* Main Content */}

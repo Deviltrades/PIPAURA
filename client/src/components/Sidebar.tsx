@@ -146,26 +146,6 @@ function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         </div>
       </nav>
 
-      <div className="p-4 border-t border-white/5">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleTheme}
-          className="w-full justify-start text-gray-300 hover:text-white hover:bg-white/5 transition-all"
-        >
-          {theme === "dark" ? (
-            <>
-              <Sun className="h-4 w-4 mr-3 text-gray-400" />
-              <span>Light Mode</span>
-            </>
-          ) : (
-            <>
-              <Moon className="h-4 w-4 mr-3 text-gray-400" />
-              <span>Dark Mode</span>
-            </>
-          )}
-        </Button>
-      </div>
     </>
   );
 
