@@ -70,7 +70,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "mostprofitable", x: 6, y: 22, w: 3, h: 5 },
       { i: "monthlyprogress", x: 9, y: 22, w: 3, h: 5 },
       { i: "firstlast", x: 0, y: 27, w: 6, h: 7 },
-      { i: "setupbreakdown", x: 6, y: 27, w: 6, h: 8 },
+      { i: "setupbreakdown", x: 6, y: 27, w: 6, h: 6 },
       { i: "riskdeviation", x: 0, y: 34, w: 3, h: 5 },
       { i: "exposure", x: 3, y: 34, w: 3, h: 5 },
     ],
@@ -91,7 +91,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "mostprofitable", x: 0, y: 35, w: 3, h: 5 },
       { i: "monthlyprogress", x: 3, y: 35, w: 3, h: 5 },
       { i: "firstlast", x: 0, y: 40, w: 6, h: 7 },
-      { i: "setupbreakdown", x: 0, y: 47, w: 6, h: 8 },
+      { i: "setupbreakdown", x: 0, y: 47, w: 6, h: 6 },
       { i: "riskdeviation", x: 0, y: 55, w: 3, h: 5 },
       { i: "exposure", x: 3, y: 55, w: 3, h: 5 },
     ],
@@ -112,7 +112,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "mostprofitable", x: 0, y: 41, w: 2, h: 5 },
       { i: "monthlyprogress", x: 2, y: 41, w: 2, h: 5 },
       { i: "firstlast", x: 0, y: 46, w: 4, h: 7 },
-      { i: "setupbreakdown", x: 0, y: 53, w: 4, h: 8 },
+      { i: "setupbreakdown", x: 0, y: 53, w: 4, h: 6 },
       { i: "riskdeviation", x: 0, y: 61, w: 2, h: 5 },
       { i: "exposure", x: 2, y: 61, w: 2, h: 5 },
     ],
@@ -133,7 +133,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "mostprofitable", x: 0, y: 53, w: 2, h: 5 },
       { i: "monthlyprogress", x: 0, y: 58, w: 2, h: 5 },
       { i: "firstlast", x: 0, y: 63, w: 2, h: 7 },
-      { i: "setupbreakdown", x: 0, y: 70, w: 2, h: 8 },
+      { i: "setupbreakdown", x: 0, y: 70, w: 2, h: 6 },
       { i: "riskdeviation", x: 0, y: 78, w: 2, h: 5 },
       { i: "exposure", x: 0, y: 83, w: 2, h: 5 },
     ],
@@ -154,7 +154,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "mostprofitable", x: 0, y: 53, w: 2, h: 5 },
       { i: "monthlyprogress", x: 0, y: 58, w: 2, h: 5 },
       { i: "firstlast", x: 0, y: 63, w: 2, h: 7 },
-      { i: "setupbreakdown", x: 0, y: 70, w: 2, h: 8 },
+      { i: "setupbreakdown", x: 0, y: 70, w: 2, h: 6 },
       { i: "riskdeviation", x: 0, y: 78, w: 2, h: 5 },
       { i: "exposure", x: 0, y: 83, w: 2, h: 5 },
     ]
@@ -567,24 +567,74 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
     ? (lastTradeWins / (lastTradeWins + lastTradeLosses)) * 100 
     : 0;
 
-  // 6. Setup Type Breakdown
-  const setupPnL: Record<string, { count: number; pnl: number; wins: number }> = {};
+  // 6. Setup Type Breakdown with advanced metrics
+  const [setupSortBy, setSetupSortBy] = useState<'pnl' | 'winRate' | 'avgR' | 'expectancy'>('pnl');
+  
+  const setupMetrics: Record<string, { 
+    count: number; 
+    pnl: number; 
+    wins: number; 
+    totalRisk: number;
+    avgWin: number;
+    avgLoss: number;
+  }> = {};
+  
   (trades || []).forEach(trade => {
     const setup = trade.setup_type || trade.setup || 'Unknown';
-    if (!setupPnL[setup]) setupPnL[setup] = { count: 0, pnl: 0, wins: 0 };
-    setupPnL[setup].count++;
-    setupPnL[setup].pnl += Number(trade.pnl) || 0;
-    if ((Number(trade.pnl) || 0) > 0) setupPnL[setup].wins++;
+    if (!setupMetrics[setup]) {
+      setupMetrics[setup] = { count: 0, pnl: 0, wins: 0, totalRisk: 0, avgWin: 0, avgLoss: 0 };
+    }
+    
+    const pnl = Number(trade.pnl) || 0;
+    const risk = Math.abs(Number(trade.risk_amount) || 1); // Use risk_amount if available, default to 1
+    
+    setupMetrics[setup].count++;
+    setupMetrics[setup].pnl += pnl;
+    setupMetrics[setup].totalRisk += risk;
+    
+    if (pnl > 0) {
+      setupMetrics[setup].wins++;
+      setupMetrics[setup].avgWin += pnl;
+    } else if (pnl < 0) {
+      setupMetrics[setup].avgLoss += Math.abs(pnl);
+    }
   });
   
-  const topSetups = Object.entries(setupPnL)
-    .map(([setup, data]) => ({
-      setup,
-      ...data,
-      winRate: data.count > 0 ? (data.wins / data.count) * 100 : 0
-    }))
-    .sort((a, b) => b.pnl - a.pnl)
-    .slice(0, 5);
+  const allSetups = Object.entries(setupMetrics)
+    .map(([setup, data]) => {
+      const winRate = data.count > 0 ? (data.wins / data.count) * 100 : 0;
+      const losses = data.count - data.wins;
+      const avgWin = data.wins > 0 ? data.avgWin / data.wins : 0;
+      const avgLoss = losses > 0 ? data.avgLoss / losses : 0;
+      const avgR = data.totalRisk > 0 ? data.pnl / data.totalRisk : 0;
+      const expectancy = data.count > 0 
+        ? ((winRate / 100) * avgWin) - ((1 - winRate / 100) * avgLoss)
+        : 0;
+      
+      return {
+        setup,
+        count: data.count,
+        pnl: data.pnl,
+        wins: data.wins,
+        winRate,
+        avgR,
+        expectancy,
+        avgWin,
+        avgLoss
+      };
+    })
+    .sort((a, b) => {
+      if (setupSortBy === 'pnl') return b.pnl - a.pnl;
+      if (setupSortBy === 'winRate') return b.winRate - a.winRate;
+      if (setupSortBy === 'avgR') return b.avgR - a.avgR;
+      if (setupSortBy === 'expectancy') return b.expectancy - a.expectancy;
+      return 0;
+    });
+  
+  const topSetups = allSetups.slice(0, 5);
+  
+  // Colors for donut chart
+  const setupColors = ['#22d3ee', '#06b6d4', '#0891b2', '#0e7490', '#155e75'];
 
   // 7. Risk per Trade Deviation - Enhanced with histogram data
   // Get account balance for risk percentage calculation
@@ -1589,25 +1639,125 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
 
           {/* 6. Setup Type Breakdown Widget */}
           <div key="setupbreakdown">
-            <DraggableWidget title="Setup Breakdown" themeColor={themeColor} textColor={textColor}>
-              <div className="space-y-2 overflow-y-auto h-full">
+            <DraggableWidget 
+              title="Setup Breakdown" 
+              themeColor={themeColor} 
+              textColor={textColor}
+              infoContent={
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">What This Shows</h4>
+                    <p className="text-gray-300">
+                      This widget analyzes your performance across different trading setups, showing which strategies work best for you.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">Key Metrics</h4>
+                    <ul className="text-gray-300 space-y-1 text-xs">
+                      <li><span className="text-cyan-400">Win Rate</span>: Percentage of winning trades</li>
+                      <li><span className="text-cyan-400">Avg R</span>: Average return per dollar risked</li>
+                      <li><span className="text-cyan-400">Expectancy</span>: Expected profit per trade</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">Gradient Borders</h4>
+                    <p className="text-gray-300">
+                      The top 1-2 performing setups are highlighted with glowing gradient borders to reward your mastery of those strategies.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-cyan-400 mb-2">Sorting</h4>
+                    <p className="text-gray-300">
+                      Click column headers to sort by P&L, Win Rate, Avg R, or Expectancy to identify your most profitable strategies.
+                    </p>
+                  </div>
+                </div>
+              }
+            >
+              <div className="flex flex-col h-full">
                 {topSetups.length > 0 ? (
-                  topSetups.map((setup, idx) => (
-                    <div key={idx} className="bg-slate-800/20 rounded-lg p-2 border border-cyan-700/30">
-                      <div className="flex justify-between items-center mb-1">
-                        <div className="font-medium text-sm" style={{ color: textColor }}>{setup.setup}</div>
-                        <div className={`text-sm font-bold ${setup.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                          {setup.pnl >= 0 ? '+' : ''}${setup.pnl.toFixed(2)}
-                        </div>
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-400">
-                        <span>{setup.count} trades</span>
-                        <span>{setup.winRate.toFixed(0)}% WR</span>
-                      </div>
+                  <>
+                    {/* Sortable Table */}
+                    <div className="overflow-x-auto flex-1">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-cyan-700/30">
+                            <th className="text-left py-2 px-1 text-gray-400">Setup</th>
+                            <th 
+                              className="text-center py-2 px-1 text-gray-400 cursor-pointer hover:text-cyan-400 transition-colors"
+                              onClick={() => setSetupSortBy('pnl')}
+                              data-testid="sort-pnl"
+                            >
+                              P&L {setupSortBy === 'pnl' && '↓'}
+                            </th>
+                            <th 
+                              className="text-center py-2 px-1 text-gray-400 cursor-pointer hover:text-cyan-400 transition-colors"
+                              onClick={() => setSetupSortBy('winRate')}
+                              data-testid="sort-winrate"
+                            >
+                              WR% {setupSortBy === 'winRate' && '↓'}
+                            </th>
+                            <th 
+                              className="text-center py-2 px-1 text-gray-400 cursor-pointer hover:text-cyan-400 transition-colors"
+                              onClick={() => setSetupSortBy('avgR')}
+                              data-testid="sort-avgr"
+                            >
+                              Avg R {setupSortBy === 'avgR' && '↓'}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {topSetups.map((setup, idx) => {
+                            const isTop2 = idx < 2;
+                            const gradientClass = idx === 0 
+                              ? 'bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500' 
+                              : 'bg-gradient-to-r from-cyan-400 via-teal-400 to-cyan-500';
+                            
+                            return (
+                              <tr 
+                                key={idx}
+                                className={`border-b border-slate-700/30 relative ${isTop2 ? 'glow-border' : ''}`}
+                                data-testid={`setup-row-${idx}`}
+                              >
+                                {isTop2 && (
+                                  <td colSpan={4} className="absolute inset-0 pointer-events-none">
+                                    <div className={`absolute inset-0 ${gradientClass} opacity-20 rounded animate-pulse`} />
+                                    <div className={`absolute inset-0 ${gradientClass} blur-sm opacity-30`} />
+                                  </td>
+                                )}
+                                <td className="py-2 px-1 font-medium relative z-10" style={{ color: textColor }}>
+                                  <div className="flex items-center gap-1">
+                                    {isTop2 && <span className="text-yellow-400">⭐</span>}
+                                    <span className="truncate">{setup.setup}</span>
+                                  </div>
+                                </td>
+                                <td className="text-center py-2 px-1 relative z-10">
+                                  <span className={`font-bold ${setup.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                    {setup.pnl >= 0 ? '+' : ''}${Math.abs(setup.pnl).toFixed(0)}
+                                  </span>
+                                </td>
+                                <td className="text-center py-2 px-1 text-gray-300 relative z-10">
+                                  {setup.winRate.toFixed(0)}%
+                                </td>
+                                <td className="text-center py-2 px-1 relative z-10">
+                                  <span className={setup.avgR >= 0 ? 'text-cyan-400' : 'text-gray-400'}>
+                                    {setup.avgR.toFixed(1)}R
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
-                  ))
+                  </>
                 ) : (
-                  <div className="text-center text-gray-400 py-4">No setup data</div>
+                  <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                    No setup data available
+                  </div>
                 )}
               </div>
             </DraggableWidget>
