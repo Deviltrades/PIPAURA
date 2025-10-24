@@ -8,21 +8,25 @@ import { Plus, Edit, Trash2, Upload, Scan, Clock } from "lucide-react";
 import { AddTradeModal } from "@/components/AddTradeModal";
 import { UploadTradesModal } from "@/components/UploadTradesModal";
 import { OCRUploadModal } from "@/components/OCRUploadModal";
+import { ManageTagsDialog } from "@/components/ManageTagsDialog";
 import { AccountSelector } from "@/components/AccountSelector";
 import { formatCurrency } from "@/lib/utils";
-import { getTrades, deleteTrade, bulkDeleteTrades } from "@/lib/supabase-service";
+import { getTrades, deleteTrade, bulkDeleteTrades, getUserTags } from "@/lib/supabase-service";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
 import { formatTradeDateTime } from "@/lib/date-utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tag } from "lucide-react";
 
 export default function Trades() {
   const [selectedAccount, setSelectedAccount] = useSelectedAccount();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isOCRModalOpen, setIsOCRModalOpen] = useState(false);
+  const [isManageTagsOpen, setIsManageTagsOpen] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
+  const [managingTagsTrade, setManagingTagsTrade] = useState(null);
   const [sessionFilter, setSessionFilter] = useState<string>("all");
   const [strategyFilter, setStrategyFilter] = useState<string>("all");
   const [selectedTrades, setSelectedTrades] = useState<string[]>([]);
@@ -45,6 +49,12 @@ export default function Trades() {
     queryFn: () => getTrades(selectedAccount),
     retry: false,
   }) as { data: any[], isLoading: boolean };
+  
+  // Fetch user tags
+  const { data: userTags = [] } = useQuery<any[]>({
+    queryKey: ["user-tags"],
+    queryFn: getUserTags,
+  });
 
   const deleteMutation = useMutation({
     mutationFn: deleteTrade,
@@ -70,6 +80,17 @@ export default function Trades() {
   const handleEdit = (trade: any) => {
     setEditingTrade(trade);
     setIsFormOpen(true);
+  };
+  
+  const handleManageTags = (trade: any) => {
+    setManagingTagsTrade(trade);
+    setIsManageTagsOpen(true);
+  };
+  
+  // Helper function to get tag color from user tags
+  const getTagColor = (tagName: string) => {
+    const tag = userTags.find((t: any) => t.name === tagName);
+    return tag?.color || "#06b6d4"; // Default to cyan
   };
 
   const handleDelete = (id: string) => {
@@ -310,10 +331,34 @@ export default function Trades() {
                           <Badge variant="outline" className="border-cyan-500/50 text-cyan-400 bg-cyan-600/10 text-xs" data-testid={`badge-instrument-${trade.id}`}>
                             {trade.instrument_type}
                           </Badge>
+                          {/* Custom Tags */}
+                          {trade.custom_tags && trade.custom_tags.length > 0 && (
+                            <>
+                              {trade.custom_tags.map((tagName: string, index: number) => {
+                                const tagColor = getTagColor(tagName);
+                                return (
+                                  <Badge
+                                    key={index}
+                                    className="text-white border text-xs"
+                                    style={{
+                                      backgroundColor: `${tagColor}40`,
+                                      borderColor: tagColor,
+                                    }}
+                                    data-testid={`badge-tag-${trade.id}-${index}`}
+                                  >
+                                    {tagName}
+                                  </Badge>
+                                );
+                              })}
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
                     <div className="flex sm:hidden gap-1.5">
+                      <Button variant="outline" size="sm" onClick={() => handleManageTags(trade)} className="border-purple-500/30 text-purple-300 hover:bg-purple-800/50 h-8 w-8 p-0" data-testid={`button-manage-tags-${trade.id}`}>
+                        <Tag className="h-3.5 w-3.5" />
+                      </Button>
                       <Button variant="outline" size="sm" onClick={() => handleEdit(trade)} className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-800/50 h-8 w-8 p-0" data-testid={`button-edit-${trade.id}`}>
                         <Edit className="h-3.5 w-3.5" />
                       </Button>
@@ -329,6 +374,9 @@ export default function Trades() {
                       {formatCurrency(trade.pnl || 0)}
                     </p>
                     <div className="hidden sm:flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleManageTags(trade)} className="border-purple-500/30 text-purple-300 hover:bg-purple-800/50" data-testid={`button-manage-tags-${trade.id}`}>
+                        <Tag className="h-4 w-4" />
+                      </Button>
                       <Button variant="outline" size="sm" onClick={() => handleEdit(trade)} className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-800/50" data-testid={`button-edit-${trade.id}`}>
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -540,6 +588,9 @@ export default function Trades() {
 
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleManageTags(trade)} className="border-purple-500/30 text-purple-300 hover:bg-purple-800/50" data-testid={`button-manage-tags-${trade.id}`}>
+                        <Tag className="h-4 w-4" />
+                      </Button>
                       <Button variant="outline" size="sm" onClick={() => handleEdit(trade)} className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-800/50" data-testid={`button-edit-${trade.id}`}>
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -611,6 +662,15 @@ export default function Trades() {
       <UploadTradesModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
+      />
+      
+      <ManageTagsDialog
+        isOpen={isManageTagsOpen}
+        onClose={() => {
+          setIsManageTagsOpen(false);
+          setManagingTagsTrade(null);
+        }}
+        trade={managingTagsTrade}
       />
     </div>
   );
