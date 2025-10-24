@@ -311,18 +311,18 @@ export function SetupBreakdownWidget({ onRemove, trades }: WidgetProps) {
       >
         <X className="h-3 w-3" />
       </Button>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-4 pt-4">
         <CardTitle className="text-sm font-medium">Setup Breakdown</CardTitle>
         <BarChart3 className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
+      <CardContent className="px-4 py-2">
+        <div className="space-y-1">
           {/* Header Row */}
-          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 text-xs text-muted-foreground font-medium pb-2 border-b">
+          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 text-xs text-muted-foreground font-medium pb-1 border-b">
             <div>Setup</div>
-            <div className="text-right">P&L ↓</div>
-            <div className="text-right">WR%</div>
-            <div className="text-right">Avg R</div>
+            <div className="text-right w-16">P&L ↓</div>
+            <div className="text-right w-12">WR%</div>
+            <div className="text-right w-14">Avg R</div>
           </div>
           
           {/* Setup Rows */}
@@ -330,29 +330,29 @@ export function SetupBreakdownWidget({ onRemove, trades }: WidgetProps) {
             setups.map((setup, index) => (
               <div 
                 key={`${setup.name}-${index}`}
-                className="grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center py-2 hover:bg-slate-800/50 rounded-lg px-2 -mx-2 cursor-pointer transition-colors"
+                className="grid grid-cols-[1fr_auto_auto_auto] gap-3 items-center py-1.5 hover:bg-slate-800/50 rounded-md px-1.5 -mx-1.5 cursor-pointer transition-colors"
                 data-testid={`setup-row-${setup.name.toLowerCase().replace(/\s+/g, "-")}`}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-yellow-400 text-sm flex-shrink-0">⭐</span>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-yellow-400 text-xs flex-shrink-0">⭐</span>
                   <span className="text-sm font-medium truncate">{setup.name}</span>
                 </div>
-                <div className={`text-sm font-semibold text-right ${setup.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <div className={`text-sm font-semibold text-right w-16 ${setup.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {setup.pnl >= 0 ? '+' : ''}${Math.abs(setup.pnl) >= 1000 
                     ? `${(setup.pnl / 1000).toFixed(1)}k` 
                     : setup.pnl.toFixed(0)}
                 </div>
-                <div className="text-sm text-right">
+                <div className="text-sm text-right w-12">
                   {setup.winRate.toFixed(0)}%
                 </div>
-                <div className={`text-sm font-medium text-right ${setup.avgR >= 0 ? 'text-purple-400' : 'text-orange-400'}`}>
+                <div className={`text-sm font-medium text-right w-14 ${setup.avgR >= 0 ? 'text-purple-400' : 'text-orange-400'}`}>
                   {setup.avgR.toFixed(1)}R
                 </div>
               </div>
             ))
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No setup data available. Add strategies or tags to your trades.
+            <p className="text-xs text-muted-foreground text-center py-3">
+              No setup data available
             </p>
           )}
         </div>
