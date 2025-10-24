@@ -975,30 +975,30 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
                     <FormLabel className="flex items-center gap-2">
                       <span>🏷️</span>
                       <span>Add Tags / Filters</span>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="h-5 w-5 p-0 hover:bg-transparent"
-                              data-testid="button-tags-info"
-                            >
-                              <Info className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-xs">
-                            <p className="font-medium mb-1">Organize trades with custom tags</p>
-                            <p className="text-sm text-muted-foreground mb-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 w-5 p-0 hover:bg-transparent"
+                            data-testid="button-tags-info"
+                          >
+                            <Info className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="max-w-xs" align="start">
+                          <div className="space-y-2">
+                            <p className="font-medium">Organize trades with custom tags</p>
+                            <p className="text-sm text-muted-foreground">
                               Tags help you categorize and filter your trades by strategy, setup, market context, emotions, and more.
                             </p>
                             <p className="text-xs text-cyan-400">
                               💡 Create and manage tags in <strong>Strategy & Playbook → Tags</strong>
                             </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     </FormLabel>
                     <FormControl>
                       <TagSelector
