@@ -1497,22 +1497,22 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           {/* 1. Winning/Losing Streak Widget */}
           <div key="streak">
             <DraggableWidget title="Streak Tracker" themeColor={themeColor} textColor={textColor}>
-              <div className="grid grid-cols-2 gap-3 h-full">
-                <div className="bg-slate-800/20 rounded-lg p-3 border border-green-500/30">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Flame className="h-4 w-4 text-green-500" />
+              <div className="grid grid-cols-2 gap-2 h-full">
+                <div className="bg-slate-800/20 rounded-lg p-2 border border-green-500/30">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Flame className="h-3 w-3 text-green-500" />
                     <div className="text-xs text-gray-400">Win Streak</div>
                   </div>
-                  <div className="text-3xl font-bold text-green-500">{maxWinStreak}</div>
-                  <div className="text-xs text-gray-400 mt-1">trades</div>
+                  <div className="text-2xl font-bold text-green-500">{maxWinStreak}</div>
+                  <div className="text-xs text-gray-400">trades</div>
                 </div>
-                <div className="bg-slate-800/20 rounded-lg p-3 border border-red-500/30">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Flame className="h-4 w-4 text-red-500" />
+                <div className="bg-slate-800/20 rounded-lg p-2 border border-red-500/30">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Flame className="h-3 w-3 text-red-500" />
                     <div className="text-xs text-gray-400">Loss Streak</div>
                   </div>
-                  <div className="text-3xl font-bold text-red-500">{maxLoseStreak}</div>
-                  <div className="text-xs text-gray-400 mt-1">trades</div>
+                  <div className="text-2xl font-bold text-red-500">{maxLoseStreak}</div>
+                  <div className="text-xs text-gray-400">trades</div>
                 </div>
               </div>
             </DraggableWidget>
@@ -1521,21 +1521,21 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           {/* 2. Average Hold Time Widget */}
           <div key="holdtime">
             <DraggableWidget title="Hold Time" themeColor={themeColor} textColor={textColor}>
-              <div className="space-y-3 h-full">
-                <div className="bg-slate-800/20 rounded-lg p-3 border border-cyan-700/30">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Clock className="h-4 w-4 text-cyan-500" />
+              <div className="space-y-2 h-full">
+                <div className="bg-slate-800/20 rounded-lg p-2 border border-cyan-700/30">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Clock className="h-3 w-3 text-cyan-500" />
                     <div className="text-xs text-gray-400">Average</div>
                   </div>
-                  <div className="text-2xl font-bold" style={{ color: textColor }}>{avgHoldTimeDisplay}</div>
+                  <div className="text-xl font-bold" style={{ color: textColor }}>{avgHoldTimeDisplay}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-slate-800/20 rounded-lg p-2 border border-green-500/30">
-                    <div className="text-xs text-gray-400 mb-1">Wins</div>
+                    <div className="text-xs text-gray-400">Wins</div>
                     <div className="text-sm font-bold text-green-500">{avgWinHoldDisplay}</div>
                   </div>
                   <div className="bg-slate-800/20 rounded-lg p-2 border border-red-500/30">
-                    <div className="text-xs text-gray-400 mb-1">Losses</div>
+                    <div className="text-xs text-gray-400">Losses</div>
                     <div className="text-sm font-bold text-red-500">{avgLossHoldDisplay}</div>
                   </div>
                 </div>
@@ -1547,11 +1547,11 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           <div key="mostprofitable">
             <DraggableWidget title="Top Instrument" themeColor={themeColor} textColor={textColor}>
               <div className="flex flex-col justify-center items-center h-full">
-                <Trophy className="h-8 w-8 text-yellow-500 mb-3" />
-                <div className="text-xl font-bold text-center mb-2" style={{ color: textColor }}>
+                <Trophy className="h-6 w-6 text-yellow-500 mb-2" />
+                <div className="text-lg font-bold text-center mb-1" style={{ color: textColor }}>
                   {mostProfitableInstrument}
                 </div>
-                <div className={`text-2xl font-bold ${mostProfitablePnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                <div className={`text-xl font-bold ${mostProfitablePnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                   {mostProfitablePnL >= 0 ? '+' : ''}${mostProfitablePnL.toFixed(2)}
                 </div>
               </div>
@@ -1561,8 +1561,8 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           {/* 4. Monthly Progress Bar Widget */}
           <div key="monthlyprogress">
             <DraggableWidget title="Monthly Target" themeColor={themeColor} textColor={textColor}>
-              <div className="flex flex-col justify-center h-full space-y-3">
-                <div className="flex justify-between text-sm mb-1">
+              <div className="flex flex-col justify-center h-full space-y-2">
+                <div className="flex justify-between text-xs">
                   <span className="text-gray-400">Progress</span>
                   <span className="font-bold" style={{ color: textColor }}>${monthlyProgress.toFixed(0)} / ${monthlyTarget}</span>
                 </div>
@@ -1584,48 +1584,48 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           {/* 5. First vs Last Trade Widget */}
           <div key="firstlast">
             <DraggableWidget title="First vs Last Trade of Day" themeColor={themeColor} textColor={textColor}>
-              <div className="grid grid-cols-2 gap-4 h-full">
-                <div className="bg-slate-800/20 rounded-lg p-3 border border-cyan-700/30">
-                  <div className="text-center mb-3">
-                    <div className="text-gray-400 text-sm">First Trade</div>
+              <div className="grid grid-cols-2 gap-2 h-full">
+                <div className="bg-slate-800/20 rounded-lg p-2 border border-cyan-700/30">
+                  <div className="text-center mb-2">
+                    <div className="text-gray-400 text-xs">First Trade</div>
                   </div>
-                  <div className="relative w-20 h-20 mx-auto mb-3">
-                    <svg className="w-20 h-20 transform -rotate-90">
-                      <circle cx="40" cy="40" r="30" stroke="rgb(30 41 59)" strokeWidth="6" fill="none" />
+                  <div className="relative w-16 h-16 mx-auto mb-2">
+                    <svg className="w-16 h-16 transform -rotate-90">
+                      <circle cx="32" cy="32" r="24" stroke="rgb(30 41 59)" strokeWidth="5" fill="none" />
                       <circle
-                        cx="40" cy="40" r="30" stroke="rgb(34 197 94)" strokeWidth="6" fill="none"
-                        strokeDasharray={`${firstTradeWinRate * 1.88} 188`} className="transition-all duration-300"
+                        cx="32" cy="32" r="24" stroke="rgb(34 197 94)" strokeWidth="5" fill="none"
+                        strokeDasharray={`${firstTradeWinRate * 1.5} 150`} className="transition-all duration-300"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-white font-bold text-lg">{firstTradeWinRate.toFixed(0)}%</div>
+                      <div className="text-white font-bold text-sm">{firstTradeWinRate.toFixed(0)}%</div>
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className={`font-bold text-lg ${firstTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <div className={`font-bold text-base ${firstTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {firstTradePnL >= 0 ? '+' : ''}${firstTradePnL.toFixed(2)}
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-slate-800/20 rounded-lg p-3 border border-cyan-700/30">
-                  <div className="text-center mb-3">
-                    <div className="text-gray-400 text-sm">Last Trade</div>
+                <div className="bg-slate-800/20 rounded-lg p-2 border border-cyan-700/30">
+                  <div className="text-center mb-2">
+                    <div className="text-gray-400 text-xs">Last Trade</div>
                   </div>
-                  <div className="relative w-20 h-20 mx-auto mb-3">
-                    <svg className="w-20 h-20 transform -rotate-90">
-                      <circle cx="40" cy="40" r="30" stroke="rgb(30 41 59)" strokeWidth="6" fill="none" />
+                  <div className="relative w-16 h-16 mx-auto mb-2">
+                    <svg className="w-16 h-16 transform -rotate-90">
+                      <circle cx="32" cy="32" r="24" stroke="rgb(30 41 59)" strokeWidth="5" fill="none" />
                       <circle
-                        cx="40" cy="40" r="30" stroke="rgb(239 68 68)" strokeWidth="6" fill="none"
-                        strokeDasharray={`${lastTradeWinRate * 1.88} 188`} className="transition-all duration-300"
+                        cx="32" cy="32" r="24" stroke="rgb(239 68 68)" strokeWidth="5" fill="none"
+                        strokeDasharray={`${lastTradeWinRate * 1.5} 150`} className="transition-all duration-300"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-white font-bold text-lg">{lastTradeWinRate.toFixed(0)}%</div>
+                      <div className="text-white font-bold text-sm">{lastTradeWinRate.toFixed(0)}%</div>
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className={`font-bold text-lg ${lastTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <div className={`font-bold text-base ${lastTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {lastTradePnL >= 0 ? '+' : ''}${lastTradePnL.toFixed(2)}
                     </div>
                   </div>
