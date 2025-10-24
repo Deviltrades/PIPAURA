@@ -48,6 +48,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { SignedImageDisplay } from "@/components/SignedImageDisplay";
 import { PlanGate, FeatureGate } from "@/components/PlanGate";
+import { TagSelector } from "@/components/TagSelector";
 import { useToast } from "@/hooks/use-toast";
 import { createTrade, updateTrade, uploadFile, getTradeAccounts, updatePropFirmMetrics, getPropFirmTrackerByAccount } from "@/lib/supabase-service";
 import { useQuery } from "@tanstack/react-query";
@@ -71,6 +72,7 @@ const addTradeSchema = z.object({
   pnlType: z.enum(["profit", "loss"]).optional(),
   pnlAmount: z.string().optional(),
   entryMode: z.enum(["easy", "advanced"]).default("advanced"),
+  custom_tags: z.array(z.string()).optional(),
 }).superRefine((data, ctx) => {
   // Easy mode validation
   if (data.entryMode === "easy") {
@@ -165,6 +167,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
       entryPrice: "",
       entryTime: "",
       exitTime: "",
+      exitPrice: "",
       stopLoss: "",
       takeProfit: "",
       notes: "",
@@ -173,6 +176,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
       pnlType: "profit",
       pnlAmount: "",
       entryMode: "advanced",
+      custom_tags: [],
     },
   });
 
@@ -203,6 +207,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
           pnlType: trade.pnl && trade.pnl < 0 ? "loss" : "profit",
           pnlAmount: trade.pnl ? Math.abs(trade.pnl).toString() : "",
           entryMode: "advanced", // Always advanced when editing
+          custom_tags: trade.custom_tags || [],
         });
         setSelectedInstrumentType(trade.instrument_type || "FOREX");
         setUploadedImages(trade.attachments || []);
@@ -225,6 +230,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
           pnlType: "profit",
           pnlAmount: "",
           entryMode: entryMode, // Use current mode for new trades
+          custom_tags: [],
         });
         setSelectedInstrumentType("FOREX");
         setUploadedImages([]);
@@ -954,6 +960,27 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
                 )}
                 </div>
               </FeatureGate>
+              
+              {/* Tag Selector */}
+              <FormField
+                control={form.control}
+                name="custom_tags"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <span>🏷️</span>
+                      <span>Add Tags / Filters</span>
+                    </FormLabel>
+                    <FormControl>
+                      <TagSelector
+                        selectedTags={field.value || []}
+                        onTagsChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             {/* Warning for Easy Mode */}
