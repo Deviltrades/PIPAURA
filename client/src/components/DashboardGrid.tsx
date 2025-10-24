@@ -1597,40 +1597,40 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           <div key="firstlast">
             <DraggableWidget title="First vs Last Trade of Day" themeColor={themeColor} textColor={textColor}>
               <div className="grid grid-cols-2 gap-2 h-full">
-                <div className="bg-slate-800/20 rounded-lg p-1.5 border border-cyan-700/30 flex flex-col items-center">
-                  <div className="text-gray-400 text-xs mb-1">First Trade</div>
-                  <div className="relative w-12 h-12 mb-1">
-                    <svg className="w-12 h-12 transform -rotate-90">
-                      <circle cx="24" cy="24" r="18" stroke="rgb(30 41 59)" strokeWidth="4" fill="none" />
+                <div className="bg-slate-800/20 rounded-lg p-1.5 border border-cyan-700/30 flex flex-col items-center justify-center">
+                  <div className="text-gray-400 text-sm mb-2">First Trade</div>
+                  <div className="relative w-20 h-20 mb-2">
+                    <svg className="w-20 h-20 transform -rotate-90">
+                      <circle cx="40" cy="40" r="32" stroke="rgb(30 41 59)" strokeWidth="5" fill="none" />
                       <circle
-                        cx="24" cy="24" r="18" stroke="rgb(34 197 94)" strokeWidth="4" fill="none"
-                        strokeDasharray={`${firstTradeWinRate * 1.13} 113`} className="transition-all duration-300"
+                        cx="40" cy="40" r="32" stroke="rgb(34 197 94)" strokeWidth="5" fill="none"
+                        strokeDasharray={`${firstTradeWinRate * 2.01} 201`} className="transition-all duration-300"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-white font-bold text-xs">{firstTradeWinRate.toFixed(0)}%</div>
+                      <div className="text-white font-bold text-base">{firstTradeWinRate.toFixed(0)}%</div>
                     </div>
                   </div>
-                  <div className={`font-bold text-sm ${firstTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className={`font-bold text-xl ${firstTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {firstTradePnL >= 0 ? '+' : ''}${firstTradePnL.toFixed(2)}
                   </div>
                 </div>
 
-                <div className="bg-slate-800/20 rounded-lg p-1.5 border border-cyan-700/30 flex flex-col items-center">
-                  <div className="text-gray-400 text-xs mb-1">Last Trade</div>
-                  <div className="relative w-12 h-12 mb-1">
-                    <svg className="w-12 h-12 transform -rotate-90">
-                      <circle cx="24" cy="24" r="18" stroke="rgb(30 41 59)" strokeWidth="4" fill="none" />
+                <div className="bg-slate-800/20 rounded-lg p-1.5 border border-cyan-700/30 flex flex-col items-center justify-center">
+                  <div className="text-gray-400 text-sm mb-2">Last Trade</div>
+                  <div className="relative w-20 h-20 mb-2">
+                    <svg className="w-20 h-20 transform -rotate-90">
+                      <circle cx="40" cy="40" r="32" stroke="rgb(30 41 59)" strokeWidth="5" fill="none" />
                       <circle
-                        cx="24" cy="24" r="18" stroke="rgb(239 68 68)" strokeWidth="4" fill="none"
-                        strokeDasharray={`${lastTradeWinRate * 1.13} 113`} className="transition-all duration-300"
+                        cx="40" cy="40" r="32" stroke="rgb(239 68 68)" strokeWidth="5" fill="none"
+                        strokeDasharray={`${lastTradeWinRate * 2.01} 201`} className="transition-all duration-300"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-white font-bold text-xs">{lastTradeWinRate.toFixed(0)}%</div>
+                      <div className="text-white font-bold text-base">{lastTradeWinRate.toFixed(0)}%</div>
                     </div>
                   </div>
-                  <div className={`font-bold text-sm ${lastTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className={`font-bold text-xl ${lastTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {lastTradePnL >= 0 ? '+' : ''}${lastTradePnL.toFixed(2)}
                   </div>
                 </div>
