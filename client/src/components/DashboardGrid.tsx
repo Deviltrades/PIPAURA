@@ -72,7 +72,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "firstlast", x: 0, y: 27, w: 6, h: 7 },
       { i: "setupbreakdown", x: 6, y: 27, w: 6, h: 8 },
       { i: "riskdeviation", x: 0, y: 34, w: 3, h: 5 },
-      { i: "exposure", x: 3, y: 34, w: 3, h: 6 },
+      { i: "exposure", x: 3, y: 34, w: 3, h: 5 },
     ],
     md: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
@@ -93,7 +93,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "firstlast", x: 0, y: 40, w: 6, h: 7 },
       { i: "setupbreakdown", x: 0, y: 47, w: 6, h: 8 },
       { i: "riskdeviation", x: 0, y: 55, w: 3, h: 5 },
-      { i: "exposure", x: 3, y: 55, w: 3, h: 6 },
+      { i: "exposure", x: 3, y: 55, w: 3, h: 5 },
     ],
     sm: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
@@ -114,7 +114,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "firstlast", x: 0, y: 46, w: 4, h: 7 },
       { i: "setupbreakdown", x: 0, y: 53, w: 4, h: 8 },
       { i: "riskdeviation", x: 0, y: 61, w: 2, h: 5 },
-      { i: "exposure", x: 2, y: 61, w: 2, h: 6 },
+      { i: "exposure", x: 2, y: 61, w: 2, h: 5 },
     ],
     xs: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
@@ -135,7 +135,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "firstlast", x: 0, y: 63, w: 2, h: 7 },
       { i: "setupbreakdown", x: 0, y: 70, w: 2, h: 8 },
       { i: "riskdeviation", x: 0, y: 78, w: 2, h: 5 },
-      { i: "exposure", x: 0, y: 83, w: 2, h: 6 },
+      { i: "exposure", x: 0, y: 83, w: 2, h: 5 },
     ],
     xxs: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
@@ -156,7 +156,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "firstlast", x: 0, y: 63, w: 2, h: 7 },
       { i: "setupbreakdown", x: 0, y: 70, w: 2, h: 8 },
       { i: "riskdeviation", x: 0, y: 78, w: 2, h: 5 },
-      { i: "exposure", x: 0, y: 83, w: 2, h: 6 },
+      { i: "exposure", x: 0, y: 83, w: 2, h: 5 },
     ]
   };
 
