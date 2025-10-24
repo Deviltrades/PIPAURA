@@ -249,6 +249,18 @@ export function RiskMetricsWidget({ onRemove, analytics }: WidgetProps) {
 }
 
 export function SetupBreakdownWidget({ onRemove, trades }: WidgetProps) {
+  // Debug: Log sample trades to see data structure
+  console.log('🔍 Setup Breakdown Widget - Total trades:', trades?.length);
+  if (trades && trades.length > 0) {
+    console.log('📊 Sample trade data:', {
+      trade: trades[0],
+      hasStrategy: !!trades[0].strategy,
+      hasSetupType: !!trades[0].setup_type,
+      hasCustomTags: !!trades[0].custom_tags,
+      customTags: trades[0].custom_tags,
+    });
+  }
+  
   // Calculate setup/strategy/tag statistics by combining all three sources
   const setupStats = (trades || []).reduce((acc: any, trade: any) => {
     // Collect all identifiers: strategy, setup_type, and custom_tags
