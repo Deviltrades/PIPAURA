@@ -344,7 +344,7 @@ export default function Landing() {
           </div>
 
           <p className="text-xs sm:text-sm text-slate-400 px-4">
-            £4.99/month • No credit card required • Cancel anytime
+            £4.99/month • Cancel anytime
           </p>
         </div>
       </div>

@@ -422,10 +422,6 @@ export default function Pricing() {
         <div className="flex flex-wrap gap-3 sm:gap-4 lg:gap-6 justify-center text-xs sm:text-sm text-slate-400 mb-8 sm:mb-12 lg:mb-16 px-4">
           <div className="flex items-center gap-1.5 sm:gap-2">
             <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
-            <span>No Credit Card Required</span>
-          </div>
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
             <span>Cancel Anytime</span>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
