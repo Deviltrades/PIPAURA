@@ -71,7 +71,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "holdtime", x: 3, y: 22, w: 3, h: 4 },
       { i: "mostprofitable", x: 6, y: 22, w: 3, h: 3 },
       { i: "monthlyprogress", x: 9, y: 22, w: 3, h: 3 },
-      { i: "firstlast", x: 0, y: 27, w: 6, h: 5 },
+      { i: "firstlast", x: 0, y: 27, w: 6, h: 3 },
       { i: "riskdeviation", x: 0, y: 34, w: 3, h: 5 },
       { i: "exposure", x: 3, y: 34, w: 3, h: 5 },
     ],
@@ -91,7 +91,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "holdtime", x: 3, y: 30, w: 3, h: 4 },
       { i: "mostprofitable", x: 0, y: 35, w: 3, h: 3 },
       { i: "monthlyprogress", x: 3, y: 35, w: 3, h: 3 },
-      { i: "firstlast", x: 0, y: 40, w: 6, h: 5 },
+      { i: "firstlast", x: 0, y: 40, w: 6, h: 3 },
       { i: "riskdeviation", x: 0, y: 55, w: 3, h: 5 },
       { i: "exposure", x: 3, y: 55, w: 3, h: 5 },
     ],
@@ -111,7 +111,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "holdtime", x: 2, y: 36, w: 2, h: 4 },
       { i: "mostprofitable", x: 0, y: 41, w: 2, h: 3 },
       { i: "monthlyprogress", x: 2, y: 41, w: 2, h: 3 },
-      { i: "firstlast", x: 0, y: 46, w: 4, h: 5 },
+      { i: "firstlast", x: 0, y: 46, w: 4, h: 3 },
       { i: "riskdeviation", x: 0, y: 61, w: 2, h: 5 },
       { i: "exposure", x: 2, y: 61, w: 2, h: 5 },
     ],
@@ -131,7 +131,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "holdtime", x: 0, y: 47, w: 2, h: 4 },
       { i: "mostprofitable", x: 0, y: 53, w: 2, h: 3 },
       { i: "monthlyprogress", x: 0, y: 58, w: 2, h: 3 },
-      { i: "firstlast", x: 0, y: 63, w: 2, h: 5 },
+      { i: "firstlast", x: 0, y: 63, w: 2, h: 3 },
       { i: "riskdeviation", x: 0, y: 78, w: 2, h: 5 },
       { i: "exposure", x: 0, y: 83, w: 2, h: 5 },
     ],
@@ -151,7 +151,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "holdtime", x: 0, y: 47, w: 2, h: 4 },
       { i: "mostprofitable", x: 0, y: 53, w: 2, h: 3 },
       { i: "monthlyprogress", x: 0, y: 58, w: 2, h: 3 },
-      { i: "firstlast", x: 0, y: 63, w: 2, h: 5 },
+      { i: "firstlast", x: 0, y: 63, w: 2, h: 3 },
       { i: "riskdeviation", x: 0, y: 78, w: 2, h: 5 },
       { i: "exposure", x: 0, y: 83, w: 2, h: 5 },
     ]
@@ -1597,49 +1597,41 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           <div key="firstlast">
             <DraggableWidget title="First vs Last Trade of Day" themeColor={themeColor} textColor={textColor}>
               <div className="grid grid-cols-2 gap-2 h-full">
-                <div className="bg-slate-800/20 rounded-lg p-2 border border-cyan-700/30">
-                  <div className="text-center mb-2">
-                    <div className="text-gray-400 text-xs">First Trade</div>
-                  </div>
-                  <div className="relative w-16 h-16 mx-auto mb-2">
-                    <svg className="w-16 h-16 transform -rotate-90">
-                      <circle cx="32" cy="32" r="24" stroke="rgb(30 41 59)" strokeWidth="5" fill="none" />
+                <div className="bg-slate-800/20 rounded-lg p-1.5 border border-cyan-700/30 flex flex-col items-center">
+                  <div className="text-gray-400 text-xs mb-1">First Trade</div>
+                  <div className="relative w-12 h-12 mb-1">
+                    <svg className="w-12 h-12 transform -rotate-90">
+                      <circle cx="24" cy="24" r="18" stroke="rgb(30 41 59)" strokeWidth="4" fill="none" />
                       <circle
-                        cx="32" cy="32" r="24" stroke="rgb(34 197 94)" strokeWidth="5" fill="none"
-                        strokeDasharray={`${firstTradeWinRate * 1.5} 150`} className="transition-all duration-300"
+                        cx="24" cy="24" r="18" stroke="rgb(34 197 94)" strokeWidth="4" fill="none"
+                        strokeDasharray={`${firstTradeWinRate * 1.13} 113`} className="transition-all duration-300"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-white font-bold text-sm">{firstTradeWinRate.toFixed(0)}%</div>
+                      <div className="text-white font-bold text-xs">{firstTradeWinRate.toFixed(0)}%</div>
                     </div>
                   </div>
-                  <div className="text-center">
-                    <div className={`font-bold text-base ${firstTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {firstTradePnL >= 0 ? '+' : ''}${firstTradePnL.toFixed(2)}
-                    </div>
+                  <div className={`font-bold text-sm ${firstTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {firstTradePnL >= 0 ? '+' : ''}${firstTradePnL.toFixed(2)}
                   </div>
                 </div>
 
-                <div className="bg-slate-800/20 rounded-lg p-2 border border-cyan-700/30">
-                  <div className="text-center mb-2">
-                    <div className="text-gray-400 text-xs">Last Trade</div>
-                  </div>
-                  <div className="relative w-16 h-16 mx-auto mb-2">
-                    <svg className="w-16 h-16 transform -rotate-90">
-                      <circle cx="32" cy="32" r="24" stroke="rgb(30 41 59)" strokeWidth="5" fill="none" />
+                <div className="bg-slate-800/20 rounded-lg p-1.5 border border-cyan-700/30 flex flex-col items-center">
+                  <div className="text-gray-400 text-xs mb-1">Last Trade</div>
+                  <div className="relative w-12 h-12 mb-1">
+                    <svg className="w-12 h-12 transform -rotate-90">
+                      <circle cx="24" cy="24" r="18" stroke="rgb(30 41 59)" strokeWidth="4" fill="none" />
                       <circle
-                        cx="32" cy="32" r="24" stroke="rgb(239 68 68)" strokeWidth="5" fill="none"
-                        strokeDasharray={`${lastTradeWinRate * 1.5} 150`} className="transition-all duration-300"
+                        cx="24" cy="24" r="18" stroke="rgb(239 68 68)" strokeWidth="4" fill="none"
+                        strokeDasharray={`${lastTradeWinRate * 1.13} 113`} className="transition-all duration-300"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-white font-bold text-sm">{lastTradeWinRate.toFixed(0)}%</div>
+                      <div className="text-white font-bold text-xs">{lastTradeWinRate.toFixed(0)}%</div>
                     </div>
                   </div>
-                  <div className="text-center">
-                    <div className={`font-bold text-base ${lastTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {lastTradePnL >= 0 ? '+' : ''}${lastTradePnL.toFixed(2)}
-                    </div>
+                  <div className={`font-bold text-sm ${lastTradePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {lastTradePnL >= 0 ? '+' : ''}${lastTradePnL.toFixed(2)}
                   </div>
                 </div>
               </div>
