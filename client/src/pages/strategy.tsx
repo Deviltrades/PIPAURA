@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AccountSelector } from "@/components/AccountSelector";
+import { Reports } from "@/components/Reports";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -240,6 +241,7 @@ export default function StrategyPage() {
         <TabsList>
           <TabsTrigger value="strategies" data-testid="tab-strategies">Trading Strategies</TabsTrigger>
           <TabsTrigger value="playbook" data-testid="tab-playbook">Playbook Rules</TabsTrigger>
+          <TabsTrigger value="reports" data-testid="tab-reports">Reports</TabsTrigger>
         </TabsList>
 
         <TabsContent value="strategies" className="space-y-4">
@@ -374,6 +376,10 @@ export default function StrategyPage() {
               })}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="reports" className="space-y-4">
+          <Reports accountId={selectedAccount} />
         </TabsContent>
       </Tabs>
 
