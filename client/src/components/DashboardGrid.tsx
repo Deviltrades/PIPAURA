@@ -39,6 +39,19 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
   const [showAllFees, setShowAllFees] = useState(false);
   const [showAllTotalTrades, setShowAllTotalTrades] = useState(false);
   
+  // Fetch account data to get balance for risk calculation
+  const { data: accountData } = useQuery({
+    queryKey: ["account", selectedAccount],
+    queryFn: async () => {
+      if (!selectedAccount || selectedAccount === 'all') return null;
+      const response = await fetch(`/api/accounts/${selectedAccount}`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!selectedAccount && selectedAccount !== 'all',
+    retry: false,
+  });
+  
   const defaultLayouts = {
     lg: [
       { i: "profit", x: 0, y: 0, w: 2, h: 2 },
@@ -574,12 +587,38 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
     .slice(0, 5);
 
   // 7. Risk per Trade Deviation - Enhanced with histogram data
+  // Get account balance for risk percentage calculation
+  const accountBalance = accountData?.starting_balance || accountData?.current_balance || 10000;
+  
+  // Calculate risk from stop_loss distance and position_size
   const riskPercentages = (trades || [])
-    .filter(t => t.risk_amount && Number(t.risk_amount) > 0)
+    .filter(t => {
+      // Need stop_loss, entry_price, and position_size to calculate risk
+      return t.stop_loss && t.entry_price && t.position_size && 
+             Number(t.stop_loss) > 0 && Number(t.entry_price) > 0 && Number(t.position_size) > 0;
+    })
     .map(t => {
-      // Calculate risk as percentage (assuming risk_amount is already in %)
-      // If risk_amount is in dollars, we'd need account balance to calculate %
-      return Number(t.risk_amount);
+      const stopLoss = Number(t.stop_loss);
+      const entryPrice = Number(t.entry_price);
+      const positionSize = Number(t.position_size);
+      
+      // Calculate pips/points at risk
+      const priceDistance = Math.abs(entryPrice - stopLoss);
+      
+      // For forex: pip value depends on pair and lot size
+      // Standard lot = 100,000 units, $10 per pip for USD pairs
+      // Mini lot = 10,000 units, $1 per pip
+      // Micro lot = 1,000 units, $0.10 per pip
+      
+      // Simplified calculation: assume position_size is in standard lots
+      // Risk in dollars = price distance * pip value * position size
+      const pipValue = 10; // $10 per pip for 1 standard lot on USD pairs
+      const riskInDollars = priceDistance * pipValue * positionSize;
+      
+      // Calculate risk as percentage of account balance
+      const riskPercent = (riskInDollars / accountBalance) * 100;
+      
+      return Math.abs(riskPercent); // Ensure positive value
     });
   
   const avgRiskPercent = riskPercentages.length > 0 
