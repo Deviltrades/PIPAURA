@@ -475,7 +475,10 @@ export default function Pricing() {
             <Button 
               size="lg" 
               className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-10 py-5 sm:py-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-xl shadow-cyan-500/30"
-              onClick={() => setLocation("/auth")}
+              onClick={() => {
+                setLocation("/checkout?plan=lite&interval=monthly");
+                window.scrollTo(0, 0);
+              }}
               data-testid="button-cta-start"
             >
               Start Now
@@ -484,7 +487,10 @@ export default function Pricing() {
               size="lg" 
               variant="outline"
               className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-10 py-5 sm:py-6 border-2 border-white/30 text-white hover:bg-white/10"
-              onClick={() => setLocation("/")}
+              onClick={() => {
+                setLocation("/");
+                window.scrollTo(0, 0);
+              }}
               data-testid="button-back-to-home"
             >
               Back to Home
