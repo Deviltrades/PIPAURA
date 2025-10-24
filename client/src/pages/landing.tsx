@@ -333,7 +333,10 @@ export default function Landing() {
             <Button 
               size="lg" 
               className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-10 py-5 sm:py-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-xl shadow-cyan-500/30"
-              onClick={() => setLocation("/pricing")}
+              onClick={() => {
+                setLocation("/pricing");
+                window.scrollTo(0, 0);
+              }}
               data-testid="button-cta-start"
             >
               Start Now
