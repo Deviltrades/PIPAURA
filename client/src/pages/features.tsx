@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { ArrowLeft, BarChart3, Calendar, TrendingUp, Target, FileText, Users, Trophy, DollarSign } from "lucide-react";
-import PipAuraLogo from "@/components/PipAuraLogo";
+import { PipAuraLogo } from "@/components/PipAuraLogo";
 
 export default function Features() {
   const [, setLocation] = useLocation();

@@ -118,7 +118,22 @@ export default function Landing() {
               size="lg" 
               variant="outline" 
               className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400"
-              onClick={() => setLocation("/pricing")}
+              onClick={() => {
+                setLocation("/preview/dashboard");
+                window.scrollTo(0, 0);
+              }}
+              data-testid="button-view-demo"
+            >
+              View Demo
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400"
+              onClick={() => {
+                setLocation("/pricing");
+                window.scrollTo(0, 0);
+              }}
               data-testid="button-view-pricing"
             >
               View Pricing
