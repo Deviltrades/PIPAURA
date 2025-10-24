@@ -31,6 +31,7 @@ export const expenseTypeEnum = pgEnum('expense_type', ['software', 'education', 
 export const challengeTypeEnum = pgEnum('challenge_type', ['instant', '1-step', '2-step', '3-step']);
 export const fundingPhaseEnum = pgEnum('funding_phase', ['challenge', 'verification', 'funded', 'scaling']);
 export const subscriptionStatusEnum = pgEnum('subscription_status', ['active', 'canceled', 'expired', 'past_due', 'trialing']);
+export const userTagCategoryEnum = pgEnum('user_tag_category', ['strategy', 'risk_management', 'market_context', 'session_timing', 'psychological', 'outcome', 'bias_alignment', 'emotion_exit', 'custom']);
 
 // Trade Accounts table
 export const tradeAccounts = pgTable('trade_accounts', {
@@ -82,6 +83,7 @@ export const trades = pgTable('trades', {
   setup_type: text('setup_type'),
   strategy: text('strategy'),
   risk_amount: decimal('risk_amount', { precision: 10, scale: 2 }),
+  custom_tags: text('custom_tags').array().default([]),
   created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)
 });
@@ -105,6 +107,19 @@ export const playbookRules = pgTable('playbook_rules', {
   category: text('category').notNull(), // risk_management, entry, exit, psychology
   rule_text: text('rule_text').notNull(),
   rule_type: text('rule_type').default('recommended'), // mandatory, recommended
+  is_active: integer('is_active').default(1).notNull(),
+  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+  updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)
+});
+
+// User Tags table - for custom tag definitions
+export const userTags = pgTable('user_tags', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').notNull(),
+  name: text('name').notNull(),
+  category: userTagCategoryEnum('category').notNull(),
+  color: text('color').default('#06b6d4'), // Default cyan color
+  is_predefined: integer('is_predefined').default(0).notNull(), // 1 = pre-made filter, 0 = user-created
   is_active: integer('is_active').default(1).notNull(),
   created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)

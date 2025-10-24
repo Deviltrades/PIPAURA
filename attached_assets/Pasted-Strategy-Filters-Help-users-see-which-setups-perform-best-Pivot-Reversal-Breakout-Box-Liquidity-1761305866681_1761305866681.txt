@@ -1,0 +1,226 @@
+Strategy Filters
+
+Help users see which setups perform best.
+
+Pivot Reversal
+
+Breakout Box
+
+Liquidity Sweep
+
+Trendline Retest
+
+News Reversal
+
+Range Compression Break
+
+Continuation Pullback
+
+Fakeout Entry
+
+Momentum Flip
+
+Sniper Entry
+
+🔹 Risk & Trade Management
+
+Understand how trade control affects outcomes.
+
+Aggressive Entry
+
+Conservative Entry
+
+Scaled In
+
+Scaled Out
+
+Partial Exit
+
+Trailing Stop Used
+
+No SL / No TP
+
+Breakeven Exit
+
+Moved to BE Early
+
+🔹 Market Context
+
+Filters by structure or volatility environment.
+
+High Volatility
+
+Low Volatility
+
+Trend Market
+
+Range Market
+
+News Hour
+
+Low Volume Session
+
+Post-News Reversal
+
+🔹 Session & Timing
+
+Helps traders identify best time windows.
+
+Asia
+
+London
+
+NY
+
+London-NY Overlap
+
+Pre-London
+
+NY Close Fade
+
+🔹 Psychological / Behavioral Tags
+
+For emotional self-awareness and behavioral tracking.
+
+FOMO Entry
+
+Revenge Trade
+
+Hesitant Entry
+
+Overconfident
+
+Fear of Missing Out
+
+Overleveraged
+
+Perfect Discipline
+
+Tired / Distracted
+
+Rule Violation
+
+🔹 Outcome / Result Filters
+
+Helps isolate trade quality and consistency.
+
+Textbook Trade
+
+Sloppy Entry
+
+Missed TP by Spread
+
+News Spike Loss
+
+Execution Error
+
+Patience Rewarded
+
+Cut Early
+
+🔹 Bias Alignment
+
+Tracks how aligned a trade was with your macro or technical bias.
+
+Aligned with Fundamental Bias
+
+Counter to Bias
+
+Same as HTF Direction
+
+Against HTF Direction
+
+🔹 Emotion at Exit
+
+Adds emotional closure tracking.
+
+Confident Exit
+
+Regret Exit
+
+Hesitant Exit
+
+Emotional Close
+
+Mechanical Exit
+
+🧩 2️⃣ USER-CREATED TAG SYSTEM
+
+Traders should be able to:
+
+Create unlimited custom tags (text-based)
+
+Assign color to each tag (🎨 color = tag type / emotion / category)
+
+Apply up to 3–5 tags per trade
+
+Filter or group by tag combinations
+
+💡 UX Flow
+
+“Add Tag” Modal
+
+Input: Tag name
+
+Color selector (default blue, red, green, yellow, purple)
+
+Category dropdown (Strategy / Emotion / Market / Custom)
+
+Save → instantly adds to sidebar
+
+Tag Display
+
+Show tags as colored pills (rounded badges) under trade cards
+
+Hover = full tag description
+
+🧠 3️⃣ ADVANCED FILTER LOGIC (Elite-Level Feature)
+
+Allow multi-layer conditions:
+
+Tag includes “Pivot Reversal” AND “London Session”
+
+Tag includes “Overconfident” AND Result = Loss
+
+Tag includes “Aligned with Bias” AND Profit > 2R
+
+This creates behavioral pattern discovery automatically.
+
+🧱 4️⃣ TECH IMPLEMENTATION NOTES (for your Replit/Supabase stack)
+Layer	Implementation
+Table	trade_tags with columns: id, user_id, trade_id, tag, color, category
+Filter Query	Use Supabase’s @> ARRAY[] for tag array filtering
+UI Components	Shadcn <Badge> components with Tailwind glow (color-coded)
+Storage	Each trade can store tags in an array column (Postgres text[])
+Filtering	Query trades with conditions like:
+select * from trades where tags @> '{Pivot Reversal}'
+``` |
+
+---
+
+## 🧠 5️⃣ BONUS — AI-ASSISTED TAGGING (Phase 2)
+
+Let Pipaura suggest tags automatically using metadata:
+> “This trade aligns with your ‘Liquidity Sweep’ setup and was executed during London session with high volatility — add suggested tags?”
+
+Adds auto-tagging from:
+- Session time  
+- ADR %  
+- Bias alignment  
+- RSI / Power indicator states  
+
+---
+
+## 🎨 6️⃣ VISUAL STYLE (Pipaura Consistency)
+
+- Dark background  
+- Glowing tag borders (cyan / magenta / gold)  
+- Hover animation (scale 1.03 + soft glow)  
+- Searchable dropdown for tag filters  
+- “Add New Tag” button always pinned to top of tag list  
+
+---
+
+If you want, I can now **design your full “Tag Filter System Blueprint” (React + Supabase)** — including the data schema, UI flow, and filtering query logic — so it’s plug-and-play ready inside your dashboard.  
+
+Would you like me to build that next, bro?
