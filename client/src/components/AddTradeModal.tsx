@@ -304,6 +304,7 @@ export function AddTradeModal({ isOpen, onClose, selectedDate, trade }: AddTrade
         attachments: uploadedImages,
         entry_date: entryDateTime,
         exit_date: exitDateTime,
+        custom_tags: data.custom_tags || [],
       };
       
       if (trade?.id) {
