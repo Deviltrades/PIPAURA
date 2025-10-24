@@ -23,9 +23,9 @@ export default function DraggableWidget({ title, children, className = "", theme
 
   return (
     <div className={`${colorStyles[themeColor as keyof typeof colorStyles] || colorStyles.slate} rounded-xl h-full border-2 border-cyan-500/60 widget-hover-pulse transition-all duration-300 ${className}`} style={{ color: textColor }}>
-      <div className="p-4 h-full flex flex-col">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-medium text-sm" style={{ color: textColor }}>{title}</h3>
+      <div className="p-2 h-full flex flex-col">
+        <div className="flex items-center justify-between mb-1.5">
+          <h3 className="font-medium text-xs" style={{ color: textColor }}>{title}</h3>
           {infoContent && (
             <Popover>
               <PopoverTrigger asChild>
@@ -33,7 +33,7 @@ export default function DraggableWidget({ title, children, className = "", theme
                   className="text-cyan-400 hover:text-cyan-300 transition-colors"
                   data-testid="button-info"
                 >
-                  <Info className="h-4 w-4" />
+                  <Info className="h-3 w-3" />
                 </button>
               </PopoverTrigger>
               <PopoverContent 
