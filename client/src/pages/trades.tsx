@@ -46,7 +46,12 @@ export default function Trades() {
 
   const { data: trades = [], isLoading } = useQuery({
     queryKey: ["trades", selectedAccount],
-    queryFn: () => getTrades(selectedAccount),
+    queryFn: async () => {
+      const data = await getTrades(selectedAccount);
+      console.log("Trades data from DB:", data);
+      console.log("First trade custom_tags:", data?.[0]?.custom_tags);
+      return data;
+    },
     retry: false,
   }) as { data: any[], isLoading: boolean };
   
