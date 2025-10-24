@@ -13,7 +13,7 @@ import DraggableWidget from "./DraggableWidget";
 import CalendarWidget from "./CalendarWidget";
 import TimingInsights from "./TimingInsights";
 import { SessionInsights } from "./SessionInsights";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart, BarChart, Bar, ReferenceLine, Cell } from "recharts";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
@@ -573,21 +573,65 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
     .sort((a, b) => b.pnl - a.pnl)
     .slice(0, 5);
 
-  // 7. Risk per Trade Deviation
-  const riskAmounts = (trades || [])
+  // 7. Risk per Trade Deviation - Enhanced with histogram data
+  const riskPercentages = (trades || [])
     .filter(t => t.risk_amount && Number(t.risk_amount) > 0)
-    .map(t => Number(t.risk_amount));
+    .map(t => {
+      // Calculate risk as percentage (assuming risk_amount is already in %)
+      // If risk_amount is in dollars, we'd need account balance to calculate %
+      return Number(t.risk_amount);
+    });
   
-  const avgRisk = riskAmounts.length > 0 
-    ? riskAmounts.reduce((sum, r) => sum + r, 0) / riskAmounts.length 
+  const avgRiskPercent = riskPercentages.length > 0 
+    ? riskPercentages.reduce((sum, r) => sum + r, 0) / riskPercentages.length 
     : 0;
   
-  const variance = riskAmounts.length > 0
-    ? riskAmounts.reduce((sum, r) => sum + Math.pow(r - avgRisk, 2), 0) / riskAmounts.length
+  const variance = riskPercentages.length > 0
+    ? riskPercentages.reduce((sum, r) => sum + Math.pow(r - avgRiskPercent, 2), 0) / riskPercentages.length
     : 0;
   
-  const stdDeviation = Math.sqrt(variance);
-  const deviationPercent = avgRisk > 0 ? (stdDeviation / avgRisk) * 100 : 0;
+  const stdDevRisk = Math.sqrt(variance);
+  
+  // Target risk and deviation band
+  const targetRisk = 1.0; // 1% target risk
+  const deviationBand = 0.25; // ±0.25% acceptable deviation
+  const lowerBound = targetRisk - deviationBand;
+  const upperBound = targetRisk + deviationBand;
+  
+  // Calculate trades outside the acceptable band
+  const tradesOutsideBand = riskPercentages.filter(r => r < lowerBound || r > upperBound).length;
+  const percentOutsideBand = riskPercentages.length > 0 
+    ? (tradesOutsideBand / riskPercentages.length) * 100 
+    : 0;
+  
+  // Create histogram bins (0.25% increments)
+  const createHistogramData = () => {
+    if (riskPercentages.length === 0) return [];
+    
+    const minRisk = Math.min(...riskPercentages);
+    const maxRisk = Math.max(...riskPercentages);
+    const binSize = 0.25;
+    const binStart = Math.floor(minRisk / binSize) * binSize;
+    const binEnd = Math.ceil(maxRisk / binSize) * binSize;
+    
+    const bins: { range: string; count: number; riskPercent: number }[] = [];
+    
+    for (let i = binStart; i <= binEnd; i += binSize) {
+      const rangeStart = i;
+      const rangeEnd = i + binSize;
+      const count = riskPercentages.filter(r => r >= rangeStart && r < rangeEnd).length;
+      
+      bins.push({
+        range: `${rangeStart.toFixed(2)}`,
+        count: count,
+        riskPercent: rangeStart + binSize / 2
+      });
+    }
+    
+    return bins;
+  };
+  
+  const riskHistogramData = createHistogramData();
 
   // 8. Exposure by Pair / Asset Class
   const assetExposure: Record<string, { count: number; pnl: number }> = {};
@@ -1498,13 +1542,110 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
           {/* 7. Risk Deviation Widget */}
           <div key="riskdeviation">
             <DraggableWidget title="Risk Deviation" themeColor={themeColor} textColor={textColor}>
-              <div className="flex flex-col justify-center items-center h-full">
-                <AlertTriangle className={`h-8 w-8 mb-3 ${deviationPercent > 20 ? 'text-red-500' : deviationPercent > 10 ? 'text-yellow-500' : 'text-green-500'}`} />
-                <div className={`text-3xl font-bold mb-2 ${deviationPercent > 20 ? 'text-red-500' : deviationPercent > 10 ? 'text-yellow-500' : 'text-green-500'}`}>
-                  {deviationPercent.toFixed(1)}%
+              <div className="flex flex-col h-full">
+                {/* Alert banner if > 20% trades outside band */}
+                {percentOutsideBand > 20 && (
+                  <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-2 mb-2 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                    <div className="text-xs text-red-300">
+                      Risk inconsistency detected: tighten lot sizing discipline.
+                    </div>
+                  </div>
+                )}
+                
+                {/* Histogram Chart */}
+                <div className="flex-1 min-h-0">
+                  {riskHistogramData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart 
+                        data={riskHistogramData}
+                        margin={{ top: 10, right: 10, left: 0, bottom: 30 }}
+                      >
+                        <XAxis 
+                          dataKey="range" 
+                          stroke={textColor}
+                          style={{ fontSize: '10px', fill: textColor }}
+                          tick={{ fill: textColor, opacity: 0.7 }}
+                          label={{ value: 'Risk %', position: 'bottom', fill: textColor, fontSize: 10, offset: 0 }}
+                        />
+                        <YAxis 
+                          stroke={textColor}
+                          style={{ fontSize: '10px', fill: textColor }}
+                          tick={{ fill: textColor, opacity: 0.7 }}
+                          label={{ value: 'Trade Count', angle: -90, position: 'insideLeft', fill: textColor, fontSize: 10 }}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+                            border: '1px solid rgba(59, 130, 246, 0.5)',
+                            borderRadius: '8px',
+                            color: textColor
+                          }}
+                          formatter={(value: any) => [`${value} trades`, 'Count']}
+                          labelStyle={{ color: textColor }}
+                        />
+                        
+                        {/* Target risk center line */}
+                        <ReferenceLine 
+                          x={targetRisk.toFixed(2)} 
+                          stroke="rgb(34 197 94)" 
+                          strokeWidth={2}
+                          strokeDasharray="3 3"
+                          label={{ value: 'Target', position: 'top', fill: 'rgb(34 197 94)', fontSize: 10 }}
+                        />
+                        
+                        {/* Deviation band shading */}
+                        <ReferenceLine 
+                          x={lowerBound.toFixed(2)} 
+                          stroke="rgb(251 191 36)" 
+                          strokeWidth={1}
+                          strokeDasharray="2 2"
+                        />
+                        <ReferenceLine 
+                          x={upperBound.toFixed(2)} 
+                          stroke="rgb(251 191 36)" 
+                          strokeWidth={1}
+                          strokeDasharray="2 2"
+                        />
+                        
+                        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                          {riskHistogramData.map((entry, index) => {
+                            const riskVal = parseFloat(entry.range);
+                            const isInBand = riskVal >= lowerBound && riskVal <= upperBound;
+                            return (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={isInBand ? 'rgb(34 211 238)' : 'rgb(239 68 68)'} 
+                              />
+                            );
+                          })}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                      No risk data available
+                    </div>
+                  )}
                 </div>
-                <div className="text-xs text-gray-400 text-center">Avg Risk: ${avgRisk.toFixed(2)}</div>
-                <div className="text-xs text-gray-400 text-center">Std Dev: ${stdDeviation.toFixed(2)}</div>
+                
+                {/* Numeric Summary */}
+                <div className="mt-2 pt-2 border-t border-cyan-700/30 flex justify-around text-xs">
+                  <div className="text-center">
+                    <div className="text-gray-400">Avg Risk</div>
+                    <div className="font-bold text-cyan-400">{avgRiskPercent.toFixed(2)}%</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-gray-400">StdDev</div>
+                    <div className="font-bold text-cyan-400">{stdDevRisk.toFixed(2)}%</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-gray-400">Out of Band</div>
+                    <div className={`font-bold ${percentOutsideBand > 20 ? 'text-red-500' : 'text-green-500'}`}>
+                      {percentOutsideBand.toFixed(0)}%
+                    </div>
+                  </div>
+                </div>
               </div>
             </DraggableWidget>
           </div>
