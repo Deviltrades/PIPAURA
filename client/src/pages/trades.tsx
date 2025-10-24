@@ -24,6 +24,7 @@ export default function Trades() {
   const [isOCRModalOpen, setIsOCRModalOpen] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
   const [sessionFilter, setSessionFilter] = useState<string>("all");
+  const [strategyFilter, setStrategyFilter] = useState<string>("all");
   const [selectedTrades, setSelectedTrades] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -105,10 +106,23 @@ export default function Trades() {
     setEditingTrade(null);
   };
 
-  // Filter trades by session
-  const filteredTrades = sessionFilter === "all" 
-    ? trades 
-    : trades.filter((trade: any) => trade.session_tag?.toLowerCase() === sessionFilter.toLowerCase());
+  // Get unique strategies from trades
+  const uniqueStrategies = Array.from(
+    new Set(
+      trades
+        .map((trade: any) => trade.strategy || trade.setup_type)
+        .filter(Boolean)
+    )
+  ).sort();
+
+  // Filter trades by session and strategy
+  const filteredTrades = trades.filter((trade: any) => {
+    const matchesSession = sessionFilter === "all" || trade.session_tag?.toLowerCase() === sessionFilter.toLowerCase();
+    const matchesStrategy = strategyFilter === "all" || 
+      trade.strategy === strategyFilter || 
+      trade.setup_type === strategyFilter;
+    return matchesSession && matchesStrategy;
+  });
 
   // Helper function to get session badge color
   const getSessionBadgeColor = (session: string | null) => {
@@ -165,7 +179,7 @@ export default function Trades() {
           <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-bold text-white">Trade Journal</h1>
             <p className="text-sm sm:text-base text-gray-300 mb-2 sm:mb-3">Manage and track all your trading positions</p>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center flex-wrap">
               <AccountSelector value={selectedAccount} onValueChange={setSelectedAccount} />
               <Select value={sessionFilter} onValueChange={setSessionFilter}>
                 <SelectTrigger className="w-full sm:w-[180px] bg-slate-800 border-slate-700 text-white" data-testid="select-session-filter">
@@ -177,6 +191,23 @@ export default function Trades() {
                   <SelectItem value="new york">New York</SelectItem>
                   <SelectItem value="asia">Asia</SelectItem>
                   <SelectItem value="overlap">Overlap</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={strategyFilter} onValueChange={setStrategyFilter}>
+                <SelectTrigger className="w-full sm:w-[180px] bg-slate-800 border-slate-700 text-white" data-testid="select-strategy-filter">
+                  <SelectValue placeholder="Filter by strategy" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectItem value="all">All Strategies</SelectItem>
+                  {uniqueStrategies.length > 0 ? (
+                    uniqueStrategies.map((strategy) => (
+                      <SelectItem key={strategy} value={strategy}>
+                        {strategy}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="none" disabled>No strategies found</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>

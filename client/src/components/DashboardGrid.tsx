@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Responsive, WidthProvider, Layout, Layouts } from "react-grid-layout";
 import { TrendingUp, TrendingDown, BarChart3, Target, DollarSign, Layers, Move, RotateCcw, Save, Grid3X3, Trash2, Palette, Flame, Clock, Trophy, TrendingUpIcon, CircleDot, PieChart, AlertTriangle, Briefcase } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ interface DashboardGridProps {
 
 export default function DashboardGrid({ analytics, trades, selectedAccount }: DashboardGridProps) {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [editMode, setEditMode] = useState(false);
   const [themeColor, setThemeColor] = useState("slate");
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
@@ -1719,8 +1721,10 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
                             return (
                               <tr 
                                 key={idx}
-                                className={`border-b border-slate-700/30 relative ${isTop2 ? 'glow-border' : ''}`}
+                                onClick={() => setLocation('/strategy')}
+                                className={`border-b border-slate-700/30 relative ${isTop2 ? 'glow-border' : ''} cursor-pointer hover:bg-slate-800/30 transition-colors`}
                                 data-testid={`setup-row-${idx}`}
+                                title={`Click to view ${setup.setup} strategy details`}
                               >
                                 {isTop2 && (
                                   <td colSpan={4} className="absolute inset-0 pointer-events-none">

@@ -2121,7 +2121,8 @@ export async function getStrategyMetrics(strategyName: string, accountId?: strin
   // Filter by strategy or setup_type
   query = query.or(`strategy.eq.${strategyName},setup_type.eq.${strategyName}`);
   
-  if (accountId) {
+  // CRITICAL: Always filter by account if provided to prevent cross-user data leakage
+  if (accountId && accountId !== 'all') {
     query = query.eq('account_id', accountId);
   }
   
@@ -2148,29 +2149,42 @@ export async function getStrategyMetrics(strategyName: string, accountId?: strin
   const losses = trades.filter(t => parseFloat(t.pnl || '0') < 0);
   
   const totalPnL = trades.reduce((sum, t) => sum + parseFloat(t.pnl || '0'), 0);
-  const winRate = (wins.length / trades.length) * 100;
+  const winRate = trades.length > 0 ? (wins.length / trades.length) * 100 : 0;
   
-  const avgWin = wins.length > 0 
-    ? wins.reduce((sum, t) => sum + parseFloat(t.pnl || '0'), 0) / wins.length 
-    : 0;
+  const totalWinAmount = wins.reduce((sum, t) => sum + parseFloat(t.pnl || '0'), 0);
+  const totalLossAmount = Math.abs(losses.reduce((sum, t) => sum + parseFloat(t.pnl || '0'), 0));
   
-  const avgLoss = losses.length > 0 
-    ? Math.abs(losses.reduce((sum, t) => sum + parseFloat(t.pnl || '0'), 0) / losses.length)
-    : 0;
+  const avgWin = wins.length > 0 ? totalWinAmount / wins.length : 0;
+  const avgLoss = losses.length > 0 ? totalLossAmount / losses.length : 0;
   
-  const profitFactor = avgLoss > 0 ? (avgWin * wins.length) / (avgLoss * losses.length) : 0;
+  // Profit Factor = Gross Profit / Gross Loss
+  const profitFactor = totalLossAmount > 0 ? totalWinAmount / totalLossAmount : (totalWinAmount > 0 ? 999 : 0);
   
   // Calculate Avg R (average risk-reward ratio)
-  const rValues = trades
-    .filter(t => t.risk_amount && parseFloat(t.risk_amount) > 0)
-    .map(t => parseFloat(t.pnl || '0') / parseFloat(t.risk_amount || '1'));
+  // Only use trades where risk_amount is properly set (>0)
+  // R = Profit / Risk (in same currency units)
+  const tradesWithRisk = trades.filter(t => {
+    const risk = parseFloat(t.risk_amount || '0');
+    return risk > 0;
+  });
   
-  const avgR = rValues.length > 0 
-    ? rValues.reduce((sum, r) => sum + r, 0) / rValues.length 
-    : 0;
+  let avgR = 0;
+  if (tradesWithRisk.length > 0) {
+    const rSum = tradesWithRisk.reduce((sum, t) => {
+      const pnl = parseFloat(t.pnl || '0');
+      const risk = parseFloat(t.risk_amount || '1');
+      return sum + (pnl / risk);
+    }, 0);
+    avgR = rSum / tradesWithRisk.length;
+  } else {
+    // Fallback: estimate R from average risk percentage (2% default)
+    // Avg R = Avg Win in $ / (Account Balance × 2%)
+    // Since we don't have account balance here, we skip R calculation
+    avgR = 0;
+  }
   
   // Expectancy = (Win Rate × Avg Win) - (Loss Rate × Avg Loss)
-  const lossRate = (losses.length / trades.length);
+  const lossRate = trades.length > 0 ? (losses.length / trades.length) : 0;
   const expectancy = (winRate / 100 * avgWin) - (lossRate * avgLoss);
   
   return {
