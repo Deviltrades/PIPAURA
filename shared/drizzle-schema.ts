@@ -79,6 +79,33 @@ export const trades = pgTable('trades', {
   holding_time_minutes: integer('holding_time_minutes'),
   profit_per_lot: decimal('profit_per_lot', { precision: 10, scale: 2 }),
   upload_source: text('upload_source'),
+  setup_type: text('setup_type'),
+  strategy: text('strategy'),
+  risk_amount: decimal('risk_amount', { precision: 10, scale: 2 }),
+  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+  updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)
+});
+
+// Strategies table
+export const strategies = pgTable('strategies', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').notNull(),
+  name: text('name').notNull(),
+  description: text('description'),
+  status: text('status').default('active'), // active, testing, inactive
+  is_active: integer('is_active').default(1).notNull(),
+  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+  updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)
+});
+
+// Playbook Rules table
+export const playbookRules = pgTable('playbook_rules', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').notNull(),
+  category: text('category').notNull(), // risk_management, entry, exit, psychology
+  rule_text: text('rule_text').notNull(),
+  rule_type: text('rule_type').default('recommended'), // mandatory, recommended
+  is_active: integer('is_active').default(1).notNull(),
   created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`)
 });

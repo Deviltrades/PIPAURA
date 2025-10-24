@@ -328,6 +328,9 @@ export interface Trade {
   holding_time_minutes?: number;
   profit_per_lot?: number;
   upload_source?: 'Manual' | 'OCR AI' | 'CSV' | 'Excel' | 'HTML';
+  setup_type?: string;
+  strategy?: string;
+  risk_amount?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -530,6 +533,84 @@ export const updateTaxProfileSchema = z.object({
   include_swap_in_income: z.boolean().optional(),
   include_commission_deduction: z.boolean().optional(),
   include_unrealized_pnl: z.boolean().optional(),
+});
+
+// Strategy interfaces
+export interface Strategy {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  status: 'active' | 'testing' | 'inactive';
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateStrategy {
+  name: string;
+  description?: string;
+  status?: 'active' | 'testing' | 'inactive';
+}
+
+export interface UpdateStrategy {
+  name?: string;
+  description?: string;
+  status?: 'active' | 'testing' | 'inactive';
+  is_active?: boolean;
+}
+
+// Playbook Rule interfaces
+export interface PlaybookRule {
+  id: string;
+  user_id: string;
+  category: 'risk_management' | 'entry' | 'exit' | 'psychology';
+  rule_text: string;
+  rule_type: 'mandatory' | 'recommended';
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreatePlaybookRule {
+  category: 'risk_management' | 'entry' | 'exit' | 'psychology';
+  rule_text: string;
+  rule_type?: 'mandatory' | 'recommended';
+}
+
+export interface UpdatePlaybookRule {
+  category?: 'risk_management' | 'entry' | 'exit' | 'psychology';
+  rule_text?: string;
+  rule_type?: 'mandatory' | 'recommended';
+  is_active?: boolean;
+}
+
+// Zod schemas for Strategy validation
+export const createStrategySchema = z.object({
+  name: z.string().min(1, "Strategy name is required"),
+  description: z.string().optional(),
+  status: z.enum(['active', 'testing', 'inactive']).default('active'),
+});
+
+export const updateStrategySchema = z.object({
+  name: z.string().min(1).optional(),
+  description: z.string().optional(),
+  status: z.enum(['active', 'testing', 'inactive']).optional(),
+  is_active: z.boolean().optional(),
+});
+
+// Zod schemas for Playbook Rule validation
+export const createPlaybookRuleSchema = z.object({
+  category: z.enum(['risk_management', 'entry', 'exit', 'psychology']),
+  rule_text: z.string().min(1, "Rule text is required"),
+  rule_type: z.enum(['mandatory', 'recommended']).default('recommended'),
+});
+
+export const updatePlaybookRuleSchema = z.object({
+  category: z.enum(['risk_management', 'entry', 'exit', 'psychology']).optional(),
+  rule_text: z.string().min(1).optional(),
+  rule_type: z.enum(['mandatory', 'recommended']).optional(),
+  is_active: z.boolean().optional(),
 });
 
 // Re-export Drizzle tables for database migrations
