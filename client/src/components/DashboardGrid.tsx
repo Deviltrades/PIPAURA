@@ -72,7 +72,6 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "mostprofitable", x: 6, y: 22, w: 3, h: 5 },
       { i: "monthlyprogress", x: 9, y: 22, w: 3, h: 5 },
       { i: "firstlast", x: 0, y: 27, w: 6, h: 7 },
-      { i: "setupbreakdown", x: 6, y: 27, w: 6, h: 6 },
       { i: "riskdeviation", x: 0, y: 34, w: 3, h: 5 },
       { i: "exposure", x: 3, y: 34, w: 3, h: 5 },
     ],
@@ -93,7 +92,6 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "mostprofitable", x: 0, y: 35, w: 3, h: 5 },
       { i: "monthlyprogress", x: 3, y: 35, w: 3, h: 5 },
       { i: "firstlast", x: 0, y: 40, w: 6, h: 7 },
-      { i: "setupbreakdown", x: 0, y: 47, w: 6, h: 6 },
       { i: "riskdeviation", x: 0, y: 55, w: 3, h: 5 },
       { i: "exposure", x: 3, y: 55, w: 3, h: 5 },
     ],
@@ -114,7 +112,6 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "mostprofitable", x: 0, y: 41, w: 2, h: 5 },
       { i: "monthlyprogress", x: 2, y: 41, w: 2, h: 5 },
       { i: "firstlast", x: 0, y: 46, w: 4, h: 7 },
-      { i: "setupbreakdown", x: 0, y: 53, w: 4, h: 6 },
       { i: "riskdeviation", x: 0, y: 61, w: 2, h: 5 },
       { i: "exposure", x: 2, y: 61, w: 2, h: 5 },
     ],
@@ -135,7 +132,6 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "mostprofitable", x: 0, y: 53, w: 2, h: 5 },
       { i: "monthlyprogress", x: 0, y: 58, w: 2, h: 5 },
       { i: "firstlast", x: 0, y: 63, w: 2, h: 7 },
-      { i: "setupbreakdown", x: 0, y: 70, w: 2, h: 6 },
       { i: "riskdeviation", x: 0, y: 78, w: 2, h: 5 },
       { i: "exposure", x: 0, y: 83, w: 2, h: 5 },
     ],
@@ -156,7 +152,6 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
       { i: "mostprofitable", x: 0, y: 53, w: 2, h: 5 },
       { i: "monthlyprogress", x: 0, y: 58, w: 2, h: 5 },
       { i: "firstlast", x: 0, y: 63, w: 2, h: 7 },
-      { i: "setupbreakdown", x: 0, y: 70, w: 2, h: 6 },
       { i: "riskdeviation", x: 0, y: 78, w: 2, h: 5 },
       { i: "exposure", x: 0, y: 83, w: 2, h: 5 },
     ]
@@ -1639,135 +1634,7 @@ export default function DashboardGrid({ analytics, trades, selectedAccount }: Da
             </DraggableWidget>
           </div>
 
-          {/* 6. Setup Type Breakdown Widget */}
-          <div key="setupbreakdown">
-            <DraggableWidget 
-              title="Setup Breakdown" 
-              themeColor={themeColor} 
-              textColor={textColor}
-              infoContent={
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <h4 className="font-bold text-cyan-400 mb-2">What This Shows</h4>
-                    <p className="text-gray-300">
-                      This widget analyzes your performance across different trading setups, showing which strategies work best for you.
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-bold text-cyan-400 mb-2">Key Metrics</h4>
-                    <ul className="text-gray-300 space-y-1 text-xs">
-                      <li><span className="text-cyan-400">Win Rate</span>: Percentage of winning trades</li>
-                      <li><span className="text-cyan-400">Avg R</span>: Average return per dollar risked</li>
-                      <li><span className="text-cyan-400">Expectancy</span>: Expected profit per trade</li>
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-bold text-cyan-400 mb-2">Gradient Borders</h4>
-                    <p className="text-gray-300">
-                      The top 1-2 performing setups are highlighted with glowing gradient borders to reward your mastery of those strategies.
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-bold text-cyan-400 mb-2">Sorting</h4>
-                    <p className="text-gray-300">
-                      Click column headers to sort by P&L, Win Rate, Avg R, or Expectancy to identify your most profitable strategies.
-                    </p>
-                  </div>
-                </div>
-              }
-            >
-              <div className="flex flex-col h-full">
-                {topSetups.length > 0 ? (
-                  <>
-                    {/* Sortable Table */}
-                    <div className="overflow-x-auto flex-1">
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr className="border-b border-cyan-700/30">
-                            <th className="text-left py-2 px-1 text-gray-400">Setup</th>
-                            <th 
-                              className="text-center py-2 px-1 text-gray-400 cursor-pointer hover:text-cyan-400 transition-colors"
-                              onClick={() => setSetupSortBy('pnl')}
-                              data-testid="sort-pnl"
-                            >
-                              P&L {setupSortBy === 'pnl' && '↓'}
-                            </th>
-                            <th 
-                              className="text-center py-2 px-1 text-gray-400 cursor-pointer hover:text-cyan-400 transition-colors"
-                              onClick={() => setSetupSortBy('winRate')}
-                              data-testid="sort-winrate"
-                            >
-                              WR% {setupSortBy === 'winRate' && '↓'}
-                            </th>
-                            <th 
-                              className="text-center py-2 px-1 text-gray-400 cursor-pointer hover:text-cyan-400 transition-colors"
-                              onClick={() => setSetupSortBy('avgR')}
-                              data-testid="sort-avgr"
-                            >
-                              Avg R {setupSortBy === 'avgR' && '↓'}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {topSetups.map((setup, idx) => {
-                            const isTop2 = idx < 2;
-                            const gradientClass = idx === 0 
-                              ? 'bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500' 
-                              : 'bg-gradient-to-r from-cyan-400 via-teal-400 to-cyan-500';
-                            
-                            return (
-                              <tr 
-                                key={idx}
-                                onClick={() => setLocation('/strategy')}
-                                className={`border-b border-slate-700/30 relative ${isTop2 ? 'glow-border' : ''} cursor-pointer hover:bg-slate-800/30 transition-colors`}
-                                data-testid={`setup-row-${idx}`}
-                                title={`Click to view ${setup.setup} strategy details`}
-                              >
-                                {isTop2 && (
-                                  <td colSpan={4} className="absolute inset-0 pointer-events-none">
-                                    <div className={`absolute inset-0 ${gradientClass} opacity-20 rounded animate-pulse`} />
-                                    <div className={`absolute inset-0 ${gradientClass} blur-sm opacity-30`} />
-                                  </td>
-                                )}
-                                <td className="py-2 px-1 font-medium relative z-10" style={{ color: textColor }}>
-                                  <div className="flex items-center gap-1">
-                                    {isTop2 && <span className="text-yellow-400">⭐</span>}
-                                    <span className="truncate">{setup.setup}</span>
-                                  </div>
-                                </td>
-                                <td className="text-center py-2 px-1 relative z-10">
-                                  <span className={`font-bold ${setup.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                    {setup.pnl >= 0 ? '+' : ''}${Math.abs(setup.pnl).toFixed(0)}
-                                  </span>
-                                </td>
-                                <td className="text-center py-2 px-1 text-gray-300 relative z-10">
-                                  {setup.winRate.toFixed(0)}%
-                                </td>
-                                <td className="text-center py-2 px-1 relative z-10">
-                                  <span className={setup.avgR >= 0 ? 'text-cyan-400' : 'text-gray-400'}>
-                                    {setup.avgR.toFixed(1)}R
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-gray-400 text-sm">
-                    No setup data available
-                  </div>
-                )}
-              </div>
-            </DraggableWidget>
-          </div>
-
-          {/* 7. Risk Deviation Widget */}
+          {/* 6. Risk Deviation Widget */}
           <div key="riskdeviation">
             <DraggableWidget 
               title="Risk Deviation" 
