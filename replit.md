@@ -28,7 +28,22 @@ The client-side is a React 18 and TypeScript application using `shadcn/ui` (buil
 Supabase PostgreSQL stores all production data, including user profiles, journal entries, and Supabase Storage handles trade attachments.
 
 ### Dashboard
-Features a customizable widget system with 8 types, drag-and-drop, resize functionality, and template saving. Layouts are saved per breakpoint (lg, md, sm, xs, xxs).
+Features a customizable widget system with 18+ widget types, drag-and-drop, resize functionality, and template saving. Layouts are saved per breakpoint (lg, md, sm, xs, xxs).
+
+**Analytics Widgets (Added October 2025):**
+- **Streak Tracker**: Visual win/loss streak boxes with current streak counter
+- **Hold Time Analysis**: Average hold time with session breakdown
+- **Most Profitable Instrument**: Top-performing trading pair
+- **Monthly Progress Bar**: Target achievement visualization
+- **First vs Last Trade**: Pie charts comparing daily opening vs closing trades
+- **Setup Breakdown**: Top 5 setups by P&L with win rates
+- **Risk Deviation Histogram**: Advanced risk consistency visualization with histogram chart, target risk line (1%), deviation bands (±0.25%), color-coded bars (cyan = within band, red = outside), alert system (triggers when >20% trades outside band), and statistical summary (avg risk %, std dev %, % out of band)
+- **Asset Exposure**: Trading volume distribution across asset classes
+
+**Widget Layout System:**
+- Merge function ensures new widgets adopt default sizes even when users have saved layouts
+- Prevents new widgets from rendering at tiny fallback sizes (w=2, h=2)
+- Persists merged layouts automatically to user profile
 
 ### Account Filtering System
 A universal account selector enables database-level filtering by `account_id` across all pages. React Query uses account-specific cache keys.
