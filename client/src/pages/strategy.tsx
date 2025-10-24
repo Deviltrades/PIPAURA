@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AccountSelector } from "@/components/AccountSelector";
 import { Reports } from "@/components/Reports";
+import { TagsManagement } from "@/components/TagsManagement";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -241,6 +242,7 @@ export default function StrategyPage() {
         <TabsList>
           <TabsTrigger value="strategies" data-testid="tab-strategies">Trading Strategies</TabsTrigger>
           <TabsTrigger value="playbook" data-testid="tab-playbook">Playbook Rules</TabsTrigger>
+          <TabsTrigger value="tags" data-testid="tab-tags">Tags</TabsTrigger>
           <TabsTrigger value="reports" data-testid="tab-reports">Reports</TabsTrigger>
         </TabsList>
 
@@ -376,6 +378,10 @@ export default function StrategyPage() {
               })}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="tags" className="space-y-4">
+          <TagsManagement />
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-4">
