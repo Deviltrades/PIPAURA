@@ -354,10 +354,18 @@ export default function Trades() {
                             {trade.instrument_type}
                           </Badge>
                           {/* Custom Tags */}
+                          {(() => {
+                            console.log(`=== RENDERING TAGS FOR ${trade.instrument} ===`);
+                            console.log("trade.custom_tags:", trade.custom_tags);
+                            console.log("Condition check:", trade.custom_tags && trade.custom_tags.length > 0);
+                            console.log("userTags available:", userTags);
+                            return null;
+                          })()}
                           {trade.custom_tags && trade.custom_tags.length > 0 && (
                             <>
                               {trade.custom_tags.map((tagName: string, index: number) => {
                                 const tagColor = getTagColor(tagName);
+                                console.log(`Rendering tag: ${tagName}, color: ${tagColor}`);
                                 return (
                                   <Badge
                                     key={index}
@@ -529,6 +537,27 @@ export default function Trades() {
                         <Badge variant="outline" className="border-cyan-500/50 text-cyan-400 bg-cyan-600/10" data-testid={`badge-instrument-${trade.id}`}>
                           {trade.instrument_type}
                         </Badge>
+                        {/* Custom Tags for Desktop */}
+                        {trade.custom_tags && trade.custom_tags.length > 0 && (
+                          <>
+                            {trade.custom_tags.map((tagName: string, index: number) => {
+                              const tagColor = getTagColor(tagName);
+                              return (
+                                <Badge
+                                  key={index}
+                                  className="text-white border"
+                                  style={{
+                                    backgroundColor: `${tagColor}40`,
+                                    borderColor: tagColor,
+                                  }}
+                                  data-testid={`badge-tag-desktop-${trade.id}-${index}`}
+                                >
+                                  {tagName}
+                                </Badge>
+                              );
+                            })}
+                          </>
+                        )}
                       </div>
                       {trade.notes && (
                         <p className="text-sm text-gray-400 italic mt-2">"{trade.notes}"</p>
